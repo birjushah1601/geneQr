@@ -23,6 +23,7 @@ import (
 	"github.com/aby-med/medical-platform/internal/service-domain/comparison"
 	"github.com/aby-med/medical-platform/internal/service-domain/contract"
 	equipment "github.com/aby-med/medical-platform/internal/service-domain/equipment-registry"
+	serviceticket "github.com/aby-med/medical-platform/internal/service-domain/service-ticket"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -273,6 +274,35 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 	}, logger)
 	if err == nil {
 		registry.Register(equipmentModule)
+	}
+	
+	// Register Service Ticket module (includes WhatsApp integration)
+	whatsappVerifyToken := os.Getenv("WHATSAPP_VERIFY_TOKEN")
+	if whatsappVerifyToken == "" {
+		whatsappVerifyToken = "your-verify-token-123"
+	}
+	whatsappAccessToken := os.Getenv("WHATSAPP_ACCESS_TOKEN")
+	whatsappPhoneID := os.Getenv("WHATSAPP_PHONE_ID")
+	whatsappMediaDir := os.Getenv("WHATSAPP_MEDIA_DIR")
+	if whatsappMediaDir == "" {
+		whatsappMediaDir = "./data/whatsapp"
+	}
+	
+	serviceTicketModule, err := serviceticket.NewModule(serviceticket.ModuleConfig{
+		DBHost:             cfg.Database.Host,
+		DBPort:             dbPort,
+		DBUser:             cfg.Database.User,
+		DBPassword:         cfg.Database.Password,
+		DBName:             cfg.Database.Name,
+		BaseURL:            baseURL,
+		QROutputDir:        qrOutputDir,
+		WhatsAppVerifyToken: whatsappVerifyToken,
+		WhatsAppAccessToken: whatsappAccessToken,
+		WhatsAppPhoneID:     whatsappPhoneID,
+		WhatsAppMediaDir:    whatsappMediaDir,
+	}, logger)
+	if err == nil {
+		registry.Register(serviceTicketModule)
 	}
 
 	modules, err := registry.GetModules(enabledModules)
