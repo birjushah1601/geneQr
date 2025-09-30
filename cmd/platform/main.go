@@ -19,6 +19,7 @@ import (
 	"github.com/aby-med/medical-platform/internal/service-domain/rfq"
 	"github.com/aby-med/medical-platform/internal/service-domain/supplier"
 	"github.com/aby-med/medical-platform/internal/service-domain/quote"
+	"github.com/aby-med/medical-platform/internal/service-domain/comparison"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -229,6 +230,12 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 		DatabaseURL: cfg.GetDSN(),
 	}
 	registry.Register(quote.NewModule(*quoteConfig, logger))
+	
+	// Register Comparison module
+	comparisonConfig := &comparison.Config{
+		DatabaseURL: cfg.GetDSN(),
+	}
+	registry.Register(comparison.NewModule(*comparisonConfig, logger))
 
 	modules, err := registry.GetModules(enabledModules)
 	if err != nil {
