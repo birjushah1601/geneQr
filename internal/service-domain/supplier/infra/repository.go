@@ -10,7 +10,6 @@ import (
 
 	"github.com/aby-med/medical-platform/internal/service-domain/supplier/domain"
 	"github.com/jackc/pgx/v5"
-	"github.com/lib/pq"
 )
 
 // SupplierRepository implements the domain.SupplierRepository interface
@@ -62,6 +61,12 @@ func (r *SupplierRepository) Create(ctx context.Context, supplier *domain.Suppli
 		return fmt.Errorf("failed to marshal metadata: %w", err)
 	}
 
+	// Ensure specializations array is not nil
+	specializations := supplier.Specializations
+	if specializations == nil {
+		specializations = []string{}
+	}
+
 	_, err = r.db.pool.Exec(
 		ctx,
 		query,
@@ -74,7 +79,7 @@ func (r *SupplierRepository) Create(ctx context.Context, supplier *domain.Suppli
 		supplier.Description,
 		contactInfoJSON,
 		addressJSON,
-		pq.Array(supplier.Specializations),
+		specializations, // pgx v5 handles slices natively
 		certificationsJSON,
 		supplier.PerformanceRating,
 		supplier.TotalOrders,
@@ -117,7 +122,6 @@ func (r *SupplierRepository) GetByID(ctx context.Context, id string, tenantID st
 	`
 
 	row := r.db.pool.QueryRow(ctx, query, id, tenantID)
-
 	return r.scanSupplier(row)
 }
 
@@ -179,7 +183,7 @@ func (r *SupplierRepository) Update(ctx context.Context, supplier *domain.Suppli
 		supplier.Description,
 		contactInfoJSON,
 		addressJSON,
-		pq.Array(supplier.Specializations),
+		supplier.Specializations, // pgx v5 handles slices natively
 		certificationsJSON,
 		supplier.PerformanceRating,
 		supplier.TotalOrders,
@@ -395,7 +399,7 @@ func (r *SupplierRepository) scanSupplier(row pgx.Row) (*domain.Supplier, error)
 		&supplier.Description,
 		&contactInfoJSON,
 		&addressJSON,
-		pq.Array(&specializations),
+		&specializations, // pgx v5 scans arrays directly
 		&certificationsJSON,
 		&supplier.PerformanceRating,
 		&supplier.TotalOrders,
@@ -459,7 +463,7 @@ func (r *SupplierRepository) scanSupplierFromRows(rows pgx.Rows) (*domain.Suppli
 		&supplier.Description,
 		&contactInfoJSON,
 		&addressJSON,
-		pq.Array(&specializations),
+		&specializations, // pgx v5 scans arrays directly
 		&certificationsJSON,
 		&supplier.PerformanceRating,
 		&supplier.TotalOrders,
