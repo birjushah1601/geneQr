@@ -78,9 +78,10 @@ func main() {
 	// Initialize router with middleware
 	router := setupRouter(cfg, logger, tracer)
 
-	// Initialize and start modules
-	if err := startModules(ctx, router, enabledModules, cfg, logger); err != nil {
-		logger.Error("Failed to start modules", slog.String("error", err.Error()))
+	// Initialize modules (non-blocking)
+	modules, modulesCtx, err := initializeModules(ctx, router, enabledModules, cfg, logger)
+	if err != nil {
+		logger.Error("Failed to initialize modules", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
 
@@ -96,6 +97,14 @@ func main() {
 	go func() {
 		logger.Info("HTTP server listening", slog.String("port", cfg.Port))
 		serverErrors <- server.ListenAndServe()
+	}()
+
+	// Start all module background processes
+	go func() {
+		if err := startModuleBackgroundProcesses(modulesCtx, modules, logger); err != nil {
+			logger.Error("Module background processes failed", slog.String("error", err.Error()))
+			cancel() // Trigger shutdown
+		}
 	}()
 
 	// Wait for shutdown signal or server error
@@ -192,8 +201,8 @@ func setupRouter(cfg *config.Config, logger *slog.Logger, tracer observability.T
 	return r
 }
 
-// startModules initializes and starts all enabled modules
-func startModules(ctx context.Context, router *chi.Mux, enabledModules []string, cfg *config.Config, logger *slog.Logger) error {
+// initializeModules initializes all enabled modules and mounts their routes (non-blocking)
+func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []string, cfg *config.Config, logger *slog.Logger) ([]service.Module, context.Context, error) {
 	// Get all available modules
 	registry := service.NewRegistry(cfg, logger)
 	// Register individual modules here
@@ -201,11 +210,20 @@ func startModules(ctx context.Context, router *chi.Mux, enabledModules []string,
 
 	modules, err := registry.GetModules(enabledModules)
 	if err != nil {
-		return fmt.Errorf("failed to get modules: %w", err)
+		return nil, nil, fmt.Errorf("failed to get modules: %w", err)
 	}
 
 	if len(modules) == 0 {
-		return fmt.Errorf("no modules enabled")
+		return nil, nil, fmt.Errorf("no modules enabled")
+	}
+
+	// Initialize each module first (sets up DB, handlers, etc.)
+	for _, module := range modules {
+		moduleName := module.Name()
+		logger.Info("Initializing module", slog.String("module", moduleName))
+		if err := module.Initialize(ctx); err != nil {
+			return nil, nil, fmt.Errorf("module %s failed to initialize: %w", moduleName, err)
+		}
 	}
 
 	// Mount routes for each module
@@ -216,13 +234,18 @@ func startModules(ctx context.Context, router *chi.Mux, enabledModules []string,
 		module.MountRoutes(apiRouter)
 	}
 
+	return modules, ctx, nil
+}
+
+// startModuleBackgroundProcesses starts all module background processes (blocking)
+func startModuleBackgroundProcesses(ctx context.Context, modules []service.Module, logger *slog.Logger) error {
 	// Start each module in parallel
 	g, ctx := errgroup.WithContext(ctx)
 	for _, module := range modules {
 		m := module // Capture variable for goroutine
 		g.Go(func() error {
 			moduleName := m.Name()
-			logger.Info("Starting module", slog.String("module", moduleName))
+			logger.Info("Starting module background processes", slog.String("module", moduleName))
 			if err := m.Start(ctx); err != nil {
 				return fmt.Errorf("module %s failed to start: %w", moduleName, err)
 			}

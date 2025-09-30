@@ -69,9 +69,9 @@ func (m *Module) MountRoutes(r chi.Router) {
 	r.Mount("/catalog", catalogRouter)
 }
 
-// Start initializes and starts the module's background processes
-func (m *Module) Start(ctx context.Context) error {
-	m.logger.Info("Starting catalog module")
+// Initialize sets up the module's dependencies (called before MountRoutes)
+func (m *Module) Initialize(ctx context.Context) error {
+	m.logger.Info("Initializing catalog module")
 	
 	// Initialize repositories
 	db, err := infra.NewPostgresDB(ctx, m.config.GetDSN(), m.logger)
@@ -88,13 +88,21 @@ func (m *Module) Start(ctx context.Context) error {
 	// Initialize application services
 	m.service = app.NewCatalogService(m.repository, m.eventBus, m.logger)
 	
-	// Initialize HTTP handlers
+	// Initialize HTTP handlers (must be done before MountRoutes)
 	m.handler = cataloghttp.NewHandler(m.service, m.logger)
 	
 	// Run database migrations if needed
 	if err := m.runMigrations(ctx); err != nil {
 		return fmt.Errorf("failed to run catalog migrations: %w", err)
 	}
+	
+	m.logger.Info("Catalog module initialized successfully")
+	return nil
+}
+
+// Start initializes and starts the module's background processes
+func (m *Module) Start(ctx context.Context) error {
+	m.logger.Info("Starting catalog module background processes")
 	
 	// Start background processes if any
 	if err := m.startBackgroundProcesses(ctx); err != nil {

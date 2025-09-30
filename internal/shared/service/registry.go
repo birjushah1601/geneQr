@@ -20,6 +20,10 @@ type Module interface {
 	// Name returns the unique identifier of the module
 	Name() string
 
+	// Initialize sets up the module's dependencies (database, handlers, etc.)
+	// Must be called before MountRoutes
+	Initialize(ctx context.Context) error
+
 	// MountRoutes registers the module's HTTP routes on the provided router
 	MountRoutes(r chi.Router)
 
