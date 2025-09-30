@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -21,6 +22,7 @@ import (
 	"github.com/aby-med/medical-platform/internal/service-domain/quote"
 	"github.com/aby-med/medical-platform/internal/service-domain/comparison"
 	"github.com/aby-med/medical-platform/internal/service-domain/contract"
+	equipment "github.com/aby-med/medical-platform/internal/service-domain/equipment-registry"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -243,6 +245,35 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 		DatabaseURL: cfg.GetDSN(),
 	}
 	registry.Register(contract.NewModule(*contractConfig, logger))
+	
+	// Register Equipment Registry module (Field Service Management)
+	baseURL := os.Getenv("BASE_URL")
+	if baseURL == "" {
+		baseURL = "https://service.yourcompany.com"
+	}
+	qrOutputDir := os.Getenv("QR_OUTPUT_DIR")
+	if qrOutputDir == "" {
+		qrOutputDir = "./data/qrcodes"
+	}
+	
+	// Parse database port
+	dbPort, _ := strconv.Atoi(cfg.Database.Port)
+	if dbPort == 0 {
+		dbPort = 5432 // Default PostgreSQL port
+	}
+	
+	equipmentModule, err := equipment.NewModule(equipment.ModuleConfig{
+		DBHost:      cfg.Database.Host,
+		DBPort:      dbPort,
+		DBUser:      cfg.Database.User,
+		DBPassword:  cfg.Database.Password,
+		DBName:      cfg.Database.Name,
+		BaseURL:     baseURL,
+		QROutputDir: qrOutputDir,
+	}, logger)
+	if err == nil {
+		registry.Register(equipmentModule)
+	}
 
 	modules, err := registry.GetModules(enabledModules)
 	if err != nil {
