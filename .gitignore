@@ -1,0 +1,206 @@
+# ABY-Med Platform - Git Ignore Configuration
+# ===========================================
+
+# Environment Variables (SECURITY: Never commit secrets)
+# --------------------------------------------------------
+.env
+.env.local
+.env.*.local
+*.env
+!.env.local.example
+!.env.defaults
+
+# Go Build Artifacts
+# ------------------
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+/bin/
+/build/
+/dist/
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+coverage.txt
+coverage.html
+*.cover
+
+# Go workspace file (keep go.work but ignore sum)
+# go.work
+go.work.sum
+
+# Dependency directories
+vendor/
+
+# Go module cache
+go.sum.tmp
+
+# IDE & Editor Files
+# ------------------
+# VSCode
+.vscode/
+*.code-workspace
+.history/
+
+# JetBrains IDEs (GoLand, IntelliJ, WebStorm)
+.idea/
+*.iml
+*.ipr
+*.iws
+.run/
+
+# Vim
+*.swp
+*.swo
+*~
+.vim/
+
+# Emacs
+*~
+\#*\#
+.emacs.desktop
+.emacs.desktop.lock
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# Docker & Container Files
+# -------------------------
+# Docker volumes data (local dev only)
+dev/data/postgres/*
+!dev/data/postgres/.gitkeep
+dev/data/kafka/*
+!dev/data/kafka/.gitkeep
+dev/data/redis/*
+!dev/data/redis/.gitkeep
+
+# Docker logs
+dev/logs/*
+!dev/logs/.gitkeep
+*.log
+
+# Docker override files (personal config)
+docker-compose.override.yml
+
+# Kubernetes generated files
+*.generated.yaml
+
+# Temporary Files
+# ---------------
+*.tmp
+*.temp
+*.bak
+*.backup
+.cache/
+tmp/
+temp/
+
+# CI/CD & Build Artifacts
+# ------------------------
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+
+# Node.js (for future frontend/Node services)
+# --------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Frontend build outputs (future)
+/web/dist/
+/web/build/
+/mobile/dist/
+/mobile/build/
+
+# Python (for AI services - future)
+# ----------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+env/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
+
+# Database & Data Files
+# ----------------------
+*.db
+*.sqlite
+*.sqlite3
+
+# Certificates & Keys (SECURITY)
+# -------------------------------
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets/
+.secrets/
+
+# Development Tools
+# -----------------
+.air.toml
+.reflex
+
+# Backup files
+*.orig
+
+# Test artifacts
+test-results/
+testdata/actual/
+
+# Documentation builds
+docs/_build/
+site/
+
+# Profiling data
+*.pprof
+*.trace
+
+# Misc
+# ----
+.scratch/
+.notes/
