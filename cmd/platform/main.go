@@ -17,6 +17,7 @@ import (
 	"github.com/aby-med/medical-platform/internal/shared/service"
 	"github.com/aby-med/medical-platform/internal/marketplace/catalog"
 	"github.com/aby-med/medical-platform/internal/service-domain/rfq"
+	"github.com/aby-med/medical-platform/internal/service-domain/supplier"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -215,6 +216,12 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 		KafkaBrokers: cfg.Kafka.Brokers,
 	}
 	registry.Register(rfq.NewModule(rfqConfig, logger))
+	
+	// Register Supplier module
+	supplierConfig := &supplier.Config{
+		DatabaseDSN: cfg.GetDSN(),
+	}
+	registry.Register(supplier.NewModule(supplierConfig, logger))
 
 	modules, err := registry.GetModules(enabledModules)
 	if err != nil {
