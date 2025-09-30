@@ -6,11 +6,13 @@ require (
 	github.com/go-chi/chi/v5 v5.0.10
 	github.com/go-chi/cors v1.2.1
 	github.com/go-playground/validator/v10 v10.15.5
+	github.com/gorilla/mux v1.8.1
 	github.com/jackc/pgx/v5 v5.4.3
 	github.com/joho/godotenv v1.5.1
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/prometheus/client_golang v1.16.0
 	github.com/segmentio/kafka-go v0.4.44
+	github.com/segmentio/ksuid v1.0.4
 	golang.org/x/sync v0.3.0
 )
 
