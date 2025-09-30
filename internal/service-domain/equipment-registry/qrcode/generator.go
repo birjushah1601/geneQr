@@ -218,3 +218,12 @@ func DecodeQRData(qrString string) (*QRData, error) {
 	}
 	return &qrData, nil
 }
+
+// DecodeQRFromImage decodes QR code data from an image file
+func (g *Generator) DecodeQRFromImage(imagePath string) (*QRData, error) {
+	// For MVP, we'll use a simplified approach
+	// In production, integrate a QR decoding library like github.com/makiuchi-d/gozxing
+	
+	// For now, return an error indicating this needs to be implemented with proper QR decoder
+	return nil, fmt.Errorf("QR decode from image not yet implemented - requires QR decoder library integration")
+}

@@ -6,14 +6,14 @@ import (
 	"log/slog"
 
 	equipmentDomain "github.com/aby-med/medical-platform/internal/service-domain/equipment-registry/domain"
-	"github.com/aby-med/medical-platform/internal/service-domain/service-ticket/domain"
+	ticketDomain "github.com/aby-med/medical-platform/internal/service-domain/service-ticket/domain"
 	"github.com/aby-med/medical-platform/internal/service-domain/whatsapp"
 )
 
 // TicketService provides business logic for service tickets
 type TicketService struct {
-	repo           domain.TicketRepository
-	equipmentRepo  equipmentDomain.EquipmentRepository
+	repo           ticketDomain.TicketRepository
+	equipmentRepo  equipmentDomain.Repository
 	logger         *slog.Logger
 	defaultSLA     SLAConfig
 }
@@ -46,8 +46,8 @@ func DefaultSLAConfig() SLAConfig {
 
 // NewTicketService creates a new ticket service
 func NewTicketService(
-	repo domain.TicketRepository,
-	equipmentRepo equipmentDomain.EquipmentRepository,
+	repo ticketDomain.TicketRepository,
+	equipmentRepo equipmentDomain.Repository,
 	logger *slog.Logger,
 ) *TicketService {
 	return &TicketService{
@@ -59,13 +59,13 @@ func NewTicketService(
 }
 
 // CreateTicket creates a new service ticket
-func (s *TicketService) CreateTicket(ctx context.Context, req CreateTicketRequest) (*domain.ServiceTicket, error) {
+func (s *TicketService) CreateTicket(ctx context.Context, req CreateTicketRequest) (*ticketDomain.ServiceTicket, error) {
 	s.logger.Info("Creating service ticket",
 		slog.String("equipment_id", req.EquipmentID),
 		slog.String("customer_name", req.CustomerName))
 
 	// Create ticket
-	ticket := domain.NewServiceTicket(
+	ticket := ticketDomain.NewServiceTicket(
 		req.EquipmentID,
 		req.SerialNumber,
 		req.EquipmentName,
@@ -75,7 +75,7 @@ func (s *TicketService) CreateTicket(ctx context.Context, req CreateTicketReques
 		req.CreatedBy,
 	)
 
-	ticket.TicketNumber = domain.GenerateTicketNumber()
+	ticket.TicketNumber = ticketDomain.GenerateTicketNumber()
 	ticket.CustomerID = req.CustomerID
 	ticket.CustomerPhone = req.CustomerPhone
 	ticket.CustomerWhatsApp = req.CustomerWhatsApp
@@ -103,7 +103,7 @@ func (s *TicketService) CreateTicket(ctx context.Context, req CreateTicketReques
 
 	// Add initial comment
 	if req.InitialComment != "" {
-		comment := &domain.TicketComment{
+		comment := &ticketDomain.TicketComment{
 			TicketID:    ticket.ID,
 			CommentType: "system",
 			AuthorName:  "System",
@@ -134,7 +134,7 @@ func (s *TicketService) CreateFromWhatsApp(ctx context.Context, req whatsapp.Wha
 	} else if req.QRCode != "" {
 		equipment, err = s.equipmentRepo.GetByQRCode(ctx, req.QRCode)
 	} else if req.SerialNumber != "" {
-		equipment, err = s.equipmentRepo.GetBySerial(ctx, req.SerialNumber)
+		equipment, err = s.equipmentRepo.GetBySerialNumber(ctx, req.SerialNumber)
 	}
 
 	if err != nil {
@@ -143,9 +143,9 @@ func (s *TicketService) CreateFromWhatsApp(ctx context.Context, req whatsapp.Wha
 	}
 
 	// Determine priority based on equipment status
-	priority := domain.PriorityMedium
+	priority := ticketDomain.PriorityMedium
 	if equipment.Status == equipmentDomain.StatusDown {
-		priority = domain.PriorityHigh
+		priority = ticketDomain.PriorityHigh
 	}
 
 	// Check if covered under AMC
@@ -164,7 +164,7 @@ func (s *TicketService) CreateFromWhatsApp(ctx context.Context, req whatsapp.Wha
 		IssueCategory:    "breakdown",
 		IssueDescription: req.IssueDescription,
 		Priority:         priority,
-		Source:           domain.SourceWhatsApp,
+		Source:           ticketDomain.SourceWhatsApp,
 		SourceMessageID:  req.SourceMessageID,
 		Photos:           req.Photos,
 		Videos:           req.Videos,
@@ -188,17 +188,17 @@ func (s *TicketService) CreateFromWhatsApp(ctx context.Context, req whatsapp.Wha
 }
 
 // GetTicket retrieves a ticket by ID
-func (s *TicketService) GetTicket(ctx context.Context, id string) (*domain.ServiceTicket, error) {
+func (s *TicketService) GetTicket(ctx context.Context, id string) (*ticketDomain.ServiceTicket, error) {
 	return s.repo.GetByID(ctx, id)
 }
 
 // GetTicketByNumber retrieves a ticket by ticket number
-func (s *TicketService) GetTicketByNumber(ctx context.Context, ticketNumber string) (*domain.ServiceTicket, error) {
+func (s *TicketService) GetTicketByNumber(ctx context.Context, ticketNumber string) (*ticketDomain.ServiceTicket, error) {
 	return s.repo.GetByTicketNumber(ctx, ticketNumber)
 }
 
 // ListTickets lists tickets with filtering and pagination
-func (s *TicketService) ListTickets(ctx context.Context, criteria domain.ListCriteria) (*domain.TicketListResult, error) {
+func (s *TicketService) ListTickets(ctx context.Context, criteria ticketDomain.ListCriteria) (*ticketDomain.TicketListResult, error) {
 	return s.repo.List(ctx, criteria)
 }
 
@@ -228,7 +228,7 @@ func (s *TicketService) AssignTicket(ctx context.Context, ticketID, engineerID, 
 	}
 
 	// Add status history
-	history := &domain.StatusHistory{
+	history := &ticketDomain.StatusHistory{
 		TicketID:   ticketID,
 		FromStatus: oldStatus,
 		ToStatus:   string(ticket.Status),
@@ -238,7 +238,7 @@ func (s *TicketService) AssignTicket(ctx context.Context, ticketID, engineerID, 
 	s.repo.AddStatusHistory(ctx, history)
 
 	// Add comment
-	comment := &domain.TicketComment{
+	comment := &ticketDomain.TicketComment{
 		TicketID:    ticketID,
 		CommentType: "system",
 		AuthorName:  "System",
@@ -265,7 +265,7 @@ func (s *TicketService) AcknowledgeTicket(ctx context.Context, ticketID, acknowl
 		return err
 	}
 
-	comment := &domain.TicketComment{
+	comment := &ticketDomain.TicketComment{
 		TicketID:    ticketID,
 		CommentType: "engineer",
 		AuthorID:    ticket.AssignedEngineerID,
@@ -294,7 +294,7 @@ func (s *TicketService) StartWork(ctx context.Context, ticketID, startedBy strin
 		return err
 	}
 
-	history := &domain.StatusHistory{
+	history := &ticketDomain.StatusHistory{
 		TicketID:   ticketID,
 		FromStatus: oldStatus,
 		ToStatus:   string(ticket.Status),
@@ -303,7 +303,7 @@ func (s *TicketService) StartWork(ctx context.Context, ticketID, startedBy strin
 	}
 	s.repo.AddStatusHistory(ctx, history)
 
-	comment := &domain.TicketComment{
+	comment := &ticketDomain.TicketComment{
 		TicketID:    ticketID,
 		CommentType: "engineer",
 		AuthorID:    ticket.AssignedEngineerID,
@@ -332,7 +332,7 @@ func (s *TicketService) PutOnHold(ctx context.Context, ticketID, reason, changed
 		return err
 	}
 
-	history := &domain.StatusHistory{
+	history := &ticketDomain.StatusHistory{
 		TicketID:   ticketID,
 		FromStatus: oldStatus,
 		ToStatus:   string(ticket.Status),
@@ -341,7 +341,7 @@ func (s *TicketService) PutOnHold(ctx context.Context, ticketID, reason, changed
 	}
 	s.repo.AddStatusHistory(ctx, history)
 
-	comment := &domain.TicketComment{
+	comment := &ticketDomain.TicketComment{
 		TicketID:    ticketID,
 		CommentType: "engineer",
 		AuthorID:    ticket.AssignedEngineerID,
@@ -370,7 +370,7 @@ func (s *TicketService) ResumeWork(ctx context.Context, ticketID, resumedBy stri
 		return err
 	}
 
-	history := &domain.StatusHistory{
+	history := &ticketDomain.StatusHistory{
 		TicketID:   ticketID,
 		FromStatus: oldStatus,
 		ToStatus:   string(ticket.Status),
@@ -401,7 +401,7 @@ func (s *TicketService) ResolveTicket(ctx context.Context, ticketID string, req 
 		return err
 	}
 
-	history := &domain.StatusHistory{
+	history := &ticketDomain.StatusHistory{
 		TicketID:   ticketID,
 		FromStatus: oldStatus,
 		ToStatus:   string(ticket.Status),
@@ -410,7 +410,7 @@ func (s *TicketService) ResolveTicket(ctx context.Context, ticketID string, req 
 	}
 	s.repo.AddStatusHistory(ctx, history)
 
-	comment := &domain.TicketComment{
+	comment := &ticketDomain.TicketComment{
 		TicketID:    ticketID,
 		CommentType: "engineer",
 		AuthorID:    ticket.AssignedEngineerID,
@@ -446,7 +446,7 @@ func (s *TicketService) CloseTicket(ctx context.Context, ticketID, closedBy stri
 		return err
 	}
 
-	history := &domain.StatusHistory{
+	history := &ticketDomain.StatusHistory{
 		TicketID:   ticketID,
 		FromStatus: oldStatus,
 		ToStatus:   string(ticket.Status),
@@ -475,7 +475,7 @@ func (s *TicketService) CancelTicket(ctx context.Context, ticketID, reason, canc
 		return err
 	}
 
-	history := &domain.StatusHistory{
+	history := &ticketDomain.StatusHistory{
 		TicketID:   ticketID,
 		FromStatus: oldStatus,
 		ToStatus:   string(ticket.Status),
@@ -489,7 +489,7 @@ func (s *TicketService) CancelTicket(ctx context.Context, ticketID, reason, canc
 
 // AddComment adds a comment to a ticket
 func (s *TicketService) AddComment(ctx context.Context, req AddCommentRequest) error {
-	comment := &domain.TicketComment{
+	comment := &ticketDomain.TicketComment{
 		TicketID:    req.TicketID,
 		CommentType: req.CommentType,
 		AuthorID:    req.AuthorID,
@@ -502,30 +502,30 @@ func (s *TicketService) AddComment(ctx context.Context, req AddCommentRequest) e
 }
 
 // GetComments retrieves all comments for a ticket
-func (s *TicketService) GetComments(ctx context.Context, ticketID string) ([]*domain.TicketComment, error) {
+func (s *TicketService) GetComments(ctx context.Context, ticketID string) ([]*ticketDomain.TicketComment, error) {
 	return s.repo.GetComments(ctx, ticketID)
 }
 
 // GetStatusHistory retrieves status history for a ticket
-func (s *TicketService) GetStatusHistory(ctx context.Context, ticketID string) ([]*domain.StatusHistory, error) {
+func (s *TicketService) GetStatusHistory(ctx context.Context, ticketID string) ([]*ticketDomain.StatusHistory, error) {
 	return s.repo.GetStatusHistory(ctx, ticketID)
 }
 
 // setSLA sets SLA deadlines based on priority
-func (s *TicketService) setSLA(ticket *domain.ServiceTicket) {
+func (s *TicketService) setSLA(ticket *ticketDomain.ServiceTicket) {
 	var responseHours, resolutionHours int
 
 	switch ticket.Priority {
-	case domain.PriorityCritical:
+	case ticketDomain.PriorityCritical:
 		responseHours = s.defaultSLA.CriticalResponseHours
 		resolutionHours = s.defaultSLA.CriticalResolutionHours
-	case domain.PriorityHigh:
+	case ticketDomain.PriorityHigh:
 		responseHours = s.defaultSLA.HighResponseHours
 		resolutionHours = s.defaultSLA.HighResolutionHours
-	case domain.PriorityMedium:
+	case ticketDomain.PriorityMedium:
 		responseHours = s.defaultSLA.MediumResponseHours
 		resolutionHours = s.defaultSLA.MediumResolutionHours
-	case domain.PriorityLow:
+	case ticketDomain.PriorityLow:
 		responseHours = s.defaultSLA.LowResponseHours
 		resolutionHours = s.defaultSLA.LowResolutionHours
 	default:
@@ -549,8 +549,8 @@ type CreateTicketRequest struct {
 	CustomerWhatsApp string
 	IssueCategory    string
 	IssueDescription string
-	Priority         domain.TicketPriority
-	Source           domain.TicketSource
+	Priority         ticketDomain.TicketPriority
+	Source           ticketDomain.TicketSource
 	SourceMessageID  string
 	Photos           []string
 	Videos           []string
@@ -560,7 +560,7 @@ type CreateTicketRequest struct {
 
 type ResolveTicketRequest struct {
 	ResolutionNotes string
-	PartsUsed       []domain.Part
+	PartsUsed       []ticketDomain.Part
 	LaborHours      float64
 	Cost            float64
 	ResolvedBy      string
@@ -574,3 +574,4 @@ type AddCommentRequest struct {
 	Comment     string
 	Attachments []string
 }
+

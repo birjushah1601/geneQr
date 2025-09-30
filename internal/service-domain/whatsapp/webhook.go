@@ -193,8 +193,8 @@ func (h *WebhookHandler) handleImageMessage(ctx context.Context, msg Message, co
 	ticketReq := WhatsAppTicketRequest{
 		EquipmentID:      qrData.ID,
 		QRCode:           qrData.QRCode,
-		SerialNumber:     qrData.Serial,
-		EquipmentName:    fmt.Sprintf("Equipment %s", qrData.Serial),
+		SerialNumber:     qrData.SerialNo,
+		EquipmentName:    fmt.Sprintf("Equipment %s", qrData.SerialNo),
 		CustomerName:     contactName,
 		CustomerPhone:    msg.From,
 		CustomerWhatsApp: msg.From,
