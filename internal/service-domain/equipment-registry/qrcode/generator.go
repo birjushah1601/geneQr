@@ -1,6 +1,7 @@
 package qrcode
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -70,7 +71,34 @@ func (g *Generator) GenerateQRCode(equipmentID, serialNumber, qrCodeID string) (
 	return qrPath, nil
 }
 
-// GenerateQRLabel generates a printable PDF label with QR code
+// GenerateQRCodeBytes generates a QR code as byte array for database storage
+func (g *Generator) GenerateQRCodeBytes(equipmentID, serialNumber, qrCodeID string) ([]byte, error) {
+	// Create QR data with URL and identifiers
+	url := fmt.Sprintf("%s/equipment/%s", g.baseURL, equipmentID)
+	
+	qrData := QRData{
+		URL:      url,
+		ID:       equipmentID,
+		SerialNo: serialNumber,
+		QRCode:   qrCodeID,
+	}
+
+	// Encode QR data as JSON
+	jsonData, err := json.Marshal(qrData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal QR data: %w", err)
+	}
+
+	// Generate QR code as PNG bytes with medium error correction
+	qrBytes, err := qrcode.Encode(string(jsonData), qrcode.Medium, g.qrSize)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate QR code: %w", err)
+	}
+
+	return qrBytes, nil
+}
+
+// GenerateQRLabel generates a printable PDF label with QR code (legacy filesystem version)
 func (g *Generator) GenerateQRLabel(equipmentID, equipmentName, serialNumber, manufacturer, qrCodeID, qrImagePath string) (string, error) {
 	pdf := gofpdf.New("P", "mm", "A4", "")
 	pdf.AddPage()
@@ -132,6 +160,69 @@ func (g *Generator) GenerateQRLabel(equipmentID, equipmentName, serialNumber, ma
 	}
 
 	return pdfPath, nil
+}
+
+// GenerateQRLabelFromBytes generates a printable PDF label with QR code from byte array
+func (g *Generator) GenerateQRLabelFromBytes(equipmentID, equipmentName, serialNumber, manufacturer, qrCodeID string, qrImageBytes []byte) ([]byte, error) {
+	pdf := gofpdf.New("P", "mm", "A4", "")
+	pdf.AddPage()
+
+	// Set title
+	pdf.SetFont("Arial", "B", 16)
+	pdf.Cell(0, 10, "Equipment QR Code Label")
+	pdf.Ln(12)
+
+	// Equipment details
+	pdf.SetFont("Arial", "B", 12)
+	pdf.Cell(40, 8, "Equipment:")
+	pdf.SetFont("Arial", "", 12)
+	pdf.Cell(0, 8, equipmentName)
+	pdf.Ln(8)
+
+	pdf.SetFont("Arial", "B", 12)
+	pdf.Cell(40, 8, "Manufacturer:")
+	pdf.SetFont("Arial", "", 12)
+	pdf.Cell(0, 8, manufacturer)
+	pdf.Ln(8)
+
+	pdf.SetFont("Arial", "B", 12)
+	pdf.Cell(40, 8, "Serial Number:")
+	pdf.SetFont("Arial", "", 12)
+	pdf.Cell(0, 8, serialNumber)
+	pdf.Ln(8)
+
+	pdf.SetFont("Arial", "B", 12)
+	pdf.Cell(40, 8, "QR Code:")
+	pdf.SetFont("Arial", "", 12)
+	pdf.Cell(0, 8, qrCodeID)
+	pdf.Ln(12)
+
+	// Add QR code image from bytes
+	if len(qrImageBytes) > 0 {
+		reader := bytes.NewReader(qrImageBytes)
+		pdf.RegisterImageReader(fmt.Sprintf("qr_%s", equipmentID), "PNG", reader)
+		pdf.Image(fmt.Sprintf("qr_%s", equipmentID), 40, pdf.GetY(), 60, 60, false, "", 0, "")
+		pdf.Ln(65)
+	}
+
+	// Add instructions
+	pdf.SetFont("Arial", "I", 10)
+	pdf.MultiCell(0, 5, "Scan this QR code with your mobile device to view equipment details and request service.", "", "", false)
+	pdf.Ln(5)
+	
+	// Add URL for reference
+	url := fmt.Sprintf("%s/equipment/%s", g.baseURL, equipmentID)
+	pdf.SetFont("Arial", "", 8)
+	pdf.Cell(0, 5, fmt.Sprintf("URL: %s", url))
+
+	// Output PDF to buffer
+	var buf bytes.Buffer
+	err := pdf.Output(&buf)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate PDF label: %w", err)
+	}
+
+	return buf.Bytes(), nil
 }
 
 // GenerateBatchLabels generates PDF with multiple QR labels (for printing)

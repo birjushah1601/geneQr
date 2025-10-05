@@ -25,7 +25,7 @@ func NewEquipmentRepository(pool *pgxpool.Pool) *EquipmentRepository {
 // Create creates a new equipment registration
 func (r *EquipmentRepository) Create(ctx context.Context, equipment *domain.Equipment) error {
 	query := `
-		INSERT INTO equipment_registry (
+		INSERT INTO equipment (
 			id, qr_code, serial_number, equipment_id, equipment_name, manufacturer_name,
 			model_number, category, customer_id, customer_name, installation_location,
 			installation_address, installation_date, contract_id, purchase_date, purchase_price,
@@ -107,8 +107,9 @@ func (r *EquipmentRepository) GetByID(ctx context.Context, id string) (*domain.E
 			installation_address, installation_date, contract_id, purchase_date, purchase_price,
 			warranty_expiry, amc_contract_id, status, last_service_date, next_service_date,
 			service_count, specifications, photos, documents, qr_code_url, notes,
-			created_at, updated_at, created_by
-		FROM equipment_registry
+			created_at, updated_at, created_by,
+			qr_code_image, qr_code_format, qr_code_generated_at
+		FROM equipment
 		WHERE id = $1
 	`
 
@@ -131,8 +132,9 @@ func (r *EquipmentRepository) GetByQRCode(ctx context.Context, qrCode string) (*
 			installation_address, installation_date, contract_id, purchase_date, purchase_price,
 			warranty_expiry, amc_contract_id, status, last_service_date, next_service_date,
 			service_count, specifications, photos, documents, qr_code_url, notes,
-			created_at, updated_at, created_by
-		FROM equipment_registry
+			created_at, updated_at, created_by,
+			qr_code_image, qr_code_format, qr_code_generated_at
+		FROM equipment
 		WHERE qr_code = $1
 	`
 
@@ -155,8 +157,9 @@ func (r *EquipmentRepository) GetBySerialNumber(ctx context.Context, serialNumbe
 			installation_address, installation_date, contract_id, purchase_date, purchase_price,
 			warranty_expiry, amc_contract_id, status, last_service_date, next_service_date,
 			service_count, specifications, photos, documents, qr_code_url, notes,
-			created_at, updated_at, created_by
-		FROM equipment_registry
+			created_at, updated_at, created_by,
+			qr_code_image, qr_code_format, qr_code_generated_at
+		FROM equipment
 		WHERE serial_number = $1
 	`
 
@@ -181,8 +184,9 @@ func (r *EquipmentRepository) List(ctx context.Context, criteria domain.ListCrit
 			installation_address, installation_date, contract_id, purchase_date, purchase_price,
 			warranty_expiry, amc_contract_id, status, last_service_date, next_service_date,
 			service_count, specifications, photos, documents, qr_code_url, notes,
-			created_at, updated_at, created_by
-		FROM equipment_registry
+			created_at, updated_at, created_by,
+			qr_code_image, qr_code_format, qr_code_generated_at
+		FROM equipment
 		WHERE 1=1
 	`)
 
@@ -235,7 +239,7 @@ func (r *EquipmentRepository) List(ctx context.Context, criteria domain.ListCrit
 	}
 
 	// Count total
-	countQuery := "SELECT COUNT(*) FROM equipment_registry WHERE 1=1"
+	countQuery := "SELECT COUNT(*) FROM equipment WHERE 1=1"
 	// Add same filters for count
 	countBuilder := strings.Builder{}
 	countBuilder.WriteString(countQuery)
@@ -309,7 +313,7 @@ func (r *EquipmentRepository) List(ctx context.Context, criteria domain.ListCrit
 // Update updates equipment
 func (r *EquipmentRepository) Update(ctx context.Context, equipment *domain.Equipment) error {
 	query := `
-		UPDATE equipment_registry SET
+		UPDATE equipment SET
 			qr_code = $2, serial_number = $3, equipment_id = $4, equipment_name = $5,
 			manufacturer_name = $6, model_number = $7, category = $8, customer_id = $9,
 			customer_name = $10, installation_location = $11, installation_address = $12,
@@ -372,7 +376,7 @@ func (r *EquipmentRepository) Update(ctx context.Context, equipment *domain.Equi
 
 // Delete deletes equipment
 func (r *EquipmentRepository) Delete(ctx context.Context, id string) error {
-	query := `DELETE FROM equipment_registry WHERE id = $1`
+	query := `DELETE FROM equipment WHERE id = $1`
 
 	result, err := r.pool.Exec(ctx, query, id)
 	if err != nil {
@@ -396,7 +400,7 @@ func (r *EquipmentRepository) BulkCreate(ctx context.Context, equipmentList []*d
 	defer tx.Rollback(ctx)
 
 	query := `
-		INSERT INTO equipment_registry (
+		INSERT INTO equipment (
 			id, qr_code, serial_number, equipment_id, equipment_name, manufacturer_name,
 			model_number, category, customer_id, customer_name, installation_location,
 			installation_address, installation_date, contract_id, purchase_date, purchase_price,
@@ -496,6 +500,9 @@ func (r *EquipmentRepository) scanEquipment(row pgx.Row) (*domain.Equipment, err
 		&equipment.CreatedAt,
 		&equipment.UpdatedAt,
 		&equipment.CreatedBy,
+		&equipment.QRCodeImage,
+		&equipment.QRCodeFormat,
+		&equipment.QRCodeGeneratedAt,
 	)
 
 	if err != nil {
@@ -555,6 +562,9 @@ func (r *EquipmentRepository) scanEquipmentFromRows(rows pgx.Rows) (*domain.Equi
 		&equipment.CreatedAt,
 		&equipment.UpdatedAt,
 		&equipment.CreatedBy,
+		&equipment.QRCodeImage,
+		&equipment.QRCodeFormat,
+		&equipment.QRCodeGeneratedAt,
 	)
 
 	if err != nil {
@@ -576,4 +586,21 @@ func (r *EquipmentRepository) scanEquipmentFromRows(rows pgx.Rows) (*domain.Equi
 	}
 
 	return &equipment, nil
+}
+
+// UpdateQRCode updates the QR code image in database
+func (r *EquipmentRepository) UpdateQRCode(ctx context.Context, equipmentID string, qrImage []byte, format string) error {
+	query := `
+		UPDATE equipment 
+		SET qr_code_image = $1, 
+			qr_code_format = $2,
+			qr_code_generated_at = NOW(),
+			updated_at = NOW()
+		WHERE id = $3
+	`
+	_, err := r.pool.Exec(ctx, query, qrImage, format, equipmentID)
+	if err != nil {
+		return fmt.Errorf("failed to update QR code: %w", err)
+	}
+	return nil
 }

@@ -1,0 +1,16 @@
+serial_number,equipment_name,manufacturer_name,model_number,category,customer_name,customer_id,installation_location,installation_date,purchase_date,purchase_price,warranty_months,notes
+MED-MRI-001,MRI Scanner 1.5T,Siemens Healthineers,MAGNETOM Sola,Diagnostic Imaging,Apollo Hospitals Mumbai,CUST-001,Radiology Department - Building A,2023-06-15,2023-05-20,125000000,24,Primary MRI unit for radiology department
+MED-CT-002,CT Scanner 64-Slice,GE Healthcare,Revolution EVO,Diagnostic Imaging,Fortis Hospital Delhi,CUST-002,Emergency Wing - 2nd Floor,2023-07-10,2023-06-25,89000000,24,Emergency CT scanner with cardiac imaging
+MED-VENT-003,ICU Ventilator,Medtronic,PB980,Critical Care,AIIMS New Delhi,CUST-003,ICU Ward 3 - Bed 12,2023-08-05,2023-07-15,1800000,36,Advanced ventilator with NAVA mode
+MED-XRAY-004,Digital X-Ray System,Philips Healthcare,DigitalDiagnost C90,Diagnostic Imaging,Max Healthcare Gurgaon,CUST-004,Outpatient Imaging Center,2023-05-20,2023-04-30,4500000,18,Mobile digital radiography system
+MED-ECG-005,12-Lead ECG Machine,Schiller,CARDIOVIT AT-102 G2,Cardiology,Manipal Hospital Bangalore,CUST-005,Cardiology OPD - Room 201,2023-09-01,2023-08-10,185000,12,Portable ECG with interpretation software
+MED-US-006,Ultrasound System,Samsung Medison,RS85,Diagnostic Imaging,Columbia Asia Pune,CUST-006,Obstetrics Department,2023-07-25,2023-07-01,3200000,24,4D ultrasound for obstetrics and gynecology
+MED-ANES-007,Anesthesia Workstation,Drager,Fabius GS Premium,Anesthesia,Kokilaben Hospital Mumbai,CUST-007,Operating Theater 5,2023-06-18,2023-05-28,2800000,24,Advanced anesthesia delivery system
+MED-INF-008,Infusion Pump,B.Braun,Infusomat Space,Patient Monitoring,Narayana Health Kolkata,CUST-008,General Ward - Nursing Station 4A,2023-08-20,2023-08-01,125000,12,Volumetric infusion pump with drug library
+MED-DEFIB-009,Defibrillator,ZOLL Medical,R Series,Emergency Medicine,Fortis Hospital Mohali,CUST-009,Emergency Department,2023-09-15,2023-09-01,850000,18,AED with real-time CPR feedback
+MED-SURG-010,Surgical Diathermy,Erbe,VIO 3,Surgical Equipment,Tata Memorial Hospital Mumbai,CUST-010,Operating Theater 3,2023-05-10,2023-04-20,1650000,24,Electrosurgical unit with argon plasma
+MED-MRI-011,MRI Scanner 3.0T,Philips Healthcare,Ingenia Elition 3.0T,Diagnostic Imaging,Medanta Medicity Gurgaon,CUST-011,Advanced Imaging Center,2023-10-01,2023-09-10,185000000,36,High-field MRI with AI reconstruction
+MED-CT-012,CT Scanner 128-Slice,Canon Medical,Aquilion Prime SP,Diagnostic Imaging,Christian Medical College Vellore,CUST-012,Radiology Department - Main Block,2023-06-30,2023-06-05,98000000,24,Multi-slice CT with low-dose protocols
+MED-VENT-013,Transport Ventilator,Hamilton Medical,HAMILTON-T1,Critical Care,PGIMER Chandigarh,CUST-013,Ambulance Unit - ICU Transport,2023-07-18,2023-06-28,950000,24,Portable ventilator for patient transport
+MED-LAB-014,Automated Analyzer,Roche Diagnostics,cobas 6000,Laboratory Equipment,SRL Diagnostics Mumbai,CUST-014,Central Lab - Biochemistry Section,2023-08-12,2023-07-22,12500000,18,Clinical chemistry and immunoassay analyzer
+MED-ENDO-015,Endoscopy System,Olympus,EVIS EXERA III,Gastroenterology,Hinduja Hospital Mumbai,CUST-015,Endoscopy Suite - Room 2,2023-09-05,2023-08-18,5800000,24,HD endoscopy with NBI technology

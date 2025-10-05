@@ -27,6 +27,9 @@ type Repository interface {
 
 	// BulkCreate creates multiple equipment registrations
 	BulkCreate(ctx context.Context, equipment []*Equipment) error
+	
+	// UpdateQRCode updates the QR code image in database
+	UpdateQRCode(ctx context.Context, equipmentID string, qrImage []byte, format string) error
 }
 
 // ListCriteria defines filtering criteria for listing equipment

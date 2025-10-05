@@ -31,6 +31,8 @@ export default function TestQRWorkflowPage() {
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null);
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
+  // Ensure an offscreen, stable container for file-based scanning always exists
+  // We'll mount a hidden #qr-reader element outside conditional UI blocks
 
   // Cleanup camera on unmount
   useEffect(() => {
@@ -50,14 +52,16 @@ export default function TestQRWorkflowPage() {
     setError(null);
 
     try {
-      // Create object URL for preview
+      // Create object URL for preview (set after scan starts to avoid unmount races)
       const imageUrl = URL.createObjectURL(file);
-      setUploadedImage(imageUrl);
 
-      // Scan QR code from file
+      // Scan QR code from file using a persistent hidden container
       const html5QrCode = new Html5Qrcode('qr-reader');
       const decodedText = await html5QrCode.scanFile(file, false);
       await html5QrCode.clear();
+
+      // Now show the preview and proceed
+      setUploadedImage(imageUrl);
       
       setQrCode(decodedText);
       await lookupEquipment(decodedText);
@@ -81,11 +85,14 @@ export default function TestQRWorkflowPage() {
       await html5QrCode.start(
         { facingMode: 'environment' },
         {
-          fps: 10,
+          fps: 12,
           qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
             const size = Math.floor(Math.min(viewfinderWidth, viewfinderHeight) * 0.8);
             return { width: size, height: size };
           },
+          // Improve reliability for mobile/back camera QR decoding
+          // Note: library typing may not expose formatsToSupport; relying on defaults and disableFlip improves stability
+          disableFlip: true,
         },
         async (decodedText) => {
           // Successfully scanned
@@ -108,6 +115,8 @@ export default function TestQRWorkflowPage() {
     if (html5QrCodeRef.current) {
       try {
         await html5QrCodeRef.current.stop();
+        // Clear to release DOM elements and camera tracks fully
+        await html5QrCodeRef.current.clear();
         html5QrCodeRef.current = null;
       } catch (err) {
         console.error('Error stopping camera:', err);
@@ -225,6 +234,8 @@ export default function TestQRWorkflowPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 md:p-8">
+      {/* Persistent, offscreen host for file-based scanning to avoid null container errors */}
+      <div id="qr-reader" className="absolute -left-[99999px] -top-[99999px] w-px h-px overflow-hidden" aria-hidden="true"></div>
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
@@ -353,7 +364,6 @@ export default function TestQRWorkflowPage() {
                     onChange={handleFileUpload}
                     className="hidden"
                   />
-                  <div id="qr-reader" className="w-px h-px absolute -left-[9999px]"></div>
                 </div>
               )}
 

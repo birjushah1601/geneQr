@@ -1,0 +1,422 @@
+{
+  "info": {
+    "name": "ABY-MED Medical Platform API",
+    "description": "Complete API collection for testing the ABY-MED medical equipment marketplace and service management platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8081",
+      "type": "string"
+    },
+    {
+      "key": "tenantId",
+      "value": "city-hospital",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "test-user",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health & Monitoring",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "Prometheus Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/metrics",
+              "host": ["{{baseUrl}}"],
+              "path": ["metrics"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Catalog Service",
+      "item": [
+        {
+          "name": "List All Catalog Items",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Tenant-ID",
+                "value": "{{tenantId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/catalog",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "catalog"]
+            }
+          }
+        },
+        {
+          "name": "Create Catalog Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Tenant-ID",
+                "value": "{{tenantId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"MRI Scanner - Siemens Magnetom\",\n  \"sku\": \"MRI-001-SIEMENS\",\n  \"category\": \"Diagnostic Imaging\",\n  \"manufacturer\": \"Siemens Healthineers\",\n  \"description\": \"1.5T MRI Scanner with advanced imaging capabilities\",\n  \"specifications\": {\n    \"field_strength\": \"1.5 Tesla\",\n    \"bore_diameter\": \"70 cm\",\n    \"max_patient_weight\": \"250 kg\"\n  },\n  \"base_price\": 1500000.00,\n  \"currency\": \"INR\",\n  \"compliance_certifications\": [\"CDSCO\", \"ISO 13485\", \"CE Mark\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/catalog",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "catalog"]
+            }
+          }
+        },
+        {
+          "name": "Get Catalog Item by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Tenant-ID",
+                "value": "{{tenantId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/catalog/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "catalog", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "catalog-id-here"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "RFQ Service",
+      "item": [
+        {
+          "name": "List All RFQs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Tenant-ID",
+                "value": "{{tenantId}}"
+              },
+              {
+                "key": "X-User-ID",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/rfq",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "rfq"]
+            }
+          }
+        },
+        {
+          "name": "Create RFQ",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Tenant-ID",
+                "value": "{{tenantId}}"
+              },
+              {
+                "key": "X-User-ID",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Request for MRI Scanner\",\n  \"description\": \"Need 1.5T MRI Scanner for radiology department\",\n  \"deadline\": \"2025-11-01T00:00:00Z\",\n  \"delivery_location\": {\n    \"facility_name\": \"City Hospital Radiology\",\n    \"address\": \"123 Medical Lane, Mumbai, Maharashtra\",\n    \"pincode\": \"400001\",\n    \"contact_person\": \"Dr. Sharma\",\n    \"phone\": \"+91-9876543210\"\n  },\n  \"items\": [\n    {\n      \"catalog_id\": \"catalog-item-id\",\n      \"quantity\": 1,\n      \"specifications\": \"1.5T with advanced cardiac imaging\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/rfq",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "rfq"]
+            }
+          }
+        },
+        {
+          "name": "Get RFQ by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Tenant-ID",
+                "value": "{{tenantId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/rfq/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "rfq", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "rfq-id-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Publish RFQ",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Tenant-ID",
+                "value": "{{tenantId}}"
+              },
+              {
+                "key": "X-User-ID",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/rfq/:id/publish",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "rfq", ":id", "publish"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "rfq-id-here"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Supplier Service",
+      "item": [
+        {
+          "name": "List All Suppliers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Tenant-ID",
+                "value": "{{tenantId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/suppliers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "suppliers"]
+            }
+          }
+        },
+        {
+          "name": "Register Supplier",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Tenant-ID",
+                "value": "{{tenantId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company_name\": \"MedTech Supplies Pvt Ltd\",\n  \"gstin\": \"27AABCU9603R1ZM\",\n  \"pan\": \"AABCU9603R\",\n  \"contact_person\": \"Rajesh Kumar\",\n  \"email\": \"rajesh@medtechsupplies.com\",\n  \"phone\": \"+91-9876543210\",\n  \"address\": {\n    \"street\": \"456 Business Park\",\n    \"city\": \"Mumbai\",\n    \"state\": \"Maharashtra\",\n    \"pincode\": \"400051\",\n    \"country\": \"India\"\n  },\n  \"categories\": [\"Diagnostic Imaging\", \"Laboratory Equipment\"],\n  \"certifications\": [\"ISO 9001\", \"CDSCO Registered\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/suppliers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "suppliers"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Quote Service",
+      "item": [
+        {
+          "name": "List All Quotes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Tenant-ID",
+                "value": "{{tenantId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/quotes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "quotes"]
+            }
+          }
+        },
+        {
+          "name": "Create Quote",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Tenant-ID",
+                "value": "{{tenantId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rfq_id\": \"rfq-id-here\",\n  \"supplier_id\": \"supplier-id-here\",\n  \"validity_days\": 30,\n  \"payment_terms\": \"30 days from delivery\",\n  \"delivery_timeline\": \"60-90 days\",\n  \"warranty\": \"24 months comprehensive\",\n  \"items\": [\n    {\n      \"rfq_item_id\": \"rfq-item-id\",\n      \"unit_price\": 1650000.00,\n      \"discount_percent\": 5.0,\n      \"tax_percent\": 18.0,\n      \"delivery_charges\": 50000.00,\n      \"installation_charges\": 100000.00\n    }\n  ],\n  \"notes\": \"Installation and training included\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/quotes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "quotes"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Equipment Registry",
+      "item": [
+        {
+          "name": "List All Equipment",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Tenant-ID",
+                "value": "{{tenantId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/equipment",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "equipment"]
+            }
+          }
+        },
+        {
+          "name": "Register Equipment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Tenant-ID",
+                "value": "{{tenantId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Siemens MRI Magnetom Skyra\",\n  \"serial_number\": \"MRI-SKYRA-2025-001\",\n  \"model\": \"Magnetom Skyra 1.5T\",\n  \"manufacturer\": \"Siemens Healthineers\",\n  \"purchase_date\": \"2025-01-15\",\n  \"installation_date\": \"2025-03-01\",\n  \"location\": {\n    \"building\": \"Main Hospital Block A\",\n    \"floor\": \"Ground Floor\",\n    \"room\": \"Radiology Suite 1\"\n  },\n  \"warranty_expiry\": \"2027-03-01\",\n  \"maintenance_schedule\": \"quarterly\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/equipment",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "equipment"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Service Ticket",
+      "item": [
+        {
+          "name": "List All Tickets",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Tenant-ID",
+                "value": "{{tenantId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tickets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "tickets"]
+            }
+          }
+        },
+        {
+          "name": "Create Service Ticket",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Tenant-ID",
+                "value": "{{tenantId}}"
+              },
+              {
+                "key": "X-User-ID",
+                "value": "{{userId}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipment_id\": \"equipment-id-here\",\n  \"title\": \"MRI Scanner - Strange Noise During Scan\",\n  \"description\": \"Scanner making unusual clicking noise during cardiac imaging sequences\",\n  \"priority\": \"high\",\n  \"reported_by\": \"Dr. Anjali Mehta\",\n  \"contact_phone\": \"+91-9876543210\",\n  \"contact_email\": \"anjali.mehta@cityhospital.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tickets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "tickets"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

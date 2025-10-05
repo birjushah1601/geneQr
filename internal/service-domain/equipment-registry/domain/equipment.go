@@ -58,6 +58,12 @@ type Equipment struct {
 	// Technical details
 	Specifications map[string]interface{} `json:"specifications"`
 	Photos         []string               `json:"photos"`  // Array of photo URLs
+	
+	// QR Code Storage (Database)
+	QRCodeImage       []byte     `json:"qr_code_image,omitempty"`        // QR code PNG image stored in database
+	QRCodeFormat      string     `json:"qr_code_format,omitempty"`       // Image format (png, svg, jpg)
+	QRCodeGeneratedAt *time.Time `json:"qr_code_generated_at,omitempty"` // When QR was generated
+	QRCodePath        string     `json:"qr_code_path,omitempty"`         // Legacy filesystem path (deprecated)
 	Documents      []string               `json:"documents"` // Manuals, certificates
 	
 	// QR Code URL

@@ -353,3 +353,4 @@ func startModuleBackgroundProcesses(ctx context.Context, modules []service.Modul
 	// Wait for all modules to start or for first error
 	return g.Wait()
 }
+

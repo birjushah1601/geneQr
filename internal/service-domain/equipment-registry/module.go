@@ -78,20 +78,23 @@ func (m *Module) MountRoutes(r chi.Router) {
 
 	// Equipment management routes
 	r.Route("/equipment", func(r chi.Router) {
+		// Routes without {id} parameter first
 		r.Post("/", m.handler.RegisterEquipment)          // Register equipment
-		r.Post("/import", m.handler.ImportCSV)            // CSV import
 		r.Get("/", m.handler.ListEquipment)               // List equipment
+		r.Post("/import", m.handler.ImportCSV)            // CSV import
+		r.Post("/qr/bulk-generate", m.handler.BulkGenerateQRCodes) // Bulk generate QR codes
+		r.Get("/qr/image/{id}", m.handler.GetQRCodeImage) // Get QR code image (different pattern to avoid conflict)
 		r.Get("/qr/{qr_code}", m.handler.GetEquipmentByQR) // Get by QR code
 		r.Get("/serial/{serial}", m.handler.GetEquipmentBySerial) // Get by serial
+		
+		// {id} sub-routes
+		r.Get("/{id}/qr/pdf", m.handler.DownloadQRLabel)   // Download PDF label
+		r.Post("/{id}/qr", m.handler.GenerateQRCode)       // Generate QR code
+		r.Post("/{id}/service", m.handler.RecordService)   // Record service
+		
+		// Base /{id} routes LAST
 		r.Get("/{id}", m.handler.GetEquipment)            // Get by ID
 		r.Patch("/{id}", m.handler.UpdateEquipment)       // Update equipment
-		
-		// QR code operations
-		r.Post("/{id}/qr", m.handler.GenerateQRCode)      // Generate QR code
-		r.Get("/{id}/qr/pdf", m.handler.DownloadQRLabel)  // Download PDF label
-		
-		// Service tracking
-		r.Post("/{id}/service", m.handler.RecordService)  // Record service
 	})
 
 	m.logger.Info("Equipment Registry routes mounted successfully")

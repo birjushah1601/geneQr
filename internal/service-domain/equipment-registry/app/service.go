@@ -118,7 +118,7 @@ func (s *EquipmentService) RegisterEquipment(ctx context.Context, req RegisterEq
 	return equipment, nil
 }
 
-// GenerateQRCode generates QR code for equipment
+// GenerateQRCode generates QR code for equipment and stores in database
 func (s *EquipmentService) GenerateQRCode(ctx context.Context, equipmentID string) (string, error) {
 	// Get equipment
 	equipment, err := s.repo.GetByID(ctx, equipmentID)
@@ -126,53 +126,68 @@ func (s *EquipmentService) GenerateQRCode(ctx context.Context, equipmentID strin
 		return "", fmt.Errorf("equipment not found: %w", err)
 	}
 
-	// Generate QR code image
-	qrImagePath, err := s.qrGenerator.GenerateQRCode(equipment.ID, equipment.SerialNumber, equipment.QRCode)
+	// Generate QR code as bytes (for database storage)
+	qrBytes, err := s.qrGenerator.GenerateQRCodeBytes(equipment.ID, equipment.SerialNumber, equipment.QRCode)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate QR code: %w", err)
 	}
 
-	s.logger.Info("QR code generated",
+	// Store QR code in database
+	if err := s.repo.UpdateQRCode(ctx, equipmentID, qrBytes, "png"); err != nil {
+		return "", fmt.Errorf("failed to store QR code: %w", err)
+	}
+
+	s.logger.Info("QR code generated and stored in database",
 		slog.String("equipment_id", equipmentID),
-		slog.String("qr_path", qrImagePath),
+		slog.Int("qr_size_bytes", len(qrBytes)),
 	)
 
-	return qrImagePath, nil
+	return "stored_in_database", nil
 }
 
-// GenerateQRLabel generates printable PDF label with QR code
-func (s *EquipmentService) GenerateQRLabel(ctx context.Context, equipmentID string) (string, error) {
+// GenerateQRLabel generates printable PDF label with QR code from database
+func (s *EquipmentService) GenerateQRLabel(ctx context.Context, equipmentID string) ([]byte, error) {
 	// Get equipment
 	equipment, err := s.repo.GetByID(ctx, equipmentID)
 	if err != nil {
-		return "", fmt.Errorf("equipment not found: %w", err)
+		return nil, fmt.Errorf("equipment not found: %w", err)
 	}
 
-	// Generate QR code image first
-	qrImagePath, err := s.qrGenerator.GenerateQRCode(equipment.ID, equipment.SerialNumber, equipment.QRCode)
-	if err != nil {
-		return "", fmt.Errorf("failed to generate QR code: %w", err)
+	// Check if QR code exists in database
+	if len(equipment.QRCodeImage) == 0 {
+		// Generate QR code if it doesn't exist
+		qrBytes, err := s.qrGenerator.GenerateQRCodeBytes(equipment.ID, equipment.SerialNumber, equipment.QRCode)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate QR code: %w", err)
+		}
+		
+		// Store in database
+		if err := s.repo.UpdateQRCode(ctx, equipmentID, qrBytes, "png"); err != nil {
+			return nil, fmt.Errorf("failed to store QR code: %w", err)
+		}
+		
+		equipment.QRCodeImage = qrBytes
 	}
 
-	// Generate PDF label
-	pdfPath, err := s.qrGenerator.GenerateQRLabel(
+	// Generate PDF label from QR bytes
+	pdfBytes, err := s.qrGenerator.GenerateQRLabelFromBytes(
 		equipment.ID,
 		equipment.EquipmentName,
 		equipment.SerialNumber,
 		equipment.ManufacturerName,
 		equipment.QRCode,
-		qrImagePath,
+		equipment.QRCodeImage,
 	)
 	if err != nil {
-		return "", fmt.Errorf("failed to generate PDF label: %w", err)
+		return nil, fmt.Errorf("failed to generate PDF label: %w", err)
 	}
 
-	s.logger.Info("PDF label generated",
+	s.logger.Info("PDF label generated from database",
 		slog.String("equipment_id", equipmentID),
-		slog.String("pdf_path", pdfPath),
+		slog.Int("pdf_size_bytes", len(pdfBytes)),
 	)
 
-	return pdfPath, nil
+	return pdfBytes, nil
 }
 
 // GetEquipmentByID retrieves equipment by ID
@@ -419,4 +434,65 @@ func (s *EquipmentService) generateQRCodeID() string {
 	now := time.Now()
 	// Format: QR-YYYYMMDD-XXXXXX (random 6 digits)
 	return fmt.Sprintf("QR-%s-%06d", now.Format("20060102"), now.UnixNano()%1000000)
+}
+
+// BulkGenerateQRCodesResult represents the result of bulk QR code generation
+type BulkGenerateQRCodesResult struct {
+	TotalProcessed int      `json:"total_processed"`
+	Successful     int      `json:"successful"`
+	Failed         int      `json:"failed"`
+	FailedIDs      []string `json:"failed_ids,omitempty"`
+	Message        string   `json:"message"`
+}
+
+// BulkGenerateQRCodes generates QR codes for all equipment that doesn't have one
+func (s *EquipmentService) BulkGenerateQRCodes(ctx context.Context) (*BulkGenerateQRCodesResult, error) {
+	s.logger.Info("Starting bulk QR code generation")
+
+	// Get all equipment
+	listResult, err := s.repo.List(ctx, domain.ListCriteria{
+		Page:     1,
+		PageSize: 10000, // Get all
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list equipment: %w", err)
+	}
+
+	result := &BulkGenerateQRCodesResult{
+		TotalProcessed: listResult.Total,
+		FailedIDs:      []string{},
+	}
+
+	// Generate QR codes for equipment that doesn't have one
+	for _, eq := range listResult.Equipment {
+		// Skip if QR code already generated
+		if len(eq.QRCodeImage) > 0 {
+			s.logger.Info("Skipping equipment (QR already exists)", slog.String("id", eq.ID))
+			continue
+		}
+
+		// Generate QR code
+		_, err := s.GenerateQRCode(ctx, eq.ID)
+		if err != nil {
+			s.logger.Error("Failed to generate QR code", 
+				slog.String("id", eq.ID), 
+				slog.String("error", err.Error()))
+			result.Failed++
+			result.FailedIDs = append(result.FailedIDs, eq.ID)
+			continue
+		}
+
+		result.Successful++
+		s.logger.Info("Generated QR code", slog.String("id", eq.ID))
+	}
+
+	result.Message = fmt.Sprintf("Generated %d QR codes successfully, %d failed out of %d total equipment", 
+		result.Successful, result.Failed, result.TotalProcessed)
+
+	s.logger.Info("Bulk QR code generation completed", 
+		slog.Int("total", result.TotalProcessed),
+		slog.Int("successful", result.Successful),
+		slog.Int("failed", result.Failed))
+
+	return result, nil
 }

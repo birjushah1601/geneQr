@@ -226,6 +226,40 @@ func (h *EquipmentHandler) GenerateQRCode(w http.ResponseWriter, r *http.Request
 	})
 }
 
+// GetQRCodeImage handles GET /equipment/{id}/qr/image
+func (h *EquipmentHandler) GetQRCodeImage(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := chi.URLParam(r, "id")
+
+	if id == "" {
+		h.respondError(w, http.StatusBadRequest, "Equipment ID is required")
+		return
+	}
+
+	// Get equipment with QR image
+	equipment, err := h.service.GetEquipmentByID(ctx, id)
+	if err != nil {
+		if err == domain.ErrEquipmentNotFound {
+			h.respondError(w, http.StatusNotFound, "Equipment not found")
+			return
+		}
+		h.logger.Error("Failed to get equipment", slog.String("error", err.Error()))
+		h.respondError(w, http.StatusInternalServerError, "Failed to get equipment")
+		return
+	}
+
+	if len(equipment.QRCodeImage) == 0 {
+		h.respondError(w, http.StatusNotFound, "QR code not generated yet")
+		return
+	}
+
+	// Serve QR image from database
+	w.Header().Set("Content-Type", "image/png")
+	w.Header().Set("Content-Length", strconv.Itoa(len(equipment.QRCodeImage)))
+	w.Header().Set("Cache-Control", "public, max-age=86400") // Cache for 1 day
+	w.WriteHeader(http.StatusOK)
+	w.Write(equipment.QRCodeImage)
+}
 // DownloadQRLabel handles GET /equipment/{id}/qr/pdf
 func (h *EquipmentHandler) DownloadQRLabel(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -236,17 +270,19 @@ func (h *EquipmentHandler) DownloadQRLabel(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	pdfPath, err := h.service.GenerateQRLabel(ctx, id)
+	pdfBytes, err := h.service.GenerateQRLabel(ctx, id)
 	if err != nil {
 		h.logger.Error("Failed to generate QR label", slog.String("error", err.Error()))
 		h.respondError(w, http.StatusInternalServerError, "Failed to generate QR label: "+err.Error())
 		return
 	}
 
-	// Serve the PDF file
+	// Serve the PDF from database bytes
 	w.Header().Set("Content-Type", "application/pdf")
 	w.Header().Set("Content-Disposition", "attachment; filename=qr_label_"+id+".pdf")
-	http.ServeFile(w, r, pdfPath)
+	w.Header().Set("Content-Length", strconv.Itoa(len(pdfBytes)))
+	w.WriteHeader(http.StatusOK)
+	w.Write(pdfBytes)
 }
 
 // ImportCSV handles POST /equipment/import
@@ -335,6 +371,23 @@ func (h *EquipmentHandler) RecordService(w http.ResponseWriter, r *http.Request)
 	h.respondJSON(w, http.StatusOK, map[string]string{"message": "Service recorded successfully"})
 }
 
+// BulkGenerateQRCodes handles POST /equipment/qr/bulk-generate
+// Generates QR codes for all equipment that doesn't have one
+func (h *EquipmentHandler) BulkGenerateQRCodes(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	h.logger.Info("Starting bulk QR code generation")
+
+	result, err := h.service.BulkGenerateQRCodes(ctx)
+	if err != nil {
+		h.logger.Error("Failed to bulk generate QR codes", slog.String("error", err.Error()))
+		h.respondError(w, http.StatusInternalServerError, "Failed to bulk generate QR codes: "+err.Error())
+		return
+	}
+
+	h.respondJSON(w, http.StatusOK, result)
+}
+
 // respondJSON writes JSON response
 func (h *EquipmentHandler) respondJSON(w http.ResponseWriter, status int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
@@ -346,3 +399,4 @@ func (h *EquipmentHandler) respondJSON(w http.ResponseWriter, status int, data i
 func (h *EquipmentHandler) respondError(w http.ResponseWriter, status int, message string) {
 	h.respondJSON(w, status, map[string]string{"error": message})
 }
+
