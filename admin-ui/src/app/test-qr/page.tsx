@@ -1,6 +1,8 @@
 'use client';
+export const dynamic = 'force-dynamic';
 
 import { useState, useRef, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { QrCode, Package, Phone, AlertCircle, CheckCircle2, Loader2, ArrowRight, Upload, Camera, X } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
 import jsQR from 'jsqr';
@@ -32,6 +34,8 @@ export default function TestQRWorkflowPage() {
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null);
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
+  const searchParams = useSearchParams();
+  const router = useRouter();
   // Ensure an offscreen, stable container for file-based scanning always exists
   // We'll mount a hidden #qr-reader element outside conditional UI blocks
 
@@ -156,6 +160,17 @@ export default function TestQRWorkflowPage() {
       setScanningCamera(false);
     }
   };
+
+  // On mount: if ?qr= is present, normalize and auto-lookup
+  useEffect(() => {
+    const qp = searchParams?.get('qr');
+    if (qp) {
+      const code = normalizeScannedCode(qp);
+      setQrCode(code.display);
+      lookupEquipment(code.value);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Stop camera scanning
   const stopCameraScanning = async () => {

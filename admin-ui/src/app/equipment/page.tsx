@@ -567,7 +567,7 @@ export default function EquipmentListPage() {
                               size="sm"
                               onClick={() => {
                                 const code = equipment.qrCode || equipment.id;
-                                const url = code ? `/test-qr?qr=${encodeURIComponent(code)}` : '/test-qr';
+                                const url = code ? `/service-request?qr=${encodeURIComponent(code)}` : '/service-request';
                                 router.push(url);
                               }}
                             >
