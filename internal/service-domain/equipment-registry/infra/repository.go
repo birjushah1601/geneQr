@@ -12,6 +12,42 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// Select columns with NULL-safe defaults for string/JSON fields
+const equipmentSelectColumns = `
+    id,
+    COALESCE(qr_code,'') AS qr_code,
+    COALESCE(serial_number,'') AS serial_number,
+    COALESCE(equipment_id,'') AS equipment_id,
+    COALESCE(equipment_name,'') AS equipment_name,
+    COALESCE(manufacturer_name,'') AS manufacturer_name,
+    COALESCE(model_number,'') AS model_number,
+    COALESCE(category,'') AS category,
+    COALESCE(customer_id,'') AS customer_id,
+    COALESCE(customer_name,'') AS customer_name,
+    COALESCE(installation_location,'') AS installation_location,
+    COALESCE(installation_address,'{}'::jsonb) AS installation_address,
+    installation_date,
+    COALESCE(contract_id,'') AS contract_id,
+    purchase_date,
+    COALESCE(purchase_price,0) AS purchase_price,
+    warranty_expiry,
+    COALESCE(amc_contract_id,'') AS amc_contract_id,
+    COALESCE(status,'operational') AS status,
+    last_service_date,
+    next_service_date,
+    COALESCE(service_count,0) AS service_count,
+    COALESCE(specifications,'{}'::jsonb) AS specifications,
+    COALESCE(photos,'[]'::jsonb) AS photos,
+    COALESCE(documents,'[]'::jsonb) AS documents,
+    COALESCE(qr_code_url,'') AS qr_code_url,
+    COALESCE(notes,'') AS notes,
+    created_at,
+    updated_at,
+    COALESCE(created_by,'') AS created_by,
+    qr_code_image,
+    COALESCE(qr_code_format,'png') AS qr_code_format,
+    qr_code_generated_at`
+
 // EquipmentRepository implements the domain.Repository interface
 type EquipmentRepository struct {
 	pool *pgxpool.Pool
@@ -102,13 +138,7 @@ func (r *EquipmentRepository) Create(ctx context.Context, equipment *domain.Equi
 // GetByID retrieves equipment by ID
 func (r *EquipmentRepository) GetByID(ctx context.Context, id string) (*domain.Equipment, error) {
 	query := `
-		SELECT id, qr_code, serial_number, equipment_id, equipment_name, manufacturer_name,
-			model_number, category, customer_id, customer_name, installation_location,
-			installation_address, installation_date, contract_id, purchase_date, purchase_price,
-			warranty_expiry, amc_contract_id, status, last_service_date, next_service_date,
-			service_count, specifications, photos, documents, qr_code_url, notes,
-			created_at, updated_at, created_by,
-			qr_code_image, qr_code_format, qr_code_generated_at
+        SELECT ` + equipmentSelectColumns + `
 		FROM equipment
 		WHERE id = $1
 	`
@@ -127,13 +157,7 @@ func (r *EquipmentRepository) GetByID(ctx context.Context, id string) (*domain.E
 // GetByQRCode retrieves equipment by QR code
 func (r *EquipmentRepository) GetByQRCode(ctx context.Context, qrCode string) (*domain.Equipment, error) {
 	query := `
-		SELECT id, qr_code, serial_number, equipment_id, equipment_name, manufacturer_name,
-			model_number, category, customer_id, customer_name, installation_location,
-			installation_address, installation_date, contract_id, purchase_date, purchase_price,
-			warranty_expiry, amc_contract_id, status, last_service_date, next_service_date,
-			service_count, specifications, photos, documents, qr_code_url, notes,
-			created_at, updated_at, created_by,
-			qr_code_image, qr_code_format, qr_code_generated_at
+        SELECT ` + equipmentSelectColumns + `
 		FROM equipment
 		WHERE qr_code = $1
 	`
@@ -152,13 +176,7 @@ func (r *EquipmentRepository) GetByQRCode(ctx context.Context, qrCode string) (*
 // GetBySerialNumber retrieves equipment by serial number
 func (r *EquipmentRepository) GetBySerialNumber(ctx context.Context, serialNumber string) (*domain.Equipment, error) {
 	query := `
-		SELECT id, qr_code, serial_number, equipment_id, equipment_name, manufacturer_name,
-			model_number, category, customer_id, customer_name, installation_location,
-			installation_address, installation_date, contract_id, purchase_date, purchase_price,
-			warranty_expiry, amc_contract_id, status, last_service_date, next_service_date,
-			service_count, specifications, photos, documents, qr_code_url, notes,
-			created_at, updated_at, created_by,
-			qr_code_image, qr_code_format, qr_code_generated_at
+        SELECT ` + equipmentSelectColumns + `
 		FROM equipment
 		WHERE serial_number = $1
 	`
@@ -179,13 +197,7 @@ func (r *EquipmentRepository) List(ctx context.Context, criteria domain.ListCrit
 	// Build query with filters
 	queryBuilder := strings.Builder{}
 	queryBuilder.WriteString(`
-		SELECT id, qr_code, serial_number, equipment_id, equipment_name, manufacturer_name,
-			model_number, category, customer_id, customer_name, installation_location,
-			installation_address, installation_date, contract_id, purchase_date, purchase_price,
-			warranty_expiry, amc_contract_id, status, last_service_date, next_service_date,
-			service_count, specifications, photos, documents, qr_code_url, notes,
-			created_at, updated_at, created_by,
-			qr_code_image, qr_code_format, qr_code_generated_at
+        SELECT ` + equipmentSelectColumns + `
 		FROM equipment
 		WHERE 1=1
 	`)
