@@ -51,7 +51,7 @@ func (m *Module) Initialize(ctx context.Context) error {
 		SSLMode:  "disable",
 	}
 
-	pool, err := infra.NewPostgresPool(ctx, dbConfig)
+    pool, err := infra.NewPostgresPool(ctx, dbConfig)
 	if err != nil {
 		return err
 	}
@@ -67,6 +67,11 @@ func (m *Module) Initialize(ctx context.Context) error {
 
 	// Create HTTP handler
 	m.handler = api.NewEquipmentHandler(service, m.logger)
+
+    // Ensure schema is compatible with application expectations
+    if err := infra.EnsureEquipmentSchema(ctx, pool); err != nil {
+        return err
+    }
 
 	m.logger.Info("Equipment Registry module initialized successfully")
 	return nil
