@@ -238,19 +238,59 @@ func (r *EquipmentRepository) List(ctx context.Context, criteria domain.ListCrit
 		}
 	}
 
-	// Count total
-	countQuery := "SELECT COUNT(*) FROM equipment WHERE 1=1"
-	// Add same filters for count
-	countBuilder := strings.Builder{}
-	countBuilder.WriteString(countQuery)
-	
-	// Re-apply filters for count (simplified)
-	if criteria.CustomerID != "" {
-		countBuilder.WriteString(" AND customer_id = $1")
-	}
+    // Count total (build independent query and args to avoid parameter mismatches)
+    countBuilder := strings.Builder{}
+    countBuilder.WriteString("SELECT COUNT(*) FROM equipment WHERE 1=1")
 
-	var total int
-	err := r.pool.QueryRow(ctx, countBuilder.String(), args...).Scan(&total)
+    countArgs := []interface{}{}
+    countArg := 1
+
+    if criteria.CustomerID != "" {
+        countBuilder.WriteString(fmt.Sprintf(" AND customer_id = $%d", countArg))
+        countArgs = append(countArgs, criteria.CustomerID)
+        countArg++
+    }
+
+    if criteria.ManufacturerName != "" {
+        countBuilder.WriteString(fmt.Sprintf(" AND manufacturer_name ILIKE $%d", countArg))
+        countArgs = append(countArgs, "%"+criteria.ManufacturerName+"%")
+        countArg++
+    }
+
+    if len(criteria.Status) > 0 {
+        statuses := make([]string, len(criteria.Status))
+        for i, status := range criteria.Status {
+            statuses[i] = string(status)
+        }
+        countBuilder.WriteString(fmt.Sprintf(" AND status = ANY($%d)", countArg))
+        countArgs = append(countArgs, statuses)
+        countArg++
+    }
+
+    if criteria.Category != "" {
+        countBuilder.WriteString(fmt.Sprintf(" AND category ILIKE $%d", countArg))
+        countArgs = append(countArgs, "%"+criteria.Category+"%")
+        countArg++
+    }
+
+    if criteria.HasAMC != nil {
+        if *criteria.HasAMC {
+            countBuilder.WriteString(" AND amc_contract_id IS NOT NULL AND amc_contract_id != ''")
+        } else {
+            countBuilder.WriteString(" AND (amc_contract_id IS NULL OR amc_contract_id = '')")
+        }
+    }
+
+    if criteria.UnderWarranty != nil {
+        if *criteria.UnderWarranty {
+            countBuilder.WriteString(" AND warranty_expiry IS NOT NULL AND warranty_expiry > NOW()")
+        } else {
+            countBuilder.WriteString(" AND (warranty_expiry IS NULL OR warranty_expiry <= NOW())")
+        }
+    }
+
+    var total int
+    err := r.pool.QueryRow(ctx, countBuilder.String(), countArgs...).Scan(&total)
 	if err != nil {
 		return nil, fmt.Errorf("failed to count equipment: %w", err)
 	}
