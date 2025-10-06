@@ -1,5 +1,5 @@
 # Master Documentation Index  
-*(Last updated: 21 Sept 2025)*  
+*(Last updated: 06 Oct 2025)*  
 
 This index is the **single authoritative map** of project documents.  
 – “OFFICIAL” files are current and must be used by every team.  
@@ -11,9 +11,13 @@ This index is the **single authoritative map** of project documents.
 
 | File | Purpose |
 |------|---------|
-| **FINAL-intelligent-medical-platform-prd.md** | Master Product Requirements Document – business model, AI–advisory vision, user journeys, success metrics |
-| **FINAL-technical-implementation-guide.md** | Engineering handbook – micro-services, APIs, DB schemas, ML pipeline, security & DevOps specs |
-| **FINAL-project-roadmap-and-execution.md** | 24-month execution plan – phases, resources, budget, GTM, risk management |
+| [FINAL-intelligent-medical-platform-prd.md](./FINAL-intelligent-medical-platform-prd.md) | Master Product Requirements Document – business model, AI–advisory vision, user journeys, success metrics |
+| [FINAL-technical-implementation-guide.md](./FINAL-technical-implementation-guide.md) | Engineering handbook – micro-services, APIs, DB schemas, ML pipeline, security & DevOps specs |
+| [FINAL-project-roadmap-and-execution.md](./FINAL-project-roadmap-and-execution.md) | 24-month execution plan – phases, resources, budget, GTM, risk management |
+| [platform-engineering.md](./platform-engineering.md) | Platform and monorepo engineering overview (Makefile, modules, CI/CD, observability) |
+| [deployment.md](./deployment.md) | Deployment and environment runbooks (local, staging, prod) |
+| [qa.md](./qa.md) | QA strategy, test flows, and acceptance criteria |
+| [postman-verification.md](./postman-verification.md) | API verification with Postman; includes collection and steps |
 
 > Always start with these three files. Any new specs, epics or designs **must align** with them.
 
@@ -42,7 +46,27 @@ This index is the **single authoritative map** of project documents.
 
 ---
 
-## 3  HOW TO USE THIS INDEX
+## 3  SERVICE DOCUMENTATION
+
+Each service has a concise overview and API surface:
+
+- [services/catalog.md](./services/catalog.md)
+- [services/rfq.md](./services/rfq.md)
+- [services/quote.md](./services/quote.md)
+- [services/comparison.md](./services/comparison.md)
+- [services/contract.md](./services/contract.md)
+- [services/supplier.md](./services/supplier.md)
+- [services/equipment-registry.md](./services/equipment-registry.md)
+- [services/service-ticket.md](./services/service-ticket.md)
+
+## 4  DATABASE DOCUMENTATION
+
+Per-table docs with fields, relationships, and improvement suggestions live under `docs/database/`.
+Start here: [database/README.md](./database/README.md)
+
+---
+
+## 5  HOW TO USE THIS INDEX
 
 1. **Read the OFFICIAL documents first.**  
 2. When creating new tickets, user stories or designs, reference the **section/heading** in the relevant OFFICIAL file.  
@@ -51,7 +75,7 @@ This index is the **single authoritative map** of project documents.
 
 ---
 
-## 4  CHANGE CONTROL
+## 6  CHANGE CONTROL
 
 Any modification to OFFICIAL documents requires:  
 1. Product & Architecture sign-off.  
