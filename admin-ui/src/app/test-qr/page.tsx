@@ -142,9 +142,10 @@ export default function TestQRWorkflowPage() {
         },
         async (decodedText) => {
           // Successfully scanned
-          setQrCode(decodedText);
+          const code = normalizeScannedCode(decodedText);
+          setQrCode(code.display);
           await stopCameraScanning();
-          await lookupEquipment(decodedText);
+          await lookupEquipment(code.value);
         },
         (errorMessage) => {
           // Scanning error (can be ignored - continuous scanning)
