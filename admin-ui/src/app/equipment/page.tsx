@@ -22,7 +22,7 @@ interface Equipment {
   lastService?: string;
   qrCode?: string;
   qrCodeUrl?: string;
-  hasQRCode?: boolean;
+  hasQRCode?: boolean; // true only if image exists/generated
 }
 
 export default function EquipmentListPage() {
@@ -33,6 +33,7 @@ export default function EquipmentListPage() {
   const [bulkGenerating, setBulkGenerating] = useState(false);
   const [qrPreview, setQrPreview] = useState<{id: string; url: string} | null>(null);
   const [equipmentData, setEquipmentData] = useState<Equipment[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isClient, setIsClient] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +69,8 @@ export default function EquipmentListPage() {
           lastService: item.last_service_date,
           qrCode: item.qr_code,
           qrCodeUrl: item.qr_code_url,
-          hasQRCode: !!item.qr_code,
+          // Only show image UI when QR image exists (qr_code_image) or generation timestamp is present
+          hasQRCode: !!item.qr_code_generated_at || !!item.qr_code_image,
         }));
         
         console.log(`Loaded ${mappedEquipment.length} equipment items from API`);
@@ -140,7 +142,7 @@ export default function EquipmentListPage() {
   };
 
   const handlePreviewQR = (equipment: Equipment) => {
-    if ("http://localhost:8081/api/v1/equipment/qr/image/" + equipment.id) {
+    if (equipment.hasQRCode) {
       setQrPreview({ id: equipment.id, url: "http://localhost:8081/api/v1/equipment/qr/image/" + equipment.id });
     }
   };
@@ -168,6 +170,41 @@ export default function EquipmentListPage() {
       window.location.reload();
     } catch (error) {
       alert(`Failed to bulk generate QR codes: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setBulkGenerating(false);
+    }
+  };
+
+  const toggleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const ids = new Set(filteredEquipment.map(e => e.id));
+      setSelectedIds(ids);
+    } else {
+      setSelectedIds(new Set());
+    }
+  };
+
+  const toggleSelectOne = (id: string, checked: boolean) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (checked) next.add(id); else next.delete(id);
+      return next;
+    });
+  };
+
+  const handleGenerateSelected = async () => {
+    if (selectedIds.size === 0) return;
+    try {
+      setBulkGenerating(true);
+      for (const id of Array.from(selectedIds)) {
+        try {
+          await equipmentApi.generateQRCode(id);
+        } catch (e) {
+          console.error('Failed to generate for', id, e);
+        }
+      }
+      alert(`Generated QR for ${selectedIds.size} selected equipment`);
+      window.location.reload();
     } finally {
       setBulkGenerating(false);
     }
@@ -251,6 +288,23 @@ export default function EquipmentListPage() {
                   <>
                     <QrCode className="mr-2 h-4 w-4" />
                     Generate All QR Codes
+                  </>
+                )}
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={handleGenerateSelected}
+                disabled={bulkGenerating || selectedIds.size === 0}
+              >
+                {bulkGenerating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Generating Selected...
+                  </>
+                ) : (
+                  <>
+                    <QrCode className="mr-2 h-4 w-4" />
+                    Generate Selected
                   </>
                 )}
               </Button>
@@ -363,6 +417,14 @@ export default function EquipmentListPage() {
                 <table className="w-full">
                   <thead className="bg-gray-50 border-b">
                     <tr>
+                      <th className="px-6 py-3">
+                        <input 
+                          type="checkbox" 
+                          aria-label="Select all"
+                          checked={selectedIds.size > 0 && filteredEquipment.length > 0 && selectedIds.size === filteredEquipment.length}
+                          onChange={(e) => toggleSelectAll(e.target.checked)}
+                        />
+                      </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         QR Code
                       </th>
@@ -392,10 +454,18 @@ export default function EquipmentListPage() {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {filteredEquipment.map((equipment) => (
                       <tr key={equipment.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <input 
+                            type="checkbox" 
+                            checked={selectedIds.has(equipment.id)}
+                            onChange={(e) => toggleSelectOne(equipment.id, e.target.checked)}
+                            aria-label={`Select ${equipment.name}`}
+                          />
+                        </td>
                         {/* QR Code Column */}
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-2">
-                            {equipment.hasQRCode && "http://localhost:8081/api/v1/equipment/qr/image/" + equipment.id ? (
+                            {equipment.hasQRCode ? (
                               <div className="group relative">
                                 <div 
                                   className="w-16 h-16 border-2 border-gray-200 rounded-md overflow-hidden cursor-pointer hover:border-blue-500 transition-colors"
