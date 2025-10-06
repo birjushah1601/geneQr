@@ -554,13 +554,26 @@ export default function EquipmentListPage() {
                           {equipment.lastService || 'N/A'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => alert(`View details for ${equipment.name}`)}
-                          >
-                            View
-                          </Button>
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => alert(`View details for ${equipment.name}`)}
+                            >
+                              View
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const code = equipment.qrCode || equipment.id;
+                                const url = code ? `/test-qr?qr=${encodeURIComponent(code)}` : '/test-qr';
+                                router.push(url);
+                              }}
+                            >
+                              Create Service Request
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}
