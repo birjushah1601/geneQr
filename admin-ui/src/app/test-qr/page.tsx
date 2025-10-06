@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { QrCode, Package, Phone, AlertCircle, CheckCircle2, Loader2, ArrowRight, Upload, Camera, X } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
+import jsQR from 'jsqr';
 import { equipmentApi } from '@/lib/api/equipment';
 import { ticketsApi } from '@/lib/api/tickets';
 import type { Equipment, ServiceTicket } from '@/types';
@@ -55,22 +56,67 @@ export default function TestQRWorkflowPage() {
       // Create object URL for preview (set after scan starts to avoid unmount races)
       const imageUrl = URL.createObjectURL(file);
 
-      // Scan QR code from file using a persistent hidden container
-      const html5QrCode = new Html5Qrcode('qr-reader');
-      const decodedText = await html5QrCode.scanFile(file, false);
-      await html5QrCode.clear();
+      let decodedText: string | null = null;
+
+      // Try html5-qrcode first
+      try {
+        const html5QrCode = new Html5Qrcode('qr-reader');
+        decodedText = await html5QrCode.scanFile(file, false);
+        await html5QrCode.clear();
+      } catch {}
+
+      // Fallback: jsQR via canvas
+      if (!decodedText) {
+        const img = new Image();
+        img.src = imageUrl;
+        await new Promise((res, rej) => { img.onload = res; img.onerror = rej; });
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width; canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const result = jsQR(imageData.data, imageData.width, imageData.height);
+          if (result?.data) decodedText = result.data;
+        }
+      }
+
+      if (!decodedText) throw new Error('QR decode failed');
 
       // Now show the preview and proceed
       setUploadedImage(imageUrl);
-      
-      setQrCode(decodedText);
-      await lookupEquipment(decodedText);
+      const code = normalizeScannedCode(decodedText);
+      setQrCode(code.display);
+      await lookupEquipment(code.value);
     } catch (err) {
       setError('Could not read QR code from image. Please try another image or use camera scan.');
       setUploadedImage(null);
     } finally {
       setLoading(false);
     }
+  };
+
+  // Normalize scanned payload: support JSON payloads and URLs
+  const normalizeScannedCode = (text: string): { value: string; display: string } => {
+    let qr = '';
+    try {
+      const obj = JSON.parse(text);
+      if (obj && typeof obj === 'object') {
+        if (obj.qr) qr = String(obj.qr);
+        else if (obj.id) qr = String(obj.id);
+      }
+    } catch {}
+    if (!qr) {
+      // Try extract from URL path
+      try {
+        const u = new URL(text);
+        const parts = u.pathname.split('/').filter(Boolean);
+        qr = parts[parts.length - 1] || text;
+      } catch {
+        qr = text;
+      }
+    }
+    return { value: qr, display: text };
   };
 
   // Start camera scanning
@@ -96,9 +142,10 @@ export default function TestQRWorkflowPage() {
         },
         async (decodedText) => {
           // Successfully scanned
-          setQrCode(decodedText);
+          const code = normalizeScannedCode(decodedText);
+          setQrCode(code.display);
           await stopCameraScanning();
-          await lookupEquipment(decodedText);
+          await lookupEquipment(code.value);
         },
         (errorMessage) => {
           // Scanning error (can be ignored - continuous scanning)
