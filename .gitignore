@@ -138,6 +138,9 @@ package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
+# Next.js build output (admin-ui)
+admin-ui/.next/
+
 # Frontend build outputs (future)
 /web/dist/
 /web/build/
