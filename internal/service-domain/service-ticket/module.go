@@ -64,6 +64,11 @@ func (m *Module) Initialize(ctx context.Context) error {
 		return fmt.Errorf("failed to ping database: %w", err)
 	}
 
+    // Ensure schema exists
+    if err := infra.EnsureServiceTicketSchema(ctx, pool); err != nil {
+        return fmt.Errorf("failed to ensure service ticket schema: %w", err)
+    }
+
 	// Create repositories
 	ticketRepo := infra.NewTicketRepository(pool)
 	
