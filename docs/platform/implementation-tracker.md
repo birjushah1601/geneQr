@@ -78,6 +78,10 @@
    - Docs: policy DSL outline; escalation stubs
  - Deliverable: tag milestone-06
 
+ Progress (2025‑10‑08)
+ - DONE: Schema added: service_policies; tickets.responsible_org_id + policy_provenance (nullable)
+ - NEXT: Minimal resolver + optional use in ticket create under ENABLE_RESP_ORG_ASSIGNMENT
+
  M07 — Phase 5: Engineers + Eligibility (optional)
  - Objectives
    - Add: engineers, engineer_org_memberships, skills, coverage (all optional)
