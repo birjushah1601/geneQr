@@ -15,7 +15,8 @@ import (
 
 	"github.com/aby-med/medical-platform/internal/shared/config"
 	"github.com/aby-med/medical-platform/internal/shared/observability"
-	"github.com/aby-med/medical-platform/internal/shared/service"
+    "github.com/aby-med/medical-platform/internal/shared/service"
+    organizations "github.com/aby-med/medical-platform/internal/core/organizations"
 	"github.com/aby-med/medical-platform/internal/marketplace/catalog"
 	"github.com/aby-med/medical-platform/internal/service-domain/rfq"
 	"github.com/aby-med/medical-platform/internal/service-domain/supplier"
@@ -214,7 +215,11 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 	// Get all available modules
 	registry := service.NewRegistry(cfg, logger)
 	// Register individual modules here
-	registry.Register(catalog.New(cfg, logger))
+    registry.Register(catalog.New(cfg, logger))
+    // Register Organizations module behind feature flag
+    if os.Getenv("ENABLE_ORG") == "true" || os.Getenv("ENABLE_ORG") == "1" || os.Getenv("ENABLE_ORG") == "on" {
+        registry.Register(organizations.New(cfg, logger))
+    }
 	
 	// Register RFQ module
 	rfqConfig := &rfq.Config{

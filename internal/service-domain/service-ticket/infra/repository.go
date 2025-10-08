@@ -73,6 +73,13 @@ func (r *TicketRepository) Create(ctx context.Context, ticket *domain.ServiceTic
 	return err
 }
 
+// UpdateResponsibility sets responsible_org_id and policy_provenance for a ticket (Phase 4 optional)
+func (r *TicketRepository) UpdateResponsibility(ctx context.Context, ticketID string, responsibleOrgID *string, provenance json.RawMessage) error {
+    query := `UPDATE service_tickets SET responsible_org_id = $2, policy_provenance = COALESCE($3, '{}'::jsonb) WHERE id = $1`
+    _, err := r.pool.Exec(ctx, query, ticketID, responsibleOrgID, provenance)
+    return err
+}
+
 // GetByID retrieves a ticket by ID
 func (r *TicketRepository) GetByID(ctx context.Context, id string) (*domain.ServiceTicket, error) {
 	query := `

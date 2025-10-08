@@ -21,6 +21,8 @@ type Module struct {
 	ticketHandler   *api.TicketHandler
 	whatsappHandler *whatsapp.WebhookHandler
 	logger          *slog.Logger
+    dispatcher      *app.WebhookDispatcher
+    slaMonitor      *app.SLAMonitor
 }
 
 // ModuleConfig holds module configuration
@@ -75,8 +77,15 @@ func (m *Module) Initialize(ctx context.Context) error {
 	// Create equipment repository for WhatsApp integration
 	equipmentRepo := equipmentInfra.NewEquipmentRepository(pool)
 
-	// Create ticket service
-	ticketService := app.NewTicketService(ticketRepo, equipmentRepo, m.logger)
+    // Create ticket service
+    policyRepo := infra.NewPolicyRepository(pool)
+    eventRepo := infra.NewEventRepository(pool)
+    ticketService := app.NewTicketService(ticketRepo, equipmentRepo, policyRepo, eventRepo, m.logger)
+
+    // Create dispatcher (started conditionally)
+    m.dispatcher = app.NewWebhookDispatcher(pool, m.logger)
+    // Create SLA monitor (started conditionally)
+    m.slaMonitor = app.NewSLAMonitor(pool, m.logger)
 
 	// Create ticket HTTP handler
 	m.ticketHandler = api.NewTicketHandler(ticketService, m.logger)
@@ -135,7 +144,15 @@ func (m *Module) MountRoutes(r chi.Router) {
 
 // Start starts background tasks (if any)
 func (m *Module) Start(ctx context.Context) error {
-	m.logger.Info("Service Ticket module started")
+    m.logger.Info("Service Ticket module started")
+    // Start dispatcher if enabled
+    if m.dispatcher != nil {
+        go m.dispatcher.Run(ctx)
+    }
+    // Start SLA monitor if enabled
+    if m.slaMonitor != nil {
+        go m.slaMonitor.Run(ctx)
+    }
 	return nil
 }
 

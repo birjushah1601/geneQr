@@ -2,8 +2,11 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
+	"os"
+	"time"
 
 	equipmentDomain "github.com/aby-med/medical-platform/internal/service-domain/equipment-registry/domain"
 	ticketDomain "github.com/aby-med/medical-platform/internal/service-domain/service-ticket/domain"
@@ -14,6 +17,8 @@ import (
 type TicketService struct {
 	repo           ticketDomain.TicketRepository
 	equipmentRepo  equipmentDomain.Repository
+    policyRepo     ticketDomain.PolicyRepository
+    eventRepo      ticketDomain.EventRepository
 	logger         *slog.Logger
 	defaultSLA     SLAConfig
 }
@@ -48,11 +53,15 @@ func DefaultSLAConfig() SLAConfig {
 func NewTicketService(
 	repo ticketDomain.TicketRepository,
 	equipmentRepo equipmentDomain.Repository,
+    policyRepo ticketDomain.PolicyRepository,
+    eventRepo ticketDomain.EventRepository,
 	logger *slog.Logger,
 ) *TicketService {
 	return &TicketService{
 		repo:          repo,
 		equipmentRepo: equipmentRepo,
+        policyRepo:    policyRepo,
+        eventRepo:     eventRepo,
 		logger:        logger.With(slog.String("component", "ticket_service")),
 		defaultSLA:    DefaultSLAConfig(),
 	}
@@ -92,13 +101,66 @@ func (s *TicketService) CreateTicket(ctx context.Context, req CreateTicketReques
 		ticket.Videos = req.Videos
 	}
 
-	// Set SLA based on priority
-	s.setSLA(ticket)
+    // Set SLA based on policy if available, else defaults
+    if s.policyRepo != nil {
+        if rules, _ := s.policyRepo.GetSLARules(ctx, nil); rules != nil {
+            var resp, res int
+            switch ticket.Priority {
+            case ticketDomain.PriorityCritical:
+                resp, res = rules.Critical.Response, rules.Critical.Resolution
+            case ticketDomain.PriorityHigh:
+                resp, res = rules.High.Response, rules.High.Resolution
+            case ticketDomain.PriorityMedium:
+                resp, res = rules.Medium.Response, rules.Medium.Resolution
+            case ticketDomain.PriorityLow:
+                resp, res = rules.Low.Response, rules.Low.Resolution
+            }
+            if resp > 0 && res > 0 {
+                ticket.SetSLA(resp, res)
+            } else {
+                s.setSLA(ticket)
+            }
+        } else {
+            s.setSLA(ticket)
+        }
+    } else {
+        s.setSLA(ticket)
+    }
 
 	// Save ticket
 	if err := s.repo.Create(ctx, ticket); err != nil {
 		s.logger.Error("Failed to create ticket", slog.String("error", err.Error()))
 		return nil, fmt.Errorf("failed to create ticket: %w", err)
+	}
+
+    // Emit event: ticket.created
+    s.emitEvent(ctx, ticketDomain.EventTicketCreated, "ticket", ticket.ID, map[string]any{
+        "ticket_id": ticket.ID,
+        "ticket_number": ticket.TicketNumber,
+        "priority": ticket.Priority,
+    })
+
+	// Optional: minimal responsibility resolver (Phase 4)
+	if enabled(os.Getenv("ENABLE_RESP_ORG_ASSIGNMENT")) {
+        var resolvedOrg *string
+        if s.policyRepo != nil {
+            id, _ := s.policyRepo.GetDefaultResponsibleOrg(ctx)
+            resolvedOrg = id
+        }
+        decision := "none"
+        reason := "no policy configured"
+        if resolvedOrg != nil {
+            decision = "default_org"
+            reason = "assigned to default_org_id"
+        }
+        prov := map[string]any{
+            "resolver": "policy",
+            "decision": decision,
+            "reason":   reason,
+            "ts":       time.Now().UTC().Format(time.RFC3339),
+        }
+        b, _ := json.Marshal(prov)
+        _ = s.repo.UpdateResponsibility(ctx, ticket.ID, resolvedOrg, b)
 	}
 
 	// Add initial comment
@@ -117,6 +179,15 @@ func (s *TicketService) CreateTicket(ctx context.Context, req CreateTicketReques
 		slog.String("ticket_number", ticket.TicketNumber))
 
 	return ticket, nil
+}
+
+func enabled(v string) bool {
+    switch v {
+    case "1", "true", "TRUE", "True", "yes", "on":
+        return true
+    default:
+        return false
+    }
 }
 
 // CreateFromWhatsApp creates a ticket from a WhatsApp message
@@ -246,6 +317,11 @@ func (s *TicketService) AssignTicket(ctx context.Context, ticketID, engineerID, 
 	}
 	s.repo.AddComment(ctx, comment)
 
+    // Emit event: ticket.assigned
+    s.emitEvent(ctx, ticketDomain.EventTicketAssigned, "ticket", ticketID, map[string]any{
+        "engineer_id": engineerID,
+        "engineer_name": engineerName,
+    })
 	s.logger.Info("Ticket assigned successfully", slog.String("ticket_id", ticketID))
 	return nil
 }
@@ -274,6 +350,8 @@ func (s *TicketService) AcknowledgeTicket(ctx context.Context, ticketID, acknowl
 	}
 	s.repo.AddComment(ctx, comment)
 
+    // Emit event: ticket.acknowledged
+    s.emitEvent(ctx, ticketDomain.EventTicketAck, "ticket", ticketID, map[string]any{})
 	return nil
 }
 
@@ -312,6 +390,8 @@ func (s *TicketService) StartWork(ctx context.Context, ticketID, startedBy strin
 	}
 	s.repo.AddComment(ctx, comment)
 
+    // Emit event: ticket.started
+    s.emitEvent(ctx, ticketDomain.EventTicketStarted, "ticket", ticketID, map[string]any{})
 	return nil
 }
 
@@ -350,6 +430,8 @@ func (s *TicketService) PutOnHold(ctx context.Context, ticketID, reason, changed
 	}
 	s.repo.AddComment(ctx, comment)
 
+    // Emit event: ticket.on_hold
+    s.emitEvent(ctx, ticketDomain.EventTicketOnHold, "ticket", ticketID, map[string]any{"reason": reason})
 	return nil
 }
 
@@ -379,6 +461,8 @@ func (s *TicketService) ResumeWork(ctx context.Context, ticketID, resumedBy stri
 	}
 	s.repo.AddStatusHistory(ctx, history)
 
+    // Emit event: ticket.resumed
+    s.emitEvent(ctx, ticketDomain.EventTicketResumed, "ticket", ticketID, map[string]any{})
 	return nil
 }
 
@@ -426,6 +510,9 @@ func (s *TicketService) ResolveTicket(ctx context.Context, ticketID string, req 
 	}
 
 	s.logger.Info("Ticket resolved successfully", slog.String("ticket_id", ticketID))
+
+    // Emit event: ticket.resolved
+    s.emitEvent(ctx, ticketDomain.EventTicketResolved, "ticket", ticketID, map[string]any{"notes": req.ResolutionNotes})
 	return nil
 }
 
@@ -455,6 +542,8 @@ func (s *TicketService) CloseTicket(ctx context.Context, ticketID, closedBy stri
 	}
 	s.repo.AddStatusHistory(ctx, history)
 
+    // Emit event: ticket.closed
+    s.emitEvent(ctx, ticketDomain.EventTicketClosed, "ticket", ticketID, map[string]any{})
 	return nil
 }
 
@@ -484,6 +573,8 @@ func (s *TicketService) CancelTicket(ctx context.Context, ticketID, reason, canc
 	}
 	s.repo.AddStatusHistory(ctx, history)
 
+    // Emit event: ticket.cancelled
+    s.emitEvent(ctx, ticketDomain.EventTicketCancelled, "ticket", ticketID, map[string]any{"reason": reason})
 	return nil
 }
 
@@ -509,6 +600,15 @@ func (s *TicketService) GetComments(ctx context.Context, ticketID string) ([]*ti
 // GetStatusHistory retrieves status history for a ticket
 func (s *TicketService) GetStatusHistory(ctx context.Context, ticketID string) ([]*ticketDomain.StatusHistory, error) {
 	return s.repo.GetStatusHistory(ctx, ticketID)
+}
+
+// emitEvent is a best-effort outbox writer (no-op if repo is nil)
+func (s *TicketService) emitEvent(ctx context.Context, eventType, aggregateType, aggregateID string, payload map[string]any) {
+    if s.eventRepo == nil { return }
+    b, _ := json.Marshal(payload)
+    if id, err := s.eventRepo.CreateEvent(ctx, eventType, aggregateType, aggregateID, b); err == nil {
+        _ = s.eventRepo.EnqueueDeliveriesForEvent(ctx, id, eventType)
+    }
 }
 
 // setSLA sets SLA deadlines based on priority
