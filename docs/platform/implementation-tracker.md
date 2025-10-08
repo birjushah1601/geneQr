@@ -78,9 +78,10 @@
    - Docs: policy DSL outline; escalation stubs
  - Deliverable: tag milestone-06
 
- Progress (2025‑10‑08)
- - DONE: Schema added: service_policies; tickets.responsible_org_id + policy_provenance (nullable)
- - NEXT: Minimal resolver + optional use in ticket create under ENABLE_RESP_ORG_ASSIGNMENT
+Progress (2025‑10‑08)
+- DONE: Schema added: service_policies; tickets.responsible_org_id + policy_provenance (nullable)
+- DONE: Minimal provenance write on ticket create behind ENABLE_RESP_ORG_ASSIGNMENT
+- NEXT: Basic policy rules and actual responsible_org assignment
 
  M07 — Phase 5: Engineers + Eligibility (optional)
  - Objectives
@@ -93,10 +94,11 @@
    - Docs: assignment plugin interface; audit events
  - Deliverable: tag milestone-07
 
- Progress (2025‑10‑08)
- - DONE: Schema for engineers, memberships, coverage
- - DONE: Read API under ENABLE_ENGINEERS: GET /engineers
- - NEXT: Eligibility endpoint; skills/coverage matching
+Progress (2025‑10‑08)
+- DONE: Schema for engineers, memberships, coverage
+- DONE: Read API under ENABLE_ENGINEERS: GET /engineers
+- DONE: Eligibility endpoint: GET /engineers/eligible?skills=...&region=...
+- NEXT: Ranking/scoring; pagination tuning; tests
 
  M08 — Phase 6: Agreements + SLA DSL + Events
  - Objectives
