@@ -1,6 +1,9 @@
 package domain
 
-import "context"
+import (
+    "context"
+    "encoding/json"
+)
 
 // TicketRepository defines data access operations for service tickets
 type TicketRepository interface {
@@ -42,6 +45,9 @@ type TicketRepository interface {
 	
 	// GetStatusHistory retrieves status history for a ticket
 	GetStatusHistory(ctx context.Context, ticketID string) ([]*StatusHistory, error)
+
+    // UpdateResponsibility sets responsible_org_id and policy_provenance (Phase 4 optional)
+    UpdateResponsibility(ctx context.Context, ticketID string, responsibleOrgID *string, provenance json.RawMessage) error
 }
 
 // ListCriteria defines filtering criteria for listing tickets

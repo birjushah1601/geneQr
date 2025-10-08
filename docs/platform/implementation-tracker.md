@@ -23,6 +23,13 @@
    - Docs: ERD sketch; API spec; runbook entries
  - Deliverable: tag milestone-03
 
+ Progress (2025‑10‑08)
+ - DONE: ENABLE_ORG module skeleton with EnsureOrgSchema (organizations, org_relationships)
+ - DONE: Read APIs: GET /orgs, /orgs/{id}/relationships
+ - DONE: ENABLE_CHANNELS read endpoints + schema for channels/products/skus
+- DONE: Seed (ENABLE_ORG_SEED) for demo orgs/channels/products/skus
+- NEXT: Unit tests; backfill plan draft; update runbook
+
  M04 — Phase 2: Offerings + Channel Catalog (publish flow)
  - Objectives
    - Add: offerings; channel_catalog (list/unlist); draft→published versioning
@@ -36,6 +43,14 @@
    - Docs: catalog lifecycle; rollback (new version only)
  - Deliverable: tag milestone-04
 
+ Progress (2025‑10‑08)
+ - DONE: Schema for offerings + channel_catalog (versioned)
+ - DONE: APIs under ENABLE_CATALOG_PUBLISHING
+   - GET /offerings, POST /offerings
+   - POST /channels/{id}/catalog/publish, POST /channels/{id}/catalog/unlist
+ - NEXT: Publish audit trail; tests; metrics
+ - Added: basic audit logs on publish/unlist endpoints
+
  M05 — Phase 3: Price Books + Rules (resolver)
  - Objectives
    - Add: price_books, price_rules; resolver precedence org_channel > channel > org > global
@@ -47,6 +62,13 @@
    - Security: guard write endpoints; audit decisions
    - Docs: precedence matrix with examples; rounding/tax placeholders
  - Deliverable: tag milestone-05
+
+ Progress (2025‑10‑08)
+ - DONE: Schema for price_books + price_rules
+ - DONE: APIs under ENABLE_PRICE_BOOKS and ENABLE_PRICE_RESOLUTION
+   - POST /price-books, POST /price-rules, GET /prices/resolve
+ - NEXT: Overlap windows/unit tests; rounding/tax placeholders
+ - Added: audit logs for price book/rule creation and resolution
 
  M06 — Phase 4: Service Policies + Ticket Responsibility (optional‑first)
  - Objectives
@@ -60,6 +82,12 @@
    - Docs: policy DSL outline; escalation stubs
  - Deliverable: tag milestone-06
 
+Progress (2025‑10‑08)
+- DONE: Schema added: service_policies; tickets.responsible_org_id + policy_provenance (nullable)
+- DONE: Minimal provenance write on ticket create behind ENABLE_RESP_ORG_ASSIGNMENT
+- NEXT: Basic policy rules and actual responsible_org assignment
+ - Added: Basic resolver to assign default_org_id from enabled service_policies
+
  M07 — Phase 5: Engineers + Eligibility (optional)
  - Objectives
    - Add: engineers, engineer_org_memberships, skills, coverage (all optional)
@@ -71,6 +99,15 @@
    - Docs: assignment plugin interface; audit events
  - Deliverable: tag milestone-07
 
+Progress (2025‑10‑08)
+- DONE: Schema for engineers, memberships, coverage
+- DONE: Read API under ENABLE_ENGINEERS: GET /engineers
+- DONE: Eligibility endpoint: GET /engineers/eligible?skills=...&region=...
+- NEXT: Ranking/scoring; pagination tuning; tests
+
+ M08 — Phase 6: Agreements + SLA DSL + Events
+ - Objectives
+   - Add: contracts/agreements; SLA DSL; event/webhook schemas
  M08 — Phase 6: Agreements + SLA DSL + Events
  - Objectives
    - Add: contracts/agreements; SLA DSL; event/webhook schemas
@@ -81,6 +118,14 @@
    - Security: HMAC signatures; DLQ strategy
    - Docs: versioning policy; idempotency keys
  - Deliverable: tag milestone-08
+
+ Progress (2025‑10‑08)
+ - DONE: Agreements table skeleton (backend-only)
+ - DONE: SLA policies schema (sla_policies) with org scoping, effective windows, rules JSON
+ - DONE: Events/webhooks outbox schema (service_events, webhook_subscriptions, webhook_deliveries)
+ - DONE: Event outbox repository and ticket lifecycle event emission
+- DONE: Standards doc: docs/platform/webhooks-and-sla-standards.md (HMAC, headers, payload, DSL)
+- NEXT: Dispatcher worker behind ENABLE_EVENT_DISPATCHER + retries/backoff and DLQ
 
  Manufacturer & Supplier coexistence (no breakage)
  - Keep legacy tables/APIs intact
