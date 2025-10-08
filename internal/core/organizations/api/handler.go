@@ -123,6 +123,7 @@ func (h *Handler) PublishToChannel(w http.ResponseWriter, r *http.Request) {
         h.respondError(w, http.StatusBadRequest, "invalid body: "+err.Error())
         return
     }
+    h.logger.Info("catalog.publish", slog.String("channel_id", channelID), slog.String("offering_id", req.OfferingID))
     if err := h.repo.PublishToChannel(ctx, channelID, req.OfferingID); err != nil {
         h.respondError(w, http.StatusInternalServerError, "failed to publish: "+err.Error())
         return
@@ -138,6 +139,7 @@ func (h *Handler) UnlistFromChannel(w http.ResponseWriter, r *http.Request) {
         h.respondError(w, http.StatusBadRequest, "invalid body: "+err.Error())
         return
     }
+    h.logger.Info("catalog.unlist", slog.String("channel_id", channelID), slog.String("offering_id", req.OfferingID))
     if err := h.repo.UnlistFromChannel(ctx, channelID, req.OfferingID); err != nil {
         h.respondError(w, http.StatusInternalServerError, "failed to unlist: "+err.Error())
         return
@@ -158,6 +160,7 @@ func (h *Handler) CreatePriceBook(w http.ResponseWriter, r *http.Request) {
         h.respondError(w, http.StatusBadRequest, "invalid body: "+err.Error())
         return
     }
+    h.logger.Info("pricing.create_price_book", slog.String("name", req.Name))
     if req.Currency == "" { req.Currency = "INR" }
     b, err := h.repo.CreatePriceBook(ctx, req.Name, req.OrgID, req.ChannelID, req.Currency)
     if err != nil { h.respondError(w, http.StatusInternalServerError, "failed to create price book: "+err.Error()); return }
@@ -168,6 +171,7 @@ func (h *Handler) AddPriceRule(w http.ResponseWriter, r *http.Request) {
     ctx := r.Context()
     var req struct{ BookID, SkuID string; Price float64 }
     if err := json.NewDecoder(r.Body).Decode(&req); err != nil { h.respondError(w, http.StatusBadRequest, "invalid body: "+err.Error()); return }
+    h.logger.Info("pricing.add_rule", slog.String("book_id", req.BookID), slog.String("sku_id", req.SkuID))
     if err := h.repo.AddPriceRule(ctx, req.BookID, req.SkuID, req.Price); err != nil { h.respondError(w, http.StatusInternalServerError, "failed to add price rule: "+err.Error()); return }
     h.respondJSON(w, http.StatusOK, map[string]string{"status":"ok"})
 }
@@ -180,6 +184,7 @@ func (h *Handler) ResolvePrice(w http.ResponseWriter, r *http.Request) {
     var oPtr, cPtr *string
     if orgID != "" { oPtr = &orgID }
     if channelID != "" { cPtr = &channelID }
+    h.logger.Info("pricing.resolve", slog.String("sku_id", skuID), slog.String("org_id", orgID), slog.String("channel_id", channelID))
     res, err := h.repo.ResolvePrice(ctx, skuID, oPtr, cPtr)
     if err != nil { h.respondError(w, http.StatusNotFound, "price not found"); return }
     h.respondJSON(w, http.StatusOK, res)
