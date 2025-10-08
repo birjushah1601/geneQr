@@ -150,6 +150,18 @@ func EnsureOrgSchema(ctx context.Context, db *pgxpool.Pool, logger *slog.Logger)
             metadata    JSONB NULL,
             created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
         );`,
+
+        // Phase 6: agreements/contracts (backend-only skeleton)
+        `CREATE TABLE IF NOT EXISTS agreements (
+            id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            org_id      UUID NULL REFERENCES organizations(id) ON DELETE SET NULL,
+            agreement_type TEXT NOT NULL, -- warranty|amc|subscription|other
+            start_date  DATE NULL,
+            end_date    DATE NULL,
+            metadata    JSONB NULL,
+            created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+            updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+        );`,
     }
 
     for _, s := range stmts {
