@@ -56,7 +56,33 @@ export const ticketsApi = {
    */
   async create(data: CreateTicketRequest) {
     try {
-      const response = await apiClient.post<ServiceTicket>('/tickets', data);
+      // Backend expects PascalCase keys (matching Go struct fields).
+      // Map our snake_case CreateTicketRequest to the expected payload.
+      const d: any = data as any;
+      const payload: Record<string, any> = {
+        EquipmentID: d.equipment_id ?? '',
+        QRCode: d.qr_code ?? '',
+        SerialNumber: d.serial_number ?? '',
+        // Optional contextual fields if present
+        EquipmentName: d.equipment_name ?? undefined,
+        CustomerID: d.customer_id ?? undefined,
+        CustomerName: d.customer_name ?? undefined,
+        CustomerPhone: d.customer_phone,
+        CustomerWhatsApp: d.customer_whatsapp ?? undefined,
+        IssueCategory: d.issue_category,
+        IssueDescription: d.issue_description,
+        Priority: d.priority,
+        Source: d.source,
+        SourceMessageID: d.source_message_id ?? undefined,
+        Photos: d.photos ?? undefined,
+        Videos: d.videos ?? undefined,
+        CreatedBy: d.created_by,
+        InitialComment: d.notes ?? undefined,
+      };
+      // Remove undefined keys to keep payload clean
+      Object.keys(payload).forEach((k) => payload[k] === undefined && delete payload[k]);
+
+      const response = await apiClient.post<ServiceTicket>('/tickets', payload);
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
