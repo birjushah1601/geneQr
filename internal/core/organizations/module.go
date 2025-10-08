@@ -51,6 +51,11 @@ func (m *Module) Initialize(ctx context.Context) error {
 
     repo := infra.NewRepository(pool, m.logger)
     m.handler = api.NewHandler(repo, m.logger)
+
+    // Optional demo seed
+    if isEnabled(os.Getenv("ENABLE_ORG_SEED")) {
+        _ = infra.SeedOrgDemoData(ctx, pool, m.logger)
+    }
     m.logger.Info("Organizations module initialized")
     return nil
 }
