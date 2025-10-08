@@ -8,6 +8,8 @@
  - Safety: additive migrations (nullable), dual‑write optional, orgs optional
  - Security posture: least‑privilege DB roles, audit logging, PII classification, migration rollback plans
 
+ Milestones and Phases
+
  M03 — Phase 1: Orgs + Relationships + Catalog Core (read‑only)
  - Objectives
    - Add: organizations, org_relationships, channels, products, skus (nullable FKs)
@@ -106,6 +108,10 @@ Progress (2025‑10‑08)
  M08 — Phase 6: Agreements + SLA DSL + Events
  - Objectives
    - Add: contracts/agreements; SLA DSL; event/webhook schemas
+ M08 — Phase 6: Agreements + SLA DSL + Events
+ - Objectives
+   - Add: contracts/agreements; SLA DSL; event/webhook schemas
+   - Flags: use existing feature flags; add WEBHOOKS if needed
  - Tasks
    - Schema: agreements; SLA policy; event registry
    - APIs: contracts, SLA policies; webhook delivery with retries
