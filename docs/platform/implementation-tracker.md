@@ -115,7 +115,10 @@ Progress (2025‑10‑08)
 
  Progress (2025‑10‑08)
  - DONE: Agreements table skeleton (backend-only)
- - NEXT: SLA policy schema + event/webhook registry; stub APIs
+ - DONE: SLA policies schema (sla_policies) with org scoping, effective windows, rules JSON
+ - DONE: Events/webhooks outbox schema (service_events, webhook_subscriptions, webhook_deliveries)
+ - DONE: Event outbox repository and ticket lifecycle event emission
+ - NEXT: Dispatcher worker behind ENABLE_EVENT_DISPATCHER + signing/HMAC + retries/backoff
 
  Manufacturer & Supplier coexistence (no breakage)
  - Keep legacy tables/APIs intact
