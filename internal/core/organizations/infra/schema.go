@@ -34,6 +34,43 @@ func EnsureOrgSchema(ctx context.Context, db *pgxpool.Pool, logger *slog.Logger)
         `CREATE INDEX IF NOT EXISTS idx_org_rel_parent ON org_relationships(parent_org_id);`,
         `CREATE INDEX IF NOT EXISTS idx_org_rel_child ON org_relationships(child_org_id);`,
         `CREATE INDEX IF NOT EXISTS idx_org_rel_type ON org_relationships(rel_type);`,
+
+        // Channels (read-only Phase 1)
+        `CREATE TABLE IF NOT EXISTS channels (
+            id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            code        TEXT NOT NULL UNIQUE,
+            name        TEXT NOT NULL,
+            channel_type TEXT NULL, -- online|offline|partner|direct|marketplace
+            metadata    JSONB NULL,
+            created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+            updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+        );`,
+        `CREATE INDEX IF NOT EXISTS idx_channels_type ON channels(channel_type);`,
+
+        // Products (manufacturer optional)
+        `CREATE TABLE IF NOT EXISTS products (
+            id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            name                TEXT NOT NULL,
+            manufacturer_org_id UUID NULL REFERENCES organizations(id) ON DELETE SET NULL,
+            external_ref        TEXT NULL,
+            metadata            JSONB NULL,
+            created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
+            updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+        );`,
+        `CREATE INDEX IF NOT EXISTS idx_products_mfr ON products(manufacturer_org_id);`,
+
+        // SKUs (per product)
+        `CREATE TABLE IF NOT EXISTS skus (
+            id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            product_id  UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+            sku_code    TEXT NOT NULL UNIQUE,
+            status      TEXT NOT NULL DEFAULT 'active',
+            attributes  JSONB NULL,
+            metadata    JSONB NULL,
+            created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+            updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+        );`,
+        `CREATE INDEX IF NOT EXISTS idx_skus_product ON skus(product_id);`,
     }
 
     for _, s := range stmts {

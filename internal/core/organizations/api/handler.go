@@ -46,6 +46,42 @@ func (h *Handler) ListRelationships(w http.ResponseWriter, r *http.Request) {
     h.respondJSON(w, http.StatusOK, map[string]any{"items": rels})
 }
 
+func (h *Handler) ListChannels(w http.ResponseWriter, r *http.Request) {
+    ctx := r.Context()
+    limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+    offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
+    items, err := h.repo.ListChannels(ctx, limit, offset)
+    if err != nil {
+        h.respondError(w, http.StatusInternalServerError, "failed to list channels: "+err.Error())
+        return
+    }
+    h.respondJSON(w, http.StatusOK, map[string]any{"items": items})
+}
+
+func (h *Handler) ListProducts(w http.ResponseWriter, r *http.Request) {
+    ctx := r.Context()
+    limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+    offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
+    items, err := h.repo.ListProducts(ctx, limit, offset)
+    if err != nil {
+        h.respondError(w, http.StatusInternalServerError, "failed to list products: "+err.Error())
+        return
+    }
+    h.respondJSON(w, http.StatusOK, map[string]any{"items": items})
+}
+
+func (h *Handler) ListSkus(w http.ResponseWriter, r *http.Request) {
+    ctx := r.Context()
+    limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+    offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
+    items, err := h.repo.ListSkus(ctx, limit, offset)
+    if err != nil {
+        h.respondError(w, http.StatusInternalServerError, "failed to list skus: "+err.Error())
+        return
+    }
+    h.respondJSON(w, http.StatusOK, map[string]any{"items": items})
+}
+
 func (h *Handler) respondJSON(w http.ResponseWriter, status int, data interface{}) {
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(status)

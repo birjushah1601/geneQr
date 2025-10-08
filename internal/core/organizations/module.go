@@ -68,6 +68,12 @@ func (m *Module) MountRoutes(r chi.Router) {
         r.Get("/", m.handler.ListOrgs)
         r.Get("/{id}/relationships", m.handler.ListRelationships)
     })
+
+    if isEnabled(os.Getenv("ENABLE_CHANNELS")) {
+        r.Get("/channels", m.handler.ListChannels)
+        r.Get("/products", m.handler.ListProducts)
+        r.Get("/skus", m.handler.ListSkus)
+    }
 }
 
 func (m *Module) Start(ctx context.Context) error {
