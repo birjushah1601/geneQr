@@ -60,6 +60,12 @@
    - Docs: precedence matrix with examples; rounding/tax placeholders
  - Deliverable: tag milestone-05
 
+ Progress (2025‑10‑08)
+ - DONE: Schema for price_books + price_rules
+ - DONE: APIs under ENABLE_PRICE_BOOKS and ENABLE_PRICE_RESOLUTION
+   - POST /price-books, POST /price-rules, GET /prices/resolve
+ - NEXT: Overlap windows/unit tests; rounding/tax placeholders
+
  M06 — Phase 4: Service Policies + Ticket Responsibility (optional‑first)
  - Objectives
    - Policy engine to compute responsible_org_id; store provenance
