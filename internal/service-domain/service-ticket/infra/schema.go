@@ -154,6 +154,9 @@ ALTER TABLE service_tickets ADD COLUMN IF NOT EXISTS videos JSONB DEFAULT '[]'::
 ALTER TABLE service_tickets ADD COLUMN IF NOT EXISTS documents JSONB DEFAULT '[]'::jsonb;
 ALTER TABLE service_tickets ADD COLUMN IF NOT EXISTS amc_contract_id VARCHAR(32);
 ALTER TABLE service_tickets ADD COLUMN IF NOT EXISTS covered_under_amc BOOLEAN DEFAULT false;
+-- Optional Phase 4 columns
+ALTER TABLE service_tickets ADD COLUMN IF NOT EXISTS responsible_org_id UUID NULL;
+ALTER TABLE service_tickets ADD COLUMN IF NOT EXISTS policy_provenance JSONB DEFAULT '{}'::jsonb;
 -- Create indexes (after columns are ensured)
 CREATE UNIQUE INDEX IF NOT EXISTS uq_ticket_number ON service_tickets(ticket_number);
 CREATE INDEX IF NOT EXISTS idx_ticket_number ON service_tickets(ticket_number);
@@ -173,6 +176,16 @@ CREATE INDEX IF NOT EXISTS idx_comment_created_at ON ticket_comments(created_at 
 
 CREATE INDEX IF NOT EXISTS idx_history_ticket ON ticket_status_history(ticket_id);
 CREATE INDEX IF NOT EXISTS idx_history_changed_at ON ticket_status_history(changed_at DESC);
+
+-- Service policies (Phase 4)
+CREATE TABLE IF NOT EXISTS service_policies (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    enabled BOOLEAN NOT NULL DEFAULT true,
+    rules JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
 `
 
     _, err := pool.Exec(ctx, schema)
