@@ -47,6 +47,7 @@
    - GET /offerings, POST /offerings
    - POST /channels/{id}/catalog/publish, POST /channels/{id}/catalog/unlist
  - NEXT: Publish audit trail; tests; metrics
+ - Added: basic audit logs on publish/unlist endpoints
 
  M05 — Phase 3: Price Books + Rules (resolver)
  - Objectives
@@ -65,6 +66,7 @@
  - DONE: APIs under ENABLE_PRICE_BOOKS and ENABLE_PRICE_RESOLUTION
    - POST /price-books, POST /price-rules, GET /prices/resolve
  - NEXT: Overlap windows/unit tests; rounding/tax placeholders
+ - Added: audit logs for price book/rule creation and resolution
 
  M06 — Phase 4: Service Policies + Ticket Responsibility (optional‑first)
  - Objectives
@@ -82,6 +84,7 @@ Progress (2025‑10‑08)
 - DONE: Schema added: service_policies; tickets.responsible_org_id + policy_provenance (nullable)
 - DONE: Minimal provenance write on ticket create behind ENABLE_RESP_ORG_ASSIGNMENT
 - NEXT: Basic policy rules and actual responsible_org assignment
+ - Added: Basic resolver to assign default_org_id from enabled service_policies
 
  M07 — Phase 5: Engineers + Eligibility (optional)
  - Objectives
