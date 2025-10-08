@@ -144,6 +144,46 @@ func (h *Handler) UnlistFromChannel(w http.ResponseWriter, r *http.Request) {
     h.respondJSON(w, http.StatusOK, map[string]string{"status":"unlisted"})
 }
 
+// Phase 3: Price books + rules + resolve
+func (h *Handler) CreatePriceBook(w http.ResponseWriter, r *http.Request) {
+    ctx := r.Context()
+    var req struct{
+        Name string `json:"name"`
+        OrgID *string `json:"org_id"`
+        ChannelID *string `json:"channel_id"`
+        Currency string `json:"currency"`
+    }
+    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+        h.respondError(w, http.StatusBadRequest, "invalid body: "+err.Error())
+        return
+    }
+    if req.Currency == "" { req.Currency = "INR" }
+    b, err := h.repo.CreatePriceBook(ctx, req.Name, req.OrgID, req.ChannelID, req.Currency)
+    if err != nil { h.respondError(w, http.StatusInternalServerError, "failed to create price book: "+err.Error()); return }
+    h.respondJSON(w, http.StatusCreated, b)
+}
+
+func (h *Handler) AddPriceRule(w http.ResponseWriter, r *http.Request) {
+    ctx := r.Context()
+    var req struct{ BookID, SkuID string; Price float64 }
+    if err := json.NewDecoder(r.Body).Decode(&req); err != nil { h.respondError(w, http.StatusBadRequest, "invalid body: "+err.Error()); return }
+    if err := h.repo.AddPriceRule(ctx, req.BookID, req.SkuID, req.Price); err != nil { h.respondError(w, http.StatusInternalServerError, "failed to add price rule: "+err.Error()); return }
+    h.respondJSON(w, http.StatusOK, map[string]string{"status":"ok"})
+}
+
+func (h *Handler) ResolvePrice(w http.ResponseWriter, r *http.Request) {
+    ctx := r.Context()
+    skuID := r.URL.Query().Get("sku_id")
+    orgID := r.URL.Query().Get("org_id")
+    channelID := r.URL.Query().Get("channel_id")
+    var oPtr, cPtr *string
+    if orgID != "" { oPtr = &orgID }
+    if channelID != "" { cPtr = &channelID }
+    res, err := h.repo.ResolvePrice(ctx, skuID, oPtr, cPtr)
+    if err != nil { h.respondError(w, http.StatusNotFound, "price not found"); return }
+    h.respondJSON(w, http.StatusOK, res)
+}
+
 func (h *Handler) respondJSON(w http.ResponseWriter, status int, data interface{}) {
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(status)

@@ -86,6 +86,14 @@ func (m *Module) MountRoutes(r chi.Router) {
         r.Post("/channels/{id}/catalog/publish", m.handler.PublishToChannel)
         r.Post("/channels/{id}/catalog/unlist", m.handler.UnlistFromChannel)
     }
+
+    if isEnabled(os.Getenv("ENABLE_PRICE_BOOKS")) {
+        r.Post("/price-books", m.handler.CreatePriceBook)
+        r.Post("/price-rules", m.handler.AddPriceRule)
+    }
+    if isEnabled(os.Getenv("ENABLE_PRICE_RESOLUTION")) {
+        r.Get("/prices/resolve", m.handler.ResolvePrice)
+    }
 }
 
 func (m *Module) Start(ctx context.Context) error {

@@ -97,6 +97,31 @@ func EnsureOrgSchema(ctx context.Context, db *pgxpool.Pool, logger *slog.Logger)
             UNIQUE(channel_id, offering_id)
         );`,
         `CREATE INDEX IF NOT EXISTS idx_channel_catalog_channel ON channel_catalog(channel_id);`,
+
+        // Phase 3: price books + rules
+        `CREATE TABLE IF NOT EXISTS price_books (
+            id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            name         TEXT NOT NULL,
+            org_id       UUID NULL REFERENCES organizations(id) ON DELETE SET NULL,
+            channel_id   UUID NULL REFERENCES channels(id) ON DELETE SET NULL,
+            currency     TEXT NOT NULL DEFAULT 'INR',
+            created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+            updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+        );`,
+        `CREATE INDEX IF NOT EXISTS idx_price_books_scope ON price_books(org_id, channel_id);`,
+
+        `CREATE TABLE IF NOT EXISTS price_rules (
+            id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            book_id      UUID NOT NULL REFERENCES price_books(id) ON DELETE CASCADE,
+            sku_id       UUID NOT NULL REFERENCES skus(id) ON DELETE CASCADE,
+            price        NUMERIC(18,2) NOT NULL,
+            valid_from   TIMESTAMPTZ NULL,
+            valid_to     TIMESTAMPTZ NULL,
+            created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+            updated_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+            UNIQUE(book_id, sku_id)
+        );`,
+        `CREATE INDEX IF NOT EXISTS idx_price_rules_sku ON price_rules(sku_id);`,
     }
 
     for _, s := range stmts {

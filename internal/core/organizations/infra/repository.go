@@ -178,3 +178,55 @@ func (r *Repository) UnlistFromChannel(ctx context.Context, channelID, offeringI
     _, err := r.db.Exec(ctx, `UPDATE channel_catalog SET listed=false, updated_at=now() WHERE channel_id=$1 AND offering_id=$2`, channelID, offeringID)
     return err
 }
+
+// Pricing (Phase 3)
+type PriceBook struct {
+    ID        string `json:"id"`
+    Name      string `json:"name"`
+    OrgID     *string `json:"org_id"`
+    ChannelID *string `json:"channel_id"`
+    Currency  string `json:"currency"`
+}
+
+func (r *Repository) CreatePriceBook(ctx context.Context, name string, orgID, channelID *string, currency string) (PriceBook, error) {
+    var b PriceBook
+    err := r.db.QueryRow(ctx, `INSERT INTO price_books(name, org_id, channel_id, currency) VALUES($1,$2,$3,$4)
+        RETURNING id, name, org_id, channel_id, currency`, name, orgID, channelID, currency).
+        Scan(&b.ID, &b.Name, &b.OrgID, &b.ChannelID, &b.Currency)
+    return b, err
+}
+
+func (r *Repository) AddPriceRule(ctx context.Context, bookID, skuID string, price float64) error {
+    _, err := r.db.Exec(ctx, `INSERT INTO price_rules(book_id, sku_id, price) VALUES($1,$2,$3)
+        ON CONFLICT (book_id, sku_id) DO UPDATE SET price=EXCLUDED.price, updated_at=now()`, bookID, skuID, price)
+    return err
+}
+
+type PriceResult struct { Price float64 `json:"price"`; Currency string `json:"currency"` }
+
+// Resolve price with precedence: org+channel > channel > org > global (null,null)
+func (r *Repository) ResolvePrice(ctx context.Context, skuID string, orgID, channelID *string) (*PriceResult, error) {
+    const q = `
+WITH candidates AS (
+  SELECT pb.currency, pr.price,
+         CASE
+           WHEN pb.org_id IS NOT NULL AND pb.channel_id IS NOT NULL THEN 4
+           WHEN pb.channel_id IS NOT NULL AND pb.org_id IS NULL THEN 3
+           WHEN pb.org_id IS NOT NULL AND pb.channel_id IS NULL THEN 2
+           ELSE 1
+         END AS precedence
+  FROM price_rules pr
+  JOIN price_books pb ON pb.id = pr.book_id
+  WHERE pr.sku_id = $1
+    AND (pb.org_id IS NULL OR pb.org_id = $2)
+    AND (pb.channel_id IS NULL OR pb.channel_id = $3)
+)
+SELECT price, currency FROM candidates
+ORDER BY precedence DESC
+LIMIT 1`
+    var res PriceResult
+    var o, c *string = orgID, channelID
+    err := r.db.QueryRow(ctx, q, skuID, o, c).Scan(&res.Price, &res.Currency)
+    if err != nil { return nil, err }
+    return &res, nil
+}
