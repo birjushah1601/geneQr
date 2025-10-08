@@ -82,6 +82,68 @@ func (h *Handler) ListSkus(w http.ResponseWriter, r *http.Request) {
     h.respondJSON(w, http.StatusOK, map[string]any{"items": items})
 }
 
+// Phase 2: Offerings + Channel Catalog
+func (h *Handler) ListOfferings(w http.ResponseWriter, r *http.Request) {
+    ctx := r.Context()
+    limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+    offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
+    items, err := h.repo.ListOfferings(ctx, limit, offset)
+    if err != nil {
+        h.respondError(w, http.StatusInternalServerError, "failed to list offerings: "+err.Error())
+        return
+    }
+    h.respondJSON(w, http.StatusOK, map[string]any{"items": items})
+}
+
+func (h *Handler) CreateOffering(w http.ResponseWriter, r *http.Request) {
+    ctx := r.Context()
+    var req struct{
+        SkuID      string  `json:"sku_id"`
+        OwnerOrgID *string `json:"owner_org_id"`
+        Data       json.RawMessage `json:"data"`
+    }
+    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+        h.respondError(w, http.StatusBadRequest, "invalid body: "+err.Error())
+        return
+    }
+    o, err := h.repo.CreateOffering(ctx, req.SkuID, req.OwnerOrgID, req.Data)
+    if err != nil {
+        h.respondError(w, http.StatusInternalServerError, "failed to create offering: "+err.Error())
+        return
+    }
+    h.respondJSON(w, http.StatusCreated, o)
+}
+
+func (h *Handler) PublishToChannel(w http.ResponseWriter, r *http.Request) {
+    ctx := r.Context()
+    channelID := chi.URLParam(r, "id")
+    var req struct{ OfferingID string `json:"offering_id"` }
+    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+        h.respondError(w, http.StatusBadRequest, "invalid body: "+err.Error())
+        return
+    }
+    if err := h.repo.PublishToChannel(ctx, channelID, req.OfferingID); err != nil {
+        h.respondError(w, http.StatusInternalServerError, "failed to publish: "+err.Error())
+        return
+    }
+    h.respondJSON(w, http.StatusOK, map[string]string{"status":"published"})
+}
+
+func (h *Handler) UnlistFromChannel(w http.ResponseWriter, r *http.Request) {
+    ctx := r.Context()
+    channelID := chi.URLParam(r, "id")
+    var req struct{ OfferingID string `json:"offering_id"` }
+    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+        h.respondError(w, http.StatusBadRequest, "invalid body: "+err.Error())
+        return
+    }
+    if err := h.repo.UnlistFromChannel(ctx, channelID, req.OfferingID); err != nil {
+        h.respondError(w, http.StatusInternalServerError, "failed to unlist: "+err.Error())
+        return
+    }
+    h.respondJSON(w, http.StatusOK, map[string]string{"status":"unlisted"})
+}
+
 func (h *Handler) respondJSON(w http.ResponseWriter, status int, data interface{}) {
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(status)

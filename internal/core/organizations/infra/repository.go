@@ -133,3 +133,48 @@ func (r *Repository) ListSkus(ctx context.Context, limit, offset int) ([]SKU, er
     }
     return out, rows.Err()
 }
+
+// Offerings and Channel Catalog (Phase 2)
+type Offering struct {
+    ID      string `json:"id"`
+    SkuID   string `json:"sku_id"`
+    Status  string `json:"status"`
+    Version int    `json:"version"`
+}
+
+func (r *Repository) CreateOffering(ctx context.Context, skuID string, ownerOrgID *string, data []byte) (Offering, error) {
+    var o Offering
+    err := r.db.QueryRow(ctx,
+        `INSERT INTO offerings (sku_id, owner_org_id, data) VALUES ($1,$2,$3)
+         RETURNING id, sku_id, status, version`, skuID, ownerOrgID, data).
+        Scan(&o.ID, &o.SkuID, &o.Status, &o.Version)
+    return o, err
+}
+
+func (r *Repository) ListOfferings(ctx context.Context, limit, offset int) ([]Offering, error) {
+    if limit <= 0 || limit > 500 { limit = 100 }
+    if offset < 0 { offset = 0 }
+    rows, err := r.db.Query(ctx, `SELECT id, sku_id, status, version FROM offerings ORDER BY created_at DESC LIMIT $1 OFFSET $2`, limit, offset)
+    if err != nil { return nil, err }
+    defer rows.Close()
+    var out []Offering
+    for rows.Next() {
+        var o Offering
+        if err := rows.Scan(&o.ID, &o.SkuID, &o.Status, &o.Version); err != nil { return nil, err }
+        out = append(out, o)
+    }
+    return out, rows.Err()
+}
+
+func (r *Repository) PublishToChannel(ctx context.Context, channelID, offeringID string) error {
+    _, err := r.db.Exec(ctx, `INSERT INTO channel_catalog(channel_id, offering_id, listed, published_version)
+        VALUES ($1,$2,true,(SELECT version FROM offerings WHERE id=$2))
+        ON CONFLICT (channel_id, offering_id)
+        DO UPDATE SET listed=true, published_version=EXCLUDED.published_version, updated_at=now()`, channelID, offeringID)
+    return err
+}
+
+func (r *Repository) UnlistFromChannel(ctx context.Context, channelID, offeringID string) error {
+    _, err := r.db.Exec(ctx, `UPDATE channel_catalog SET listed=false, updated_at=now() WHERE channel_id=$1 AND offering_id=$2`, channelID, offeringID)
+    return err
+}

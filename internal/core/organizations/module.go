@@ -79,6 +79,13 @@ func (m *Module) MountRoutes(r chi.Router) {
         r.Get("/products", m.handler.ListProducts)
         r.Get("/skus", m.handler.ListSkus)
     }
+
+    if isEnabled(os.Getenv("ENABLE_CATALOG_PUBLISHING")) {
+        r.Get("/offerings", m.handler.ListOfferings)
+        r.Post("/offerings", m.handler.CreateOffering)
+        r.Post("/channels/{id}/catalog/publish", m.handler.PublishToChannel)
+        r.Post("/channels/{id}/catalog/unlist", m.handler.UnlistFromChannel)
+    }
 }
 
 func (m *Module) Start(ctx context.Context) error {

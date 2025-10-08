@@ -71,6 +71,32 @@ func EnsureOrgSchema(ctx context.Context, db *pgxpool.Pool, logger *slog.Logger)
             updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
         );`,
         `CREATE INDEX IF NOT EXISTS idx_skus_product ON skus(product_id);`,
+
+        // Phase 2: offerings + channel_catalog (publish flow)
+        `CREATE TABLE IF NOT EXISTS offerings (
+            id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            sku_id       UUID NOT NULL REFERENCES skus(id) ON DELETE CASCADE,
+            owner_org_id UUID NULL REFERENCES organizations(id) ON DELETE SET NULL,
+            status       TEXT NOT NULL DEFAULT 'draft', -- draft|published
+            version      INT  NOT NULL DEFAULT 1,
+            data         JSONB NULL,
+            created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+            updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+        );`,
+        `CREATE INDEX IF NOT EXISTS idx_offerings_sku ON offerings(sku_id);`,
+        `CREATE INDEX IF NOT EXISTS idx_offerings_owner ON offerings(owner_org_id);`,
+
+        `CREATE TABLE IF NOT EXISTS channel_catalog (
+            id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            channel_id    UUID NOT NULL REFERENCES channels(id) ON DELETE CASCADE,
+            offering_id   UUID NOT NULL REFERENCES offerings(id) ON DELETE CASCADE,
+            listed        BOOLEAN NOT NULL DEFAULT true,
+            published_version INT NOT NULL DEFAULT 0,
+            created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+            updated_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+            UNIQUE(channel_id, offering_id)
+        );`,
+        `CREATE INDEX IF NOT EXISTS idx_channel_catalog_channel ON channel_catalog(channel_id);`,
     }
 
     for _, s := range stmts {
