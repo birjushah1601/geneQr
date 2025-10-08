@@ -18,6 +18,7 @@ type TicketService struct {
 	repo           ticketDomain.TicketRepository
 	equipmentRepo  equipmentDomain.Repository
     policyRepo     ticketDomain.PolicyRepository
+    eventRepo      ticketDomain.EventRepository
 	logger         *slog.Logger
 	defaultSLA     SLAConfig
 }
@@ -53,12 +54,14 @@ func NewTicketService(
 	repo ticketDomain.TicketRepository,
 	equipmentRepo equipmentDomain.Repository,
     policyRepo ticketDomain.PolicyRepository,
+    eventRepo ticketDomain.EventRepository,
 	logger *slog.Logger,
 ) *TicketService {
 	return &TicketService{
 		repo:          repo,
 		equipmentRepo: equipmentRepo,
         policyRepo:    policyRepo,
+        eventRepo:     eventRepo,
 		logger:        logger.With(slog.String("component", "ticket_service")),
 		defaultSLA:    DefaultSLAConfig(),
 	}
@@ -106,6 +109,13 @@ func (s *TicketService) CreateTicket(ctx context.Context, req CreateTicketReques
 		s.logger.Error("Failed to create ticket", slog.String("error", err.Error()))
 		return nil, fmt.Errorf("failed to create ticket: %w", err)
 	}
+
+    // Emit event: ticket.created
+    s.emitEvent(ctx, ticketDomain.EventTicketCreated, "ticket", ticket.ID, map[string]any{
+        "ticket_id": ticket.ID,
+        "ticket_number": ticket.TicketNumber,
+        "priority": ticket.Priority,
+    })
 
 	// Optional: minimal responsibility resolver (Phase 4)
 	if enabled(os.Getenv("ENABLE_RESP_ORG_ASSIGNMENT")) {
@@ -284,6 +294,11 @@ func (s *TicketService) AssignTicket(ctx context.Context, ticketID, engineerID, 
 	}
 	s.repo.AddComment(ctx, comment)
 
+    // Emit event: ticket.assigned
+    s.emitEvent(ctx, ticketDomain.EventTicketAssigned, "ticket", ticketID, map[string]any{
+        "engineer_id": engineerID,
+        "engineer_name": engineerName,
+    })
 	s.logger.Info("Ticket assigned successfully", slog.String("ticket_id", ticketID))
 	return nil
 }
@@ -312,6 +327,8 @@ func (s *TicketService) AcknowledgeTicket(ctx context.Context, ticketID, acknowl
 	}
 	s.repo.AddComment(ctx, comment)
 
+    // Emit event: ticket.acknowledged
+    s.emitEvent(ctx, ticketDomain.EventTicketAck, "ticket", ticketID, map[string]any{})
 	return nil
 }
 
@@ -350,6 +367,8 @@ func (s *TicketService) StartWork(ctx context.Context, ticketID, startedBy strin
 	}
 	s.repo.AddComment(ctx, comment)
 
+    // Emit event: ticket.started
+    s.emitEvent(ctx, ticketDomain.EventTicketStarted, "ticket", ticketID, map[string]any{})
 	return nil
 }
 
@@ -388,6 +407,8 @@ func (s *TicketService) PutOnHold(ctx context.Context, ticketID, reason, changed
 	}
 	s.repo.AddComment(ctx, comment)
 
+    // Emit event: ticket.on_hold
+    s.emitEvent(ctx, ticketDomain.EventTicketOnHold, "ticket", ticketID, map[string]any{"reason": reason})
 	return nil
 }
 
@@ -417,6 +438,8 @@ func (s *TicketService) ResumeWork(ctx context.Context, ticketID, resumedBy stri
 	}
 	s.repo.AddStatusHistory(ctx, history)
 
+    // Emit event: ticket.resumed
+    s.emitEvent(ctx, ticketDomain.EventTicketResumed, "ticket", ticketID, map[string]any{})
 	return nil
 }
 
@@ -464,6 +487,9 @@ func (s *TicketService) ResolveTicket(ctx context.Context, ticketID string, req 
 	}
 
 	s.logger.Info("Ticket resolved successfully", slog.String("ticket_id", ticketID))
+
+    // Emit event: ticket.resolved
+    s.emitEvent(ctx, ticketDomain.EventTicketResolved, "ticket", ticketID, map[string]any{"notes": req.ResolutionNotes})
 	return nil
 }
 
@@ -493,6 +519,8 @@ func (s *TicketService) CloseTicket(ctx context.Context, ticketID, closedBy stri
 	}
 	s.repo.AddStatusHistory(ctx, history)
 
+    // Emit event: ticket.closed
+    s.emitEvent(ctx, ticketDomain.EventTicketClosed, "ticket", ticketID, map[string]any{})
 	return nil
 }
 
@@ -522,6 +550,8 @@ func (s *TicketService) CancelTicket(ctx context.Context, ticketID, reason, canc
 	}
 	s.repo.AddStatusHistory(ctx, history)
 
+    // Emit event: ticket.cancelled
+    s.emitEvent(ctx, ticketDomain.EventTicketCancelled, "ticket", ticketID, map[string]any{"reason": reason})
 	return nil
 }
 
@@ -547,6 +577,15 @@ func (s *TicketService) GetComments(ctx context.Context, ticketID string) ([]*ti
 // GetStatusHistory retrieves status history for a ticket
 func (s *TicketService) GetStatusHistory(ctx context.Context, ticketID string) ([]*ticketDomain.StatusHistory, error) {
 	return s.repo.GetStatusHistory(ctx, ticketID)
+}
+
+// emitEvent is a best-effort outbox writer (no-op if repo is nil)
+func (s *TicketService) emitEvent(ctx context.Context, eventType, aggregateType, aggregateID string, payload map[string]any) {
+    if s.eventRepo == nil { return }
+    b, _ := json.Marshal(payload)
+    if id, err := s.eventRepo.CreateEvent(ctx, eventType, aggregateType, aggregateID, b); err == nil {
+        _ = s.eventRepo.EnqueueDeliveriesForEvent(ctx, id, eventType)
+    }
 }
 
 // setSLA sets SLA deadlines based on priority

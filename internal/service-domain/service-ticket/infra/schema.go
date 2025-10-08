@@ -186,6 +186,60 @@ CREATE TABLE IF NOT EXISTS service_policies (
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
+
+-- SLA policies (Phase 6)
+CREATE TABLE IF NOT EXISTS sla_policies (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID NULL,
+    name TEXT NOT NULL,
+    active BOOLEAN NOT NULL DEFAULT true,
+    rules JSONB NOT NULL DEFAULT '{}'::jsonb, -- {priority:{critical:{resp:1,res:4},...}}
+    effective_from TIMESTAMP WITH TIME ZONE NULL,
+    effective_to   TIMESTAMP WITH TIME ZONE NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_sla_policies_org_active ON sla_policies(org_id, active);
+
+-- Events + Webhooks (Phase 6)
+CREATE TABLE IF NOT EXISTS service_events (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    event_type TEXT NOT NULL,
+    aggregate_type TEXT NOT NULL,
+    aggregate_id TEXT NOT NULL,
+    payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+    status TEXT NOT NULL DEFAULT 'queued', -- queued|delivered|failed
+    attempt_count INT NOT NULL DEFAULT 0,
+    last_attempt_at TIMESTAMP WITH TIME ZONE NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    delivered_at TIMESTAMP WITH TIME ZONE NULL
+);
+CREATE INDEX IF NOT EXISTS idx_events_status_created ON service_events(status, created_at);
+
+CREATE TABLE IF NOT EXISTS webhook_subscriptions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    endpoint_url TEXT NOT NULL,
+    event_types TEXT[] NOT NULL, -- ['ticket.created', ...] or ['*']
+    secret TEXT NULL,
+    active BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_webhooks_active ON webhook_subscriptions(active);
+
+CREATE TABLE IF NOT EXISTS webhook_deliveries (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    event_id UUID NOT NULL REFERENCES service_events(id) ON DELETE CASCADE,
+    subscription_id UUID NOT NULL REFERENCES webhook_subscriptions(id) ON DELETE CASCADE,
+    status TEXT NOT NULL DEFAULT 'queued', -- queued|delivered|failed
+    attempt_count INT NOT NULL DEFAULT 0,
+    last_error TEXT NULL,
+    last_attempt_at TIMESTAMP WITH TIME ZONE NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    delivered_at TIMESTAMP WITH TIME ZONE NULL
+);
+CREATE INDEX IF NOT EXISTS idx_deliveries_status ON webhook_deliveries(status);
 `
 
     _, err := pool.Exec(ctx, schema)
