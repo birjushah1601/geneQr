@@ -125,7 +125,8 @@ Progress (2025‑10‑08)
  - DONE: Events/webhooks outbox schema (service_events, webhook_subscriptions, webhook_deliveries)
  - DONE: Event outbox repository and ticket lifecycle event emission
 - DONE: Standards doc: docs/platform/webhooks-and-sla-standards.md (HMAC, headers, payload, DSL)
-- NEXT: Dispatcher worker behind ENABLE_EVENT_DISPATCHER + retries/backoff and DLQ
+- DONE: Dispatcher worker behind ENABLE_EVENT_DISPATCHER with retries/backoff and DLQ
+- NEXT: SLA breach monitor and runbook; expand unit tests
 
  Manufacturer & Supplier coexistence (no breakage)
  - Keep legacy tables/APIs intact
