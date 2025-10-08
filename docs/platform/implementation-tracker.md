@@ -93,6 +93,11 @@
    - Docs: assignment plugin interface; audit events
  - Deliverable: tag milestone-07
 
+ Progress (2025‑10‑08)
+ - DONE: Schema for engineers, memberships, coverage
+ - DONE: Read API under ENABLE_ENGINEERS: GET /engineers
+ - NEXT: Eligibility endpoint; skills/coverage matching
+
  M08 — Phase 6: Agreements + SLA DSL + Events
  - Objectives
    - Add: contracts/agreements; SLA DSL; event/webhook schemas
