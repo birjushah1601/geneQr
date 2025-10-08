@@ -108,6 +108,10 @@
    - Docs: versioning policy; idempotency keys
  - Deliverable: tag milestone-08
 
+ Progress (2025‑10‑08)
+ - DONE: Agreements table skeleton (backend-only)
+ - NEXT: SLA policy schema + event/webhook registry; stub APIs
+
  Manufacturer & Supplier coexistence (no breakage)
  - Keep legacy tables/APIs intact
  - Profiles approach: organizations + manufacturer_profiles/supplier_profiles
