@@ -5,6 +5,7 @@ import (
     "log/slog"
     "net/http"
     "strconv"
+    "strings"
 
     "github.com/aby-med/medical-platform/internal/core/organizations/infra"
     "github.com/go-chi/chi/v5"
@@ -191,6 +192,22 @@ func (h *Handler) ListEngineers(w http.ResponseWriter, r *http.Request) {
     offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
     items, err := h.repo.ListEngineers(ctx, limit, offset)
     if err != nil { h.respondError(w, http.StatusInternalServerError, "failed to list engineers: "+err.Error()); return }
+    h.respondJSON(w, http.StatusOK, map[string]any{"items": items})
+}
+
+func (h *Handler) ListEligibleEngineers(w http.ResponseWriter, r *http.Request) {
+    ctx := r.Context()
+    limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+    region := r.URL.Query().Get("region")
+    skillsCSV := r.URL.Query().Get("skills")
+    var skills []string
+    if skillsCSV != "" {
+        // split by comma and trim spaces
+        raw := strings.Split(skillsCSV, ",")
+        for _, s := range raw { if t := strings.TrimSpace(s); t != "" { skills = append(skills, t) } }
+    }
+    items, err := h.repo.EligibleEngineers(ctx, skills, region, limit)
+    if err != nil { h.respondError(w, http.StatusInternalServerError, "failed to compute eligibility: "+err.Error()); return }
     h.respondJSON(w, http.StatusOK, map[string]any{"items": items})
 }
 

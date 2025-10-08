@@ -252,3 +252,32 @@ func (r *Repository) ListEngineers(ctx context.Context, limit, offset int) ([]En
     }
     return out, rows.Err()
 }
+
+func (r *Repository) EligibleEngineers(ctx context.Context, skills []string, region string, limit int) ([]Engineer, error) {
+    if limit <= 0 || limit > 500 { limit = 100 }
+    // Build query with optional filters
+    // Skills: e.skills @> $1 OR EXISTS coverage with skills @> $1
+    // Region: e.home_region=$2 OR EXISTS coverage with region=$2
+    const base = `
+SELECT DISTINCT e.id, e.name, COALESCE(e.skills, ARRAY[]::text[])
+FROM engineers e
+LEFT JOIN engineer_coverage c ON c.engineer_id = e.id
+WHERE ( $1::text[] IS NULL OR (COALESCE(e.skills, ARRAY[]::text[]) @> $1::text[] OR COALESCE(c.skills, ARRAY[]::text[]) @> $1::text[]) )
+  AND ( $2::text IS NULL OR e.home_region = $2 OR c.region = $2 )
+ORDER BY e.created_at DESC
+LIMIT $3`
+    var skillsArray []string
+    if len(skills) > 0 { skillsArray = skills } else { skillsArray = nil }
+    var regionPtr *string
+    if region != "" { regionPtr = &region }
+    rows, err := r.db.Query(ctx, base, skillsArray, regionPtr, limit)
+    if err != nil { return nil, err }
+    defer rows.Close()
+    var out []Engineer
+    for rows.Next() {
+        var e Engineer
+        if err := rows.Scan(&e.ID, &e.Name, &e.Skills); err != nil { return nil, err }
+        out = append(out, e)
+    }
+    return out, rows.Err()
+}

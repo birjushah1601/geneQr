@@ -97,6 +97,7 @@ func (m *Module) MountRoutes(r chi.Router) {
 
     if isEnabled(os.Getenv("ENABLE_ENGINEERS")) {
         r.Get("/engineers", m.handler.ListEngineers)
+        r.Get("/engineers/eligible", m.handler.ListEligibleEngineers)
     }
 }
 
