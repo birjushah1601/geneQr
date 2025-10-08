@@ -76,7 +76,8 @@ func (m *Module) Initialize(ctx context.Context) error {
 	equipmentRepo := equipmentInfra.NewEquipmentRepository(pool)
 
 	// Create ticket service
-	ticketService := app.NewTicketService(ticketRepo, equipmentRepo, m.logger)
+    policyRepo := infra.NewPolicyRepository(pool)
+    ticketService := app.NewTicketService(ticketRepo, equipmentRepo, policyRepo, m.logger)
 
 	// Create ticket HTTP handler
 	m.ticketHandler = api.NewTicketHandler(ticketService, m.logger)

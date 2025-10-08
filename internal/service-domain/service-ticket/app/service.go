@@ -17,6 +17,7 @@ import (
 type TicketService struct {
 	repo           ticketDomain.TicketRepository
 	equipmentRepo  equipmentDomain.Repository
+    policyRepo     ticketDomain.PolicyRepository
 	logger         *slog.Logger
 	defaultSLA     SLAConfig
 }
@@ -51,11 +52,13 @@ func DefaultSLAConfig() SLAConfig {
 func NewTicketService(
 	repo ticketDomain.TicketRepository,
 	equipmentRepo equipmentDomain.Repository,
+    policyRepo ticketDomain.PolicyRepository,
 	logger *slog.Logger,
 ) *TicketService {
 	return &TicketService{
 		repo:          repo,
 		equipmentRepo: equipmentRepo,
+        policyRepo:    policyRepo,
 		logger:        logger.With(slog.String("component", "ticket_service")),
 		defaultSLA:    DefaultSLAConfig(),
 	}
@@ -106,14 +109,25 @@ func (s *TicketService) CreateTicket(ctx context.Context, req CreateTicketReques
 
 	// Optional: minimal responsibility resolver (Phase 4)
 	if enabled(os.Getenv("ENABLE_RESP_ORG_ASSIGNMENT")) {
-		prov := map[string]any{
-			"resolver": "default",
-			"decision": "none",
-			"reason":   "no policy configured",
-			"ts":       time.Now().UTC().Format(time.RFC3339),
-		}
-		b, _ := json.Marshal(prov)
-		_ = s.repo.UpdateResponsibility(ctx, ticket.ID, nil, b)
+        var resolvedOrg *string
+        if s.policyRepo != nil {
+            id, _ := s.policyRepo.GetDefaultResponsibleOrg(ctx)
+            resolvedOrg = id
+        }
+        decision := "none"
+        reason := "no policy configured"
+        if resolvedOrg != nil {
+            decision = "default_org"
+            reason = "assigned to default_org_id"
+        }
+        prov := map[string]any{
+            "resolver": "policy",
+            "decision": decision,
+            "reason":   reason,
+            "ts":       time.Now().UTC().Format(time.RFC3339),
+        }
+        b, _ := json.Marshal(prov)
+        _ = s.repo.UpdateResponsibility(ctx, ticket.ID, resolvedOrg, b)
 	}
 
 	// Add initial comment
