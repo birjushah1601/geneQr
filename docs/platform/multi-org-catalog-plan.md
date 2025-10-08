@@ -106,3 +106,39 @@ Routing: if `org_type` claim present → org dashboard; else Global.
 - Dealer eligibility: mandatory certifications per manufacturer/category?
 - Territory model: ISO regions vs geofences? Source of truth?
 - Global policy defaults: acceptable assignment order and SLAs?
+
+## 14. Client-specific notes & examples (for review)
+
+Context highlights
+- Multi-brand dealers: Client expects dealers to sell and service across multiple manufacturers; supported via N:M org_relationships and channel_catalog publishing per SKU/Offering.
+- Optional orgs now: Org fields remain nullable to avoid blocking current QR → service request flows already live.
+- QR-driven service: Keep current QR scan → equipment → service request path unchanged; responsible_org_id can remain NULL until policies are enabled.
+
+Example A — Catalog publishing (multi-brand dealer)
+- Orgs: M1 (Manufacturer: ACME), M2 (Manufacturer: BioMed), D1 (Distributor for ACME), DL1 (Dealer)
+- Relationships: D1 distributor_of M1; DL1 dealer_of D1; DL1 dealer_of M2 (direct)
+- Publishing:
+  - ACME publishes Product P-A (sku S-A1) to D1; D1 publishes S-A1 to DL1
+  - BioMed publishes Product P-B (sku S-B1) directly to DL1
+- Result: DL1 channel_catalog lists S-A1 (via D1) and S-B1 (direct from M2)
+
+Example B — Pricing precedence (simple)
+- Price books (highest to lowest precedence): org_channel (DL1@DealerChannel) > channel (DealerChannel) > org (DL1) > global
+- For S-A1: DL1 has an org_channel fixed price 950 → applied
+- For S-B1: no org_channel; channel price is base 1000 with -5% dealer discount → applied
+
+Example C — Service responsibility (optional-first)
+- Equipment E-123 (Manufacturer=M1) at Hospital H1; ticket created via QR
+- Policies disabled: responsible_org_id NULL; assignment falls back to internal/global rule (e.g., nearest available engineer)
+- Policies enabled later: order = dealer → distributor → manufacturer; DL1 eligible with cert; assign DL1; escalation to D1 then M1 if SLA breached
+
+Example D — Dashboards by org_type
+- Manufacturer (M1): SLA by product family, failures by model, partner performance (D1, DL1)
+- Distributor (D1): tickets by dealers, backlog, catalog coverage
+- Dealer (DL1): open jobs, utilization, published items
+- Global: system health and adoption (used when org is not in context)
+
+Rollout notes
+- Phase 1 can ship with organizations and relationships API (nullable usage) + catalog read; no change to existing ticketing.
+- Enable price books and publishing per partner only when client agrees precedence and discounting rules.
+- Service coverage policies remain opt-in per tenant to control change impact.
