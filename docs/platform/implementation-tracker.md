@@ -25,7 +25,8 @@
  - DONE: ENABLE_ORG module skeleton with EnsureOrgSchema (organizations, org_relationships)
  - DONE: Read APIs: GET /orgs, /orgs/{id}/relationships
  - DONE: ENABLE_CHANNELS read endpoints + schema for channels/products/skus
- - NEXT: Seed + unit tests; backfill plan draft; update runbook
+- DONE: Seed (ENABLE_ORG_SEED) for demo orgs/channels/products/skus
+- NEXT: Unit tests; backfill plan draft; update runbook
 
  M04 — Phase 2: Offerings + Channel Catalog (publish flow)
  - Objectives
@@ -39,6 +40,13 @@
    - Tests: publish workflow, versioning guarantees
    - Docs: catalog lifecycle; rollback (new version only)
  - Deliverable: tag milestone-04
+
+ Progress (2025‑10‑08)
+ - DONE: Schema for offerings + channel_catalog (versioned)
+ - DONE: APIs under ENABLE_CATALOG_PUBLISHING
+   - GET /offerings, POST /offerings
+   - POST /channels/{id}/catalog/publish, POST /channels/{id}/catalog/unlist
+ - NEXT: Publish audit trail; tests; metrics
 
  M05 — Phase 3: Price Books + Rules (resolver)
  - Objectives
