@@ -118,7 +118,8 @@ Progress (2025‑10‑08)
  - DONE: SLA policies schema (sla_policies) with org scoping, effective windows, rules JSON
  - DONE: Events/webhooks outbox schema (service_events, webhook_subscriptions, webhook_deliveries)
  - DONE: Event outbox repository and ticket lifecycle event emission
- - NEXT: Dispatcher worker behind ENABLE_EVENT_DISPATCHER + signing/HMAC + retries/backoff
+- DONE: Standards doc: docs/platform/webhooks-and-sla-standards.md (HMAC, headers, payload, DSL)
+- NEXT: Dispatcher worker behind ENABLE_EVENT_DISPATCHER + retries/backoff and DLQ
 
  Manufacturer & Supplier coexistence (no breakage)
  - Keep legacy tables/APIs intact

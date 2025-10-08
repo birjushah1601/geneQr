@@ -101,8 +101,31 @@ func (s *TicketService) CreateTicket(ctx context.Context, req CreateTicketReques
 		ticket.Videos = req.Videos
 	}
 
-	// Set SLA based on priority
-	s.setSLA(ticket)
+    // Set SLA based on policy if available, else defaults
+    if s.policyRepo != nil {
+        if rules, _ := s.policyRepo.GetSLARules(ctx, nil); rules != nil {
+            var resp, res int
+            switch ticket.Priority {
+            case ticketDomain.PriorityCritical:
+                resp, res = rules.Critical.Response, rules.Critical.Resolution
+            case ticketDomain.PriorityHigh:
+                resp, res = rules.High.Response, rules.High.Resolution
+            case ticketDomain.PriorityMedium:
+                resp, res = rules.Medium.Response, rules.Medium.Resolution
+            case ticketDomain.PriorityLow:
+                resp, res = rules.Low.Response, rules.Low.Resolution
+            }
+            if resp > 0 && res > 0 {
+                ticket.SetSLA(resp, res)
+            } else {
+                s.setSLA(ticket)
+            }
+        } else {
+            s.setSLA(ticket)
+        }
+    } else {
+        s.setSLA(ticket)
+    }
 
 	// Save ticket
 	if err := s.repo.Create(ctx, ticket); err != nil {
