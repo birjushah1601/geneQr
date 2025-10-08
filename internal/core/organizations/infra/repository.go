@@ -230,3 +230,25 @@ LIMIT 1`
     if err != nil { return nil, err }
     return &res, nil
 }
+
+// Engineers (Phase 5)
+type Engineer struct {
+    ID    string   `json:"id"`
+    Name  string   `json:"name"`
+    Skills []string `json:"skills"`
+}
+
+func (r *Repository) ListEngineers(ctx context.Context, limit, offset int) ([]Engineer, error) {
+    if limit <= 0 || limit > 500 { limit = 100 }
+    if offset < 0 { offset = 0 }
+    rows, err := r.db.Query(ctx, `SELECT id, name, COALESCE(skills, ARRAY[]::text[]) FROM engineers ORDER BY created_at DESC LIMIT $1 OFFSET $2`, limit, offset)
+    if err != nil { return nil, err }
+    defer rows.Close()
+    var out []Engineer
+    for rows.Next() {
+        var e Engineer
+        if err := rows.Scan(&e.ID, &e.Name, &e.Skills); err != nil { return nil, err }
+        out = append(out, e)
+    }
+    return out, rows.Err()
+}

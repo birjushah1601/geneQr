@@ -122,6 +122,34 @@ func EnsureOrgSchema(ctx context.Context, db *pgxpool.Pool, logger *slog.Logger)
             UNIQUE(book_id, sku_id)
         );`,
         `CREATE INDEX IF NOT EXISTS idx_price_rules_sku ON price_rules(sku_id);`,
+
+        // Phase 5: engineers + memberships + coverage (optional)
+        `CREATE TABLE IF NOT EXISTS engineers (
+            id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            name        TEXT NOT NULL,
+            phone       TEXT NULL,
+            email       TEXT NULL,
+            skills      TEXT[] NULL,
+            home_region TEXT NULL,
+            metadata    JSONB NULL,
+            created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+            updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+        );`,
+        `CREATE TABLE IF NOT EXISTS engineer_org_memberships (
+            engineer_id UUID NOT NULL REFERENCES engineers(id) ON DELETE CASCADE,
+            org_id      UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+            role        TEXT NULL,
+            created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+            PRIMARY KEY(engineer_id, org_id)
+        );`,
+        `CREATE TABLE IF NOT EXISTS engineer_coverage (
+            id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            engineer_id UUID NOT NULL REFERENCES engineers(id) ON DELETE CASCADE,
+            region      TEXT NULL,
+            skills      TEXT[] NULL,
+            metadata    JSONB NULL,
+            created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+        );`,
     }
 
     for _, s := range stmts {

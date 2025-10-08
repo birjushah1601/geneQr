@@ -94,6 +94,10 @@ func (m *Module) MountRoutes(r chi.Router) {
     if isEnabled(os.Getenv("ENABLE_PRICE_RESOLUTION")) {
         r.Get("/prices/resolve", m.handler.ResolvePrice)
     }
+
+    if isEnabled(os.Getenv("ENABLE_ENGINEERS")) {
+        r.Get("/engineers", m.handler.ListEngineers)
+    }
 }
 
 func (m *Module) Start(ctx context.Context) error {

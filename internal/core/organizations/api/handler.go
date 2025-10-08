@@ -184,6 +184,16 @@ func (h *Handler) ResolvePrice(w http.ResponseWriter, r *http.Request) {
     h.respondJSON(w, http.StatusOK, res)
 }
 
+// Phase 5: Engineers
+func (h *Handler) ListEngineers(w http.ResponseWriter, r *http.Request) {
+    ctx := r.Context()
+    limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+    offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
+    items, err := h.repo.ListEngineers(ctx, limit, offset)
+    if err != nil { h.respondError(w, http.StatusInternalServerError, "failed to list engineers: "+err.Error()); return }
+    h.respondJSON(w, http.StatusOK, map[string]any{"items": items})
+}
+
 func (h *Handler) respondJSON(w http.ResponseWriter, status int, data interface{}) {
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(status)
