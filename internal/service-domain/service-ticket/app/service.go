@@ -2,8 +2,11 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
+	"os"
+	"time"
 
 	equipmentDomain "github.com/aby-med/medical-platform/internal/service-domain/equipment-registry/domain"
 	ticketDomain "github.com/aby-med/medical-platform/internal/service-domain/service-ticket/domain"
@@ -101,6 +104,18 @@ func (s *TicketService) CreateTicket(ctx context.Context, req CreateTicketReques
 		return nil, fmt.Errorf("failed to create ticket: %w", err)
 	}
 
+	// Optional: minimal responsibility resolver (Phase 4)
+	if enabled(os.Getenv("ENABLE_RESP_ORG_ASSIGNMENT")) {
+		prov := map[string]any{
+			"resolver": "default",
+			"decision": "none",
+			"reason":   "no policy configured",
+			"ts":       time.Now().UTC().Format(time.RFC3339),
+		}
+		b, _ := json.Marshal(prov)
+		_ = s.repo.UpdateResponsibility(ctx, ticket.ID, nil, b)
+	}
+
 	// Add initial comment
 	if req.InitialComment != "" {
 		comment := &ticketDomain.TicketComment{
@@ -117,6 +132,15 @@ func (s *TicketService) CreateTicket(ctx context.Context, req CreateTicketReques
 		slog.String("ticket_number", ticket.TicketNumber))
 
 	return ticket, nil
+}
+
+func enabled(v string) bool {
+    switch v {
+    case "1", "true", "TRUE", "True", "yes", "on":
+        return true
+    default:
+        return false
+    }
 }
 
 // CreateFromWhatsApp creates a ticket from a WhatsApp message
