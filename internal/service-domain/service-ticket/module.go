@@ -22,6 +22,7 @@ type Module struct {
 	whatsappHandler *whatsapp.WebhookHandler
 	logger          *slog.Logger
     dispatcher      *app.WebhookDispatcher
+    slaMonitor      *app.SLAMonitor
 }
 
 // ModuleConfig holds module configuration
@@ -83,6 +84,8 @@ func (m *Module) Initialize(ctx context.Context) error {
 
     // Create dispatcher (started conditionally)
     m.dispatcher = app.NewWebhookDispatcher(pool, m.logger)
+    // Create SLA monitor (started conditionally)
+    m.slaMonitor = app.NewSLAMonitor(pool, m.logger)
 
 	// Create ticket HTTP handler
 	m.ticketHandler = api.NewTicketHandler(ticketService, m.logger)
@@ -145,6 +148,10 @@ func (m *Module) Start(ctx context.Context) error {
     // Start dispatcher if enabled
     if m.dispatcher != nil {
         go m.dispatcher.Run(ctx)
+    }
+    // Start SLA monitor if enabled
+    if m.slaMonitor != nil {
+        go m.slaMonitor.Run(ctx)
     }
 	return nil
 }

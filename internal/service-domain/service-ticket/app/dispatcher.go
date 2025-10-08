@@ -11,6 +11,7 @@ import (
     "log/slog"
     "net/http"
     "os"
+    "strconv"
     "time"
 
     "github.com/jackc/pgx/v5/pgxpool"
@@ -57,10 +58,12 @@ type deliveryJob struct {
     Payload      []byte
     EndpointURL  string
     Secret       *string
+    Attempts     int
+    LastAttempt  *time.Time
 }
 
 func (d *WebhookDispatcher) dispatchBatch(ctx context.Context, limit int) error {
-    const q = `SELECT d.id, e.id, e.event_type, e.payload, s.endpoint_url, s.secret
+    const q = `SELECT d.id, e.id, e.event_type, e.payload, s.endpoint_url, s.secret, d.attempt_count, d.last_attempt_at
                FROM webhook_deliveries d
                JOIN service_events e ON e.id = d.event_id
                JOIN webhook_subscriptions s ON s.id = d.subscription_id
@@ -73,19 +76,34 @@ func (d *WebhookDispatcher) dispatchBatch(ctx context.Context, limit int) error 
     var jobs []deliveryJob
     for rows.Next() {
         var j deliveryJob
-        if err := rows.Scan(&j.DeliveryID, &j.EventID, &j.EventType, &j.Payload, &j.EndpointURL, &j.Secret); err != nil {
+        if err := rows.Scan(&j.DeliveryID, &j.EventID, &j.EventType, &j.Payload, &j.EndpointURL, &j.Secret, &j.Attempts, &j.LastAttempt); err != nil {
             return err
         }
-        jobs = append(jobs, j)
+        if d.isDue(j) {
+            jobs = append(jobs, j)
+        }
     }
     for _, j := range jobs {
         if err := d.deliver(ctx, j); err != nil {
-            d.markFailure(ctx, j.DeliveryID, err)
+            d.markFailure(ctx, j)
         } else {
             d.markSuccess(ctx, j.DeliveryID)
         }
     }
     return nil
+}
+
+func (d *WebhookDispatcher) isDue(j deliveryJob) bool {
+    // Exponential backoff: 1m,5m,15m,60m,180m then cap
+    schedule := []time.Duration{time.Minute, 5 * time.Minute, 15 * time.Minute, time.Hour, 3 * time.Hour}
+    if j.Attempts == 0 || j.LastAttempt == nil {
+        return true
+    }
+    idx := j.Attempts - 1
+    if idx < 0 { idx = 0 }
+    if idx >= len(schedule) { idx = len(schedule) - 1 }
+    next := j.LastAttempt.Add(schedule[idx])
+    return time.Now().After(next)
 }
 
 func (d *WebhookDispatcher) deliver(ctx context.Context, j deliveryJob) error {
@@ -114,9 +132,18 @@ func (d *WebhookDispatcher) markSuccess(ctx context.Context, deliveryID string) 
     _, _ = d.pool.Exec(ctx, q, deliveryID)
 }
 
-func (d *WebhookDispatcher) markFailure(ctx context.Context, deliveryID string, err error) {
+func (d *WebhookDispatcher) markFailure(ctx context.Context, j deliveryJob) {
+    maxAttempts := 10
+    if v := os.Getenv("WEBHOOK_MAX_ATTEMPTS"); v != "" {
+        if n, e := strconv.Atoi(v); e == nil && n > 0 { maxAttempts = n }
+    }
+    if j.Attempts+1 >= maxAttempts {
+        const qf = `UPDATE webhook_deliveries SET status='failed', last_error=$2, last_attempt_at=NOW(), attempt_count=attempt_count+1 WHERE id=$1`
+        _, _ = d.pool.Exec(ctx, qf, j.DeliveryID, "max attempts reached")
+        return
+    }
     const q = `UPDATE webhook_deliveries SET status='queued', last_error=$2, last_attempt_at=NOW(), attempt_count=attempt_count+1 WHERE id=$1`
-    _, _ = d.pool.Exec(ctx, q, deliveryID, err.Error())
+    _, _ = d.pool.Exec(ctx, q, j.DeliveryID, "retry: last error")
 }
 
 func sign(secret, ts string, body []byte) string {
