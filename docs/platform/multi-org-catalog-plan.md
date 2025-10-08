@@ -190,3 +190,85 @@
  
  Acceptance for future-proofing docs
  - Each subsection includes: scope, non-goal, data model sketch, API impact, rollout/flags, and test checklist.
+
+ ## 16. Gaps Closure Checklist (acceptance + owners)
+
+ Product/Catalog
+ - Catalog versioning documented with rollback rules and immutability of published versions
+   - Acceptance: examples of draft→published, diffing, and rollback via new version
+   - Owner: Product + Backend
+ - Eligibility rules (certifications/territories) and enforcement points
+   - Acceptance: policy examples; API filter behavior; failure messages
+   - Owner: Product + Backend
+ - Multi-brand/multi-channel conflict resolution and precedence
+   - Acceptance: precedence table and test cases; SKU dedupe behavior
+   - Owner: Product
+ - Search/indexing and uniqueness constraints
+   - Acceptance: defined keys (sku_code, product_id+attrs); indexing plan
+   - Owner: Backend
+
+ Pricing/Commercials
+ - Precedence matrix finalized with tie-breakers and examples
+   - Acceptance: matrix in docs + unit tests for overlapping scopes
+   - Owner: Product + Backend
+ - Multi-currency/tax/rounding and promotions stacking policy
+   - Acceptance: price book currency, FX note, tax examples, stacking table
+   - Owner: Product
+ - Agreements/contracts schema (warranty/AMC/subscription)
+   - Acceptance: ER sketch + lifecycle states + sample payloads
+   - Owner: Product
+
+ Service/SLA
+ - SLA DSL and escalation matrix
+   - Acceptance: severity table, business hours/holidays, breach actions
+   - Owner: Product + Backend
+ - PM schedules and RMA/returns workflows
+   - Acceptance: state diagrams and minimal field sets
+   - Owner: Product
+ - Assignment plugin interface + audit trail
+   - Acceptance: interface signature + audit event schema examples
+   - Owner: Backend
+
+ Security/Tenancy
+ - RBAC matrix and org-optional behavior table
+   - Acceptance: role×resource table with examples; no-org fallback rules
+   - Owner: Product + Platform
+ - Data visibility rules (global vs org-scoped)
+   - Acceptance: query examples; soft-filters when org_id absent
+   - Owner: Backend
+ - PII/privacy/retention
+   - Acceptance: retention windows; redaction policy; export/delete flows
+   - Owner: Platform
+
+ APIs/Contracts
+ - Error model, pagination/filter standards, idempotency keys
+   - Acceptance: style guide page; examples; conformance checklist
+   - Owner: Platform
+ - API versioning and deprecation process
+   - Acceptance: version policy; sunset headers; changelog template
+   - Owner: Platform
+ - Events/webhooks schemas and retry/backoff/signing
+   - Acceptance: schema registry; signature spec; DLQ strategy
+   - Owner: Platform
+
+ Operations/SRE
+ - Observability SLOs, runbooks, alerting thresholds
+   - Acceptance: SLO targets; dashboards; on-call runbooks
+   - Owner: SRE
+ - Backups/DR, migration rollback strategy, seed/demo data
+   - Acceptance: RPO/RTO; rollback steps; demo dataset outline
+   - Owner: SRE + Backend
+ - Rate limits, caching, performance budgets
+   - Acceptance: limits per endpoint; cache keys/TTL; p95 targets
+   - Owner: Platform
+
+ Data/Analytics
+ - KPI definitions and canonical views
+   - Acceptance: metrics dictionary; SQL/view samples
+   - Owner: Data
+ - Territory model source of truth (ISO vs geofence)
+   - Acceptance: chosen model; validation rules; storage format
+   - Owner: Product + Data
+ - Import/export playbooks (catalog, price books, orgs)
+   - Acceptance: CSV/JSON formats; idempotent import semantics
+   - Owner: Platform
