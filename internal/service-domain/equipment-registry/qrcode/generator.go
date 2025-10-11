@@ -73,8 +73,9 @@ func (g *Generator) GenerateQRCode(equipmentID, serialNumber, qrCodeID string) (
 
 // GenerateQRCodeBytes generates a QR code as byte array for database storage
 func (g *Generator) GenerateQRCodeBytes(equipmentID, serialNumber, qrCodeID string) ([]byte, error) {
-	// Create QR data with URL and identifiers
-	url := fmt.Sprintf("%s/equipment/%s", g.baseURL, equipmentID)
+	// Create QR data with service-request URL format
+	// This URL is used to initiate service ticket creation flow
+	url := fmt.Sprintf("%s/service-request?qr=%s", g.baseURL, qrCodeID)
 	
 	qrData := QRData{
 		URL:      url,

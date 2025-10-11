@@ -21,8 +21,8 @@ export const equipmentApi = {
   async list(params?: EquipmentListParams) {
     try {
       const queryString = params ? buildQueryString(params) : '';
-      const response = await apiClient.get<{ equipment: Equipment[]; total: number; page: number; page_size: number; total_pages: number }>(
-        `/equipment?${queryString}`
+      const response = await apiClient.get<{ items: Equipment[]; total: number; page: number; page_size: number }>(
+        `/v1/equipment?${queryString}`
       );
       return response.data;
     } catch (error) {
@@ -35,7 +35,7 @@ export const equipmentApi = {
    */
   async getById(id: string) {
     try {
-      const response = await apiClient.get<Equipment>(`/equipment/${id}`);
+      const response = await apiClient.get<Equipment>(`/v1/equipment/${id}`);
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -47,7 +47,7 @@ export const equipmentApi = {
    */
   async getByQRCode(qrCode: string) {
     try {
-      const response = await apiClient.get<Equipment>(`/equipment/qr/${qrCode}`);
+      const response = await apiClient.get<Equipment>(`/v1/equipment/qr/${qrCode}`);
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -59,7 +59,7 @@ export const equipmentApi = {
    */
   async getBySerial(serialNumber: string) {
     try {
-      const response = await apiClient.get<Equipment>(`/equipment/serial/${serialNumber}`);
+      const response = await apiClient.get<Equipment>(`/v1/equipment/serial/${serialNumber}`);
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -71,7 +71,7 @@ export const equipmentApi = {
    */
   async register(data: RegisterEquipmentRequest) {
     try {
-      const response = await apiClient.post<Equipment>('/equipment', data);
+      const response = await apiClient.post<Equipment>('/v1/equipment', data);
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -83,7 +83,7 @@ export const equipmentApi = {
    */
   async update(id: string, data: Partial<Equipment>) {
     try {
-      const response = await apiClient.patch<{ message: string }>(`/equipment/${id}`, data);
+      const response = await apiClient.patch<{ message: string }>(`/v1/equipment/${id}`, data);
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -95,7 +95,7 @@ export const equipmentApi = {
    */
   async generateQRCode(id: string) {
     try {
-      const response = await apiClient.post<{ message: string; path: string }>(`/equipment/${id}/qr`);
+      const response = await apiClient.post<{ message: string; path: string }>(`/v1/equipment/${id}/qr`);
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -113,7 +113,7 @@ export const equipmentApi = {
         failed: number; 
         failed_ids?: string[];
         message: string 
-      }>('/equipment/qr/bulk-generate');
+      }>('/v1/equipment/qr/bulk-generate');
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -125,7 +125,7 @@ export const equipmentApi = {
    */
   async downloadQRLabel(id: string) {
     try {
-      const response = await apiClient.get(`/equipment/${id}/qr/pdf`, {
+      const response = await apiClient.get(`/v1/equipment/${id}/qr/pdf`, {
         responseType: 'blob',
       });
       
@@ -153,7 +153,7 @@ export const equipmentApi = {
       formData.append('csv_file', file);
       formData.append('created_by', createdBy);
       
-      const response = await apiClient.post<CSVImportResult>('/equipment/import', formData, {
+      const response = await apiClient.post<CSVImportResult>('/v1/equipment/import', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -170,7 +170,7 @@ export const equipmentApi = {
    */
   async recordService(id: string, data: { service_date: string; notes: string }) {
     try {
-      const response = await apiClient.post<{ message: string }>(`/equipment/${id}/service`, data);
+      const response = await apiClient.post<{ message: string }>(`/v1/equipment/${id}/service`, data);
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
