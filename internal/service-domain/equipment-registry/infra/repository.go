@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -583,6 +584,9 @@ func (r *EquipmentRepository) scanEquipmentFromRows(rows pgx.Rows) (*domain.Equi
 	var equipment domain.Equipment
 	var specs, photos, docs, address []byte
 
+	// Add logging to debug scanning issues
+	log.Printf("[DEBUG] Starting to scan equipment row with %d columns", len(rows.RawValues()))
+	
 	err := rows.Scan(
 		&equipment.ID,
 		&equipment.QRCode,
@@ -620,8 +624,12 @@ func (r *EquipmentRepository) scanEquipmentFromRows(rows pgx.Rows) (*domain.Equi
 	)
 
 	if err != nil {
+		log.Printf("[ERROR] Failed to scan equipment row: %v", err)
+		log.Printf("[ERROR] Number of columns: %d, Number of scan destinations: 33", len(rows.RawValues()))
 		return nil, err
 	}
+	
+	log.Printf("[DEBUG] Successfully scanned equipment: %s", equipment.ID)
 
 	// Unmarshal JSONB fields
 	if len(specs) > 0 {
