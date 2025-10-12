@@ -32,6 +32,36 @@ func (h *Handler) ListOrgs(w http.ResponseWriter, r *http.Request) {
     h.respondJSON(w, http.StatusOK, map[string]any{"items": items})
 }
 
+func (h *Handler) GetOrg(w http.ResponseWriter, r *http.Request) {
+    ctx := r.Context()
+    id := chi.URLParam(r, "id")
+    if id == "" {
+        h.respondError(w, http.StatusBadRequest, "id required")
+        return
+    }
+    org, err := h.repo.GetOrgByID(ctx, id)
+    if err != nil {
+        h.respondError(w, http.StatusInternalServerError, "failed to get org: "+err.Error())
+        return
+    }
+    h.respondJSON(w, http.StatusOK, org)
+}
+
+func (h *Handler) ListFacilities(w http.ResponseWriter, r *http.Request) {
+    ctx := r.Context()
+    id := chi.URLParam(r, "id")
+    if id == "" {
+        h.respondError(w, http.StatusBadRequest, "id required")
+        return
+    }
+    facilities, err := h.repo.ListFacilities(ctx, id)
+    if err != nil {
+        h.respondError(w, http.StatusInternalServerError, "failed to list facilities: "+err.Error())
+        return
+    }
+    h.respondJSON(w, http.StatusOK, map[string]any{"items": facilities})
+}
+
 func (h *Handler) ListRelationships(w http.ResponseWriter, r *http.Request) {
     ctx := r.Context()
     id := chi.URLParam(r, "id")

@@ -1,7 +1,7 @@
 'use client';
 
-import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -11,21 +11,47 @@ import {
   Ticket, 
   Store,
   ArrowRight,
-  QrCode,
-  TestTube2 as TestTube
+  Loader2
 } from 'lucide-react';
+import { manufacturersApi } from '@/lib/api/manufacturers';
+import { suppliersApi } from '@/lib/api/suppliers';
+import { equipmentApi } from '@/lib/api/equipment';
+import { ticketsApi } from '@/lib/api/tickets';
 
 export default function AdminDashboard() {
   const router = useRouter();
 
-  // Platform-wide stats - hardcoded to avoid hydration issues
+  // Fetch platform stats using React Query
+  const { data: manufacturersData, isLoading: loadingManufacturers } = useQuery({
+    queryKey: ['manufacturers', 'count'],
+    queryFn: () => manufacturersApi.list({ limit: 1 }),
+  });
+
+  const { data: suppliersData, isLoading: loadingSuppliers } = useQuery({
+    queryKey: ['suppliers', 'count'],
+    queryFn: () => suppliersApi.list({ page: 1, page_size: 1 }),
+  });
+
+  const { data: equipmentData, isLoading: loadingEquipment } = useQuery({
+    queryKey: ['equipment', 'count'],
+    queryFn: () => equipmentApi.list({ page: 1, page_size: 1 }),
+  });
+
+  const { data: ticketsData, isLoading: loadingTickets } = useQuery({
+    queryKey: ['tickets', 'count', 'active'],
+    queryFn: () => ticketsApi.list({ page: 1, page_size: 1 }),
+  });
+
+  // Calculate platform stats from API responses
   const platformStats = {
-    manufacturers: 5,
-    suppliers: 7,
-    totalEquipment: 505,
-    totalEngineers: 90,
-    activeTickets: 23,
+    manufacturers: manufacturersData?.total || 0,
+    suppliers: suppliersData?.total || 0,
+    totalEquipment: equipmentData?.total || 0,
+    totalEngineers: 90, // TODO: Add engineers API endpoint
+    activeTickets: ticketsData?.total || 0,
   };
+
+  const isLoading = loadingManufacturers || loadingSuppliers || loadingEquipment || loadingTickets;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -68,7 +94,13 @@ export default function AdminDashboard() {
             <CardContent className="pt-6">
               <div className="flex flex-col">
                 <p className="text-sm font-medium text-gray-500">Manufacturers</p>
-                <p className="text-3xl font-bold mt-2">{platformStats.manufacturers}</p>
+                {loadingManufacturers ? (
+                  <div className="flex items-center gap-2 mt-2">
+                    <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                  </div>
+                ) : (
+                  <p className="text-3xl font-bold mt-2">{platformStats.manufacturers}</p>
+                )}
                 <p className="text-xs text-gray-400 mt-1">Active partners</p>
               </div>
             </CardContent>
@@ -78,7 +110,13 @@ export default function AdminDashboard() {
             <CardContent className="pt-6">
               <div className="flex flex-col">
                 <p className="text-sm font-medium text-gray-500">Suppliers</p>
-                <p className="text-3xl font-bold mt-2">{platformStats.suppliers}</p>
+                {loadingSuppliers ? (
+                  <div className="flex items-center gap-2 mt-2">
+                    <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                  </div>
+                ) : (
+                  <p className="text-3xl font-bold mt-2">{platformStats.suppliers}</p>
+                )}
                 <p className="text-xs text-gray-400 mt-1">Registered vendors</p>
               </div>
             </CardContent>
@@ -88,7 +126,13 @@ export default function AdminDashboard() {
             <CardContent className="pt-6">
               <div className="flex flex-col">
                 <p className="text-sm font-medium text-gray-500">Equipment</p>
-                <p className="text-3xl font-bold mt-2">{platformStats.totalEquipment}</p>
+                {loadingEquipment ? (
+                  <div className="flex items-center gap-2 mt-2">
+                    <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                  </div>
+                ) : (
+                  <p className="text-3xl font-bold mt-2">{platformStats.totalEquipment}</p>
+                )}
                 <p className="text-xs text-gray-400 mt-1">Platform-wide</p>
               </div>
             </CardContent>
@@ -108,7 +152,13 @@ export default function AdminDashboard() {
             <CardContent className="pt-6">
               <div className="flex flex-col">
                 <p className="text-sm font-medium text-gray-500">Active Tickets</p>
-                <p className="text-3xl font-bold mt-2 text-orange-600">{platformStats.activeTickets}</p>
+                {loadingTickets ? (
+                  <div className="flex items-center gap-2 mt-2">
+                    <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                  </div>
+                ) : (
+                  <p className="text-3xl font-bold mt-2 text-orange-600">{platformStats.activeTickets}</p>
+                )}
                 <p className="text-xs text-gray-400 mt-1">Open requests</p>
               </div>
             </CardContent>

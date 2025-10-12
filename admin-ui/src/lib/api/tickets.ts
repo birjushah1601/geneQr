@@ -11,6 +11,28 @@ import type {
   TicketListParams,
 } from '@/types';
 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// TYPES FOR ADDITIONAL ENDPOINTS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+export interface TicketComment {
+  id: string;
+  ticket_id: string;
+  comment: string;
+  created_by: string;
+  created_at: string;
+}
+
+export interface TicketStatusHistory {
+  id: string;
+  ticket_id: string;
+  from_status: string;
+  to_status: string;
+  changed_by: string;
+  changed_at: string;
+  notes?: string;
+}
+
 export const ticketsApi = {
   /**
    * List tickets with optional filters
@@ -18,8 +40,8 @@ export const ticketsApi = {
   async list(params?: TicketListParams) {
     try {
       const queryString = params ? buildQueryString(params) : '';
-      const response = await apiClient.get<{ tickets: ServiceTicket[]; total: number; page: number; page_size: number; total_pages: number }>(
-        `/tickets?${queryString}`
+      const response = await apiClient.get<{ items: ServiceTicket[]; total: number; page: number; page_size: number }>(
+        `/v1/tickets?${queryString}`
       );
       return response.data;
     } catch (error) {
@@ -32,7 +54,7 @@ export const ticketsApi = {
    */
   async getById(id: string) {
     try {
-      const response = await apiClient.get<ServiceTicket>(`/tickets/${id}`);
+      const response = await apiClient.get<ServiceTicket>(`/v1/tickets/${id}`);
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -44,7 +66,7 @@ export const ticketsApi = {
    */
   async getByTicketNumber(ticketNumber: string) {
     try {
-      const response = await apiClient.get<ServiceTicket>(`/tickets/number/${ticketNumber}`);
+      const response = await apiClient.get<ServiceTicket>(`/v1/tickets/number/${ticketNumber}`);
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));

@@ -69,8 +69,10 @@ func (m *Module) MountRoutes(r chi.Router) {
         return
     }
     m.logger.Info("Mounting organizations routes")
-    r.Route("/orgs", func(r chi.Router) {
+    r.Route("/organizations", func(r chi.Router) {
         r.Get("/", m.handler.ListOrgs)
+        r.Get("/{id}", m.handler.GetOrg)
+        r.Get("/{id}/facilities", m.handler.ListFacilities)
         r.Get("/{id}/relationships", m.handler.ListRelationships)
     })
 

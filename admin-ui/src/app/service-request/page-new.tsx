@@ -1,0 +1,251 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { equipmentApi } from '@/lib/api/equipment';
+import { Equipment } from '@/types';
+import { Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+
+export default function ServiceRequestPage() {
+  const searchParams = useSearchParams();
+  const qrCode = searchParams?.get('qr');
+  
+  const [equipment, setEquipment] = useState<Equipment | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  
+  const [formData, setFormData] = useState({
+    description: '',
+    priority: 'medium',
+    requestedBy: '',
+  });
+
+  useEffect(() => {
+    if (!qrCode) {
+      setError('No QR code provided. Please scan a QR code to create a service request.');
+      setLoading(false);
+      return;
+    }
+
+    // Fetch equipment by QR code
+    const fetchEquipment = async () => {
+      try {
+        setLoading(true);
+        const data = await equipmentApi.getByQRCode(qrCode);
+        setEquipment(data);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to fetch equipment:', err);
+        setError(`Equipment not found for QR code: ${qrCode}`);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEquipment();
+  }, [qrCode]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!equipment) return;
+    
+    try {
+      setSubmitting(true);
+      
+      // TODO: Call service ticket API when implemented
+      // await serviceTicketApi.create({
+      //   equipmentId: equipment.id,
+      //   description: formData.description,
+      //   priority: formData.priority,
+      //   requestedBy: formData.requestedBy,
+      // });
+      
+      // Simulate API call for now
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      setSuccess(true);
+      setFormData({ description: '', priority: 'medium', requestedBy: '' });
+      
+    } catch (err) {
+      alert(`Failed to create service request: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading equipment details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !equipment) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6">
+          <div className="flex items-center gap-3 text-red-600 mb-4">
+            <AlertCircle className="h-6 w-6" />
+            <h2 className="text-lg font-semibold">Error</h2>
+          </div>
+          <p className="text-gray-700 mb-4">{error}</p>
+          <div className="bg-gray-50 p-4 rounded-md">
+            <p className="text-sm text-gray-600">
+              <strong>QR Code:</strong> {qrCode || 'Not provided'}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (success) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6">
+          <div className="flex items-center gap-3 text-green-600 mb-4">
+            <CheckCircle className="h-6 w-6" />
+            <h2 className="text-lg font-semibold">Service Request Created!</h2>
+          </div>
+          <p className="text-gray-700 mb-6">
+            Your service request has been submitted successfully. Our team will contact you soon.
+          </p>
+          <div className="bg-gray-50 p-4 rounded-md mb-4">
+            <p className="text-sm text-gray-600 mb-1">
+              <strong>Equipment:</strong> {equipment.name}
+            </p>
+            <p className="text-sm text-gray-600">
+              <strong>Serial Number:</strong> {equipment.serialNumber}
+            </p>
+          </div>
+          <button
+            onClick={() => setSuccess(false)}
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Create Another Request
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <h1 className="text-2xl font-bold text-gray-900 mb-6">
+            Create Service Request
+          </h1>
+
+          {/* Equipment Details */}
+          <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
+            <h2 className="text-lg font-semibold text-blue-900 mb-3">Equipment Details</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-blue-700 font-medium">Equipment Name</p>
+                <p className="text-blue-900">{equipment.name}</p>
+              </div>
+              <div>
+                <p className="text-sm text-blue-700 font-medium">Serial Number</p>
+                <p className="text-blue-900">{equipment.serialNumber}</p>
+              </div>
+              <div>
+                <p className="text-sm text-blue-700 font-medium">Manufacturer</p>
+                <p className="text-blue-900">{equipment.manufacturerName}</p>
+              </div>
+              <div>
+                <p className="text-sm text-blue-700 font-medium">Model</p>
+                <p className="text-blue-900">{equipment.modelNumber || 'N/A'}</p>
+              </div>
+              {equipment.customerName && (
+                <div className="col-span-2">
+                  <p className="text-sm text-blue-700 font-medium">Hospital/Location</p>
+                  <p className="text-blue-900">{equipment.customerName}</p>
+                </div>
+              )}
+              <div className="col-span-2">
+                <p className="text-sm text-blue-700 font-medium">QR Code</p>
+                <p className="text-blue-900 font-mono text-sm">{equipment.qrCode}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Service Request Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label htmlFor="requestedBy" className="block text-sm font-medium text-gray-700 mb-2">
+                Your Name *
+              </label>
+              <input
+                type="text"
+                id="requestedBy"
+                required
+                value={formData.requestedBy}
+                onChange={(e) => setFormData({ ...formData, requestedBy: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter your name"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-2">
+                Priority *
+              </label>
+              <select
+                id="priority"
+                required
+                value={formData.priority}
+                onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="low">Low - Routine maintenance</option>
+                <option value="medium">Medium - Issue affecting performance</option>
+                <option value="high">High - Critical issue, equipment down</option>
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                Issue Description *
+              </label>
+              <textarea
+                id="description"
+                required
+                rows={5}
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Describe the issue or service needed..."
+              />
+            </div>
+
+            <div className="flex gap-4">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {submitting && <Loader2 className="h-5 w-5 animate-spin" />}
+                {submitting ? 'Submitting...' : 'Submit Service Request'}
+              </button>
+            </div>
+          </form>
+
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <p className="text-xs text-gray-500 text-center">
+              By submitting this request, you agree to our service terms and conditions.
+              Our team will contact you within 24 hours.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
