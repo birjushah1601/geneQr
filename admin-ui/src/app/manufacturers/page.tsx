@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Search, Plus, Upload, Download, Building2, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Search, Plus, Upload, Download, Building2, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
 
 interface Manufacturer {
   id: string;
@@ -26,11 +26,10 @@ export default function ManufacturersListPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
-  // Mock data - in production this would come from API
-  const manufacturersData: Manufacturer[] = useMemo(() => {
-    const manufacturers = [
+  // Mock manufacturers data (since backend API doesn't exist yet)
+  const manufacturersData: Manufacturer[] = useMemo(() => [
       {
-        id: 'MFR-001',
+        id: 'MFR-001-OLD',
         name: 'Siemens Healthineers',
         contactPerson: 'John Smith',
         email: 'john.smith@siemens.com',
@@ -94,35 +93,7 @@ export default function ManufacturersListPage() {
         status: 'Inactive',
         createdAt: '2023-12-01',
       },
-    ];
-
-    // Check if current manufacturer exists in localStorage
-    if (typeof window !== 'undefined') {
-      const currentMfr = localStorage.getItem('current_manufacturer');
-      if (currentMfr) {
-        const mfrData = JSON.parse(currentMfr);
-        // Check if already in list
-        const exists = manufacturers.find(m => m.id === mfrData.id);
-        if (!exists && mfrData.id) {
-          manufacturers.unshift({
-            id: mfrData.id,
-            name: mfrData.name,
-            contactPerson: mfrData.contact_person || '',
-            email: mfrData.email || '',
-            phone: mfrData.phone || '',
-            website: mfrData.website || '',
-            address: mfrData.address || '',
-            equipmentCount: localStorage.getItem('equipment_imported') === 'true' ? 398 : 0,
-            engineersCount: localStorage.getItem('engineers') ? JSON.parse(localStorage.getItem('engineers') || '[]').length : 0,
-            status: 'Active',
-            createdAt: mfrData.created_at || new Date().toISOString().split('T')[0],
-          });
-        }
-      }
-    }
-
-    return manufacturers;
-  }, []);
+    ], []);
 
   // Filter manufacturers based on search and status
   const filteredManufacturers = useMemo(() => {

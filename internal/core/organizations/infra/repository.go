@@ -47,6 +47,38 @@ func (r *Repository) ListOrgs(ctx context.Context, limit, offset int) ([]Organiz
     return out, rows.Err()
 }
 
+func (r *Repository) GetOrgByID(ctx context.Context, id string) (*Organization, error) {
+    row := r.db.QueryRow(ctx, `SELECT id, name, org_type, status, COALESCE(metadata, '{}'::jsonb) FROM organizations WHERE id=$1`, id)
+    var o Organization
+    if err := row.Scan(&o.ID, &o.Name, &o.OrgType, &o.Status, &o.Metadata); err != nil {
+        return nil, err
+    }
+    return &o, nil
+}
+
+type Facility struct {
+    ID             string `json:"id"`
+    OrgID          string `json:"org_id"`
+    FacilityName   string `json:"facility_name"`
+    FacilityCode   string `json:"facility_code"`
+    FacilityType   string `json:"facility_type"`
+    Address        []byte `json:"address"`
+    Status         string `json:"status"`
+}
+
+func (r *Repository) ListFacilities(ctx context.Context, orgID string) ([]Facility, error) {
+    rows, err := r.db.Query(ctx, `SELECT id, org_id, facility_name, facility_code, facility_type, COALESCE(address, '{}'::jsonb), status FROM organization_facilities WHERE org_id=$1 ORDER BY created_at DESC`, orgID)
+    if err != nil { return nil, err }
+    defer rows.Close()
+    var out []Facility
+    for rows.Next() {
+        var f Facility
+        if err := rows.Scan(&f.ID, &f.OrgID, &f.FacilityName, &f.FacilityCode, &f.FacilityType, &f.Address, &f.Status); err != nil { return nil, err }
+        out = append(out, f)
+    }
+    return out, rows.Err()
+}
+
 func (r *Repository) ListRelationships(ctx context.Context, orgID string) ([]Relationship, error) {
     const q = `SELECT id, parent_org_id, child_org_id, rel_type FROM org_relationships WHERE parent_org_id=$1 OR child_org_id=$1 ORDER BY created_at DESC`
     rows, err := r.db.Query(ctx, q, orgID)
@@ -241,7 +273,7 @@ type Engineer struct {
 func (r *Repository) ListEngineers(ctx context.Context, limit, offset int) ([]Engineer, error) {
     if limit <= 0 || limit > 500 { limit = 100 }
     if offset < 0 { offset = 0 }
-    rows, err := r.db.Query(ctx, `SELECT id, name, COALESCE(skills, ARRAY[]::text[]) FROM engineers ORDER BY created_at DESC LIMIT $1 OFFSET $2`, limit, offset)
+    rows, err := r.db.Query(ctx, `SELECT id, full_name, COALESCE(skills, ARRAY[]::text[]) FROM engineers ORDER BY created_at DESC LIMIT $1 OFFSET $2`, limit, offset)
     if err != nil { return nil, err }
     defer rows.Close()
     var out []Engineer
@@ -259,7 +291,7 @@ func (r *Repository) EligibleEngineers(ctx context.Context, skills []string, reg
     // Skills: e.skills @> $1 OR EXISTS coverage with skills @> $1
     // Region: e.home_region=$2 OR EXISTS coverage with region=$2
     const base = `
-SELECT DISTINCT e.id, e.name, COALESCE(e.skills, ARRAY[]::text[])
+SELECT DISTINCT e.id, e.full_name, COALESCE(e.skills, ARRAY[]::text[])
 FROM engineers e
 LEFT JOIN engineer_coverage c ON c.engineer_id = e.id
 WHERE ( $1::text[] IS NULL OR (COALESCE(e.skills, ARRAY[]::text[]) @> $1::text[] OR COALESCE(c.skills, ARRAY[]::text[]) @> $1::text[]) )

@@ -101,4 +101,6 @@ export const buildQueryString = (params: Record<string, any>): string => {
   return query.toString();
 };
 
+// Export both as default and named export
+export { apiClient };
 export default apiClient;

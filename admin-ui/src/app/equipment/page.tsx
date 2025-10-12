@@ -68,7 +68,8 @@ export default function EquipmentListPage() {
         console.log('API Response:', response);
         
         // Map API response to component format
-        const mappedEquipment: Equipment[] = response.equipment.map((item: any) => ({
+        const responseData: any = response;
+        const mappedEquipment: Equipment[] = (responseData.items || responseData.equipment || []).map((item: any) => ({
           id: item.id,
           name: item.equipment_name,
           serialNumber: item.serial_number,
@@ -200,7 +201,7 @@ export default function EquipmentListPage() {
       setGeneratingQR(equipmentId);
       
       // Call real backend API to generate and store QR code
-      const result = await equipmentApi.generateQRCode(equipmentId);
+      const result: any = await equipmentApi.generateQRCode(equipmentId);
       
       // Reload the page to fetch updated equipment with QR code
       alert(`✅ QR Code generated and stored successfully!\n\nEquipment: ${equipmentId}\nQR Code: ${result.qr_code || `QR-${equipmentId}`}`);
