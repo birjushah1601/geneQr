@@ -68,7 +68,8 @@ export default function EquipmentListPage() {
         console.log('API Response:', response);
         
         // Map API response to component format
-        const mappedEquipment: Equipment[] = response.equipment.map((item: any) => ({
+        const responseData: any = response;
+        const mappedEquipment: Equipment[] = (responseData.items || responseData.equipment || []).map((item: any) => ({
           id: item.id,
           name: item.equipment_name,
           serialNumber: item.serial_number,
