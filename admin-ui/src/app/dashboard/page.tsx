@@ -11,25 +11,23 @@ import {
   Ticket, 
   Store,
   ArrowRight,
-  Loader2
+  Loader2,
+  Factory,
+  Truck,
+  ShoppingBag,
+  Hospital
 } from 'lucide-react';
-import { manufacturersApi } from '@/lib/api/manufacturers';
-import { suppliersApi } from '@/lib/api/suppliers';
+import { organizationsApi } from '@/lib/api/organizations';
 import { equipmentApi } from '@/lib/api/equipment';
 import { ticketsApi } from '@/lib/api/tickets';
 
 export default function AdminDashboard() {
   const router = useRouter();
 
-  // Fetch platform stats using React Query
-  const { data: manufacturersData, isLoading: loadingManufacturers } = useQuery({
-    queryKey: ['manufacturers', 'count'],
-    queryFn: () => manufacturersApi.list({ limit: 1 }),
-  });
-
-  const { data: suppliersData, isLoading: loadingSuppliers } = useQuery({
-    queryKey: ['suppliers', 'count'],
-    queryFn: () => suppliersApi.list({ page: 1, page_size: 1 }),
+  // Fetch organizations stats from new unified API
+  const { data: organizationsData, isLoading: loadingOrganizations } = useQuery({
+    queryKey: ['organizations', 'all'],
+    queryFn: () => organizationsApi.list(),
   });
 
   const { data: equipmentData, isLoading: loadingEquipment } = useQuery({
@@ -42,16 +40,28 @@ export default function AdminDashboard() {
     queryFn: () => ticketsApi.list({ page: 1, page_size: 1 }),
   });
 
+  // Calculate organization breakdown
+  const orgsData: any = organizationsData;
+  const orgsByType = {
+    manufacturer: orgsData?.items?.filter((o: any) => o.org_type === 'manufacturer').length || 0,
+    distributor: orgsData?.items?.filter((o: any) => o.org_type === 'distributor').length || 0,
+    dealer: orgsData?.items?.filter((o: any) => o.org_type === 'dealer').length || 0,
+    hospital: orgsData?.items?.filter((o: any) => o.org_type === 'hospital').length || 0,
+  };
+
   // Calculate platform stats from API responses
   const platformStats = {
-    manufacturers: manufacturersData?.total || 0,
-    suppliers: suppliersData?.total || 0,
+    totalOrganizations: orgsData?.total || 0,
+    manufacturers: orgsByType.manufacturer,
+    distributors: orgsByType.distributor,
+    dealers: orgsByType.dealer,
+    hospitals: orgsByType.hospital,
     totalEquipment: equipmentData?.total || 0,
     totalEngineers: 90, // TODO: Add engineers API endpoint
     activeTickets: ticketsData?.total || 0,
   };
 
-  const isLoading = loadingManufacturers || loadingSuppliers || loadingEquipment || loadingTickets;
+  const isLoading = loadingOrganizations || loadingEquipment || loadingTickets;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -89,44 +99,110 @@ export default function AdminDashboard() {
         </div>
 
         {/* Platform-Wide Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-          <Card>
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-8">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push('/organizations')}>
             <CardContent className="pt-6">
               <div className="flex flex-col">
-                <p className="text-sm font-medium text-gray-500">Manufacturers</p>
-                {loadingManufacturers ? (
+                <div className="flex items-center gap-2 mb-2">
+                  <Building2 className="h-5 w-5 text-blue-600" />
+                  <p className="text-sm font-medium text-gray-500">Organizations</p>
+                </div>
+                {isLoading ? (
                   <div className="flex items-center gap-2 mt-2">
                     <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
                   </div>
                 ) : (
-                  <p className="text-3xl font-bold mt-2">{platformStats.manufacturers}</p>
+                  <p className="text-3xl font-bold mt-2 text-blue-600">{platformStats.totalOrganizations}</p>
                 )}
-                <p className="text-xs text-gray-400 mt-1">Active partners</p>
+                <p className="text-xs text-gray-400 mt-1">All partners</p>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push('/organizations?type=manufacturer')}>
             <CardContent className="pt-6">
               <div className="flex flex-col">
-                <p className="text-sm font-medium text-gray-500">Suppliers</p>
-                {loadingSuppliers ? (
+                <div className="flex items-center gap-2 mb-2">
+                  <Factory className="h-5 w-5 text-indigo-600" />
+                  <p className="text-sm font-medium text-gray-500">Manufacturers</p>
+                </div>
+                {isLoading ? (
                   <div className="flex items-center gap-2 mt-2">
                     <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
                   </div>
                 ) : (
-                  <p className="text-3xl font-bold mt-2">{platformStats.suppliers}</p>
+                  <p className="text-3xl font-bold mt-2 text-indigo-600">{platformStats.manufacturers}</p>
                 )}
-                <p className="text-xs text-gray-400 mt-1">Registered vendors</p>
+                <p className="text-xs text-gray-400 mt-1">OEMs</p>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push('/organizations?type=distributor')}>
             <CardContent className="pt-6">
               <div className="flex flex-col">
-                <p className="text-sm font-medium text-gray-500">Equipment</p>
-                {loadingEquipment ? (
+                <div className="flex items-center gap-2 mb-2">
+                  <Truck className="h-5 w-5 text-purple-600" />
+                  <p className="text-sm font-medium text-gray-500">Distributors</p>
+                </div>
+                {isLoading ? (
+                  <div className="flex items-center gap-2 mt-2">
+                    <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                  </div>
+                ) : (
+                  <p className="text-3xl font-bold mt-2 text-purple-600">{platformStats.distributors}</p>
+                )}
+                <p className="text-xs text-gray-400 mt-1">Partners</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push('/organizations?type=dealer')}>
+            <CardContent className="pt-6">
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2 mb-2">
+                  <ShoppingBag className="h-5 w-5 text-green-600" />
+                  <p className="text-sm font-medium text-gray-500">Dealers</p>
+                </div>
+                {isLoading ? (
+                  <div className="flex items-center gap-2 mt-2">
+                    <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                  </div>
+                ) : (
+                  <p className="text-3xl font-bold mt-2 text-green-600">{platformStats.dealers}</p>
+                )}
+                <p className="text-xs text-gray-400 mt-1">Retailers</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push('/organizations?type=hospital')}>
+            <CardContent className="pt-6">
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2 mb-2">
+                  <Hospital className="h-5 w-5 text-red-600" />
+                  <p className="text-sm font-medium text-gray-500">Hospitals</p>
+                </div>
+                {isLoading ? (
+                  <div className="flex items-center gap-2 mt-2">
+                    <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                  </div>
+                ) : (
+                  <p className="text-3xl font-bold mt-2 text-red-600">{platformStats.hospitals}</p>
+                )}
+                <p className="text-xs text-gray-400 mt-1">Clients</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push('/equipment')}>
+            <CardContent className="pt-6">
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2 mb-2">
+                  <Package className="h-5 w-5 text-blue-600" />
+                  <p className="text-sm font-medium text-gray-500">Equipment</p>
+                </div>
+                {isLoading ? (
                   <div className="flex items-center gap-2 mt-2">
                     <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
                   </div>
@@ -134,32 +210,6 @@ export default function AdminDashboard() {
                   <p className="text-3xl font-bold mt-2">{platformStats.totalEquipment}</p>
                 )}
                 <p className="text-xs text-gray-400 mt-1">Platform-wide</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex flex-col">
-                <p className="text-sm font-medium text-gray-500">Engineers</p>
-                <p className="text-3xl font-bold mt-2">{platformStats.totalEngineers}</p>
-                <p className="text-xs text-gray-400 mt-1">Service personnel</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex flex-col">
-                <p className="text-sm font-medium text-gray-500">Active Tickets</p>
-                {loadingTickets ? (
-                  <div className="flex items-center gap-2 mt-2">
-                    <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-                  </div>
-                ) : (
-                  <p className="text-3xl font-bold mt-2 text-orange-600">{platformStats.activeTickets}</p>
-                )}
-                <p className="text-xs text-gray-400 mt-1">Open requests</p>
               </div>
             </CardContent>
           </Card>
@@ -207,41 +257,41 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          {/* Suppliers Card */}
+          {/* Distributors & Dealers Card */}
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                    <Store className="w-5 h-5 text-purple-600" />
+                    <Truck className="w-5 h-5 text-purple-600" />
                   </div>
                   <div>
-                    <CardTitle className="text-lg">Suppliers</CardTitle>
-                    <CardDescription>Manage supply chain partners</CardDescription>
+                    <CardTitle className="text-lg">Distribution Network</CardTitle>
+                    <CardDescription>Distributors and dealers network</CardDescription>
                   </div>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600 mb-4">
-                {platformStats.suppliers} registered suppliers providing equipment, parts, and medical consumables to the platform with excellent service ratings.
+                {platformStats.distributors + platformStats.dealers} partners ({platformStats.distributors} distributors, {platformStats.dealers} dealers) providing equipment distribution and service across India.
               </p>
               <div className="space-y-2 mb-4">
-                {/* Top Suppliers Preview */}
+                {/* Top Partners Preview */}
                 <div className="text-sm">
-                  <p className="font-medium text-gray-700 mb-2">Top Suppliers:</p>
+                  <p className="font-medium text-gray-700 mb-2">Top Partners:</p>
                   <ul className="space-y-1 text-gray-600">
-                    <li>• HealthCare Solutions - ⭐⭐⭐⭐⭐ 4.8</li>
-                    <li>• Precision Med Parts - ⭐⭐⭐⭐⭐ 4.6</li>
-                    <li>• MedTech Supplies - ⭐⭐⭐⭐ 4.5</li>
+                    <li>• MedEquip Distributors - 15 locations</li>
+                    <li>• Healthcare Solutions - 12 locations</li>
+                    <li>• MediCare Dealers - 8 locations</li>
                   </ul>
                 </div>
               </div>
               <Button 
-                onClick={() => router.push('/suppliers')}
+                onClick={() => router.push('/organizations?type=distributor')}
                 className="w-full"
               >
-                View All Suppliers
+                View Distribution Network
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </CardContent>

@@ -119,10 +119,10 @@ export default function ServiceRequestPage() {
           </p>
           <div className="bg-gray-50 p-4 rounded-md mb-4">
             <p className="text-sm text-gray-600 mb-1">
-              <strong>Equipment:</strong> {equipment.name}
+              <strong>Equipment:</strong> {(equipment as any).equipment_name || (equipment as any).name || 'N/A'}
             </p>
             <p className="text-sm text-gray-600">
-              <strong>Serial Number:</strong> {equipment.serialNumber}
+              <strong>Serial Number:</strong> {(equipment as any).serial_number || (equipment as any).serialNumber || 'N/A'}
             </p>
           </div>
           <button
@@ -150,29 +150,29 @@ export default function ServiceRequestPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-blue-700 font-medium">Equipment Name</p>
-                <p className="text-blue-900">{equipment.name}</p>
+                <p className="text-blue-900">{(equipment as any).equipment_name || (equipment as any).name || 'N/A'}</p>
               </div>
               <div>
                 <p className="text-sm text-blue-700 font-medium">Serial Number</p>
-                <p className="text-blue-900">{equipment.serialNumber}</p>
+                <p className="text-blue-900">{(equipment as any).serial_number || (equipment as any).serialNumber || 'N/A'}</p>
               </div>
               <div>
                 <p className="text-sm text-blue-700 font-medium">Manufacturer</p>
-                <p className="text-blue-900">{equipment.manufacturerName}</p>
+                <p className="text-blue-900">{(equipment as any).manufacturer_name || (equipment as any).manufacturerName || 'N/A'}</p>
               </div>
               <div>
                 <p className="text-sm text-blue-700 font-medium">Model</p>
-                <p className="text-blue-900">{equipment.modelNumber || 'N/A'}</p>
+                <p className="text-blue-900">{(equipment as any).model_number || (equipment as any).modelNumber || 'N/A'}</p>
               </div>
-              {equipment.customerName && (
+              {((equipment as any).customer_name || (equipment as any).customerName) && (
                 <div className="col-span-2">
                   <p className="text-sm text-blue-700 font-medium">Hospital/Location</p>
-                  <p className="text-blue-900">{equipment.customerName}</p>
+                  <p className="text-blue-900">{(equipment as any).customer_name || (equipment as any).customerName}</p>
                 </div>
               )}
               <div className="col-span-2">
                 <p className="text-sm text-blue-700 font-medium">QR Code</p>
-                <p className="text-blue-900 font-mono text-sm">{equipment.qrCode}</p>
+                <p className="text-blue-900 font-mono text-sm">{(equipment as any).qr_code || (equipment as any).qrCode || 'N/A'}</p>
               </div>
             </div>
           </div>
