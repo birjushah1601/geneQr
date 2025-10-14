@@ -108,3 +108,6 @@ export const engineersApi = {
     }
   },
 };
+
+export default engineersApi;
+export type { Engineer };
