@@ -18,8 +18,12 @@ import type {
 export interface TicketComment {
   id: string;
   ticket_id: string;
+  comment_type?: string;
+  author_id?: string;
+  author_name?: string;
   comment: string;
-  created_by: string;
+  attachments?: any[];
+  created_by?: string;
   created_at: string;
 }
 
@@ -31,6 +35,31 @@ export interface TicketStatusHistory {
   changed_by: string;
   changed_at: string;
   notes?: string;
+}
+
+export interface FollowupTask {
+  id: string;
+  ticket_id: string;
+  title: string;
+  description?: string;
+  task_type: string;
+  priority: string;
+  assigned_to?: string;
+  assigned_to_name?: string;
+  assigned_at?: string;
+  due_date: string;
+  status: 'pending' | 'in_progress' | 'overdue' | 'completed' | string;
+  completed_at?: string;
+  completed_by?: string;
+  completion_notes?: string;
+  created_at: string;
+  created_by?: string;
+  updated_at?: string;
+}
+
+export interface AddCommentRequest {
+  comment: string;
+  comment_type?: string;
 }
 
 export const ticketsApi = {
@@ -171,6 +200,66 @@ export const ticketsApi = {
         `/equipment/${equipmentId}/tickets`
       );
       return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  // ------------------------------------------------------------------
+  // Conversation & Comments
+  // ------------------------------------------------------------------
+  async getComments(ticketId: string): Promise<{ comments: TicketComment[] }> {
+    try {
+      const response = await apiClient.get<{ comments: TicketComment[] }>(
+        `/tickets/${ticketId}/comments`
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  async addComment(ticketId: string, payload: AddCommentRequest): Promise<{ comment: TicketComment }> {
+    try {
+      const response = await apiClient.post<{ comment: TicketComment }>(
+        `/tickets/${ticketId}/comments`,
+        payload
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  // ------------------------------------------------------------------
+  // Follow-up Tasks
+  // ------------------------------------------------------------------
+  async getFollowupTasks(ticketId: string): Promise<{ tasks: FollowupTask[] }> {
+    try {
+      const response = await apiClient.get<{ tasks: FollowupTask[] }>(
+        `/tickets/${ticketId}/followups`
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  async completeFollowupTask(ticketId: string, taskId: string, completionNotes?: string): Promise<{ task: FollowupTask }> {
+    try {
+      const response = await apiClient.post<{ task: FollowupTask }>(
+        `/tickets/${ticketId}/followups/${taskId}/complete`,
+        completionNotes ? { completion_notes: completionNotes } : undefined
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  async deleteFollowupTask(ticketId: string, taskId: string): Promise<void> {
+    try {
+      await apiClient.delete(`/tickets/${ticketId}/followups/${taskId}`);
     } catch (error) {
       throw new Error(handleApiError(error));
     }
