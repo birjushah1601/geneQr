@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { equipmentApi } from '@/lib/api/equipment';
 import { Equipment } from '@/types';
 import { Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 
-export default function ServiceRequestPage() {
+function ServiceRequestPageInner() {
   const searchParams = useSearchParams();
   const qrCode = searchParams?.get('qr');
   
@@ -247,5 +247,13 @@ export default function ServiceRequestPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ServiceRequestPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="text-center"><Loader2 className="h-10 w-10 animate-spin text-blue-600 mx-auto mb-4" /><p className="text-gray-600">Loading...</p></div></div>}>
+      <ServiceRequestPageInner />
+    </Suspense>
   );
 }

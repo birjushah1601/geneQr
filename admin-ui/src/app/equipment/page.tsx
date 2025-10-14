@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,7 +27,7 @@ interface Equipment {
   hasQRCode?: boolean; // true only if image exists/generated
 }
 
-export default function EquipmentListPage() {
+function EquipmentListPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
@@ -783,5 +783,13 @@ export default function EquipmentListPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function EquipmentListPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="text-center"><Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" /><p className="text-gray-600">Loading...</p></div></div>}>
+      <EquipmentListPageInner />
+    </Suspense>
   );
 }
