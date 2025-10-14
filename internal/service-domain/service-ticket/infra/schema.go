@@ -124,6 +124,7 @@ CREATE TABLE IF NOT EXISTS ticket_status_history (
 
 -- Indexes will be created after ensuring legacy columns (see below)
 -- Backfill/compatibility: ensure columns exist on legacy installations
+ALTER TABLE service_tickets ADD COLUMN IF NOT EXISTS ticket_number VARCHAR(50);
 ALTER TABLE service_tickets ADD COLUMN IF NOT EXISTS qr_code VARCHAR(255);
 ALTER TABLE service_tickets ADD COLUMN IF NOT EXISTS serial_number VARCHAR(255);
 ALTER TABLE service_tickets ADD COLUMN IF NOT EXISTS equipment_name VARCHAR(500);

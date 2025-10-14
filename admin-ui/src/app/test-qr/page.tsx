@@ -1,7 +1,7 @@
 'use client';
 export const dynamic = 'force-dynamic';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { QrCode, Package, Phone, AlertCircle, CheckCircle2, Loader2, ArrowRight, Upload, Camera, X } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
@@ -14,7 +14,7 @@ type WorkflowStep = 'input' | 'lookup' | 'details' | 'success';
 type Priority = 'critical' | 'high' | 'medium' | 'low';
 type ScanMode = 'upload' | 'camera';
 
-export default function TestQRWorkflowPage() {
+function TestQRWorkflowInner() {
   // State management
   const [step, setStep] = useState<WorkflowStep>('input');
   const [qrCode, setQrCode] = useState('');
@@ -695,5 +695,13 @@ export default function TestQRWorkflowPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function TestQRWorkflowPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50"><div className="text-center"><Loader2 className="w-10 h-10 animate-spin text-blue-600 mx-auto mb-4" /><p className="text-gray-600">Loading...</p></div></div>}>
+      <TestQRWorkflowInner />
+    </Suspense>
   );
 }
