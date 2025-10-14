@@ -41,7 +41,7 @@ export const engineersApi = {
   /**
    * Create new engineer
    */
-  async create(data: CreateEngineerRequest) {
+  async create(data: any) {
     try {
       const response = await apiClient.post<Engineer>('/engineers', data);
       return response.data;
