@@ -428,7 +428,7 @@ export default function EquipmentListPage() {
                 <Upload className="mr-2 h-4 w-4" />
                 Import CSV
               </Button>
-              <Button onClick={() => alert('Add equipment feature coming soon!')}>
+              <Button onClick={() => router.push('/equipment/new')}>
                 <Plus className="mr-2 h-4 w-4" />
                 Add Equipment
               </Button>
@@ -694,7 +694,7 @@ export default function EquipmentListPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => alert(`View details for ${equipment.name}`)}
+                              onClick={() => router.push(`/equipment/${equipment.id}`)}
                             >
                               View
                             </Button>
