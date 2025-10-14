@@ -2,21 +2,23 @@ version: '3.8'
 
 services:
   #############################################
-  # Database - PostgreSQL with Citus extension
+  # Database - Single Postgres (med_platform_pg)
   #############################################
   postgres:
-    image: citusdata/citus:12.1
-    container_name: med-platform-postgres
+    image: postgres:15-alpine
+    container_name: med_platform_pg
     ports:
-      # Changed host port from 5432 to 5433 to avoid clash with another local PostgreSQL instance
-      - "5433:5432"
+      # Expose on 5430 to avoid clashing with local Postgres
+      - "5430:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: medplatform
+      POSTGRES_DB: med_platform
     volumes:
-      - pg-data:/var/lib/postgresql/data
-      - ./postgres/init:/docker-entrypoint-initdb.d
+      - med_platform_pgdata:/var/lib/postgresql/data
+      - ../postgres/init:/docker-entrypoint-initdb.d
+      - ../postgres/migrations:/opt/migrations:ro
+      - ../postgres/seed:/opt/seed:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -295,7 +297,8 @@ networks:
     driver: bridge
 
 volumes:
-  pg-data:
+  med_platform_pgdata:
+    external: true
   zookeeper-data:
   kafka-data:
   redis-data:
