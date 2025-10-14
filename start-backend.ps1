@@ -7,8 +7,11 @@ $env:DB_USER = 'postgres'
 $env:DB_PASSWORD = 'postgres'
 $env:DB_NAME = 'med_platform'
 
-# Enable required modules
-$env:ENABLED_MODULES = 'equipment-registry,service-ticket'
+# Enable all modules
+$env:ENABLED_MODULES = '*'
+
+# Enable Organizations module (behind feature flag)
+$env:ENABLE_ORG = 'true'
 
 # API port (change if 8081 is busy)
 $env:PORT = '8081'
