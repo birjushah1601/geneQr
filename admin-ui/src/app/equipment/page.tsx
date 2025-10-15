@@ -208,7 +208,7 @@ function EquipmentListPageInner() {
       window.location.reload();
     } catch (error) {
       console.error('QR generation failed:', error);
-      alert(`Failed to generate QR code: ${error instanceof Error ? error.message : 'Unknown error'}\n\nPlease ensure backend is running on port 8081.`);
+      alert(`Failed to generate QR code: ${error instanceof Error ? error.message : 'Unknown error'}\n\nPlease ensure backend API is reachable.`);
     } finally {
       setGeneratingQR(null);
     }
@@ -217,7 +217,8 @@ function EquipmentListPageInner() {
   const handlePreviewQR = (equipment: Equipment) => {
     if (equipment.hasQRCode) {
       // Use generated QR code image if available, otherwise try backend
-      const imageUrl = equipment.qrCodeImageUrl || "http://localhost:8081/api/v1/equipment/qr/image/" + equipment.id;
+      const apiBase = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
+      const imageUrl = equipment.qrCodeImageUrl || `${apiBase}/v1/equipment/qr/image/${equipment.id}`;
       setQrPreview({ id: equipment.id, url: imageUrl });
     }
   };
@@ -256,7 +257,8 @@ function EquipmentListPageInner() {
             if (eq.hasQRCode) return eq;
             
             // Generate QR code
-            const qrData = `http://localhost:3000/equipment/${eq.id}`;
+            const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+            const qrData = `${origin}/equipment/${eq.id}`;
             const qrCodeDataUrl = await QRCodeLib.toDataURL(qrData, {
               width: 300,
               margin: 2,
@@ -607,7 +609,7 @@ function EquipmentListPageInner() {
                                   title="Click to preview full size"
                                 >
                                   <img
-                                    src={`http://localhost:8081/api/v1/equipment/qr/image/${equipment.id}`}
+                                    src={`${(process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '')}/v1/equipment/qr/image/${equipment.id}`}
                                     alt={`QR Code for ${equipment.name}`}
                                     className="w-full h-full object-contain p-1"
                                     onError={(e) => {
