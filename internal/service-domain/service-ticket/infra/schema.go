@@ -158,6 +158,8 @@ ALTER TABLE service_tickets ADD COLUMN IF NOT EXISTS covered_under_amc BOOLEAN D
 -- Optional Phase 4 columns
 ALTER TABLE service_tickets ADD COLUMN IF NOT EXISTS responsible_org_id UUID NULL;
 ALTER TABLE service_tickets ADD COLUMN IF NOT EXISTS policy_provenance JSONB DEFAULT '{}'::jsonb;
+-- Legacy compatibility: ensure created_by exists for auditing
+ALTER TABLE service_tickets ADD COLUMN IF NOT EXISTS created_by VARCHAR(255) NOT NULL DEFAULT 'system';
 -- Create indexes (after columns are ensured)
 CREATE UNIQUE INDEX IF NOT EXISTS uq_ticket_number ON service_tickets(ticket_number);
 CREATE INDEX IF NOT EXISTS idx_ticket_number ON service_tickets(ticket_number);
