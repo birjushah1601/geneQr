@@ -48,7 +48,12 @@ export default function EquipmentDetailPage({ params }: { params: { id: string }
   }, [id]);
 
   const qrImageUrl = useMemo(() => {
-    return equipment ? `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8081/api"}/v1/equipment/qr/image/${equipment.id}` : "";
+    if (!equipment) return "";
+    // Prefer inline base64 image when available; fallback to server image endpoint
+    if ((equipment as any).qr_code_image) {
+      return `data:image/png;base64,${(equipment as any).qr_code_image}`;
+    }
+    return `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8081/api"}/v1/equipment/qr/image/${equipment.id}`;
   }, [equipment]);
 
   const handleRegenerateQR = async () => {
@@ -56,11 +61,9 @@ export default function EquipmentDetailPage({ params }: { params: { id: string }
     try {
       setRegenLoading(true);
       await equipmentApi.generateQRCode(equipment.id);
-      // Force reload of QR image by busting cache
-      const img = document.getElementById("qr-img") as HTMLImageElement | null;
-      if (img) {
-        img.src = `${qrImageUrl}?_=${Date.now()}`;
-      }
+      // Re-fetch equipment to get fresh base64 image
+      const refreshed = await equipmentApi.getById(equipment.id);
+      setEquipment(refreshed);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Failed to regenerate QR");
     } finally {
@@ -212,7 +215,7 @@ export default function EquipmentDetailPage({ params }: { params: { id: string }
               <CardContent>
                 <div className="flex flex-col items-center gap-4">
                   <div className="border rounded-md p-4 bg-white">
-                    <img id="qr-img" src={`${qrImageUrl}?_=${Date.now()}`} alt="QR code" className="w-56 h-56 object-contain" onError={(e)=>{(e.currentTarget as HTMLImageElement).style.display='none'}} />
+                    <img id="qr-img" src={qrImageUrl} alt="QR code" className="w-56 h-56 object-contain" onError={(e)=>{(e.currentTarget as HTMLImageElement).style.display='none'}} />
                   </div>
                   <div className="flex gap-2">
                     <Button variant="outline" onClick={() => equipmentApi.downloadQRLabel(equipment.id)}>
