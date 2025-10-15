@@ -82,6 +82,8 @@ if ($equipmentIds.Count -gt 0) {
         } catch {
             Write-Host "  ! Failed to create ticket: $($_.Exception.Message)" -ForegroundColor Red
         }
+        # Avoid duplicate ticket_number collisions when generated from timestamp
+        Start-Sleep -Seconds 1
     }
 }
 
