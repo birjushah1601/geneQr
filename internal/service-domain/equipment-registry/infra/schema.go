@@ -12,11 +12,12 @@ func EnsureEquipmentSchema(ctx context.Context, pool PgxIface) error {
         // Widen potentially narrow columns (older schemas may have small varchar lengths)
         "ALTER TABLE equipment ALTER COLUMN id TYPE VARCHAR(255)",
         "ALTER TABLE equipment ALTER COLUMN serial_number TYPE VARCHAR(255)",
-        // Relax legacy NOT NULL constraints not used by new code path
-        "ALTER TABLE equipment ALTER COLUMN name DROP NOT NULL",
-        "ALTER TABLE equipment ALTER COLUMN tenant_id DROP NOT NULL",
-        "ALTER TABLE equipment ALTER COLUMN model DROP NOT NULL",
-        "ALTER TABLE equipment ALTER COLUMN manufacturer DROP NOT NULL",
+        // Relax legacy NOT NULL constraints not used by new code path (if present)
+        "ALTER TABLE equipment ALTER COLUMN organization_id DROP NOT NULL",
+        "ALTER TABLE equipment ALTER COLUMN model_id DROP NOT NULL",
+        "ALTER TABLE equipment ALTER COLUMN condition DROP NOT NULL",
+        // Ensure status has a safe default
+        "ALTER TABLE equipment ALTER COLUMN status SET DEFAULT 'operational'",
         // Add missing columns with safe defaults
         "ALTER TABLE equipment ADD COLUMN IF NOT EXISTS qr_code VARCHAR(255)",
         "ALTER TABLE equipment ADD COLUMN IF NOT EXISTS equipment_id VARCHAR(255)",
