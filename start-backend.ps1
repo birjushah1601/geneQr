@@ -12,6 +12,7 @@ $env:ENABLED_MODULES = '*'
 
 # Enable Organizations module (behind feature flag)
 $env:ENABLE_ORG = 'true'
+$env:ENABLE_ORG_SEED = 'true'
 
 # API port (change if 8081 is busy)
 $env:PORT = '8082'
