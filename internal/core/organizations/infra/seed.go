@@ -58,6 +58,32 @@ func SeedOrgDemoData(ctx context.Context, db PgxIface, logger *slog.Logger) erro
         if err != nil { return err }
     }
 
+    // Ensure key India entities exist (idempotent; insert if missing)
+    ensureStmt := func(name, otype, city string) string {
+        return "INSERT INTO organizations(name, org_type, status, metadata) " +
+            "SELECT '" + name + "','" + otype + "','active', '{\"country\":\"IN\",\"city\":\"" + city + "\"}' " +
+            "WHERE NOT EXISTS (SELECT 1 FROM organizations WHERE name='" + name + "');"
+    }
+    stmts := []string{
+        ensureStmt("Wipro GE Healthcare", "manufacturer", "Bengaluru"),
+        ensureStmt("Siemens Healthineers India", "manufacturer", "Gurugram"),
+        ensureStmt("Philips Healthcare India", "manufacturer", "Pune"),
+        ensureStmt("SouthCare Distributors", "distributor", "Chennai"),
+        ensureStmt("MedSupply Mumbai", "distributor", "Mumbai"),
+        ensureStmt("Aknamed Medical Supplies", "supplier", "Bengaluru"),
+        ensureStmt("AIIMS New Delhi", "hospital", "New Delhi"),
+        ensureStmt("Apollo Hospitals Chennai", "hospital", "Chennai"),
+        ensureStmt("Fortis Hospital Mumbai", "hospital", "Mumbai"),
+        ensureStmt("Manipal Hospitals Bengaluru", "hospital", "Bengaluru"),
+        ensureStmt("Yashoda Hospitals Hyderabad", "hospital", "Hyderabad"),
+        ensureStmt("Aarthi Scans & Labs - Chennai", "imaging_center", "Chennai"),
+        ensureStmt("Vijaya Diagnostic Centre - Hyderabad", "imaging_center", "Hyderabad"),
+        ensureStmt("SRL Diagnostics Imaging - Mumbai", "imaging_center", "Mumbai"),
+    }
+    for _, s := range stmts {
+        if _, err := db.Exec(ctx, s); err != nil { return err }
+    }
+
     // channels
     if err := db.QueryRow(ctx, `SELECT COUNT(1) FROM channels`).Scan(&cnt); err != nil { return err }
     if cnt == 0 {
