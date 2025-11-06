@@ -35,6 +35,20 @@ func EnsureOrgSchema(ctx context.Context, db *pgxpool.Pool, logger *slog.Logger)
         `CREATE INDEX IF NOT EXISTS idx_org_rel_child ON org_relationships(child_org_id);`,
         `CREATE INDEX IF NOT EXISTS idx_org_rel_type ON org_relationships(rel_type);`,
 
+        // Facilities per organization (optional)
+        `CREATE TABLE IF NOT EXISTS organization_facilities (
+            id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            org_id         UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+            facility_name  TEXT NOT NULL,
+            facility_code  TEXT NULL,
+            facility_type  TEXT NULL, -- branch|department|lab|imaging_center|other
+            address        JSONB NULL,
+            status         TEXT NOT NULL DEFAULT 'active',
+            created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+            updated_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+        );`,
+        `CREATE INDEX IF NOT EXISTS idx_org_facilities_org ON organization_facilities(org_id);`,
+
         // Channels (read-only Phase 1)
         `CREATE TABLE IF NOT EXISTS channels (
             id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
