@@ -490,7 +490,7 @@ Used by: Engineer Assignment
 **Benefit:** Right engineer for right job. Don't send L3 expert for simple issue!
 
 ### **Why Service Configuration Hierarchy?**
-- **Equipment-Specific:** SIEMENS Refrigerator → Client handles
+- **Equipment-Specific:** SIEMENS Refrigerator → GeneQR handles
 - **Manufacturer-Level:** All other SIEMENS equipment → SIEMENS handles
 - **Default:** Fallback if nothing configured
 
