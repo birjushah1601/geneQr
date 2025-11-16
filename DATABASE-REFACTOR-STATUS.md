@@ -12,7 +12,7 @@
 
 | Ticket | Status | Progress | Files Changed |
 |--------|--------|----------|---------------|
-| **T1.1** Service Ticket Assignment | ✅ **IN PROGRESS** | 40% | 3 files |
+| **T1.1** Service Ticket Assignment | ✅ **IN PROGRESS** | 90% | 8 files |
 | **T1.2** Create Customers Table | ⏳ Pending | 0% | - |
 | **T1.3** Normalize RFQ/Quote Items | ⏳ Pending | 0% | - |
 | **T1.4** Equipment Relationships | ⏳ Pending | 0% | - |
@@ -32,8 +32,8 @@
 - [x] Initial commit to feature branch
 
 ### **In Progress:**
-- [x] Repository implementation (Postgres) ✅ **DONE**
-- [x] Service layer integration ✅ **DONE**
+- [ ] Repository implementation (Postgres)
+- [ ] Service layer integration
 - [ ] API endpoints
 - [ ] Frontend components
 - [ ] Unit tests
