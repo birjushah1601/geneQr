@@ -441,10 +441,19 @@ COMMENT ON COLUMN equipment_relationships.relationship_type IS
     'Type of relationship: manufacturer, distributor, dealer, owner, facility, service_provider, leasing_company, other';
 
 COMMENT ON COLUMN equipment_relationships.effective_from IS 
-    'Start date of this relationship. Required.';
+    'Start timestamp of this relationship. Required. Includes date and time for same-day precision.';
 
 COMMENT ON COLUMN equipment_relationships.effective_to IS 
-    'End date of this relationship. NULL means currently active.';
+    'End timestamp of this relationship. NULL means currently active.';
+
+COMMENT ON COLUMN equipment_relationships.gps_latitude IS 
+    'GPS latitude coordinate for precise equipment location (optional).';
+
+COMMENT ON COLUMN equipment_relationships.gps_longitude IS 
+    'GPS longitude coordinate for precise equipment location (optional).';
+
+COMMENT ON COLUMN equipment_relationships.payment_terms IS 
+    'JSONB containing payment/lease terms: installments, schedule, EMI details.';
 
 COMMENT ON COLUMN equipment_relationships.relationship_status IS 
     'Current status: active, terminated, transferred, expired';
