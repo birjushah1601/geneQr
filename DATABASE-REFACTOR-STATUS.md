@@ -32,8 +32,8 @@
 - [x] Initial commit to feature branch
 
 ### **In Progress:**
-- [ ] Repository implementation (Postgres)
-- [ ] Service layer integration
+- [x] Repository implementation (Postgres) ✅ **DONE**
+- [x] Service layer integration ✅ **DONE**
 - [ ] API endpoints
 - [ ] Frontend components
 - [ ] Unit tests
