@@ -70,7 +70,8 @@ func (r *Repository) ListFacilities(ctx context.Context, orgID string) ([]Facili
     rows, err := r.db.Query(ctx, `SELECT id, org_id, facility_name, facility_code, facility_type, COALESCE(address, '{}'::jsonb), status FROM organization_facilities WHERE org_id=$1 ORDER BY created_at DESC`, orgID)
     if err != nil { return nil, err }
     defer rows.Close()
-    var out []Facility
+    // ensure empty slice instead of null when no rows
+    out := make([]Facility, 0)
     for rows.Next() {
         var f Facility
         if err := rows.Scan(&f.ID, &f.OrgID, &f.FacilityName, &f.FacilityCode, &f.FacilityType, &f.Address, &f.Status); err != nil { return nil, err }
@@ -84,7 +85,8 @@ func (r *Repository) ListRelationships(ctx context.Context, orgID string) ([]Rel
     rows, err := r.db.Query(ctx, q, orgID)
     if err != nil { return nil, err }
     defer rows.Close()
-    var out []Relationship
+    // ensure empty slice instead of null when no rows
+    out := make([]Relationship, 0)
     for rows.Next() {
         var rel Relationship
         if err := rows.Scan(&rel.ID, &rel.ParentOrgID, &rel.ChildOrgID, &rel.RelType); err != nil { return nil, err }
