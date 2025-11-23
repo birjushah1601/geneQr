@@ -157,7 +157,7 @@ function EquipmentListPageInner() {
 
   const handlePreviewQR = (equipment: Equipment) => {
     if (equipment.hasQRCode) {
-      // Use generated QR code image if available, otherwise try backend (from env)
+      // Use generated QR code image if available, otherwise try backend
       const apiBase = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
       const imageUrl = equipment.qrCodeImageUrl || `${apiBase}/v1/equipment/qr/image/${equipment.id}`;
       setQrPreview({ id: equipment.id, url: imageUrl });
