@@ -2,8 +2,9 @@ package domain
 
 import "context"
 
-// AssignmentRepository defines data access operations for engineer assignment
-type AssignmentRepository interface {
+// EngineerSuggestionRepository defines data access operations for engineer suggestion system
+// This is separate from AssignmentRepository (workflow system) in assignment.go
+type EngineerSuggestionRepository interface {
 	// Engineer CRUD operations
 	ListEngineers(ctx context.Context, organizationID *string, limit, offset int) ([]*Engineer, error)
 	GetEngineerByID(ctx context.Context, engineerID string) (*Engineer, error)

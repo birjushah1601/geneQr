@@ -11,7 +11,7 @@ import (
 	"github.com/segmentio/ksuid"
 )
 
-// AssignmentRepository implements domain.AssignmentRepository
+// AssignmentRepository implements domain.EngineerSuggestionRepository
 type AssignmentRepository struct {
 	pool *pgxpool.Pool
 }

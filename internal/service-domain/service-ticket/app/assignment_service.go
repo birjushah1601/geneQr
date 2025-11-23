@@ -10,14 +10,14 @@ import (
 
 // AssignmentService provides business logic for engineer assignment
 type AssignmentService struct {
-	assignRepo domain.AssignmentRepository
+	assignRepo domain.EngineerSuggestionRepository
 	ticketRepo domain.TicketRepository
 	logger     *slog.Logger
 }
 
 // NewAssignmentService creates a new assignment service
 func NewAssignmentService(
-	assignRepo domain.AssignmentRepository,
+	assignRepo domain.EngineerSuggestionRepository,
 	ticketRepo domain.TicketRepository,
 	logger *slog.Logger,
 ) *AssignmentService {

@@ -60,13 +60,7 @@ const (
 	CompletionStatusCustomerUnavailable CompletionStatus = "customer_unavailable"
 )
 
-// Part represents a replacement part used in service
-type Part struct {
-	PartNumber  string  `json:"part_number"`
-	Description string  `json:"description"`
-	Quantity    int     `json:"quantity"`
-	Cost        float64 `json:"cost,omitempty"`
-}
+// Note: Part type is defined in ticket.go to avoid duplication
 
 // EngineerAssignment represents an engineer assigned to work on a service ticket
 type EngineerAssignment struct {
