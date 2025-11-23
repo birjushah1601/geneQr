@@ -11,7 +11,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// AssignmentHandler handles HTTP requests for engineer assignments
+// AssignmentHandler handles HTTP requests for engineer assignment
 type AssignmentHandler struct {
 	service *app.AssignmentService
 	logger  *slog.Logger
@@ -25,380 +25,312 @@ func NewAssignmentHandler(service *app.AssignmentService, logger *slog.Logger) *
 	}
 }
 
-// AssignTicket handles POST /tickets/{ticketId}/assign
-func (h *AssignmentHandler) AssignTicket(w http.ResponseWriter, r *http.Request) {
+// ListEngineers handles GET /engineers or GET /organizations/{orgId}/engineers
+func (h *AssignmentHandler) ListEngineers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	ticketID := chi.URLParam(r, "ticketId")
+	
+	// Check if organization ID is in URL path
+	var orgID *string
+	if orgIDParam := chi.URLParam(r, "orgId"); orgIDParam != "" {
+		orgID = &orgIDParam
+	} else if orgIDQuery := r.URL.Query().Get("organization_id"); orgIDQuery != "" {
+		orgID = &orgIDQuery
+	}
+	
+	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+	if limit <= 0 {
+		limit = 100
+	}
+	offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
+	
+	engineers, err := h.service.ListEngineers(ctx, orgID, limit, offset)
+	if err != nil {
+		h.logger.Error("Failed to list engineers", slog.String("error", err.Error()))
+		h.respondError(w, http.StatusInternalServerError, "Failed to list engineers: "+err.Error())
+		return
+	}
+	
+	h.respondJSON(w, http.StatusOK, map[string]interface{}{
+		"engineers": engineers,
+		"total":     len(engineers),
+	})
+}
 
+// GetEngineer handles GET /engineers/{id}
+func (h *AssignmentHandler) GetEngineer(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := chi.URLParam(r, "id")
+	
+	if id == "" {
+		h.respondError(w, http.StatusBadRequest, "Engineer ID is required")
+		return
+	}
+	
+	engineer, err := h.service.GetEngineer(ctx, id)
+	if err != nil {
+		h.logger.Error("Failed to get engineer", slog.String("error", err.Error()))
+		h.respondError(w, http.StatusNotFound, "Engineer not found")
+		return
+	}
+	
+	h.respondJSON(w, http.StatusOK, engineer)
+}
+
+// UpdateEngineerLevel handles PUT /engineers/{id}/level
+func (h *AssignmentHandler) UpdateEngineerLevel(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := chi.URLParam(r, "id")
+	
+	if id == "" {
+		h.respondError(w, http.StatusBadRequest, "Engineer ID is required")
+		return
+	}
+	
+	var req struct {
+		Level string `json:"level"`
+	}
+	
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.respondError(w, http.StatusBadRequest, "Invalid request body: "+err.Error())
+		return
+	}
+	
+	level := domain.EngineerLevel(req.Level)
+	if level != domain.EngineerLevelL1 && level != domain.EngineerLevelL2 && level != domain.EngineerLevelL3 {
+		h.respondError(w, http.StatusBadRequest, "Invalid level. Must be L1, L2, or L3")
+		return
+	}
+	
+	if err := h.service.UpdateEngineerLevel(ctx, id, level); err != nil {
+		h.logger.Error("Failed to update engineer level", slog.String("error", err.Error()))
+		h.respondError(w, http.StatusInternalServerError, "Failed to update engineer level")
+		return
+	}
+	
+	h.respondJSON(w, http.StatusOK, map[string]string{"message": "Engineer level updated successfully"})
+}
+
+// ListEngineerEquipmentTypes handles GET /engineers/{id}/equipment-types
+func (h *AssignmentHandler) ListEngineerEquipmentTypes(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := chi.URLParam(r, "id")
+	
+	if id == "" {
+		h.respondError(w, http.StatusBadRequest, "Engineer ID is required")
+		return
+	}
+	
+	types, err := h.service.ListEngineerEquipmentTypes(ctx, id)
+	if err != nil {
+		h.logger.Error("Failed to list engineer equipment types", slog.String("error", err.Error()))
+		h.respondError(w, http.StatusInternalServerError, "Failed to list equipment types")
+		return
+	}
+	
+	h.respondJSON(w, http.StatusOK, map[string]interface{}{
+		"equipment_types": types,
+		"total":           len(types),
+	})
+}
+
+// AddEngineerEquipmentType handles POST /engineers/{id}/equipment-types
+func (h *AssignmentHandler) AddEngineerEquipmentType(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := chi.URLParam(r, "id")
+	
+	if id == "" {
+		h.respondError(w, http.StatusBadRequest, "Engineer ID is required")
+		return
+	}
+	
+	var req struct {
+		Manufacturer string `json:"manufacturer"`
+		Category     string `json:"category"`
+	}
+	
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.respondError(w, http.StatusBadRequest, "Invalid request body: "+err.Error())
+		return
+	}
+	
+	if req.Manufacturer == "" || req.Category == "" {
+		h.respondError(w, http.StatusBadRequest, "Manufacturer and category are required")
+		return
+	}
+	
+	if err := h.service.AddEngineerEquipmentType(ctx, id, req.Manufacturer, req.Category); err != nil {
+		h.logger.Error("Failed to add engineer equipment type", slog.String("error", err.Error()))
+		h.respondError(w, http.StatusInternalServerError, "Failed to add equipment type: "+err.Error())
+		return
+	}
+	
+	h.respondJSON(w, http.StatusCreated, map[string]string{"message": "Equipment type added successfully"})
+}
+
+// RemoveEngineerEquipmentType handles DELETE /engineers/{id}/equipment-types
+func (h *AssignmentHandler) RemoveEngineerEquipmentType(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := chi.URLParam(r, "id")
+	
+	if id == "" {
+		h.respondError(w, http.StatusBadRequest, "Engineer ID is required")
+		return
+	}
+	
+	manufacturer := r.URL.Query().Get("manufacturer")
+	category := r.URL.Query().Get("category")
+	
+	if manufacturer == "" || category == "" {
+		h.respondError(w, http.StatusBadRequest, "Manufacturer and category query parameters are required")
+		return
+	}
+	
+	if err := h.service.RemoveEngineerEquipmentType(ctx, id, manufacturer, category); err != nil {
+		h.logger.Error("Failed to remove engineer equipment type", slog.String("error", err.Error()))
+		h.respondError(w, http.StatusInternalServerError, "Failed to remove equipment type")
+		return
+	}
+	
+	h.respondJSON(w, http.StatusOK, map[string]string{"message": "Equipment type removed successfully"})
+}
+
+// GetSuggestedEngineers handles GET /tickets/{id}/suggested-engineers
+func (h *AssignmentHandler) GetSuggestedEngineers(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	ticketID := chi.URLParam(r, "id")
+	
 	if ticketID == "" {
-		respondError(w, http.StatusBadRequest, "Ticket ID is required")
+		h.respondError(w, http.StatusBadRequest, "Ticket ID is required")
 		return
 	}
-
-	var req app.AssignTicketRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "Invalid request body: "+err.Error())
-		return
-	}
-
-	// Set ticket ID from URL
-	req.TicketID = ticketID
-
-	assignment, err := h.service.AssignTicket(ctx, req)
+	
+	suggestions, err := h.service.GetSuggestedEngineers(ctx, ticketID)
 	if err != nil {
-		h.logger.Error("Failed to assign ticket", 
-			slog.String("ticket_id", ticketID),
-			slog.String("error", err.Error()))
-		respondError(w, http.StatusInternalServerError, "Failed to assign ticket: "+err.Error())
+		h.logger.Error("Failed to get suggested engineers", slog.String("error", err.Error()))
+		h.respondError(w, http.StatusInternalServerError, "Failed to get suggestions: "+err.Error())
 		return
 	}
-
-	h.logger.Info("Ticket assigned successfully", 
-		slog.String("ticket_id", ticketID),
-		slog.String("assignment_id", assignment.ID))
-
-	respondJSON(w, http.StatusCreated, assignment)
+	
+	h.respondJSON(w, http.StatusOK, map[string]interface{}{
+		"suggested_engineers": suggestions,
+		"total":               len(suggestions),
+	})
 }
 
-// EscalateTicket handles POST /tickets/{ticketId}/escalate
-func (h *AssignmentHandler) EscalateTicket(w http.ResponseWriter, r *http.Request) {
+// AssignEngineer handles POST /tickets/{id}/assign-engineer
+func (h *AssignmentHandler) AssignEngineer(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	ticketID := chi.URLParam(r, "ticketId")
-
+	ticketID := chi.URLParam(r, "id")
+	
 	if ticketID == "" {
-		respondError(w, http.StatusBadRequest, "Ticket ID is required")
+		h.respondError(w, http.StatusBadRequest, "Ticket ID is required")
 		return
 	}
-
-	var req app.EscalateTicketRequest
+	
+	var req app.AssignEngineerRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "Invalid request body: "+err.Error())
+		h.respondError(w, http.StatusBadRequest, "Invalid request body: "+err.Error())
 		return
 	}
+	
+	req.TicketID = ticketID // Override with URL parameter
+	
+	if req.EngineerID == "" {
+		h.respondError(w, http.StatusBadRequest, "Engineer ID is required")
+		return
+	}
+	
+	if err := h.service.AssignEngineer(ctx, req); err != nil {
+		h.logger.Error("Failed to assign engineer", slog.String("error", err.Error()))
+		h.respondError(w, http.StatusInternalServerError, "Failed to assign engineer: "+err.Error())
+		return
+	}
+	
+	h.respondJSON(w, http.StatusOK, map[string]string{"message": "Engineer assigned successfully"})
+}
 
-	// Set ticket ID from URL
-	req.TicketID = ticketID
-
-	assignment, err := h.service.EscalateTicket(ctx, req)
+// GetEquipmentServiceConfig handles GET /equipment/{id}/service-config
+func (h *AssignmentHandler) GetEquipmentServiceConfig(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	equipmentID := chi.URLParam(r, "id")
+	
+	if equipmentID == "" {
+		h.respondError(w, http.StatusBadRequest, "Equipment ID is required")
+		return
+	}
+	
+	config, err := h.service.GetEquipmentServiceConfig(ctx, equipmentID)
 	if err != nil {
-		h.logger.Error("Failed to escalate ticket",
-			slog.String("ticket_id", ticketID),
-			slog.String("error", err.Error()))
-		respondError(w, http.StatusInternalServerError, "Failed to escalate ticket: "+err.Error())
+		h.logger.Error("Failed to get equipment service config", slog.String("error", err.Error()))
+		h.respondError(w, http.StatusNotFound, "Service config not found")
 		return
 	}
-
-	h.logger.Info("Ticket escalated successfully",
-		slog.String("ticket_id", ticketID),
-		slog.String("new_assignment_id", assignment.ID))
-
-	respondJSON(w, http.StatusCreated, assignment)
+	
+	h.respondJSON(w, http.StatusOK, config)
 }
 
-// GetCurrentAssignment handles GET /tickets/{ticketId}/current-assignment
-func (h *AssignmentHandler) GetCurrentAssignment(w http.ResponseWriter, r *http.Request) {
+// CreateEquipmentServiceConfig handles POST /equipment/{id}/service-config
+func (h *AssignmentHandler) CreateEquipmentServiceConfig(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	ticketID := chi.URLParam(r, "ticketId")
-
-	if ticketID == "" {
-		respondError(w, http.StatusBadRequest, "Ticket ID is required")
+	equipmentID := chi.URLParam(r, "id")
+	
+	if equipmentID == "" {
+		h.respondError(w, http.StatusBadRequest, "Equipment ID is required")
 		return
 	}
-
-	assignment, err := h.service.GetCurrentAssignment(ctx, ticketID)
-	if err != nil {
-		if err == domain.ErrAssignmentNotFound {
-			respondError(w, http.StatusNotFound, "No active assignment found for ticket")
-			return
-		}
-		h.logger.Error("Failed to get current assignment",
-			slog.String("ticket_id", ticketID),
-			slog.String("error", err.Error()))
-		respondError(w, http.StatusInternalServerError, "Failed to get current assignment")
+	
+	var config domain.EquipmentServiceConfig
+	if err := json.NewDecoder(r.Body).Decode(&config); err != nil {
+		h.respondError(w, http.StatusBadRequest, "Invalid request body: "+err.Error())
 		return
 	}
-
-	respondJSON(w, http.StatusOK, assignment)
+	
+	config.EquipmentID = equipmentID // Override with URL parameter
+	
+	if err := h.service.CreateEquipmentServiceConfig(ctx, &config); err != nil {
+		h.logger.Error("Failed to create equipment service config", slog.String("error", err.Error()))
+		h.respondError(w, http.StatusInternalServerError, "Failed to create service config: "+err.Error())
+		return
+	}
+	
+	h.respondJSON(w, http.StatusCreated, map[string]string{"message": "Service config created successfully"})
 }
 
-// GetAssignmentHistory handles GET /tickets/{ticketId}/assignments
-func (h *AssignmentHandler) GetAssignmentHistory(w http.ResponseWriter, r *http.Request) {
+// UpdateEquipmentServiceConfig handles PUT /equipment/{id}/service-config
+func (h *AssignmentHandler) UpdateEquipmentServiceConfig(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	ticketID := chi.URLParam(r, "ticketId")
-
-	if ticketID == "" {
-		respondError(w, http.StatusBadRequest, "Ticket ID is required")
+	equipmentID := chi.URLParam(r, "id")
+	
+	if equipmentID == "" {
+		h.respondError(w, http.StatusBadRequest, "Equipment ID is required")
 		return
 	}
-
-	assignments, err := h.service.GetAssignmentHistory(ctx, ticketID)
-	if err != nil {
-		h.logger.Error("Failed to get assignment history",
-			slog.String("ticket_id", ticketID),
-			slog.String("error", err.Error()))
-		respondError(w, http.StatusInternalServerError, "Failed to get assignment history")
+	
+	var config domain.EquipmentServiceConfig
+	if err := json.NewDecoder(r.Body).Decode(&config); err != nil {
+		h.respondError(w, http.StatusBadRequest, "Invalid request body: "+err.Error())
 		return
 	}
-
-	respondJSON(w, http.StatusOK, assignments)
+	
+	config.EquipmentID = equipmentID // Override with URL parameter
+	
+	if err := h.service.UpdateEquipmentServiceConfig(ctx, &config); err != nil {
+		h.logger.Error("Failed to update equipment service config", slog.String("error", err.Error()))
+		h.respondError(w, http.StatusInternalServerError, "Failed to update service config: "+err.Error())
+		return
+	}
+	
+	h.respondJSON(w, http.StatusOK, map[string]string{"message": "Service config updated successfully"})
 }
 
-// AcceptAssignment handles POST /assignments/{assignmentId}/accept
-func (h *AssignmentHandler) AcceptAssignment(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	assignmentID := chi.URLParam(r, "assignmentId")
-
-	if assignmentID == "" {
-		respondError(w, http.StatusBadRequest, "Assignment ID is required")
-		return
-	}
-
-	var req app.AcceptAssignmentRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "Invalid request body: "+err.Error())
-		return
-	}
-
-	// Set assignment ID from URL
-	req.AssignmentID = assignmentID
-
-	if err := h.service.AcceptAssignment(ctx, req); err != nil {
-		h.logger.Error("Failed to accept assignment",
-			slog.String("assignment_id", assignmentID),
-			slog.String("error", err.Error()))
-		respondError(w, http.StatusInternalServerError, "Failed to accept assignment: "+err.Error())
-		return
-	}
-
-	h.logger.Info("Assignment accepted",
-		slog.String("assignment_id", assignmentID))
-
-	respondJSON(w, http.StatusOK, map[string]string{"message": "Assignment accepted successfully"})
-}
-
-// RejectAssignment handles POST /assignments/{assignmentId}/reject
-func (h *AssignmentHandler) RejectAssignment(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	assignmentID := chi.URLParam(r, "assignmentId")
-
-	if assignmentID == "" {
-		respondError(w, http.StatusBadRequest, "Assignment ID is required")
-		return
-	}
-
-	var req app.RejectAssignmentRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "Invalid request body: "+err.Error())
-		return
-	}
-
-	// Set assignment ID from URL
-	req.AssignmentID = assignmentID
-
-	if err := h.service.RejectAssignment(ctx, req); err != nil {
-		h.logger.Error("Failed to reject assignment",
-			slog.String("assignment_id", assignmentID),
-			slog.String("error", err.Error()))
-		respondError(w, http.StatusInternalServerError, "Failed to reject assignment: "+err.Error())
-		return
-	}
-
-	h.logger.Info("Assignment rejected",
-		slog.String("assignment_id", assignmentID))
-
-	respondJSON(w, http.StatusOK, map[string]string{"message": "Assignment rejected successfully"})
-}
-
-// StartAssignment handles POST /assignments/{assignmentId}/start
-func (h *AssignmentHandler) StartAssignment(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	assignmentID := chi.URLParam(r, "assignmentId")
-
-	if assignmentID == "" {
-		respondError(w, http.StatusBadRequest, "Assignment ID is required")
-		return
-	}
-
-	var req app.StartAssignmentRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "Invalid request body: "+err.Error())
-		return
-	}
-
-	// Set assignment ID from URL
-	req.AssignmentID = assignmentID
-
-	if err := h.service.StartAssignment(ctx, req); err != nil {
-		h.logger.Error("Failed to start assignment",
-			slog.String("assignment_id", assignmentID),
-			slog.String("error", err.Error()))
-		respondError(w, http.StatusInternalServerError, "Failed to start assignment: "+err.Error())
-		return
-	}
-
-	h.logger.Info("Assignment started",
-		slog.String("assignment_id", assignmentID))
-
-	respondJSON(w, http.StatusOK, map[string]string{"message": "Assignment started successfully"})
-}
-
-// CompleteAssignment handles POST /assignments/{assignmentId}/complete
-func (h *AssignmentHandler) CompleteAssignment(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	assignmentID := chi.URLParam(r, "assignmentId")
-
-	if assignmentID == "" {
-		respondError(w, http.StatusBadRequest, "Assignment ID is required")
-		return
-	}
-
-	var req app.CompleteAssignmentRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "Invalid request body: "+err.Error())
-		return
-	}
-
-	// Set assignment ID from URL
-	req.AssignmentID = assignmentID
-
-	if err := h.service.CompleteAssignment(ctx, req); err != nil {
-		h.logger.Error("Failed to complete assignment",
-			slog.String("assignment_id", assignmentID),
-			slog.String("error", err.Error()))
-		respondError(w, http.StatusInternalServerError, "Failed to complete assignment: "+err.Error())
-		return
-	}
-
-	h.logger.Info("Assignment completed",
-		slog.String("assignment_id", assignmentID))
-
-	respondJSON(w, http.StatusOK, map[string]string{"message": "Assignment completed successfully"})
-}
-
-// AddCustomerFeedback handles POST /assignments/{assignmentId}/feedback
-func (h *AssignmentHandler) AddCustomerFeedback(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	assignmentID := chi.URLParam(r, "assignmentId")
-
-	if assignmentID == "" {
-		respondError(w, http.StatusBadRequest, "Assignment ID is required")
-		return
-	}
-
-	var req app.AddCustomerFeedbackRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "Invalid request body: "+err.Error())
-		return
-	}
-
-	// Set assignment ID from URL
-	req.AssignmentID = assignmentID
-
-	if err := h.service.AddCustomerFeedback(ctx, req); err != nil {
-		h.logger.Error("Failed to add customer feedback",
-			slog.String("assignment_id", assignmentID),
-			slog.String("error", err.Error()))
-		respondError(w, http.StatusInternalServerError, "Failed to add feedback: "+err.Error())
-		return
-	}
-
-	h.logger.Info("Customer feedback added",
-		slog.String("assignment_id", assignmentID))
-
-	respondJSON(w, http.StatusOK, map[string]string{"message": "Feedback added successfully"})
-}
-
-// GetEngineerAssignments handles GET /engineers/{engineerId}/assignments
-func (h *AssignmentHandler) GetEngineerAssignments(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	engineerID := chi.URLParam(r, "engineerId")
-
-	if engineerID == "" {
-		respondError(w, http.StatusBadRequest, "Engineer ID is required")
-		return
-	}
-
-	// Parse limit from query params
-	limitStr := r.URL.Query().Get("limit")
-	limit := 50 // default
-	if limitStr != "" {
-		if parsedLimit, err := strconv.Atoi(limitStr); err == nil && parsedLimit > 0 {
-			limit = parsedLimit
-		}
-	}
-
-	assignments, err := h.service.GetEngineerAssignments(ctx, engineerID, limit)
-	if err != nil {
-		h.logger.Error("Failed to get engineer assignments",
-			slog.String("engineer_id", engineerID),
-			slog.String("error", err.Error()))
-		respondError(w, http.StatusInternalServerError, "Failed to get assignments")
-		return
-	}
-
-	respondJSON(w, http.StatusOK, assignments)
-}
-
-// GetActiveEngineerAssignments handles GET /engineers/{engineerId}/assignments/active
-func (h *AssignmentHandler) GetActiveEngineerAssignments(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	engineerID := chi.URLParam(r, "engineerId")
-
-	if engineerID == "" {
-		respondError(w, http.StatusBadRequest, "Engineer ID is required")
-		return
-	}
-
-	assignments, err := h.service.GetActiveEngineerAssignments(ctx, engineerID)
-	if err != nil {
-		h.logger.Error("Failed to get active engineer assignments",
-			slog.String("engineer_id", engineerID),
-			slog.String("error", err.Error()))
-		respondError(w, http.StatusInternalServerError, "Failed to get active assignments")
-		return
-	}
-
-	respondJSON(w, http.StatusOK, assignments)
-}
-
-// GetEngineerWorkload handles GET /engineers/{engineerId}/workload
-func (h *AssignmentHandler) GetEngineerWorkload(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	engineerID := chi.URLParam(r, "engineerId")
-
-	if engineerID == "" {
-		respondError(w, http.StatusBadRequest, "Engineer ID is required")
-		return
-	}
-
-	activeCount, completedCount, avgHours, err := h.service.GetEngineerWorkload(ctx, engineerID)
-	if err != nil {
-		h.logger.Error("Failed to get engineer workload",
-			slog.String("engineer_id", engineerID),
-			slog.String("error", err.Error()))
-		respondError(w, http.StatusInternalServerError, "Failed to get workload")
-		return
-	}
-
-	workload := map[string]interface{}{
-		"engineer_id":      engineerID,
-		"active_count":     activeCount,
-		"completed_count":  completedCount,
-		"avg_hours":        avgHours,
-	}
-
-	respondJSON(w, http.StatusOK, workload)
-}
-
-// Helper functions for JSON responses
-func respondJSON(w http.ResponseWriter, statusCode int, data interface{}) {
+// respondJSON writes JSON response
+func (h *AssignmentHandler) respondJSON(w http.ResponseWriter, status int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
-	if err := json.NewEncoder(w).Encode(data); err != nil {
-		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
-	}
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(data)
 }
 
-func respondError(w http.ResponseWriter, statusCode int, message string) {
-	respondJSON(w, statusCode, map[string]string{"error": message})
+// respondError writes error response
+func (h *AssignmentHandler) respondError(w http.ResponseWriter, status int, message string) {
+	h.respondJSON(w, status, map[string]string{"error": message})
 }

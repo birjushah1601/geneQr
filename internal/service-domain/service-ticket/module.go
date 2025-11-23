@@ -17,12 +17,13 @@ import (
 
 // Module represents the service ticket module
 type Module struct {
-	config          ModuleConfig
-	ticketHandler   *api.TicketHandler
-	whatsappHandler *whatsapp.WebhookHandler
-	logger          *slog.Logger
-    dispatcher      *app.WebhookDispatcher
-    slaMonitor      *app.SLAMonitor
+	config            ModuleConfig
+	ticketHandler     *api.TicketHandler
+	assignmentHandler *api.AssignmentHandler
+	whatsappHandler   *whatsapp.WebhookHandler
+	logger            *slog.Logger
+	dispatcher        *app.WebhookDispatcher
+	slaMonitor        *app.SLAMonitor
 }
 
 // ModuleConfig holds module configuration
@@ -73,6 +74,7 @@ func (m *Module) Initialize(ctx context.Context) error {
 
 	// Create repositories
 	ticketRepo := infra.NewTicketRepository(pool)
+	assignmentRepo := infra.NewAssignmentRepository(pool)
 	
 	// Create equipment repository for WhatsApp integration
 	equipmentRepo := equipmentInfra.NewEquipmentRepository(pool)
@@ -82,13 +84,17 @@ func (m *Module) Initialize(ctx context.Context) error {
     eventRepo := infra.NewEventRepository(pool)
     ticketService := app.NewTicketService(ticketRepo, equipmentRepo, policyRepo, eventRepo, m.logger)
 
+	// Create assignment service
+	assignmentService := app.NewAssignmentService(assignmentRepo, ticketRepo, m.logger)
+
     // Create dispatcher (started conditionally)
     m.dispatcher = app.NewWebhookDispatcher(pool, m.logger)
     // Create SLA monitor (started conditionally)
     m.slaMonitor = app.NewSLAMonitor(pool, m.logger)
 
-	// Create ticket HTTP handler
+	// Create HTTP handlers
 	m.ticketHandler = api.NewTicketHandler(ticketService, m.logger)
+	m.assignmentHandler = api.NewAssignmentHandler(assignmentService, m.logger)
 
 	// Create QR generator for WhatsApp
 	qrGenerator := qrcode.NewGenerator(m.config.BaseURL, m.config.QROutputDir)
@@ -118,7 +124,7 @@ func (m *Module) MountRoutes(r chi.Router) {
 		r.Get("/{id}", m.ticketHandler.GetTicket)              // Get by ID
 		
 		// Ticket lifecycle operations
-		r.Post("/{id}/assign", m.ticketHandler.AssignTicket)       // Assign engineer
+		r.Post("/{id}/assign", m.ticketHandler.AssignTicket)       // Assign engineer (legacy)
 		r.Post("/{id}/acknowledge", m.ticketHandler.AcknowledgeTicket) // Acknowledge
 		r.Post("/{id}/start", m.ticketHandler.StartWork)           // Start work
 		r.Post("/{id}/hold", m.ticketHandler.PutOnHold)            // Put on hold
@@ -127,11 +133,37 @@ func (m *Module) MountRoutes(r chi.Router) {
 		r.Post("/{id}/close", m.ticketHandler.CloseTicket)         // Close
 		r.Post("/{id}/cancel", m.ticketHandler.CancelTicket)       // Cancel
 		
+		// Assignment operations (new)
+		r.Get("/{id}/suggested-engineers", m.assignmentHandler.GetSuggestedEngineers) // Get engineer suggestions
+		r.Post("/{id}/assign-engineer", m.assignmentHandler.AssignEngineer)           // Manual assignment with tier
+		
 		// Comments and history
 		r.Post("/{id}/comments", m.ticketHandler.AddComment)       // Add comment
 		r.Get("/{id}/comments", m.ticketHandler.GetComments)       // Get comments
 		r.Get("/{id}/history", m.ticketHandler.GetStatusHistory)   // Get status history
 	})
+
+	// Engineer management routes
+	r.Route("/engineers", func(r chi.Router) {
+		r.Get("/", m.assignmentHandler.ListEngineers)           // List all engineers
+		r.Get("/{id}", m.assignmentHandler.GetEngineer)         // Get engineer details
+		r.Put("/{id}/level", m.assignmentHandler.UpdateEngineerLevel) // Update engineer level
+		
+		// Engineer equipment type capabilities
+		r.Get("/{id}/equipment-types", m.assignmentHandler.ListEngineerEquipmentTypes)    // List capabilities
+		r.Post("/{id}/equipment-types", m.assignmentHandler.AddEngineerEquipmentType)     // Add capability
+		r.Delete("/{id}/equipment-types", m.assignmentHandler.RemoveEngineerEquipmentType) // Remove capability
+	})
+
+	// Equipment service configuration routes (under service-tickets to avoid conflict)
+	r.Route("/equipment-service-config", func(r chi.Router) {
+		r.Get("/{id}", m.assignmentHandler.GetEquipmentServiceConfig)    // Get config
+		r.Post("/{id}", m.assignmentHandler.CreateEquipmentServiceConfig) // Create config
+		r.Put("/{id}", m.assignmentHandler.UpdateEquipmentServiceConfig)  // Update config
+	})
+
+	// Note: Organization-specific engineer routes removed to avoid conflict with organizations module
+	// Use /engineers?orgId={orgId} instead to filter engineers by organization
 
 	// WhatsApp webhook routes
 	r.Route("/whatsapp", func(r chi.Router) {

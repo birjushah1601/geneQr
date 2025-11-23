@@ -1,0 +1,457 @@
+{
+	"info": {
+		"_postman_id": "engineer-assignment-2024",
+		"name": "Engineer Assignment System APIs",
+		"description": "Comprehensive API collection for the engineer assignment and suggestion system",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8081/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "engineer_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "ticket_id",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Engineer Management",
+			"item": [
+				{
+					"name": "List All Engineers",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has engineers array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('engineers');",
+									"    pm.expect(jsonData.engineers).to.be.an('array');",
+									"});",
+									"",
+									"// Save first engineer ID for other tests",
+									"if (pm.response.json().engineers.length > 0) {",
+									"    pm.collectionVariables.set(\"engineer_id\", pm.response.json().engineers[0].id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/engineers?limit=50&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["engineers"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "50"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								},
+								{
+									"key": "orgId",
+									"value": "",
+									"description": "Optional: Filter by organization ID",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Engineer By ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Engineer has required fields\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('name');",
+									"    pm.expect(jsonData).to.have.property('engineer_level');",
+									"    pm.expect(jsonData).to.have.property('email');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/engineers/{{engineer_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["engineers", "{{engineer_id}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Engineer Level",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"level\": \"L3\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/engineers/{{engineer_id}}/level",
+							"host": ["{{base_url}}"],
+							"path": ["engineers", "{{engineer_id}}", "level"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Engineer Capabilities",
+			"item": [
+				{
+					"name": "List Engineer Equipment Types",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has equipment_types array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('equipment_types');",
+									"    pm.expect(jsonData.equipment_types).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/engineers/{{engineer_id}}/equipment-types",
+							"host": ["{{base_url}}"],
+							"path": ["engineers", "{{engineer_id}}", "equipment-types"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Equipment Type Capability",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 or 201\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"manufacturer\": \"Siemens Healthineers\",\n  \"category\": \"MRI\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/engineers/{{engineer_id}}/equipment-types",
+							"host": ["{{base_url}}"],
+							"path": ["engineers", "{{engineer_id}}", "equipment-types"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Equipment Type Capability",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"manufacturer\": \"Siemens Healthineers\",\n  \"category\": \"MRI\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/engineers/{{engineer_id}}/equipment-types",
+							"host": ["{{base_url}}"],
+							"path": ["engineers", "{{engineer_id}}", "equipment-types"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Assignment Operations",
+			"item": [
+				{
+					"name": "Get Engineer Suggestions for Ticket",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has suggested_engineers array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('suggested_engineers');",
+									"    pm.expect(jsonData.suggested_engineers).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Suggestions have required fields\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.suggested_engineers.length > 0) {",
+									"        var suggestion = jsonData.suggested_engineers[0];",
+									"        pm.expect(suggestion).to.have.property('engineer_id');",
+									"        pm.expect(suggestion).to.have.property('engineer_name');",
+									"        pm.expect(suggestion).to.have.property('engineer_level');",
+									"        pm.expect(suggestion).to.have.property('assignment_tier');",
+									"        pm.expect(suggestion).to.have.property('priority');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tickets/{{ticket_id}}/suggested-engineers?minLevel=L1",
+							"host": ["{{base_url}}"],
+							"path": ["tickets", "{{ticket_id}}", "suggested-engineers"],
+							"query": [
+								{
+									"key": "minLevel",
+									"value": "L1",
+									"description": "Minimum engineer level (L1, L2, L3)"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Manually Assign Engineer to Ticket",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"engineer_id\": \"{{engineer_id}}\",\n  \"engineer_name\": \"Rajesh Kumar Singh\",\n  \"organization_id\": \"org-123\",\n  \"assignment_tier\": \"primary\",\n  \"assignment_tier_name\": \"Primary Service\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/tickets/{{ticket_id}}/assign-engineer",
+							"host": ["{{base_url}}"],
+							"path": ["tickets", "{{ticket_id}}", "assign-engineer"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Equipment Service Configuration",
+			"item": [
+				{
+					"name": "Get Equipment Service Config",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/equipment-service-config/:equipment_id",
+							"host": ["{{base_url}}"],
+							"path": ["equipment-service-config", ":equipment_id"],
+							"variable": [
+								{
+									"key": "equipment_id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Equipment Service Config",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"equipment_id\": \"eq-123\",\n  \"under_warranty\": true,\n  \"under_amc\": false,\n  \"primary_service_org_id\": \"org-siemens\",\n  \"secondary_service_org_id\": \"org-dealer\",\n  \"tertiary_service_org_id\": null,\n  \"fallback_service_org_id\": null\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/equipment-service-config/:equipment_id",
+							"host": ["{{base_url}}"],
+							"path": ["equipment-service-config", ":equipment_id"],
+							"variable": [
+								{
+									"key": "equipment_id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Equipment Service Config",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"under_warranty\": false,\n  \"under_amc\": true,\n  \"primary_service_org_id\": \"org-siemens\",\n  \"secondary_service_org_id\": \"org-dealer\",\n  \"tertiary_service_org_id\": \"org-local\",\n  \"fallback_service_org_id\": null\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/equipment-service-config/:equipment_id",
+							"host": ["{{base_url}}"],
+							"path": ["equipment-service-config", ":equipment_id"],
+							"variable": [
+								{
+									"key": "equipment_id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Service Tickets (For Testing Assignment)",
+			"item": [
+				{
+					"name": "List Service Tickets",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Save first ticket ID for assignment tests",
+									"if (pm.response.json().tickets && pm.response.json().tickets.length > 0) {",
+									"    pm.collectionVariables.set(\"ticket_id\", pm.response.json().tickets[0].id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tickets?limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["tickets"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Ticket By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tickets/{{ticket_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["tickets", "{{ticket_id}}"]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
