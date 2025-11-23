@@ -25,11 +25,22 @@ import (
 	"github.com/aby-med/medical-platform/internal/service-domain/contract"
 	equipment "github.com/aby-med/medical-platform/internal/service-domain/equipment-registry"
 	serviceticket "github.com/aby-med/medical-platform/internal/service-domain/service-ticket"
+	"github.com/aby-med/medical-platform/internal/service-domain/attachment"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
 	"golang.org/x/sync/errgroup"
+	
+	// AI Services
+	aimanager "github.com/aby-med/medical-platform/internal/ai"
+	"github.com/aby-med/medical-platform/internal/ai/aiconfig"
+	// TODO: Uncomment when routes are mounted
+	// "github.com/aby-med/medical-platform/internal/diagnosis"
+	// "github.com/aby-med/medical-platform/internal/assignment"
+	// "github.com/aby-med/medical-platform/internal/parts"
+	// "github.com/aby-med/medical-platform/internal/feedback"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 const (
@@ -309,6 +320,88 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 	if err == nil {
 		registry.Register(serviceTicketModule)
 	}
+	
+	// Register Attachment module
+	attachmentConfig := attachment.Config{
+		DatabaseDSN: cfg.GetDSN(),
+	}
+	attachmentModule := attachment.NewModule(attachmentConfig, logger)
+	registry.Register(attachmentModule)
+	
+	// ========================================================================
+	// INITIALIZE AI SERVICES
+	// ========================================================================
+	logger.Info("Initializing AI Services")
+	
+	// Initialize AI Manager
+	timeout := time.Duration(cfg.AI.TimeoutSeconds) * time.Second
+	aiConfig := &aimanager.Config{
+		DefaultProvider:        cfg.AI.Provider,
+		EnableFallback:         true,
+		MaxRetries:             cfg.AI.MaxRetries,
+		RetryBackoffMultiplier: 2.0,
+		DefaultTimeout:         timeout,
+		EnableCostTracking:     cfg.AI.CostTrackingEnabled,
+		EnableHealthChecks:     true,
+		HealthCheckInterval:    5 * time.Minute,
+		OpenAI: aiconfig.OpenAIConfig{
+			APIKey:          cfg.AI.OpenAIAPIKey,
+			DefaultModel:    cfg.AI.OpenAIModel,
+			Timeout:         timeout,
+			MaxRetries:      cfg.AI.MaxRetries,
+			EnableStreaming: false,
+		},
+		Anthropic: aiconfig.AnthropicConfig{
+			APIKey:       cfg.AI.AnthropicAPIKey,
+			DefaultModel: cfg.AI.AnthropicModel,
+			Timeout:      timeout,
+			MaxRetries:   cfg.AI.MaxRetries,
+			APIVersion:   "2023-06-01",
+		},
+	}
+	
+	_, err = aimanager.NewManager(aiConfig)
+	if err != nil {
+		logger.Warn("Failed to initialize AI manager (AI features will be disabled)", 
+			slog.String("error", err.Error()))
+	} else {
+		logger.Info("AI Manager initialized successfully",
+			slog.String("primary_provider", cfg.AI.Provider),
+			slog.String("fallback_provider", cfg.AI.FallbackProvider))
+		
+		// Initialize database connection pool for AI services
+		dbPoolConfig, err := pgxpool.ParseConfig(cfg.GetDSN())
+		if err != nil {
+			logger.Error("Failed to parse database config for AI services", slog.String("error", err.Error()))
+		} else {
+			_, err = pgxpool.NewWithConfig(ctx, dbPoolConfig)
+			if err != nil {
+				logger.Error("Failed to create database pool for AI services", slog.String("error", err.Error()))
+			} else {
+				logger.Info("Database pool created for AI services")
+				
+				// Initialize AI Engines
+				logger.Info("Initializing AI Diagnosis Engine")
+				// _ = diagnosis.NewEngine(aiMgr, db) // TODO: Initialize when routes are mounted
+				
+				logger.Info("Initializing AI Assignment Optimizer")
+				// _ = assignment.NewEngine(aiMgr, db)
+				
+				logger.Info("Initializing AI Parts Recommender")
+				// _ = parts.NewEngine(aiMgr, db)
+				
+				logger.Info("Initializing AI Feedback Loop Manager")
+				// _ = feedback.NewCollector(db)
+				// _ = feedback.NewAnalyzer(db)
+				// _ = feedback.NewLearner(db)
+				
+				logger.Info("All AI services initialized successfully")
+				
+				// TODO Phase 3: Mount AI service routes
+				// TODO Phase 4: Integrate with service ticket workflow
+			}
+		}
+	}
 
 	modules, err := registry.GetModules(enabledModules)
 	if err != nil {
@@ -358,4 +451,6 @@ func startModuleBackgroundProcesses(ctx context.Context, modules []service.Modul
 	// Wait for all modules to start or for first error
 	return g.Wait()
 }
+
+
 

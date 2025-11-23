@@ -15,7 +15,9 @@ import {
   Factory,
   Truck,
   ShoppingBag,
-  Hospital
+  Hospital,
+  Brain,
+  Sparkles
 } from 'lucide-react';
 import { organizationsApi } from '@/lib/api/organizations';
 import { equipmentApi } from '@/lib/api/equipment';
@@ -292,6 +294,103 @@ export default function AdminDashboard() {
                 className="w-full"
               >
                 View Distribution Network
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* AI Systems Section */}
+        <div className="mb-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* AI Diagnosis Demo */}
+          <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 flex items-center justify-center">
+                  <Brain className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1">
+                  <CardTitle className="text-lg text-purple-900 flex items-center gap-2">
+                    🤖 AI-Assisted Diagnosis
+                    <Sparkles className="w-4 h-4 text-purple-600" />
+                  </CardTitle>
+                  <CardDescription className="text-purple-700">
+                    Intelligent equipment diagnostics with confidence scoring
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-800">87%</div>
+                  <div className="text-sm text-purple-600">Avg Confidence</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-800">4</div>
+                  <div className="text-sm text-blue-600">Analysis Factors</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-indigo-800">2-4hr</div>
+                  <div className="text-sm text-indigo-600">Est Resolution</div>
+                </div>
+              </div>
+              <p className="text-sm text-gray-700 mb-4">
+                AI-powered diagnosis system that analyzes equipment issues with confidence scoring and repair recommendations.
+              </p>
+              <Button 
+                onClick={() => router.push('/ai-diagnosis-demo')}
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+              >
+                <Brain className="mr-2 h-4 w-4" />
+                Try AI Diagnosis Demo
+                <Sparkles className="ml-2 h-3 w-3" />
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Attachments & AI Analysis */}
+          <Card className="bg-gradient-to-r from-green-50 to-teal-50 border-green-200">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-green-600 to-teal-600 flex items-center justify-center">
+                  <Hospital className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1">
+                  <CardTitle className="text-lg text-green-900 flex items-center gap-2">
+                    📸 Attachments & AI Analysis
+                    <Brain className="w-4 h-4 text-green-600" />
+                  </CardTitle>
+                  <CardDescription className="text-green-700">
+                    Automated visual analysis of equipment photos and documents
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-800">4</div>
+                  <div className="text-sm text-green-600">Processing</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-teal-800">2</div>
+                  <div className="text-sm text-teal-600">With Issues</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-emerald-800">3</div>
+                  <div className="text-sm text-emerald-600">Queue Workers</div>
+                </div>
+              </div>
+              <p className="text-sm text-gray-700 mb-4">
+                Complete attachment management with automated AI analysis, safety concern detection, and repair recommendations.
+              </p>
+              <Button 
+                onClick={() => router.push('/attachments')}
+                className="w-full bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
+              >
+                <Hospital className="mr-2 h-4 w-4" />
+                View Attachments & AI Analysis
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </CardContent>

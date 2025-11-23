@@ -1,5 +1,5 @@
 # Master Documentation Index  
-*(Last updated: 06 Oct 2025)*  
+*(Last updated: 19 Nov 2024)*  
 
 This index is the **single authoritative map** of project documents.  
 – “OFFICIAL” files are current and must be used by every team.  
@@ -59,14 +59,21 @@ Each service has a concise overview and API surface:
 - [services/equipment-registry.md](./services/equipment-registry.md)
 - [services/service-ticket.md](./services/service-ticket.md)
 
-## 4  DATABASE DOCUMENTATION
+## 4  API DOCUMENTATION
+
+Complete API reference documents for all services:
+
+- [api/ATTACHMENT-API.md](./api/ATTACHMENT-API.md) - 📎 **Complete Attachment System API** (4 endpoints, frontend integration, database schema, production-ready)
+- [api/ASSIGNMENT-API.md](./api/ASSIGNMENT-API.md) - 🎯 AI-Powered Smart Assignment API
+
+## 5  DATABASE DOCUMENTATION
 
 Per-table docs with fields, relationships, and improvement suggestions live under `docs/database/`.
 Start here: [database/README.md](./database/README.md)
 
 ---
 
-## 5  HOW TO USE THIS INDEX
+## 6  HOW TO USE THIS INDEX
 
 1. **Read the OFFICIAL documents first.**  
 2. When creating new tickets, user stories or designs, reference the **section/heading** in the relevant OFFICIAL file.  
@@ -75,7 +82,7 @@ Start here: [database/README.md](./database/README.md)
 
 ---
 
-## 6  CHANGE CONTROL
+## 7  CHANGE CONTROL
 
 Any modification to OFFICIAL documents requires:  
 1. Product & Architecture sign-off.  
