@@ -3,8 +3,10 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { equipmentApi } from '@/lib/api/equipment';
+import { diagnosisApi, DiagnosisDecisionFeedback } from '@/lib/api/diagnosis';
 import { Equipment } from '@/types';
 import { Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { DiagnosisCard, DiagnosisButton } from '@/components/diagnosis';
 
 function ServiceRequestPageInner() {
   const searchParams = useSearchParams();
@@ -15,6 +17,10 @@ function ServiceRequestPageInner() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  
+  // AI Diagnosis state
+  const [diagnosis, setDiagnosis] = useState<any>(null);
+  const [diagnosisLoading, setDiagnosisLoading] = useState(false);
   
   const [formData, setFormData] = useState({
     description: '',
@@ -46,6 +52,60 @@ function ServiceRequestPageInner() {
 
     fetchEquipment();
   }, [qrCode]);
+
+  // Handle AI diagnosis completion
+  const handleDiagnosisComplete = (diagnosisResult: any) => {
+    setDiagnosis(diagnosisResult);
+  };
+
+  // Handle diagnosis accept/reject
+  const handleDiagnosisAccept = async (diagnosisId: string) => {
+    try {
+      const feedback: DiagnosisDecisionFeedback = {
+        decision: 'accepted',
+        user_id: 1, // Would be real user ID
+        user_role: 'technician',
+        feedback_text: 'Diagnosis accepted by user'
+      };
+      
+      await diagnosisApi.submitFeedback(diagnosisId, feedback);
+      
+      // Update local diagnosis state
+      setDiagnosis((prev: any) => ({
+        ...prev,
+        decision_status: 'accepted',
+        decided_at: new Date().toISOString(),
+        feedback_text: feedback.feedback_text
+      }));
+      
+    } catch (err) {
+      alert('Failed to submit feedback');
+    }
+  };
+
+  const handleDiagnosisReject = async (diagnosisId: string, feedbackText?: string) => {
+    try {
+      const feedback: DiagnosisDecisionFeedback = {
+        decision: 'rejected',
+        user_id: 1, // Would be real user ID
+        user_role: 'technician',
+        feedback_text: feedbackText || 'Diagnosis rejected by user'
+      };
+      
+      await diagnosisApi.submitFeedback(diagnosisId, feedback);
+      
+      // Update local diagnosis state
+      setDiagnosis((prev: any) => ({
+        ...prev,
+        decision_status: 'rejected',
+        decided_at: new Date().toISOString(),
+        feedback_text: feedback.feedback_text
+      }));
+      
+    } catch (err) {
+      alert('Failed to submit feedback');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -226,6 +286,24 @@ function ServiceRequestPageInner() {
               />
             </div>
 
+            {/* AI Diagnosis Section */}
+            {formData.description && (
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-medium text-purple-900">🤖 AI Assistant</h3>
+                  <DiagnosisButton 
+                    equipment={equipment}
+                    description={formData.description}
+                    priority={formData.priority}
+                    onDiagnosisComplete={handleDiagnosisComplete}
+                  />
+                </div>
+                <p className="text-xs text-purple-700">
+                  Get AI-powered diagnosis suggestions based on your issue description
+                </p>
+              </div>
+            )}
+
             <div className="flex gap-4">
               <button
                 type="submit"
@@ -245,6 +323,18 @@ function ServiceRequestPageInner() {
             </p>
           </div>
         </div>
+
+        {/* AI Diagnosis Results */}
+        {diagnosis && (
+          <div className="mt-8">
+            <DiagnosisCard 
+              diagnosis={diagnosis}
+              onAccept={handleDiagnosisAccept}
+              onReject={handleDiagnosisReject}
+              loading={diagnosisLoading}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

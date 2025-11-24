@@ -85,6 +85,36 @@ type Config struct {
 		SamplingRate   float64
 		MetricsEnabled bool
 	}
+
+	// AI Services configuration
+	AI struct {
+		// Provider settings
+		Provider         string
+		FallbackProvider string
+
+		// API Keys
+		OpenAIAPIKey    string
+		AnthropicAPIKey string
+
+		// Model configuration
+		OpenAIModel    string
+		AnthropicModel string
+
+		// Behavior
+		MaxRetries     int
+		TimeoutSeconds int
+		Temperature    float64
+		MaxTokens      int
+
+		// Features
+		CostTrackingEnabled bool
+
+		// Feedback Learning
+		FeedbackPatternThreshold  int
+		FeedbackTestPeriodDays    int
+		FeedbackDeployThreshold   int
+		FeedbackRollbackThreshold int
+	}
 }
 
 // Load reads configuration from environment variables with sensible defaults
@@ -134,6 +164,23 @@ func Load() (*Config, error) {
 	cfg.Observability.TracingURL = getEnv("TRACING_URL", "http://otel-collector:4317")
 	cfg.Observability.SamplingRate = getEnvAsFloat("TRACING_SAMPLING_RATE", DefaultTracingSampling)
 	cfg.Observability.MetricsEnabled = getEnvAsBool("METRICS_ENABLED", true)
+
+	// AI Services configuration
+	cfg.AI.Provider = getEnv("AI_PROVIDER", "openai")
+	cfg.AI.FallbackProvider = getEnv("AI_FALLBACK_PROVIDER", "anthropic")
+	cfg.AI.OpenAIAPIKey = getEnv("AI_OPENAI_API_KEY", "")
+	cfg.AI.AnthropicAPIKey = getEnv("AI_ANTHROPIC_API_KEY", "")
+	cfg.AI.OpenAIModel = getEnv("AI_OPENAI_MODEL", "gpt-4")
+	cfg.AI.AnthropicModel = getEnv("AI_ANTHROPIC_MODEL", "claude-3-opus-20240229")
+	cfg.AI.MaxRetries = getEnvAsInt("AI_MAX_RETRIES", 3)
+	cfg.AI.TimeoutSeconds = getEnvAsInt("AI_TIMEOUT_SECONDS", 30)
+	cfg.AI.Temperature = getEnvAsFloat("AI_TEMPERATURE", 0.7)
+	cfg.AI.MaxTokens = getEnvAsInt("AI_MAX_TOKENS", 2000)
+	cfg.AI.CostTrackingEnabled = getEnvAsBool("AI_COST_TRACKING_ENABLED", true)
+	cfg.AI.FeedbackPatternThreshold = getEnvAsInt("AI_FEEDBACK_PATTERN_THRESHOLD", 3)
+	cfg.AI.FeedbackTestPeriodDays = getEnvAsInt("AI_FEEDBACK_TEST_PERIOD_DAYS", 7)
+	cfg.AI.FeedbackDeployThreshold = getEnvAsInt("AI_FEEDBACK_DEPLOY_THRESHOLD", 5)
+	cfg.AI.FeedbackRollbackThreshold = getEnvAsInt("AI_FEEDBACK_ROLLBACK_THRESHOLD", -5)
 
 	// Validate critical configuration
 	if err := cfg.Validate(); err != nil {
