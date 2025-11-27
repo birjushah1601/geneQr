@@ -150,7 +150,7 @@ func (h *PartsHandler) GetTicketRecommendations(w http.ResponseWriter, r *http.R
 		ORDER BY created_at DESC
 	`
 
-	rows, err := h.db.QueryContext(r.Context(), query, ticketID)
+    rows, err := h.db.QueryContext(r.Context(), query, ticketID)
 	if err != nil {
 		respondJSON(w, http.StatusInternalServerError, ErrorResponse{
 			Error:   "Failed to retrieve recommendations",
@@ -164,9 +164,9 @@ func (h *PartsHandler) GetTicketRecommendations(w http.ResponseWriter, r *http.R
 	for rows.Next() {
 		var result parts.RecommendationResponse
 		var replacementJSON, accessoriesJSON, preventiveJSON, metadataJSON []byte
-		var wasAccurate *bool
+        var wasAccurate sql.NullBool
 
-		err := rows.Scan(
+        err := rows.Scan(
 			&result.RequestID,
 			&result.TicketID,
 			&replacementJSON,
@@ -176,22 +176,29 @@ func (h *PartsHandler) GetTicketRecommendations(w http.ResponseWriter, r *http.R
 			&wasAccurate,
 			&result.CreatedAt,
 		)
-		if err != nil {
-			continue
-		}
+        if err != nil {
+            continue
+        }
 
 		json.Unmarshal(replacementJSON, &result.ReplacementParts)
 		json.Unmarshal(accessoriesJSON, &result.Accessories)
 		json.Unmarshal(preventiveJSON, &result.PreventiveParts)
 		json.Unmarshal(metadataJSON, &result.Metadata)
 
-		recommendations = append(recommendations, map[string]interface{}{
+        // Handle nullable boolean
+        var wasAccuratePtr *bool
+        if wasAccurate.Valid {
+            v := wasAccurate.Bool
+            wasAccuratePtr = &v
+        }
+
+        recommendations = append(recommendations, map[string]interface{}{
 			"request_id":        result.RequestID,
 			"replacement_parts": result.ReplacementParts,
 			"accessories":       result.Accessories,
 			"preventive_parts":  result.PreventiveParts,
 			"metadata":          result.Metadata,
-			"was_accurate":      wasAccurate,
+            "was_accurate":      wasAccuratePtr,
 			"created_at":        result.CreatedAt,
 		})
 	}
@@ -356,19 +363,19 @@ func (h *PartsHandler) GetAnalytics(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get recommendation accuracy
-	accuracyQuery := `
-		SELECT 
-			recommendation_date,
-			total_recommendations,
-			accurate_count,
-			ROUND(accuracy_rate, 2) as accuracy_rate,
-			pending_feedback,
-			ROUND(total_ai_cost, 4) as total_ai_cost,
-			ai_assisted_count
-		FROM v_parts_recommendation_accuracy
-		WHERE recommendation_date > NOW() - INTERVAL '$1 days'
-		ORDER BY recommendation_date DESC
-	`
+    accuracyQuery := `
+        SELECT 
+            recommendation_date,
+            total_recommendations,
+            accurate_count,
+            ROUND(accuracy_rate, 2) as accuracy_rate,
+            pending_feedback,
+            ROUND(total_ai_cost, 4) as total_ai_cost,
+            ai_assisted_count
+        FROM v_parts_recommendation_accuracy
+        WHERE recommendation_date > NOW() - make_interval(days => $1)
+        ORDER BY recommendation_date DESC
+    `
 
 	rows, err := h.db.QueryContext(r.Context(), accuracyQuery, days)
 	if err != nil {
@@ -380,30 +387,44 @@ func (h *PartsHandler) GetAnalytics(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	var dailyAnalytics []map[string]interface{}
-	for rows.Next() {
-		var (
-			date                string
-			total               int
-			accurate            int
-			accuracyRate        *float64
-			pending             int
-			cost                *float64
-			aiAssistedCount     int
-		)
+    var dailyAnalytics []map[string]interface{}
+    for rows.Next() {
+        var (
+            date            string
+            total           int
+            accurate        int
+            accuracyRate    sql.NullFloat64
+            pending         int
+            cost            sql.NullFloat64
+            aiAssistedCount int
+        )
 
-		rows.Scan(&date, &total, &accurate, &accuracyRate, &pending, &cost, &aiAssistedCount)
+        if err := rows.Scan(&date, &total, &accurate, &accuracyRate, &pending, &cost, &aiAssistedCount); err != nil {
+            continue
+        }
 
-		dailyAnalytics = append(dailyAnalytics, map[string]interface{}{
-			"date":              date,
-			"total":             total,
-			"accurate":          accurate,
-			"accuracy_rate":     accuracyRate,
-			"pending_feedback":  pending,
-			"ai_cost":           cost,
-			"ai_assisted_count": aiAssistedCount,
-		})
-	}
+        var accuracyPtr *float64
+        if accuracyRate.Valid {
+            v := accuracyRate.Float64
+            accuracyPtr = &v
+        }
+
+        var costPtr *float64
+        if cost.Valid {
+            v := cost.Float64
+            costPtr = &v
+        }
+
+        dailyAnalytics = append(dailyAnalytics, map[string]interface{}{
+            "date":              date,
+            "total":             total,
+            "accurate":          accurate,
+            "accuracy_rate":     accuracyPtr,
+            "pending_feedback":  pending,
+            "ai_cost":           costPtr,
+            "ai_assisted_count": aiAssistedCount,
+        })
+    }
 
 	// Get top parts usage
 	partsQuery := `
@@ -419,7 +440,7 @@ func (h *PartsHandler) GetAnalytics(w http.ResponseWriter, r *http.Request) {
 		LIMIT 10
 	`
 
-	partsRows, err := h.db.QueryContext(r.Context(), partsQuery)
+    partsRows, err := h.db.QueryContext(r.Context(), partsQuery)
 	if err == nil {
 		defer partsRows.Close()
 		var topParts []map[string]interface{}
@@ -431,18 +452,26 @@ func (h *PartsHandler) GetAnalytics(w http.ResponseWriter, r *http.Request) {
 				category         string
 				timesUsed        int
 				timesRecommended int
-				avgCost          *float64
+                avgCost          sql.NullFloat64
 			)
 
-			partsRows.Scan(&partNumber, &partName, &category, &timesUsed, &timesRecommended, &avgCost)
+            if err := partsRows.Scan(&partNumber, &partName, &category, &timesUsed, &timesRecommended, &avgCost); err != nil {
+                continue
+            }
 
-			topParts = append(topParts, map[string]interface{}{
+            var avgCostPtr *float64
+            if avgCost.Valid {
+                v := avgCost.Float64
+                avgCostPtr = &v
+            }
+
+            topParts = append(topParts, map[string]interface{}{
 				"part_number":        partNumber,
 				"part_name":          partName,
 				"category":           category,
 				"times_used":         timesUsed,
 				"times_recommended":  timesRecommended,
-				"avg_cost":           avgCost,
+                "avg_cost":           avgCostPtr,
 			})
 		}
 
@@ -459,7 +488,7 @@ func (h *PartsHandler) GetAnalytics(w http.ResponseWriter, r *http.Request) {
 			LIMIT 10
 		`
 
-		accessoryRows, err := h.db.QueryContext(r.Context(), accessoryQuery)
+        accessoryRows, err := h.db.QueryContext(r.Context(), accessoryQuery)
 		var topAccessories []map[string]interface{}
 
 		if err == nil {
@@ -474,9 +503,11 @@ func (h *PartsHandler) GetAnalytics(w http.ResponseWriter, r *http.Request) {
 					totalRevenue float64
 				)
 
-				accessoryRows.Scan(&partNumber, &partName, &timesSold, &unitPrice, &totalRevenue)
+                if err := accessoryRows.Scan(&partNumber, &partName, &timesSold, &unitPrice, &totalRevenue); err != nil {
+                    continue
+                }
 
-				topAccessories = append(topAccessories, map[string]interface{}{
+                topAccessories = append(topAccessories, map[string]interface{}{
 					"part_number":   partNumber,
 					"part_name":     partName,
 					"times_sold":    timesSold,
@@ -571,50 +602,52 @@ func (h *PartsHandler) SearchCatalog(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	var results []map[string]interface{}
-	for rows.Next() {
-		var (
-			partID           int64
-			partNumber       string
-			partName         string
-			description      string
-			category         string
-			subcategory      *string
-			partType         string
-			isOEM            bool
-			unitPrice        *float64
-			manufacturer     *string
-			qtyAvailable     *int
-		)
+    var results []map[string]interface{}
+    for rows.Next() {
+        var (
+            partID       int64
+            partNumber   string
+            partName     string
+            description  string
+            category     string
+            subcategory  sql.NullString
+            partType     string
+            isOEM        bool
+            unitPrice    sql.NullFloat64
+            manufacturer sql.NullString
+            qtyAvailable sql.NullInt64
+        )
 
-		rows.Scan(&partID, &partNumber, &partName, &description, &category, &subcategory,
-			&partType, &isOEM, &unitPrice, &manufacturer, &qtyAvailable)
+        if err := rows.Scan(&partID, &partNumber, &partName, &description, &category, &subcategory,
+            &partType, &isOEM, &unitPrice, &manufacturer, &qtyAvailable); err != nil {
+            continue
+        }
 
-		result := map[string]interface{}{
-			"part_id":      partID,
-			"part_number":  partNumber,
-			"part_name":    partName,
-			"description":  description,
-			"category":     category,
-			"part_type":    partType,
-			"is_oem":       isOEM,
-		}
+        result := map[string]interface{}{
+            "part_id":     partID,
+            "part_number": partNumber,
+            "part_name":   partName,
+            "description": description,
+            "category":    category,
+            "part_type":   partType,
+            "is_oem":      isOEM,
+        }
 
-		if subcategory != nil {
-			result["subcategory"] = *subcategory
-		}
-		if unitPrice != nil {
-			result["unit_price"] = *unitPrice
-		}
-		if manufacturer != nil {
-			result["manufacturer"] = *manufacturer
-		}
-		if qtyAvailable != nil {
-			result["stock_available"] = *qtyAvailable
-		}
+        if subcategory.Valid {
+            result["subcategory"] = subcategory.String
+        }
+        if unitPrice.Valid {
+            result["unit_price"] = unitPrice.Float64
+        }
+        if manufacturer.Valid {
+            result["manufacturer"] = manufacturer.String
+        }
+        if qtyAvailable.Valid {
+            result["stock_available"] = qtyAvailable.Int64
+        }
 
-		results = append(results, result)
-	}
+        results = append(results, result)
+    }
 
 	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"count":   len(results),
