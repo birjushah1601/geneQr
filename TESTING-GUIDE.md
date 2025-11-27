@@ -1,0 +1,359 @@
+# 🧪 LIVE TESTING GUIDE - Real Data from Database
+
+## ✅ CONFIRMED: REAL DATA READY
+
+**Database Status:**
+- ✅ 16 spare parts in `spare_parts_catalog` table
+- ✅ 3 bundles in `spare_parts_bundles` table  
+- ✅ 2 suppliers in `spare_parts_suppliers` table
+- ✅ Backend API serving real data from PostgreSQL
+
+**Sample Real Parts:**
+```
+1. Battery Pack Rechargeable    - ₹350   - component
+2. Blood Tubing Set             - ₹25    - consumable
+3. Convex Array Probe           - ₹9,500 - accessory
+4. Detector Module 16-slice     - ₹25,000 - component
+5. Flat Panel Detector          - ₹45,000 - component
+6. Head Coil 8-Channel          - ₹12,500 - accessory
+7. X-Ray Tube Assembly          - ₹65,000 - component
+... +9 more parts
+```
+
+---
+
+## 🚀 STEP 1: Start Frontend
+
+**Open a PowerShell terminal and run:**
+```powershell
+cd C:\Users\birju\aby-med\admin-ui
+npm run dev
+```
+
+**Wait for:**
+```
+✓ Ready in 3.2s
+○ Local: http://localhost:3000
+```
+
+---
+
+## 🎯 STEP 2: Test Parts Demo Page (Standalone)
+
+### 2A. Open Demo Page
+```
+http://localhost:3000/parts-demo
+```
+
+### 2B. What You'll See
+- Sample MRI equipment details
+- "Open Parts Browser" button
+- Empty parts list
+
+### 2C. Click "Open Parts Browser"
+✅ **Modal opens with REAL DATA from database:**
+- 16 parts loaded from API
+- Real prices from `spare_parts_catalog` table
+- Real categories (component, consumable, accessory, etc.)
+
+### 2D. Test Features
+
+**Search:**
+- Type "battery" → Should show "Battery Pack Rechargeable" (₹350)
+- Type "filter" → Should show filter-related parts
+- Type "probe" → Should show "Convex Array Probe" (₹9,500)
+
+**Category Filter:**
+- Select "component" → Shows 6 parts (Battery, X-Ray Tube, Detector, etc.)
+- Select "consumable" → Shows consumables (Blood Tubing, etc.)
+- Select "accessory" → Shows accessories (Probes, Coils, etc.)
+
+**Engineer Filter:**
+- Toggle "Needs Engineer" → Shows parts requiring technician
+- Toggle "Self-Service" → Shows user-serviceable parts
+
+**Add to Cart:**
+- Click on "Battery Pack Rechargeable" card → Selected ✅
+- Click on "Blood Tubing Set" → Selected ✅
+- Switch to "Cart" tab
+
+**Adjust Quantities:**
+- Battery Pack: Click + to increase (1 → 2 → 3)
+- Blood Tubing: Click - to decrease
+- See total cost update in real-time
+
+**Cost Calculation:**
+```
+Battery Pack: 2x @ ₹350 = ₹700
+Blood Tubing: 5x @ ₹25 = ₹125
+Total: ₹825
+```
+
+**Engineer Detection:**
+- If you select parts with `requires_engineer=true`
+- See "Engineer Required: L2" or "L3" in summary
+
+**Click "Assign":**
+- Parts added to equipment
+- Summary shows on main page
+- Cost displayed: "2 parts assigned • ₹825"
+
+---
+
+## 🎯 STEP 3: Test Service Request Integration (Full Workflow)
+
+### 3A. Open Service Request Page
+```
+http://localhost:3000/service-request?qr=HOSP001-CT001
+```
+
+### 3B. Fill Service Request Form
+
+**Equipment Details** (Auto-loaded from QR):
+- Should show equipment info
+
+**Your Name:**
+```
+John Doe
+```
+
+**Priority:**
+```
+Select: High
+```
+
+**Issue Description:**
+```
+CT Scanner showing error code E203. Not starting up. 
+Suspected power supply issue.
+```
+
+### 3C. Add Parts to Request
+
+**Look for green section:**
+```
+📦 Spare Parts Needed
+Select spare parts needed for this service request
+[Add Parts]
+```
+
+**Click "Add Parts" button:**
+- ✅ Modal opens with 16 REAL parts from database
+- Same parts as demo page
+
+**Select Parts:**
+1. Search "battery" → Select "Battery Pack Rechargeable"
+2. Search "detector" → Select "Detector Module 16-slice"
+3. Switch to Cart tab
+4. Battery: Set quantity to 2
+5. Detector: Keep quantity at 1
+
+**See Real-Time Calculation:**
+```
+Battery Pack: 2x @ ₹350 = ₹700
+Detector Module: 1x @ ₹25,000 = ₹25,000
+Total Cost: ₹25,700
+```
+
+**Click "Assign":**
+- Modal closes
+- Parts added to service request
+
+### 3D. Verify Parts Summary
+
+**In the green "Spare Parts Needed" section:**
+```
+📦 Spare Parts Needed
+2 parts assigned • ₹25,700
+
+• Battery Pack Rechargeable - 2x • ₹700
+• Detector Module 16-slice - 1x • ₹25,000
+
+[Modify Parts]
+```
+
+### 3E. Submit Service Request
+
+**Click "Submit Service Request" button:**
+- ✅ Request submitted successfully
+- Success message appears
+- Shows equipment details
+- Shows "Create Another Request" button
+
+---
+
+## 📊 STEP 4: Verify Data Flow
+
+### 4A. Check API Response
+**Open PowerShell and run:**
+```powershell
+Invoke-RestMethod -Uri "http://localhost:8081/api/v1/catalog/parts" -Headers @{"X-Tenant-ID"="default"} | ConvertTo-Json -Depth 3
+```
+
+**Should return 16 parts with:**
+- `id` - UUID from database
+- `part_name` - Real part names
+- `part_number` - Part numbers
+- `category` - component/consumable/accessory
+- `unit_price` - Real prices from DB
+- `requires_engineer` - Boolean flag
+- `engineer_level_required` - L1/L2/L3
+
+### 4B. Check Database Directly
+```powershell
+docker exec med_platform_pg psql -U postgres -d med_platform -c "SELECT part_name, unit_price, category FROM spare_parts_catalog LIMIT 5;"
+```
+
+**Should show exact same data as API**
+
+---
+
+## 🎨 STEP 5: Advanced Features Test
+
+### Filter Combinations
+1. Search "pack" + Category "component" → Battery Pack
+2. Search "tube" + Category "consumable" → Blood Tubing
+3. Engineer "Needs Engineer" + Category "component" → High-skill parts
+
+### Multi-Select Test
+1. Select 5 different parts
+2. Adjust quantities (1-10 each)
+3. See total cost climb to ₹50,000+
+4. Remove 2 parts
+5. See cost recalculate
+
+### Edge Cases
+1. Search with no results: "xyz123"
+2. Add 0 parts and try to assign
+3. Select same part twice (shouldn't duplicate)
+4. Adjust quantity to 99
+
+---
+
+## ✅ EXPECTED RESULTS
+
+### Parts Demo Page
+✅ 16 parts loaded from database  
+✅ Search works across part names  
+✅ Filters work (category, engineer)  
+✅ Multi-select with checkboxes  
+✅ Cart shows selected parts  
+✅ Quantity adjusters work (+/-)  
+✅ Cost calculates in real-time  
+✅ Engineer level detected automatically  
+✅ Assign button adds parts  
+
+### Service Request Page
+✅ Form loads equipment details  
+✅ "Add Parts" button visible (green section)  
+✅ Clicking opens parts modal  
+✅ Modal loads same 16 real parts  
+✅ Parts can be selected and assigned  
+✅ Summary displays in request form  
+✅ Cost shown: "X parts • ₹Y"  
+✅ Parts list preview (first 3)  
+✅ "Modify Parts" works to reopen  
+✅ Submit includes parts data  
+
+---
+
+## 🐛 TROUBLESHOOTING
+
+### Modal Shows "No parts available"
+**Problem:** API not returning data  
+**Fix:**
+```powershell
+# Check backend is running
+curl http://localhost:8081/api/v1/catalog/parts
+```
+
+### Parts list is empty
+**Problem:** Database has no parts  
+**Fix:**
+```powershell
+# Check database
+docker exec med_platform_pg psql -U postgres -d med_platform -c "SELECT COUNT(*) FROM spare_parts_catalog;"
+# Should show: 16
+```
+
+### "Failed to fetch parts" error
+**Problem:** Backend not running or wrong port  
+**Fix:**
+```powershell
+# Verify backend running on 8081
+netstat -ano | findstr ":8081"
+
+# Restart if needed
+.\backend.exe
+```
+
+### Modal doesn't open
+**Problem:** React component error  
+**Fix:**
+```powershell
+# Check browser console (F12)
+# Look for errors in Components tab
+```
+
+---
+
+## 📈 SUCCESS METRICS
+
+After testing, you should have:
+
+✅ **Seen 16 real parts** from spare_parts_catalog table  
+✅ **Filtered by category** (component, consumable, accessory)  
+✅ **Searched parts** by name  
+✅ **Added to cart** with quantities  
+✅ **Calculated costs** in real-time (₹)  
+✅ **Detected engineer levels** (L1/L2/L3)  
+✅ **Assigned parts** to service request  
+✅ **Viewed summary** with cost and parts list  
+✅ **Modified assignments** after initial selection  
+✅ **Submitted request** with all data  
+
+---
+
+## 🎯 TEST SCENARIOS
+
+### Scenario 1: Simple Repair
+**Parts:** Battery Pack (2x), Blood Tubing (5x)  
+**Cost:** ₹825  
+**Engineer:** Not required  
+**Use Case:** Quick user-serviceable fix
+
+### Scenario 2: Major Component Replacement
+**Parts:** X-Ray Tube Assembly (1x), Detector Module (1x)  
+**Cost:** ₹90,000  
+**Engineer:** L3 required  
+**Use Case:** Complex repair needing expert
+
+### Scenario 3: Routine Maintenance
+**Parts:** Filter Element (2x), Head Coil (1x), Battery (1x)  
+**Cost:** ₹13,800  
+**Engineer:** L1 or L2  
+**Use Case:** Scheduled preventive maintenance
+
+---
+
+## 🎊 FINAL CHECKLIST
+
+Before considering testing complete:
+
+- [ ] Frontend running on :3000
+- [ ] Backend running on :8081
+- [ ] Database accessible with 16 parts
+- [ ] Parts demo page loads
+- [ ] Modal opens and shows parts
+- [ ] Search/filter works
+- [ ] Cart functionality works
+- [ ] Cost calculation accurate
+- [ ] Parts assigned to service request
+- [ ] Summary displayed correctly
+- [ ] Service request submits successfully
+
+---
+
+**Ready to test? Start with Step 1!** 🚀
+
+**Questions or issues? Check TROUBLESHOOTING section above.**

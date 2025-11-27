@@ -5,8 +5,9 @@ import { useSearchParams } from 'next/navigation';
 import { equipmentApi } from '@/lib/api/equipment';
 import { diagnosisApi, DiagnosisDecisionFeedback } from '@/lib/api/diagnosis';
 import { Equipment } from '@/types';
-import { Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle, Package } from 'lucide-react';
 import { DiagnosisCard, DiagnosisButton } from '@/components/diagnosis';
+import { PartsAssignmentModal } from '@/components/PartsAssignmentModal';
 
 function ServiceRequestPageInner() {
   const searchParams = useSearchParams();
@@ -21,6 +22,10 @@ function ServiceRequestPageInner() {
   // AI Diagnosis state
   const [diagnosis, setDiagnosis] = useState<any>(null);
   const [diagnosisLoading, setDiagnosisLoading] = useState(false);
+  
+  // Parts Assignment state
+  const [isPartsModalOpen, setIsPartsModalOpen] = useState(false);
+  const [assignedParts, setAssignedParts] = useState<any[]>([]);
   
   const [formData, setFormData] = useState({
     description: '',
@@ -56,6 +61,12 @@ function ServiceRequestPageInner() {
   // Handle AI diagnosis completion
   const handleDiagnosisComplete = (diagnosisResult: any) => {
     setDiagnosis(diagnosisResult);
+  };
+
+  // Handle parts assignment
+  const handlePartsAssign = (parts: any[]) => {
+    setAssignedParts(parts);
+    console.log('Parts assigned:', parts);
   };
 
   // Handle diagnosis accept/reject
@@ -304,6 +315,51 @@ function ServiceRequestPageInner() {
               </div>
             )}
 
+            {/* Parts Assignment Section */}
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h3 className="text-sm font-medium text-green-900 flex items-center gap-2">
+                    <Package className="h-4 w-4" />
+                    Spare Parts Needed
+                  </h3>
+                  {assignedParts.length > 0 && (
+                    <p className="text-xs text-green-700 mt-1">
+                      {assignedParts.length} part{assignedParts.length > 1 ? 's' : ''} assigned • ₹{assignedParts.reduce((sum, p) => sum + (p.unit_price * p.quantity), 0).toLocaleString()}
+                    </p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsPartsModalOpen(true)}
+                  className="px-4 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors"
+                >
+                  {assignedParts.length > 0 ? 'Modify Parts' : 'Add Parts'}
+                </button>
+              </div>
+              {assignedParts.length === 0 ? (
+                <p className="text-xs text-green-700">
+                  Select spare parts needed for this service request
+                </p>
+              ) : (
+                <div className="mt-2 space-y-2">
+                  {assignedParts.slice(0, 3).map((part) => (
+                    <div key={part.id} className="flex justify-between text-xs bg-white p-2 rounded border border-green-100">
+                      <span className="font-medium">{part.part_name}</span>
+                      <span className="text-gray-600">
+                        {part.quantity}x • ₹{part.unit_price * part.quantity}
+                      </span>
+                    </div>
+                  ))}
+                  {assignedParts.length > 3 && (
+                    <p className="text-xs text-green-600 text-center">
+                      +{assignedParts.length - 3} more part{assignedParts.length - 3 > 1 ? 's' : ''}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
             <div className="flex gap-4">
               <button
                 type="submit"
@@ -336,6 +392,15 @@ function ServiceRequestPageInner() {
           </div>
         )}
       </div>
+
+      {/* Parts Assignment Modal */}
+      <PartsAssignmentModal
+        open={isPartsModalOpen}
+        onClose={() => setIsPartsModalOpen(false)}
+        onAssign={handlePartsAssign}
+        equipmentId={(equipment as any)?.id || 'unknown'}
+        equipmentName={(equipment as any)?.equipment_name || (equipment as any)?.name || 'Equipment'}
+      />
     </div>
   );
 }
