@@ -10,18 +10,15 @@ DECLARE
   v_ticket_id varchar(32) := 'TICKET-DEMO-0001';
   v_ticket_number text := 'SR-DEM-0001';
 BEGIN
-  -- Pick a catalog item that has spare parts linked
+  -- Pick any catalog item (parts optional)
   SELECT ec.id, ec.manufacturer_name, ec.model_number, ec.product_name
     INTO v_catalog_id, v_mfg, v_model, v_product
   FROM equipment_catalog ec
-  WHERE EXISTS (
-    SELECT 1 FROM equipment_spare_parts esp WHERE esp.equipment_catalog_id = ec.id
-  )
   ORDER BY ec.created_at
   LIMIT 1;
 
   IF v_catalog_id IS NULL THEN
-    RAISE NOTICE 'No equipment_catalog item with parts found; skipping demo seed.';
+    RAISE NOTICE 'No equipment_catalog item found; skipping demo seed.';
     RETURN;
   END IF;
 
