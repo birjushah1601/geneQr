@@ -347,7 +347,7 @@ func (h *EquipmentHandler) ImportQRMapping(w http.ResponseWriter, r *http.Reques
         return
     }
 
-    file, header, err := r.FormFile("csv_file")
+    file, _, err := r.FormFile("csv_file")
     if err != nil {
         h.respondError(w, http.StatusBadRequest, "CSV file is required")
         return
@@ -357,15 +357,15 @@ func (h *EquipmentHandler) ImportQRMapping(w http.ResponseWriter, r *http.Reques
     createdBy := r.FormValue("created_by")
     if createdBy == "" { createdBy = "system" }
 
-    tempFilePath := "/tmp/" + header.Filename
-    tempFile, err := os.Create(tempFilePath)
+    tmp, err := os.CreateTemp("", "qrmap-*.csv")
     if err != nil {
         h.respondError(w, http.StatusInternalServerError, "Failed to save file")
         return
     }
-    defer func(){ tempFile.Close(); os.Remove(tempFilePath) }()
+    tempFilePath := tmp.Name()
+    defer func(){ tmp.Close(); os.Remove(tempFilePath) }()
 
-    if _, err := io.Copy(tempFile, file); err != nil {
+    if _, err := io.Copy(tmp, file); err != nil {
         h.respondError(w, http.StatusInternalServerError, "Failed to save file")
         return
     }
