@@ -1,6 +1,7 @@
 package api
 
 import (
+    "database/sql"
 	"encoding/json"
 	"log/slog"
 	"net/http"
@@ -9,19 +10,22 @@ import (
 	"github.com/aby-med/medical-platform/internal/service-domain/service-ticket/app"
 	"github.com/aby-med/medical-platform/internal/service-domain/service-ticket/domain"
 	"github.com/go-chi/chi/v5"
+    "github.com/jackc/pgx/v5/pgxpool"
 )
 
 // TicketHandler handles HTTP requests for service tickets
 type TicketHandler struct {
 	service *app.TicketService
 	logger  *slog.Logger
+    pool    *pgxpool.Pool
 }
 
 // NewTicketHandler creates a new ticket HTTP handler
-func NewTicketHandler(service *app.TicketService, logger *slog.Logger) *TicketHandler {
+func NewTicketHandler(service *app.TicketService, logger *slog.Logger, pool *pgxpool.Pool) *TicketHandler {
 	return &TicketHandler{
 		service: service,
 		logger:  logger.With(slog.String("component", "ticket_handler")),
+        pool:    pool,
 	}
 }
 
@@ -446,6 +450,82 @@ func (h *TicketHandler) GetStatusHistory(w http.ResponseWriter, r *http.Request)
 
 	h.respondJSON(w, http.StatusOK, history)
 }
+
+// GetTicketParts handles GET /tickets/{id}/parts
+func (h *TicketHandler) GetTicketParts(w http.ResponseWriter, r *http.Request) {
+    ctx := r.Context()
+    id := chi.URLParam(r, "id")
+    if id == "" {
+        h.respondError(w, http.StatusBadRequest, "Ticket ID is required")
+        return
+    }
+
+    if h.pool == nil {
+        h.respondError(w, http.StatusInternalServerError, "DB pool not initialized")
+        return
+    }
+
+    const q = `
+        SELECT spare_part_id, part_number, part_name, unit_price, currency,
+               is_critical, quantity_required, part_category, stock_status, lead_time_days
+        FROM get_parts_for_ticket($1)
+    `
+
+    rows, err := h.pool.Query(ctx, q, id)
+    if err != nil {
+        h.logger.Error("Failed to fetch ticket parts", slog.String("error", err.Error()))
+        h.respondError(w, http.StatusInternalServerError, "Failed to fetch ticket parts")
+        return
+    }
+    defer rows.Close()
+
+    type Part struct {
+        SparePartID      string   `json:"spare_part_id"`
+        PartNumber       string   `json:"part_number"`
+        PartName         string   `json:"part_name"`
+        UnitPrice        *float64 `json:"unit_price,omitempty"`
+        Currency         *string  `json:"currency,omitempty"`
+        IsCritical       *bool    `json:"is_critical,omitempty"`
+        QuantityRequired *int64   `json:"quantity_required,omitempty"`
+        PartCategory     *string  `json:"category,omitempty"`
+        StockStatus      *string  `json:"stock_status,omitempty"`
+        LeadTimeDays     *int64   `json:"lead_time_days,omitempty"`
+    }
+
+    parts := make([]Part, 0, 8)
+    for rows.Next() {
+        var p Part
+        var (
+            unitPrice sql.NullFloat64
+            currency  sql.NullString
+            isCrit    sql.NullBool
+            qty       sql.NullInt64
+            cat       sql.NullString
+            status    sql.NullString
+            lead      sql.NullInt64
+        )
+        if err := rows.Scan(&p.SparePartID, &p.PartNumber, &p.PartName,
+            &unitPrice, &currency, &isCrit, &qty, &cat, &status, &lead); err != nil {
+            continue
+        }
+        if unitPrice.Valid { v := unitPrice.Float64; p.UnitPrice = &v }
+        if currency.Valid { v := currency.String; p.Currency = &v }
+        if isCrit.Valid { v := isCrit.Bool; p.IsCritical = &v }
+        if qty.Valid { v := qty.Int64; p.QuantityRequired = &v }
+        if cat.Valid { v := cat.String; p.PartCategory = &v }
+        if status.Valid { v := status.String; p.StockStatus = &v }
+        if lead.Valid { v := lead.Int64; p.LeadTimeDays = &v }
+        parts = append(parts, p)
+    }
+
+    h.respondJSON(w, http.StatusOK, map[string]any{
+        "ticket_id": id,
+        "count": len(parts),
+        "parts": parts,
+    })
+}
+
+// no-op: database/sql Null* used for scanning
 
 // respondJSON writes JSON response
 func (h *TicketHandler) respondJSON(w http.ResponseWriter, status int, data interface{}) {
