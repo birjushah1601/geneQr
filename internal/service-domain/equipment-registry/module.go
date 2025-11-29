@@ -88,6 +88,7 @@ func (m *Module) MountRoutes(r chi.Router) {
 		r.Get("/", m.handler.ListEquipment)               // List equipment
 		r.Post("/import", m.handler.ImportCSV)            // CSV import
 		r.Post("/qr/bulk-generate", m.handler.BulkGenerateQRCodes) // Bulk generate QR codes
+		r.Post("/qr/import-mapping", m.handler.ImportQRMapping)    // Import pregenerated QR mappings via CSV
 		r.Get("/qr/image/{id}", m.handler.GetQRCodeImage) // Get QR code image (different pattern to avoid conflict)
 		r.Get("/qr/{qr_code}", m.handler.GetEquipmentByQR) // Get by QR code
 		r.Get("/serial/{serial}", m.handler.GetEquipmentBySerial) // Get by serial

@@ -30,6 +30,12 @@ type Repository interface {
 	
 	// UpdateQRCode updates the QR code image in database
 	UpdateQRCode(ctx context.Context, equipmentID string, qrImage []byte, format string) error
+
+    // SetQRCodeByID maps a QR code (and URL) to an equipment by ID
+    SetQRCodeByID(ctx context.Context, id, qrCode, qrURL string) error
+
+    // SetQRCodeBySerial maps a QR code (and URL) to an equipment by serial number
+    SetQRCodeBySerial(ctx context.Context, serial, qrCode, qrURL string) error
 }
 
 // ListCriteria defines filtering criteria for listing equipment

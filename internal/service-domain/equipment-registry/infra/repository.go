@@ -664,3 +664,41 @@ func (r *EquipmentRepository) UpdateQRCode(ctx context.Context, equipmentID stri
 	}
 	return nil
 }
+
+// SetQRCodeByID maps a QR code and URL to an equipment by ID
+func (r *EquipmentRepository) SetQRCodeByID(ctx context.Context, id, qrCode, qrURL string) error {
+    query := `
+        UPDATE equipment
+        SET qr_code = $2,
+            qr_code_url = $3,
+            updated_at = NOW()
+        WHERE id = $1
+    `
+    tag, err := r.pool.Exec(ctx, query, id, qrCode, qrURL)
+    if err != nil {
+        return fmt.Errorf("failed to set QR by id: %w", err)
+    }
+    if tag.RowsAffected() == 0 {
+        return domain.ErrEquipmentNotFound
+    }
+    return nil
+}
+
+// SetQRCodeBySerial maps a QR code and URL to an equipment by serial number
+func (r *EquipmentRepository) SetQRCodeBySerial(ctx context.Context, serial, qrCode, qrURL string) error {
+    query := `
+        UPDATE equipment
+        SET qr_code = $2,
+            qr_code_url = $3,
+            updated_at = NOW()
+        WHERE serial_number = $1
+    `
+    tag, err := r.pool.Exec(ctx, query, serial, qrCode, qrURL)
+    if err != nil {
+        return fmt.Errorf("failed to set QR by serial: %w", err)
+    }
+    if tag.RowsAffected() == 0 {
+        return domain.ErrEquipmentNotFound
+    }
+    return nil
+}

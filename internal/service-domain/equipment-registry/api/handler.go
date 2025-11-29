@@ -338,6 +338,48 @@ func (h *EquipmentHandler) ImportCSV(w http.ResponseWriter, r *http.Request) {
 	h.respondJSON(w, http.StatusOK, result)
 }
 
+// ImportQRMapping handles POST /equipment/qr/import-mapping
+func (h *EquipmentHandler) ImportQRMapping(w http.ResponseWriter, r *http.Request) {
+    ctx := r.Context()
+
+    if err := r.ParseMultipartForm(10 << 20); err != nil {
+        h.respondError(w, http.StatusBadRequest, "Failed to parse form: "+err.Error())
+        return
+    }
+
+    file, header, err := r.FormFile("csv_file")
+    if err != nil {
+        h.respondError(w, http.StatusBadRequest, "CSV file is required")
+        return
+    }
+    defer file.Close()
+
+    createdBy := r.FormValue("created_by")
+    if createdBy == "" { createdBy = "system" }
+
+    tempFilePath := "/tmp/" + header.Filename
+    tempFile, err := os.Create(tempFilePath)
+    if err != nil {
+        h.respondError(w, http.StatusInternalServerError, "Failed to save file")
+        return
+    }
+    defer func(){ tempFile.Close(); os.Remove(tempFilePath) }()
+
+    if _, err := io.Copy(tempFile, file); err != nil {
+        h.respondError(w, http.StatusInternalServerError, "Failed to save file")
+        return
+    }
+
+    result, err := h.service.BulkImportQRMapping(ctx, tempFilePath, createdBy)
+    if err != nil {
+        h.logger.Error("Failed to import QR mapping CSV", slog.String("error", err.Error()))
+        h.respondError(w, http.StatusInternalServerError, "Failed to import QR mapping: "+err.Error())
+        return
+    }
+
+    h.respondJSON(w, http.StatusOK, result)
+}
+
 // RecordService handles POST /equipment/{id}/service
 func (h *EquipmentHandler) RecordService(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
