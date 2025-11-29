@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -359,8 +360,13 @@ func (h *EquipmentHandler) ImportQRMapping(w http.ResponseWriter, r *http.Reques
 
     tmp, err := os.CreateTemp("", "qrmap-*.csv")
     if err != nil {
-        h.respondError(w, http.StatusInternalServerError, "Failed to save file")
-        return
+        // Fallback to current working directory (Windows temp issues)
+        fallback := fmt.Sprintf("qrmap-%d.csv", time.Now().UnixNano())
+        tmp, err = os.Create(fallback)
+        if err != nil {
+            h.respondError(w, http.StatusInternalServerError, "Failed to save file")
+            return
+        }
     }
     tempFilePath := tmp.Name()
     defer func(){ tmp.Close(); os.Remove(tempFilePath) }()
