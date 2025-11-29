@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/aby-med/medical-platform/internal/service-domain/equipment-registry/domain"
