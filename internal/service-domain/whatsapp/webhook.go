@@ -184,13 +184,23 @@ func (h *WebhookHandler) handleImageMessage(ctx context.Context, msg Message, co
 	
 	h.logger.Info("Image downloaded", slog.String("path", imagePath))
 
+    // Move into unified unassigned attachments bucket for consistency
+    destDir := filepath.Join("storage", "attachments", "unassigned", "whatsapp")
+    if err := os.MkdirAll(destDir, 0755); err != nil {
+        h.logger.Error("Failed to create unassigned storage dir", slog.String("error", err.Error()))
+    }
+    destPath := filepath.Join(destDir, filepath.Base(imagePath))
+    if moveErr := os.Rename(imagePath, destPath); moveErr != nil {
+        h.logger.Warn("Failed to move image to unassigned bucket; keeping original path", slog.String("error", moveErr.Error()))
+        destPath = imagePath
+    }
     // Create unattached attachment (source: whatsapp, category: issue_photo)
     var size int64 = 1
-    if fi, statErr := os.Stat(imagePath); statErr == nil {
+    if fi, statErr := os.Stat(destPath); statErr == nil {
         size = fi.Size()
     }
     // Use forward slashes for storage path consistency
-    storagePath := strings.ReplaceAll(imagePath, "\\", "/")
+    storagePath := strings.ReplaceAll(destPath, "\\", "/")
     attReq := &attachmentDomain.CreateAttachmentRequest{
         TicketID:         nil,
         Filename:         filepath.Base(imagePath),
@@ -293,12 +303,22 @@ func (h *WebhookHandler) handleVideoMessage(ctx context.Context, msg Message, co
 	
 	h.logger.Info("Video downloaded", slog.String("path", videoPath))
 
+    // Move into unified unassigned attachments bucket for consistency
+    vdestDir := filepath.Join("storage", "attachments", "unassigned", "whatsapp")
+    if err := os.MkdirAll(vdestDir, 0755); err != nil {
+        h.logger.Error("Failed to create unassigned storage dir", slog.String("error", err.Error()))
+    }
+    vdestPath := filepath.Join(vdestDir, filepath.Base(videoPath))
+    if moveErr := os.Rename(videoPath, vdestPath); moveErr != nil {
+        h.logger.Warn("Failed to move video to unassigned bucket; keeping original path", slog.String("error", moveErr.Error()))
+        vdestPath = videoPath
+    }
     // Create unattached attachment (source: whatsapp, category: video)
     var size int64 = 1
-    if fi, statErr := os.Stat(videoPath); statErr == nil {
+    if fi, statErr := os.Stat(vdestPath); statErr == nil {
         size = fi.Size()
     }
-    storagePath := strings.ReplaceAll(videoPath, "\\", "/")
+    storagePath := strings.ReplaceAll(vdestPath, "\\", "/")
     attReq := &attachmentDomain.CreateAttachmentRequest{
         TicketID:         nil,
         Filename:         filepath.Base(videoPath),
