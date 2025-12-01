@@ -130,6 +130,7 @@ func (m *Module) MountRoutes(r chi.Router) {
         r.Group(func(r chi.Router) {
             r.Use(middleware.RequirePermission("upload", m.logger))
             r.Post("/", m.httpHandler.CreateAttachment)
+            r.Post("/{id}/link", m.httpHandler.LinkAttachment)
         })
 
 		// TODO: Add DELETE for attachment removal (requires 'delete' permission)

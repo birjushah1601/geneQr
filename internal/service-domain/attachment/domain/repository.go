@@ -24,6 +24,9 @@ type AttachmentRepository interface {
 	// Update updates an existing attachment
 	Update(ctx context.Context, attachment *Attachment) error
 	
+    // LinkToTicket sets/changes the ticket_id and optionally updates storage_path
+    LinkToTicket(ctx context.Context, id uuid.UUID, ticketID string, newStoragePath *string) error
+
 	// Delete removes an attachment record
 	Delete(ctx context.Context, id uuid.UUID) error
 	

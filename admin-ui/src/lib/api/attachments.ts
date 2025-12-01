@@ -94,6 +94,11 @@ export const attachmentsApi = {
     await apiClient.delete(`/v1/attachments/${id}`)
   },
 
+  // Link an existing attachment to a ticket (for pre-creation uploads)
+  async link(id: string, ticketId: string): Promise<void> {
+    await apiClient.post(`/v1/attachments/${id}/link`, { ticket_id: ticketId })
+  },
+
   // Get attachment statistics
   async getStats(): Promise<{
     total: number

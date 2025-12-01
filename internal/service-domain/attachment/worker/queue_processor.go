@@ -288,15 +288,17 @@ func (p *QueueProcessor) processAttachment(ctx context.Context, attachment *doma
 	}
 
 	// Create AI processing request
-	request := &ai.VisionAnalysisRequest{
-		AttachmentID: attachment.ID,
-		TicketID:     attachment.TicketID,
-		ImagePath:    attachment.StoragePath,
-		FileType:     attachment.FileType,
-		Purpose:      "automated_analysis",
-		// Equipment context would be loaded from ticket/QR code
-		Equipment: p.getEquipmentContextFromTicket(attachment.TicketID),
-	}
+    ticketID := ""
+    if attachment.TicketID != nil { ticketID = *attachment.TicketID }
+    request := &ai.VisionAnalysisRequest{
+        AttachmentID: attachment.ID,
+        TicketID:     ticketID,
+        ImagePath:    attachment.StoragePath,
+        FileType:     attachment.FileType,
+        Purpose:      "automated_analysis",
+        // Equipment context would be loaded from ticket/QR code
+        Equipment: p.getEquipmentContextFromTicket(ticketID),
+    }
 
 	// Process with AI
 	result, err := p.visionEngine.AnalyzeImage(ctx, request)

@@ -35,9 +35,9 @@ func (r *PostgresAttachmentRepository) Create(ctx context.Context, attachment *d
 			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
 		)`
 
-	_, err := r.db.Exec(ctx, query,
-		attachment.ID,
-		attachment.TicketID,
+    _, err := r.db.Exec(ctx, query,
+        attachment.ID,
+        attachment.TicketID,
 		attachment.Filename,
 		attachment.FileType,
 		attachment.FileSizeBytes,
@@ -65,10 +65,10 @@ func (r *PostgresAttachmentRepository) GetByID(ctx context.Context, id uuid.UUID
 		FROM ticket_attachments 
 		WHERE id = $1`
 
-	var attachment domain.Attachment
-	err := r.db.QueryRow(ctx, query, id).Scan(
-		&attachment.ID,
-		&attachment.TicketID,
+    var attachment domain.Attachment
+    err := r.db.QueryRow(ctx, query, id).Scan(
+        &attachment.ID,
+        &attachment.TicketID,
 		&attachment.Filename,
 		&attachment.FileType,
 		&attachment.FileSizeBytes,
@@ -96,32 +96,32 @@ func (r *PostgresAttachmentRepository) GetByTicketID(ctx context.Context, ticket
 		WHERE ticket_id = $1
 		ORDER BY created_at DESC`
 
-	rows, err := r.db.Query(ctx, query, ticketID)
+    rows, err := r.db.Query(ctx, query, ticketID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query attachments by ticket ID: %w", err)
 	}
 	defer rows.Close()
 
 	var attachments []*domain.Attachment
-	for rows.Next() {
-		var attachment domain.Attachment
-		if err := rows.Scan(
-			&attachment.ID,
-			&attachment.TicketID,
-			&attachment.Filename,
-			&attachment.FileType,
-			&attachment.FileSizeBytes,
-			&attachment.StoragePath,
-			&attachment.AttachmentCategory,
-			&attachment.Source,
-			&attachment.ProcessingStatus,
-			&attachment.CreatedAt,
-			&attachment.UpdatedAt,
-		); err != nil {
-			return nil, fmt.Errorf("failed to scan attachment: %w", err)
-		}
-		attachments = append(attachments, &attachment)
-	}
+    for rows.Next() {
+        var attachment domain.Attachment
+        if err := rows.Scan(
+            &attachment.ID,
+            &attachment.TicketID,
+            &attachment.Filename,
+            &attachment.FileType,
+            &attachment.FileSizeBytes,
+            &attachment.StoragePath,
+            &attachment.AttachmentCategory,
+            &attachment.Source,
+            &attachment.ProcessingStatus,
+            &attachment.CreatedAt,
+            &attachment.UpdatedAt,
+        ); err != nil {
+            return nil, fmt.Errorf("failed to scan attachment: %w", err)
+        }
+        attachments = append(attachments, &attachment)
+    }
 
 	return attachments, nil
 }
@@ -136,7 +136,7 @@ func (r *PostgresAttachmentRepository) List(ctx context.Context, req *domain.Lis
 	whereConditions := []string{}
 	argIndex := 1
 	
-	if req.TicketID != nil {
+    if req.TicketID != nil {
 		whereConditions = append(whereConditions, fmt.Sprintf("ticket_id = $%d", argIndex))
 		countArgs = append(countArgs, *req.TicketID)
 		argIndex++
@@ -162,7 +162,7 @@ func (r *PostgresAttachmentRepository) List(ctx context.Context, req *domain.Lis
 	var args []interface{}
 	argIndex = 1
 
-	if req.TicketID != nil {
+    if req.TicketID != nil {
 		query += fmt.Sprintf(" AND ticket_id = $%d", argIndex)
 		args = append(args, *req.TicketID)
 		argIndex++
@@ -190,25 +190,25 @@ func (r *PostgresAttachmentRepository) List(ctx context.Context, req *domain.Lis
 	defer rows.Close()
 
 	var attachments []*domain.Attachment
-	for rows.Next() {
-		var attachment domain.Attachment
-		if err := rows.Scan(
-			&attachment.ID,
-			&attachment.TicketID,
-			&attachment.Filename,
-			&attachment.FileType,
-			&attachment.FileSizeBytes,
-			&attachment.StoragePath,
-			&attachment.AttachmentCategory,
-			&attachment.Source,
-			&attachment.ProcessingStatus,
-			&attachment.CreatedAt,
-			&attachment.UpdatedAt,
-		); err != nil {
-			return nil, fmt.Errorf("failed to scan attachment: %w", err)
-		}
-		attachments = append(attachments, &attachment)
-	}
+    for rows.Next() {
+        var attachment domain.Attachment
+        if err := rows.Scan(
+            &attachment.ID,
+            &attachment.TicketID,
+            &attachment.Filename,
+            &attachment.FileType,
+            &attachment.FileSizeBytes,
+            &attachment.StoragePath,
+            &attachment.AttachmentCategory,
+            &attachment.Source,
+            &attachment.ProcessingStatus,
+            &attachment.CreatedAt,
+            &attachment.UpdatedAt,
+        ); err != nil {
+            return nil, fmt.Errorf("failed to scan attachment: %w", err)
+        }
+        attachments = append(attachments, &attachment)
+    }
 
 	return &domain.AttachmentListResult{
 		Attachments: attachments,
@@ -275,6 +275,26 @@ func (r *PostgresAttachmentRepository) UpdateStatus(ctx context.Context, id uuid
 
 	r.logger.Info("Attachment status updated", slog.String("id", id.String()), slog.String("status", string(status)))
 	return nil
+}
+
+// LinkToTicket sets/changes the ticket_id and optionally updates storage_path
+func (r *PostgresAttachmentRepository) LinkToTicket(ctx context.Context, id uuid.UUID, ticketID string, newStoragePath *string) error {
+    // Build dynamic update depending on whether storage path changes
+    if newStoragePath != nil {
+        query := `UPDATE ticket_attachments SET ticket_id = $2, storage_path = $3, updated_at = $4 WHERE id = $1`
+        _, err := r.db.Exec(ctx, query, id, ticketID, *newStoragePath, time.Now())
+        if err != nil {
+            return fmt.Errorf("failed to link attachment to ticket with path update: %w", err)
+        }
+    } else {
+        query := `UPDATE ticket_attachments SET ticket_id = $2, updated_at = $3 WHERE id = $1`
+        _, err := r.db.Exec(ctx, query, id, ticketID, time.Now())
+        if err != nil {
+            return fmt.Errorf("failed to link attachment to ticket: %w", err)
+        }
+    }
+    r.logger.Info("Attachment linked to ticket", slog.String("id", id.String()), slog.String("ticket_id", ticketID))
+    return nil
 }
 
 // GetPendingForProcessing retrieves attachments that need processing
