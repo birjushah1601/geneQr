@@ -126,16 +126,24 @@ function ServiceRequestPageInner() {
     try {
       setSubmitting(true);
       
-      // TODO: Call service ticket API when implemented
-      // await serviceTicketApi.create({
-      //   equipmentId: equipment.id,
-      //   description: formData.description,
-      //   priority: formData.priority,
-      //   requestedBy: formData.requestedBy,
-      // });
-      
-      // Simulate API call for now
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Create real service ticket
+      const payload = {
+        equipment_id: (equipment as any).id,
+        qr_code: (equipment as any).qr_code || (equipment as any).qrCode,
+        serial_number: (equipment as any).serial_number || (equipment as any).serialNumber,
+        equipment_name: (equipment as any).equipment_name || (equipment as any).name,
+        customer_id: (equipment as any).customer_id,
+        customer_name: (equipment as any).customer_name || (equipment as any).customerName,
+        customer_phone: '9999999999',
+        issue_category: 'breakdown',
+        issue_description: formData.description,
+        priority: formData.priority as any,
+        source: 'web',
+        created_by: formData.requestedBy || 'web-user',
+        notes: diagnosis?.summary ? `AI suggestion: ${diagnosis.summary}` : undefined,
+      };
+      const created = await (await import('@/lib/api/tickets')).ticketsApi.create(payload as any);
+      console.log('Ticket created', created);
       
       setSuccess(true);
       setFormData({ description: '', priority: 'medium', requestedBy: '' });

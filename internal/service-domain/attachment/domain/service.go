@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log/slog"
     "strings"
+    "os"
+    "path/filepath"
 
 	"github.com/google/uuid"
 )
@@ -304,19 +306,19 @@ func (s *AttachmentService) LinkAttachmentToTicket(ctx context.Context, id uuid.
         return fmt.Errorf("failed to get attachment: %w", err)
     }
 
-    // Compute new storage path if current path is in unassigned bucket
+    // Compute new storage path if current path is in unassigned bucket and move file on disk
     var newPath *string
-    if att.StoragePath != "" {
-        // If path contains /attachments/unassigned, move to /attachments/{ticketID}/
-        // We do not perform OS-level move here; caller should handle file move if desired.
-        // However, we'll allow repository to update storage_path to new logical path.
-        // Keep filename the same.
-        // Find last path element
-        // Simple string replace to avoid OS-specific separators in DB path
-        if strings.Contains(att.StoragePath, "/attachments/unassigned/") {
-            p := strings.Replace(att.StoragePath, "/attachments/unassigned/", "/attachments/"+ticketID+"/", 1)
-            newPath = &p
+    if att.StoragePath != "" && strings.Contains(att.StoragePath, "/attachments/unassigned/") {
+        targetPath := strings.Replace(att.StoragePath, "/attachments/unassigned/", "/attachments/"+ticketID+"/", 1)
+        // Ensure target directory exists
+        if err := os.MkdirAll(filepath.Dir(targetPath), 0755); err != nil {
+            return fmt.Errorf("failed to create target directory: %w", err)
         }
+        // Move file
+        if err := os.Rename(att.StoragePath, targetPath); err != nil {
+            return fmt.Errorf("failed to move attachment file: %w", err)
+        }
+        newPath = &targetPath
     }
 
     if err := s.attachmentRepo.LinkToTicket(ctx, id, ticketID, newPath); err != nil {
