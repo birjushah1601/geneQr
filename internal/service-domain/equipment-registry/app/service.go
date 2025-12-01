@@ -333,7 +333,12 @@ func (s *EquipmentService) BulkImportQRMapping(ctx context.Context, csvFilePath,
     }
     defer file.Close()
 
-    reader := csv.NewReader(file)
+    return s.BulkImportQRMappingFromReader(ctx, file, createdBy)
+}
+
+// BulkImportQRMappingFromReader imports pregenerated QR mappings from an io.Reader (multipart stream)
+func (s *EquipmentService) BulkImportQRMappingFromReader(ctx context.Context, r io.Reader, createdBy string) (*domain.CSVImportResult, error) {
+    reader := csv.NewReader(r)
 
     header, err := reader.Read()
     if err != nil {
@@ -343,7 +348,9 @@ func (s *EquipmentService) BulkImportQRMapping(ctx context.Context, csvFilePath,
     // Map header names to indices
     idx := map[string]int{}
     for i, h := range header {
-        idx[strings.ToLower(strings.TrimSpace(h))] = i
+        // Handle possible UTF-8 BOM and normalize
+        norm := strings.ToLower(strings.TrimSpace(strings.TrimPrefix(h, "\ufeff")))
+        idx[norm] = i
     }
 
     // Validate required column

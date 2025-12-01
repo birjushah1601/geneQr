@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -358,25 +357,8 @@ func (h *EquipmentHandler) ImportQRMapping(w http.ResponseWriter, r *http.Reques
     createdBy := r.FormValue("created_by")
     if createdBy == "" { createdBy = "system" }
 
-    tmp, err := os.CreateTemp("", "qrmap-*.csv")
-    if err != nil {
-        // Fallback to current working directory (Windows temp issues)
-        fallback := fmt.Sprintf("qrmap-%d.csv", time.Now().UnixNano())
-        tmp, err = os.Create(fallback)
-        if err != nil {
-            h.respondError(w, http.StatusInternalServerError, "Failed to save file")
-            return
-        }
-    }
-    tempFilePath := tmp.Name()
-    defer func(){ tmp.Close(); os.Remove(tempFilePath) }()
-
-    if _, err := io.Copy(tmp, file); err != nil {
-        h.respondError(w, http.StatusInternalServerError, "Failed to save file")
-        return
-    }
-
-    result, err := h.service.BulkImportQRMapping(ctx, tempFilePath, createdBy)
+    // Stream directly to service to avoid temp file issues on Windows
+    result, err := h.service.BulkImportQRMappingFromReader(ctx, file, createdBy)
     if err != nil {
         h.logger.Error("Failed to import QR mapping CSV", slog.String("error", err.Error()))
         h.respondError(w, http.StatusInternalServerError, "Failed to import QR mapping: "+err.Error())
