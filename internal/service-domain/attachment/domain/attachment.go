@@ -10,7 +10,7 @@ import (
 // Attachment represents a file attachment to a ticket
 type Attachment struct {
 	ID               uuid.UUID `json:"id" db:"id"`
-	TicketID         string    `json:"ticket_id" db:"ticket_id"`
+    TicketID         *string   `json:"ticket_id" db:"ticket_id"`
 	Filename         string    `json:"filename" db:"filename"`
 	OriginalFilename string    `json:"original_filename" db:"original_filename"`
 	FileType         string    `json:"file_type" db:"file_type"`
@@ -86,7 +86,7 @@ const (
 
 // CreateAttachmentRequest represents a request to create an attachment
 type CreateAttachmentRequest struct {
-	TicketID         string             `json:"ticket_id" validate:"required"`
+    TicketID         *string            `json:"ticket_id,omitempty"`
 	Filename         string             `json:"filename" validate:"required"`
 	OriginalFilename string             `json:"original_filename"`
 	FileType         string             `json:"file_type" validate:"required"`
@@ -116,6 +116,7 @@ type ListAttachmentsRequest struct {
 	Offset     int                 `json:"offset"`
 	SortBy     string              `json:"sort_by"` // created_at, file_size, filename
 	SortOrder  string              `json:"sort_order"` // asc, desc
+    UnassignedOnly bool            `json:"unassigned_only"`
 }
 
 // AttachmentListResult represents the result of listing attachments
@@ -131,7 +132,7 @@ func NewAttachment(req *CreateAttachmentRequest) *Attachment {
 	now := time.Now()
 	return &Attachment{
 		ID:               uuid.New(),
-		TicketID:         req.TicketID,
+        TicketID:         req.TicketID,
 		Filename:         req.Filename,
 		OriginalFilename: req.OriginalFilename,
 		FileType:         req.FileType,

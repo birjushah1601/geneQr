@@ -133,7 +133,7 @@ export const ticketsApi = {
       // Remove undefined keys to keep payload clean
       Object.keys(payload).forEach((k) => payload[k] === undefined && delete payload[k]);
 
-      const response = await apiClient.post<ServiceTicket>('/tickets', payload);
+      const response = await apiClient.post<ServiceTicket>('/v1/tickets', payload);
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -145,7 +145,7 @@ export const ticketsApi = {
    */
   async assignEngineer(ticketId: string, data: AssignEngineerRequest) {
     try {
-      const response = await apiClient.post<{ message: string }>(`/tickets/${ticketId}/assign`, data);
+      const response = await apiClient.post<{ message: string }>(`/v1/tickets/${ticketId}/assign`, data);
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -211,7 +211,7 @@ export const ticketsApi = {
   async getComments(ticketId: string): Promise<{ comments: TicketComment[] }> {
     try {
       const response = await apiClient.get<{ comments: TicketComment[] }>(
-        `/tickets/${ticketId}/comments`
+        `/v1/tickets/${ticketId}/comments`
       );
       return response.data;
     } catch (error) {
@@ -222,7 +222,7 @@ export const ticketsApi = {
   async addComment(ticketId: string, payload: AddCommentRequest): Promise<{ comment: TicketComment }> {
     try {
       const response = await apiClient.post<{ comment: TicketComment }>(
-        `/tickets/${ticketId}/comments`,
+        `/v1/tickets/${ticketId}/comments`,
         payload
       );
       return response.data;

@@ -11,6 +11,8 @@ import (
 	"github.com/aby-med/medical-platform/internal/service-domain/service-ticket/app"
 	"github.com/aby-med/medical-platform/internal/service-domain/service-ticket/infra"
 	"github.com/aby-med/medical-platform/internal/service-domain/whatsapp"
+	attachmentDomain "github.com/aby-med/medical-platform/internal/service-domain/attachment/domain"
+	attachmentInfra "github.com/aby-med/medical-platform/internal/service-domain/attachment/infra"
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -92,12 +94,18 @@ func (m *Module) Initialize(ctx context.Context) error {
     // Create SLA monitor (started conditionally)
     m.slaMonitor = app.NewSLAMonitor(pool, m.logger)
 
-	// Create HTTP handlers
-	m.ticketHandler = api.NewTicketHandler(ticketService, m.logger)
+    // Create HTTP handlers
+    m.ticketHandler = api.NewTicketHandler(ticketService, m.logger, pool)
 	m.assignmentHandler = api.NewAssignmentHandler(assignmentService, m.logger)
 
 	// Create QR generator for WhatsApp
 	qrGenerator := qrcode.NewGenerator(m.config.BaseURL, m.config.QROutputDir)
+
+	// Initialize minimal AttachmentService for WhatsApp intake (using same DB pool)
+	attRepo := attachmentInfra.NewPostgresAttachmentRepository(pool)
+	queueRepo := attachmentInfra.NewPostgresProcessingQueueRepository(pool)
+	aiRepo := attachmentInfra.NewNoopAIAnalysisRepository()
+	attService := attachmentDomain.NewAttachmentService(attRepo, queueRepo, aiRepo, m.logger)
 
 	// Create WhatsApp webhook handler
 	whatsappConfig := whatsapp.WebhookConfig{
@@ -106,7 +114,7 @@ func (m *Module) Initialize(ctx context.Context) error {
 		PhoneNumberID: m.config.WhatsAppPhoneID,
 		MediaDir:      m.config.WhatsAppMediaDir,
 	}
-	m.whatsappHandler = whatsapp.NewWebhookHandler(whatsappConfig, qrGenerator, ticketService, m.logger)
+	m.whatsappHandler = whatsapp.NewWebhookHandler(whatsappConfig, qrGenerator, ticketService, m.logger, attService)
 
 	m.logger.Info("Service Ticket module initialized successfully")
 	return nil
@@ -122,6 +130,7 @@ func (m *Module) MountRoutes(r chi.Router) {
 		r.Get("/", m.ticketHandler.ListTickets)                // List tickets
 		r.Get("/number/{number}", m.ticketHandler.GetTicketByNumber) // Get by ticket number
 		r.Get("/{id}", m.ticketHandler.GetTicket)              // Get by ID
+        r.Get("/{id}/parts", m.ticketHandler.GetTicketParts)   // Parts linked via equipment_catalog
 		
 		// Ticket lifecycle operations
 		r.Post("/{id}/assign", m.ticketHandler.AssignTicket)       // Assign engineer (legacy)

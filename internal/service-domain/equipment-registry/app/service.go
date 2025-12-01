@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/aby-med/medical-platform/internal/service-domain/equipment-registry/domain"
@@ -319,6 +320,105 @@ func (s *EquipmentService) BulkImportFromCSV(ctx context.Context, csvFilePath, c
 	)
 
 	return result, nil
+}
+
+// BulkImportQRMapping imports pregenerated QR mappings from CSV
+// Expected header columns (any order):
+// - qr_code (required)
+// - id (optional) or equipment_id (optional) or serial_number (optional)
+func (s *EquipmentService) BulkImportQRMapping(ctx context.Context, csvFilePath, createdBy string) (*domain.CSVImportResult, error) {
+    file, err := os.Open(csvFilePath)
+    if err != nil {
+        return nil, fmt.Errorf("failed to open CSV file: %w", err)
+    }
+    defer file.Close()
+
+    return s.BulkImportQRMappingFromReader(ctx, file, createdBy)
+}
+
+// BulkImportQRMappingFromReader imports pregenerated QR mappings from an io.Reader (multipart stream)
+func (s *EquipmentService) BulkImportQRMappingFromReader(ctx context.Context, r io.Reader, createdBy string) (*domain.CSVImportResult, error) {
+    reader := csv.NewReader(r)
+
+    header, err := reader.Read()
+    if err != nil {
+        return nil, fmt.Errorf("failed to read CSV header: %w", err)
+    }
+
+    // Map header names to indices
+    idx := map[string]int{}
+    for i, h := range header {
+        // Handle possible UTF-8 BOM and normalize
+        norm := strings.ToLower(strings.TrimSpace(strings.TrimPrefix(h, "\ufeff")))
+        idx[norm] = i
+    }
+
+    // Validate required column
+    _, hasQR := idx["qr_code"]
+    if !hasQR {
+        return nil, fmt.Errorf("csv requires 'qr_code' column")
+    }
+
+    result := &domain.CSVImportResult{Errors: []string{}, ImportedIDs: []string{}}
+    rowNum := 1
+
+    for {
+        row, err := reader.Read()
+        if err == io.EOF { break }
+        if err != nil {
+            result.Errors = append(result.Errors, fmt.Sprintf("Row %d: read error: %v", rowNum, err))
+            result.FailureCount++
+            rowNum++
+            continue
+        }
+
+        get := func(name string) string {
+            if i, ok := idx[name]; ok && i < len(row) { return strings.TrimSpace(row[i]) }
+            return ""
+        }
+
+        qr := get("qr_code")
+        id := get("id")
+        if id == "" { id = get("equipment_id") }
+        serial := get("serial_number")
+
+        if qr == "" || (id == "" && serial == "") {
+            result.Errors = append(result.Errors, fmt.Sprintf("Row %d: qr_code and (id or serial_number) required", rowNum))
+            result.FailureCount++
+            rowNum++
+            continue
+        }
+
+        qrURL := fmt.Sprintf("%s/equipment/%s", s.baseURL, id)
+        if id != "" {
+            if err := s.repo.SetQRCodeByID(ctx, id, qr, qrURL); err != nil {
+                result.Errors = append(result.Errors, fmt.Sprintf("Row %d: %v", rowNum, err))
+                result.FailureCount++
+                rowNum++
+                continue
+            }
+            result.ImportedIDs = append(result.ImportedIDs, id)
+            result.SuccessCount++
+        } else {
+            if err := s.repo.SetQRCodeBySerial(ctx, serial, qr, fmt.Sprintf("%s/equipment/serial/%s", s.baseURL, serial)); err != nil {
+                result.Errors = append(result.Errors, fmt.Sprintf("Row %d: %v", rowNum, err))
+                result.FailureCount++
+                rowNum++
+                continue
+            }
+            result.ImportedIDs = append(result.ImportedIDs, serial)
+            result.SuccessCount++
+        }
+
+        rowNum++
+    }
+
+    result.TotalRows = rowNum - 1
+    s.logger.Info("QR mapping CSV import completed",
+        slog.Int("total", result.TotalRows),
+        slog.Int("success", result.SuccessCount),
+        slog.Int("failure", result.FailureCount))
+    return result, nil
 }
 
 // parseCSVRow parses a CSV row into equipment

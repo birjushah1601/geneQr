@@ -28,6 +28,12 @@ apiClient.interceptors.request.use(
     // Add tenant ID header
     config.headers['X-Tenant-ID'] = DEFAULT_TENANT_ID;
 
+    // API key for backend auth (dev)
+    const apiKey = process.env.NEXT_PUBLIC_API_KEY || 'dev-key-001';
+    if (apiKey) {
+      config.headers['X-API-Key'] = apiKey;
+    }
+
     // Add auth token (when implemented)
     const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
     if (token) {

@@ -43,24 +43,26 @@ func (p *AIAttachmentProcessor) Process(ctx context.Context, attachment *domain.
 		return nil // Not an error, just skip processing
 	}
 
-	p.logger.Info("Starting AI analysis of attachment",
-		slog.String("attachment_id", attachment.ID.String()),
-		slog.String("filename", attachment.Filename),
-		slog.String("ticket_id", attachment.TicketID),
-	)
+    p.logger.Info("Starting AI analysis of attachment",
+        slog.String("attachment_id", attachment.ID.String()),
+        slog.String("filename", attachment.Filename),
+        slog.String("ticket_id", func() string { if attachment.TicketID==nil {return ""}; return *attachment.TicketID }()),
+    )
 
 	// Create equipment context (TODO: get from ticket/equipment service)
 	equipment := p.createEquipmentContext(attachment)
 
 	// Create AI analysis request
-	request := &ai.VisionAnalysisRequest{
-		AttachmentID: attachment.ID,
-		TicketID:     attachment.TicketID,
-		ImagePath:    attachment.StoragePath,
-		FileType:     attachment.FileType,
-		Equipment:    equipment,
-		Purpose:      p.determinePurpose(attachment),
-	}
+    ticketID := ""
+    if attachment.TicketID != nil { ticketID = *attachment.TicketID }
+    request := &ai.VisionAnalysisRequest{
+        AttachmentID: attachment.ID,
+        TicketID:     ticketID,
+        ImagePath:    attachment.StoragePath,
+        FileType:     attachment.FileType,
+        Equipment:    equipment,
+        Purpose:      p.determinePurpose(attachment),
+    }
 
 	// Perform AI analysis
 	result, err := p.visionEngine.AnalyzeImage(ctx, request)

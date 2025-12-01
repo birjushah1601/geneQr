@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+    "strings"
+    "os"
+    "path/filepath"
 
 	"github.com/google/uuid"
 )
@@ -41,18 +44,18 @@ func (s *AttachmentService) CreateAttachment(ctx context.Context, req *CreateAtt
 	// Create attachment
 	attachment := NewAttachment(req)
 	
-	if err := s.attachmentRepo.Create(ctx, attachment); err != nil {
-		s.logger.Error("Failed to create attachment",
-			slog.String("error", err.Error()),
-			slog.String("ticket_id", req.TicketID),
-			slog.String("filename", req.Filename),
-		)
+    if err := s.attachmentRepo.Create(ctx, attachment); err != nil {
+        s.logger.Error("Failed to create attachment",
+            slog.String("error", err.Error()),
+            slog.String("ticket_id", func() string { if req.TicketID==nil {return ""}; return *req.TicketID }()),
+            slog.String("filename", req.Filename),
+        )
 		return nil, fmt.Errorf("failed to create attachment: %w", err)
 	}
 
-	s.logger.Info("Attachment created successfully",
-		slog.String("attachment_id", attachment.ID.String()),
-		slog.String("ticket_id", attachment.TicketID),
+    s.logger.Info("Attachment created successfully",
+        slog.String("attachment_id", attachment.ID.String()),
+        slog.String("ticket_id", func() string { if attachment.TicketID==nil {return ""}; return *attachment.TicketID }()),
 		slog.String("filename", attachment.Filename),
 		slog.String("source", attachment.Source),
 	)
@@ -267,9 +270,6 @@ func (s *AttachmentService) GetAttachmentStats(ctx context.Context) (*Attachment
 
 // validateCreateRequest validates a create attachment request
 func (s *AttachmentService) validateCreateRequest(req *CreateAttachmentRequest) error {
-	if req.TicketID == "" {
-		return fmt.Errorf("ticket_id is required")
-	}
 	if req.Filename == "" {
 		return fmt.Errorf("filename is required")
 	}
@@ -296,6 +296,35 @@ func (s *AttachmentService) validateCreateRequest(req *CreateAttachmentRequest) 
 	}
 
 	return nil
+}
+
+// LinkAttachmentToTicket associates an existing attachment with a ticket and updates storage path if moved
+func (s *AttachmentService) LinkAttachmentToTicket(ctx context.Context, id uuid.UUID, ticketID string) error {
+    // Fetch attachment
+    att, err := s.attachmentRepo.GetByID(ctx, id)
+    if err != nil {
+        return fmt.Errorf("failed to get attachment: %w", err)
+    }
+
+    // Compute new storage path if current path is in unassigned bucket and move file on disk
+    var newPath *string
+    if att.StoragePath != "" && strings.Contains(att.StoragePath, "/attachments/unassigned/") {
+        targetPath := strings.Replace(att.StoragePath, "/attachments/unassigned/", "/attachments/"+ticketID+"/", 1)
+        // Ensure target directory exists
+        if err := os.MkdirAll(filepath.Dir(targetPath), 0755); err != nil {
+            return fmt.Errorf("failed to create target directory: %w", err)
+        }
+        // Move file
+        if err := os.Rename(att.StoragePath, targetPath); err != nil {
+            return fmt.Errorf("failed to move attachment file: %w", err)
+        }
+        newPath = &targetPath
+    }
+
+    if err := s.attachmentRepo.LinkToTicket(ctx, id, ticketID, newPath); err != nil {
+        return fmt.Errorf("failed to link attachment to ticket: %w", err)
+    }
+    return nil
 }
 
 // determinePriority determines processing priority based on attachment properties

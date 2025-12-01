@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/aby-med/medical-platform/internal/service-domain/attachment/domain"
+    "github.com/aby-med/medical-platform/internal/service-domain/attachment/infra"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
@@ -49,7 +50,7 @@ func (h *AttachmentHandler) ListAttachments(w http.ResponseWriter, r *http.Reque
 		pageSize = 20
 	}
 
-	// Build filter request
+    // Build filter request
 	listReq := &domain.ListAttachmentsRequest{
 		Limit:  pageSize,
 		Offset: (page - 1) * pageSize,
@@ -71,8 +72,11 @@ func (h *AttachmentHandler) ListAttachments(w http.ResponseWriter, r *http.Reque
 		listReq.Source = &source
 	}
 	
-	listReq.SortBy = query.Get("sort_by")
+    listReq.SortBy = query.Get("sort_by")
 	listReq.SortOrder = query.Get("sort_direction")
+    if ua := query.Get("unassigned"); ua == "true" || ua == "1" || ua == "yes" {
+        listReq.UnassignedOnly = true
+    }
 
 	result, err := h.service.ListAttachments(ctx, listReq)
 	if err != nil {
@@ -92,13 +96,13 @@ func (h *AttachmentHandler) ListAttachments(w http.ResponseWriter, r *http.Reque
 	}
 
 	for i, item := range result.Attachments {
-		response.Items[i] = AttachmentInfo{
+        response.Items[i] = AttachmentInfo{
 			ID:         item.ID.String(),
 			FileName:   item.Filename,
 			FileSize:   item.FileSizeBytes,
 			FileType:   item.FileType,
 			UploadDate: item.CreatedAt.Format("2006-01-02T15:04:05Z"),
-			TicketID:   item.TicketID,
+            TicketID:   func() string { if item.TicketID==nil {return ""}; return *item.TicketID }(),
 			Category:   item.AttachmentCategory,
 			Status:     item.ProcessingStatus,
 			Source:     item.Source,
@@ -138,13 +142,13 @@ func (h *AttachmentHandler) GetAttachment(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	response := AttachmentInfo{
+    response := AttachmentInfo{
 		ID:         attachment.ID.String(),
 		FileName:   attachment.Filename,
 		FileSize:   attachment.FileSizeBytes,
 		FileType:   attachment.FileType,
 		UploadDate: attachment.CreatedAt.Format("2006-01-02T15:04:05Z"),
-		TicketID:   attachment.TicketID,
+        TicketID:   func() string { if attachment.TicketID==nil {return ""}; return *attachment.TicketID }(),
 		Category:   attachment.AttachmentCategory,
 		Status:     attachment.ProcessingStatus,
 		Source:     attachment.Source,
@@ -172,8 +176,12 @@ func (h *AttachmentHandler) GetAIAnalysis(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	analysis, err := h.service.GetAIAnalysis(ctx, id)
+    analysis, err := h.service.GetAIAnalysis(ctx, id)
 	if err != nil {
+        if errors.Is(err, infra.ErrNotImplemented) {
+            h.respondError(w, http.StatusNotImplemented, "AI analysis not configured")
+            return
+        }
 		if errors.Is(err, fmt.Errorf("analysis not found")) {
 			h.respondError(w, http.StatusNotFound, "AI analysis not found")
 			return
@@ -317,13 +325,18 @@ func (h *AttachmentHandler) CreateAttachment(w http.ResponseWriter, r *http.Requ
 	category := r.FormValue("category")
 	source := r.FormValue("source")
 	
-	if ticketID == "" || category == "" || source == "" {
-		h.respondError(w, http.StatusBadRequest, "ticket_id, category, and source are required")
+    if category == "" || source == "" {
+        h.respondError(w, http.StatusBadRequest, "category and source are required")
 		return
 	}
 	
 	// Create unique storage path
-	storagePath, err := h.createStoragePath(header.Filename, ticketID)
+    // If ticketID is empty, store under unassigned bucket
+    baseTicket := ticketID
+    if baseTicket == "" {
+        baseTicket = "unassigned"
+    }
+    storagePath, err := h.createStoragePath(header.Filename, baseTicket)
 	if err != nil {
 		h.logger.Error("Failed to create storage path", slog.String("error", err.Error()))
 		h.respondError(w, http.StatusInternalServerError, "Failed to process file")
@@ -338,8 +351,11 @@ func (h *AttachmentHandler) CreateAttachment(w http.ResponseWriter, r *http.Requ
 	}
 	
 	// Create attachment request
-	req := &domain.CreateAttachmentRequest{
-		TicketID:         ticketID,
+    // Build request; TicketID optional
+    var ticketPtr *string
+    if ticketID != "" { ticketPtr = &ticketID }
+    req := &domain.CreateAttachmentRequest{
+		TicketID:         ticketPtr,
 		Filename:         header.Filename,
 		OriginalFilename: header.Filename,
 		FileType:         header.Header.Get("Content-Type"),
@@ -369,13 +385,13 @@ func (h *AttachmentHandler) CreateAttachment(w http.ResponseWriter, r *http.Requ
 	}
 	
 	// Convert to API response format
-	apiAttachment := AttachmentInfo{
+    apiAttachment := AttachmentInfo{
 		ID:         attachment.ID.String(),
 		FileName:   attachment.Filename,
 		FileSize:   attachment.FileSizeBytes,
 		FileType:   attachment.FileType,
 		UploadDate: attachment.UploadedAt.Format(time.RFC3339),
-		TicketID:   attachment.TicketID,
+		TicketID:   func() string { if attachment.TicketID==nil {return ""}; return *attachment.TicketID }(),
 		Category:   attachment.AttachmentCategory,
 		Status:     attachment.ProcessingStatus,
 		Source:     attachment.Source,
@@ -383,7 +399,7 @@ func (h *AttachmentHandler) CreateAttachment(w http.ResponseWriter, r *http.Requ
 	
 	h.logger.Info("Attachment created successfully",
 		slog.String("attachment_id", attachment.ID.String()),
-		slog.String("ticket_id", ticketID),
+		slog.String("ticket_id", func() string { if attachment.TicketID==nil {return ""}; return *attachment.TicketID }()),
 		slog.String("filename", header.Filename))
 	
 	h.respondJSON(w, http.StatusCreated, APIResponse{
@@ -451,6 +467,34 @@ func (h *AttachmentHandler) createStoragePath(filename, ticketID string) (string
 	storagePath := filepath.Join(baseDir, uniqueFilename)
 	
 	return storagePath, nil
+}
+
+// LinkAttachment handles POST /api/v1/attachments/{id}/link
+// Body: { "ticket_id": "..." }
+func (h *AttachmentHandler) LinkAttachment(w http.ResponseWriter, r *http.Request) {
+    ctx := r.Context()
+    idStr := chi.URLParam(r, "id")
+    if idStr == "" { h.respondError(w, http.StatusBadRequest, "Attachment ID is required"); return }
+    id, err := uuid.Parse(idStr)
+    if err != nil { h.respondError(w, http.StatusBadRequest, "Invalid attachment ID format"); return }
+
+    var body struct{ TicketID string `json:"ticket_id"` }
+    if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+        h.respondError(w, http.StatusBadRequest, "Invalid JSON body")
+        return
+    }
+    if strings.TrimSpace(body.TicketID) == "" {
+        h.respondError(w, http.StatusBadRequest, "ticket_id is required")
+        return
+    }
+
+    if err := h.service.LinkAttachmentToTicket(ctx, id, body.TicketID); err != nil {
+        h.logger.Error("Failed to link attachment", slog.String("error", err.Error()))
+        h.respondError(w, http.StatusInternalServerError, "Failed to link attachment")
+        return
+    }
+
+    h.respondJSON(w, http.StatusOK, APIResponse{ Success: true })
 }
 
 // saveFile saves the uploaded file to the specified path

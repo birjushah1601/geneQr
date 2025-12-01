@@ -30,6 +30,7 @@ func (h *PartsHandler) RegisterRoutes(r *mux.Router) {
 	r.HandleFunc("/api/parts/recommend", h.RecommendParts).Methods("POST")
 	r.HandleFunc("/api/parts/recommendations/{requestId}", h.GetRecommendation).Methods("GET")
 	r.HandleFunc("/api/tickets/{ticketId}/parts-recommendations", h.GetTicketRecommendations).Methods("GET")
+	r.HandleFunc("/api/tickets/{ticketId}/parts", h.GetTicketParts).Methods("GET")
 	r.HandleFunc("/api/parts/recommendations/{requestId}/feedback", h.ProvideFeedback).Methods("POST")
 	r.HandleFunc("/api/parts/recommendations/{requestId}/usage", h.RecordPartsUsage).Methods("POST")
 	r.HandleFunc("/api/parts/analytics", h.GetAnalytics).Methods("GET")
@@ -653,5 +654,83 @@ func (h *PartsHandler) SearchCatalog(w http.ResponseWriter, r *http.Request) {
 		"count":   len(results),
 		"results": results,
 	})
+}
+
+// GetTicketParts handles GET /api/tickets/{ticketId}/parts
+func (h *PartsHandler) GetTicketParts(w http.ResponseWriter, r *http.Request) {
+    vars := mux.Vars(r)
+    ticketID := vars["ticketId"]
+
+    const q = `
+        SELECT spare_part_id, part_number, part_name, unit_price, currency,
+               is_critical, quantity_required, part_category, stock_status, lead_time_days
+        FROM get_parts_for_ticket($1)
+    `
+
+    rows, err := h.db.QueryContext(r.Context(), q, ticketID)
+    if err != nil {
+        respondJSON(w, http.StatusInternalServerError, ErrorResponse{
+            Error:   "Failed to fetch ticket parts",
+            Message: err.Error(),
+        })
+        return
+    }
+    defer rows.Close()
+
+    var parts []map[string]interface{}
+    for rows.Next() {
+        var (
+            partID       string
+            partNumber   string
+            partName     string
+            unitPrice    sql.NullFloat64
+            currency     sql.NullString
+            isCritical   sql.NullBool
+            qtyRequired  sql.NullInt64
+            category     sql.NullString
+            stockStatus  sql.NullString
+            leadTimeDays sql.NullInt64
+        )
+
+        if err := rows.Scan(&partID, &partNumber, &partName, &unitPrice, &currency,
+            &isCritical, &qtyRequired, &category, &stockStatus, &leadTimeDays); err != nil {
+            continue
+        }
+
+        item := map[string]interface{}{
+            "spare_part_id": partID,
+            "part_number":   partNumber,
+            "part_name":     partName,
+        }
+        if unitPrice.Valid {
+            item["unit_price"] = unitPrice.Float64
+        }
+        if currency.Valid {
+            item["currency"] = currency.String
+        }
+        if isCritical.Valid {
+            item["is_critical"] = isCritical.Bool
+        }
+        if qtyRequired.Valid {
+            item["quantity_required"] = qtyRequired.Int64
+        }
+        if category.Valid {
+            item["category"] = category.String
+        }
+        if stockStatus.Valid {
+            item["stock_status"] = stockStatus.String
+        }
+        if leadTimeDays.Valid {
+            item["lead_time_days"] = leadTimeDays.Int64
+        }
+
+        parts = append(parts, item)
+    }
+
+    respondJSON(w, http.StatusOK, map[string]interface{}{
+        "ticket_id": ticketID,
+        "count":     len(parts),
+        "parts":     parts,
+    })
 }
 

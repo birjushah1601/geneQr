@@ -1,7 +1,6 @@
 // API client for attachments and AI analysis
 import { AttachmentInfo, AIAnalysisResult } from '@/lib/types/attachments'
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081'
+import { apiClient } from '@/lib/api/client'
 
 export interface AttachmentResponse {
   items: AttachmentInfo[]
@@ -46,6 +45,7 @@ export const attachmentsApi = {
     status?: string
     category?: string
     source?: string
+    unassigned?: boolean
   }): Promise<AttachmentResponse> {
     const searchParams = new URLSearchParams()
     if (params?.page) searchParams.set('page', params.page.toString())
@@ -54,22 +54,22 @@ export const attachmentsApi = {
     if (params?.status) searchParams.set('status', params.status)
     if (params?.category) searchParams.set('category', params.category)
     if (params?.source) searchParams.set('source', params.source)
+    if (params?.unassigned) searchParams.set('unassigned', 'true')
 
-    const url = `${API_BASE_URL}/api/v1/attachments?${searchParams.toString()}`
-    const response = await fetch(url)
-    return handleResponse<AttachmentResponse>(response)
+    const { data } = await apiClient.get(`/v1/attachments`, { params: Object.fromEntries(searchParams) })
+    return data
   },
 
   // Get single attachment by ID
   async getById(id: string): Promise<AttachmentInfo> {
-    const response = await fetch(`${API_BASE_URL}/api/v1/attachments/${id}`)
-    return handleResponse<AttachmentInfo>(response)
+    const { data } = await apiClient.get(`/v1/attachments/${id}`)
+    return data
   },
 
   // Get AI analysis for an attachment
   async getAIAnalysis(attachmentId: string): Promise<AIAnalysisResult> {
-    const response = await fetch(`${API_BASE_URL}/api/v1/attachments/${attachmentId}/ai-analysis`)
-    return handleResponse<AIAnalysisResult>(response)
+    const { data } = await apiClient.get(`/v1/attachments/${attachmentId}/ai-analysis`)
+    return data
   },
 
   // Upload new attachment
@@ -85,25 +85,20 @@ export const attachmentsApi = {
     if (data.category) formData.append('category', data.category)
     if (data.source) formData.append('source', data.source)
 
-    const response = await fetch(`${API_BASE_URL}/api/v1/attachments`, {
-      method: 'POST',
-      body: formData
+    const { data: resp } = await apiClient.post(`/v1/attachments`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
     })
-    return handleResponse<AttachmentInfo>(response)
+    return resp
   },
 
   // Delete attachment
   async delete(id: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/api/v1/attachments/${id}`, {
-      method: 'DELETE'
-    })
-    if (!response.ok) {
-      throw new AttachmentsApiError(response.status, {
-        error: 'Delete failed',
-        message: `Failed to delete attachment ${id}`,
-        status: response.status
-      })
-    }
+    await apiClient.delete(`/v1/attachments/${id}`)
+  },
+
+  // Link an existing attachment to a ticket (for pre-creation uploads)
+  async link(id: string, ticketId: string): Promise<void> {
+    await apiClient.post(`/v1/attachments/${id}/link`, { ticket_id: ticketId })
   },
 
   // Get attachment statistics
@@ -114,14 +109,14 @@ export const attachmentsApi = {
     processing_queue_size: number
     avg_confidence: number
   }> {
-    const response = await fetch(`${API_BASE_URL}/api/v1/attachments/stats`)
-    return handleResponse(response)
+    const { data } = await apiClient.get('/v1/attachments/stats')
+    return data
   },
 
   // Health check specifically for attachments service
   async healthCheck(): Promise<{ status: string; database: boolean; ai: boolean }> {
-    const response = await fetch(`${API_BASE_URL}/api/v1/attachments/health`)
-    return handleResponse(response)
+    const { data } = await apiClient.get('/v1/attachments/health')
+    return data
   }
 }
 

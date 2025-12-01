@@ -338,6 +338,36 @@ func (h *EquipmentHandler) ImportCSV(w http.ResponseWriter, r *http.Request) {
 	h.respondJSON(w, http.StatusOK, result)
 }
 
+// ImportQRMapping handles POST /equipment/qr/import-mapping
+func (h *EquipmentHandler) ImportQRMapping(w http.ResponseWriter, r *http.Request) {
+    ctx := r.Context()
+
+    if err := r.ParseMultipartForm(10 << 20); err != nil {
+        h.respondError(w, http.StatusBadRequest, "Failed to parse form: "+err.Error())
+        return
+    }
+
+    file, _, err := r.FormFile("csv_file")
+    if err != nil {
+        h.respondError(w, http.StatusBadRequest, "CSV file is required")
+        return
+    }
+    defer file.Close()
+
+    createdBy := r.FormValue("created_by")
+    if createdBy == "" { createdBy = "system" }
+
+    // Stream directly to service to avoid temp file issues on Windows
+    result, err := h.service.BulkImportQRMappingFromReader(ctx, file, createdBy)
+    if err != nil {
+        h.logger.Error("Failed to import QR mapping CSV", slog.String("error", err.Error()))
+        h.respondError(w, http.StatusInternalServerError, "Failed to import QR mapping: "+err.Error())
+        return
+    }
+
+    h.respondJSON(w, http.StatusOK, result)
+}
+
 // RecordService handles POST /equipment/{id}/service
 func (h *EquipmentHandler) RecordService(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
