@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	"github.com/aby-med/medical-platform/internal/service-domain/attachment/domain"
@@ -141,9 +142,12 @@ func (r *PostgresAttachmentRepository) List(ctx context.Context, req *domain.Lis
 		countArgs = append(countArgs, *req.TicketID)
 		argIndex++
 	}
+    if req.UnassignedOnly {
+        whereConditions = append(whereConditions, "ticket_id IS NULL")
+    }
 	
 	if len(whereConditions) > 0 {
-		countQuery += " AND " + fmt.Sprintf("%s", whereConditions[0])
+		countQuery += " AND " + strings.Join(whereConditions, " AND ")
 	}
 	
 	var total int64
@@ -167,6 +171,9 @@ func (r *PostgresAttachmentRepository) List(ctx context.Context, req *domain.Lis
 		args = append(args, *req.TicketID)
 		argIndex++
 	}
+    if req.UnassignedOnly {
+        query += " AND ticket_id IS NULL"
+    }
 
 	// Add ordering
 	query += " ORDER BY created_at DESC"

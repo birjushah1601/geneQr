@@ -45,6 +45,7 @@ export const attachmentsApi = {
     status?: string
     category?: string
     source?: string
+    unassigned?: boolean
   }): Promise<AttachmentResponse> {
     const searchParams = new URLSearchParams()
     if (params?.page) searchParams.set('page', params.page.toString())
@@ -53,6 +54,7 @@ export const attachmentsApi = {
     if (params?.status) searchParams.set('status', params.status)
     if (params?.category) searchParams.set('category', params.category)
     if (params?.source) searchParams.set('source', params.source)
+    if (params?.unassigned) searchParams.set('unassigned', 'true')
 
     const { data } = await apiClient.get(`/v1/attachments`, { params: Object.fromEntries(searchParams) })
     return data

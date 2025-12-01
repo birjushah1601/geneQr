@@ -116,6 +116,7 @@ type ListAttachmentsRequest struct {
 	Offset     int                 `json:"offset"`
 	SortBy     string              `json:"sort_by"` // created_at, file_size, filename
 	SortOrder  string              `json:"sort_order"` // asc, desc
+    UnassignedOnly bool            `json:"unassigned_only"`
 }
 
 // AttachmentListResult represents the result of listing attachments

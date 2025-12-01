@@ -50,7 +50,7 @@ func (h *AttachmentHandler) ListAttachments(w http.ResponseWriter, r *http.Reque
 		pageSize = 20
 	}
 
-	// Build filter request
+    // Build filter request
 	listReq := &domain.ListAttachmentsRequest{
 		Limit:  pageSize,
 		Offset: (page - 1) * pageSize,
@@ -72,8 +72,11 @@ func (h *AttachmentHandler) ListAttachments(w http.ResponseWriter, r *http.Reque
 		listReq.Source = &source
 	}
 	
-	listReq.SortBy = query.Get("sort_by")
+    listReq.SortBy = query.Get("sort_by")
 	listReq.SortOrder = query.Get("sort_direction")
+    if ua := query.Get("unassigned"); ua == "true" || ua == "1" || ua == "yes" {
+        listReq.UnassignedOnly = true
+    }
 
 	result, err := h.service.ListAttachments(ctx, listReq)
 	if err != nil {

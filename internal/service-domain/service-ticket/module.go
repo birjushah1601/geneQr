@@ -11,6 +11,8 @@ import (
 	"github.com/aby-med/medical-platform/internal/service-domain/service-ticket/app"
 	"github.com/aby-med/medical-platform/internal/service-domain/service-ticket/infra"
 	"github.com/aby-med/medical-platform/internal/service-domain/whatsapp"
+	attachmentDomain "github.com/aby-med/medical-platform/internal/service-domain/attachment/domain"
+	attachmentInfra "github.com/aby-med/medical-platform/internal/service-domain/attachment/infra"
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -99,6 +101,12 @@ func (m *Module) Initialize(ctx context.Context) error {
 	// Create QR generator for WhatsApp
 	qrGenerator := qrcode.NewGenerator(m.config.BaseURL, m.config.QROutputDir)
 
+	// Initialize minimal AttachmentService for WhatsApp intake (using same DB pool)
+	attRepo := attachmentInfra.NewPostgresAttachmentRepository(pool)
+	queueRepo := attachmentInfra.NewPostgresProcessingQueueRepository(pool)
+	aiRepo := attachmentInfra.NewNoopAIAnalysisRepository()
+	attService := attachmentDomain.NewAttachmentService(attRepo, queueRepo, aiRepo, m.logger)
+
 	// Create WhatsApp webhook handler
 	whatsappConfig := whatsapp.WebhookConfig{
 		VerifyToken:   m.config.WhatsAppVerifyToken,
@@ -106,7 +114,7 @@ func (m *Module) Initialize(ctx context.Context) error {
 		PhoneNumberID: m.config.WhatsAppPhoneID,
 		MediaDir:      m.config.WhatsAppMediaDir,
 	}
-	m.whatsappHandler = whatsapp.NewWebhookHandler(whatsappConfig, qrGenerator, ticketService, m.logger)
+	m.whatsappHandler = whatsapp.NewWebhookHandler(whatsappConfig, qrGenerator, ticketService, m.logger, attService)
 
 	m.logger.Info("Service Ticket module initialized successfully")
 	return nil

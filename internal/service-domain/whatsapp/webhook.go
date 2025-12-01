@@ -14,6 +14,7 @@ import (
 	"time"
 	
 	qrcode "github.com/aby-med/medical-platform/internal/service-domain/equipment-registry/qrcode"
+    attachmentDomain "github.com/aby-med/medical-platform/internal/service-domain/attachment/domain"
 )
 
 // WebhookHandler handles WhatsApp webhook events
@@ -25,6 +26,7 @@ type WebhookHandler struct {
 	logger       *slog.Logger
 	ticketCreator TicketCreator
 	mediaDir     string
+    attachmentSvc *attachmentDomain.AttachmentService
 }
 
 // TicketCreator interface for creating tickets from WhatsApp messages
@@ -61,6 +63,7 @@ func NewWebhookHandler(
 	qrGenerator *qrcode.Generator,
 	ticketCreator TicketCreator,
 	logger *slog.Logger,
+    attachmentSvc *attachmentDomain.AttachmentService,
 ) *WebhookHandler {
 	return &WebhookHandler{
 		verifyToken:   cfg.VerifyToken,
@@ -70,6 +73,7 @@ func NewWebhookHandler(
 		ticketCreator: ticketCreator,
 		mediaDir:      cfg.MediaDir,
 		logger:        logger.With(slog.String("component", "whatsapp_webhook")),
+        attachmentSvc: attachmentSvc,
 	}
 }
 
@@ -179,6 +183,34 @@ func (h *WebhookHandler) handleImageMessage(ctx context.Context, msg Message, co
 	}
 	
 	h.logger.Info("Image downloaded", slog.String("path", imagePath))
+
+    // Create unattached attachment (source: whatsapp, category: issue_photo)
+    var size int64 = 1
+    if fi, statErr := os.Stat(imagePath); statErr == nil {
+        size = fi.Size()
+    }
+    // Use forward slashes for storage path consistency
+    storagePath := strings.ReplaceAll(imagePath, "\\", "/")
+    attReq := &attachmentDomain.CreateAttachmentRequest{
+        TicketID:         nil,
+        Filename:         filepath.Base(imagePath),
+        OriginalFilename: filepath.Base(imagePath),
+        FileType:         msg.Image.MimeType,
+        FileSizeBytes:    size,
+        StoragePath:      storagePath,
+        Source:           attachmentDomain.AttachmentSourceWhatsApp,
+        Category:         attachmentDomain.AttachmentCategoryIssuePhoto,
+    }
+    // Include source message id
+    if msg.ID != "" {
+        sm := msg.ID
+        attReq.SourceMessageID = &sm
+    }
+    attachment, createErr := h.attachmentSvc.CreateAttachment(ctx, attReq)
+    if createErr != nil {
+        h.logger.Error("Failed to create attachment from WhatsApp image", slog.String("error", createErr.Error()))
+        // Continue flow even if attachment creation fails
+    }
 	
 	// Try to decode QR code from image
 	qrData, err := h.qrGenerator.DecodeQRFromImage(imagePath)
@@ -209,6 +241,13 @@ func (h *WebhookHandler) handleImageMessage(ctx context.Context, msg Message, co
 		h.logger.Error("Failed to create ticket", slog.String("error", err.Error()))
 		return h.sendMessage(msg.From, "Sorry, I couldn't create a service ticket. Please try again or contact support.")
 	}
+
+    // If we created an attachment successfully, link it to the ticket now
+    if attachment != nil {
+        if linkErr := h.attachmentSvc.LinkAttachmentToTicket(ctx, attachment.ID, ticketID); linkErr != nil {
+            h.logger.Error("Failed to link WhatsApp attachment to ticket", slog.String("error", linkErr.Error()))
+        }
+    }
 	
 	// Send acknowledgment
 	response := fmt.Sprintf(
@@ -253,6 +292,31 @@ func (h *WebhookHandler) handleVideoMessage(ctx context.Context, msg Message, co
 	}
 	
 	h.logger.Info("Video downloaded", slog.String("path", videoPath))
+
+    // Create unattached attachment (source: whatsapp, category: video)
+    var size int64 = 1
+    if fi, statErr := os.Stat(videoPath); statErr == nil {
+        size = fi.Size()
+    }
+    storagePath := strings.ReplaceAll(videoPath, "\\", "/")
+    attReq := &attachmentDomain.CreateAttachmentRequest{
+        TicketID:         nil,
+        Filename:         filepath.Base(videoPath),
+        OriginalFilename: filepath.Base(videoPath),
+        FileType:         msg.Video.MimeType,
+        FileSizeBytes:    size,
+        StoragePath:      storagePath,
+        Source:           attachmentDomain.AttachmentSourceWhatsApp,
+        Category:         attachmentDomain.AttachmentCategoryVideo,
+    }
+    if msg.ID != "" {
+        sm := msg.ID
+        attReq.SourceMessageID = &sm
+    }
+    if _, createErr := h.attachmentSvc.CreateAttachment(ctx, attReq); createErr != nil {
+        h.logger.Error("Failed to create attachment from WhatsApp video", slog.String("error", createErr.Error()))
+        // Continue
+    }
 	
 	// Ask for QR code to link the video
 	return h.sendMessage(msg.From, "Video received. Please also send a photo of the QR code on the equipment so I can create a service ticket.")
