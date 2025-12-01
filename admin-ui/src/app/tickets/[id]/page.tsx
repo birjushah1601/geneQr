@@ -7,7 +7,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ticketsApi } from "@/lib/api/tickets";
 import { apiClient } from "@/lib/api/client";
 import type { ServiceTicket, TicketPriority, TicketStatus } from "@/types";
-import { ArrowLeft, Loader2, Package, User, Calendar, Wrench, Pause, Play, CheckCircle, XCircle, AlertTriangle, FileText, MessageSquare } from "lucide-react";
+import { ArrowLeft, Loader2, Package, User, Calendar, Wrench, Pause, Play, CheckCircle, XCircle, AlertTriangle, FileText, MessageSquare, Paperclip, Upload } from "lucide-react";
+import { attachmentsApi } from "@/lib/api/attachments";
 
 function StatusBadge({ status }: { status: TicketStatus }) {
   const color = {
@@ -38,6 +39,22 @@ export default function TicketDetailPage() {
     queryFn: async () => (await apiClient.get(`/v1/tickets/${id}/parts`)).data,
     enabled: !!id,
   });
+
+  const { data: attachmentList, refetch: refetchAttachments, isLoading: loadingAttachments } = useQuery({
+    queryKey: ["ticket", id, "attachments"],
+    queryFn: () => attachmentsApi.list({ ticket_id: String(id), page_size: 50 }),
+  });
+
+  const [uploading, setUploading] = useState(false);
+  const onUpload = async (file: File) => {
+    try {
+      setUploading(true);
+      await attachmentsApi.upload({ file, ticketId: String(id), category: "issue_photo", source: "admin_ui" });
+      await refetchAttachments();
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const [engineerName, setEngineerName] = useState("");
 
@@ -101,6 +118,33 @@ export default function TicketDetailPage() {
             {/* Simple add comment box */}
             <CommentBox ticketId={id} onAdded={() => qc.invalidateQueries({ queryKey: ["ticket", id, "comments"] })} />
             <CommentsList ticketId={id} />
+          </div>
+
+          <div className="bg-white border rounded p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-base font-semibold flex items-center gap-2"><Paperclip className="h-4 w-4" /> Attachments</h2>
+              <label className="inline-flex items-center gap-2 px-3 py-1.5 border rounded text-sm cursor-pointer">
+                <Upload className="h-4 w-4" /> {uploading ? "Uploading..." : "Upload"}
+                <input type="file" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) onUpload(f); e.currentTarget.value = ""; }} disabled={uploading} />
+              </label>
+            </div>
+            {loadingAttachments ? (
+              <p className="text-sm text-gray-500">Loading attachments...</p>
+            ) : attachmentList?.items?.length ? (
+              <ul className="divide-y">
+                {attachmentList.items.map(a => (
+                  <li key={a.id} className="py-2 text-sm flex items-center justify-between">
+                    <div>
+                      <div className="font-medium">{a.fileName}</div>
+                      <div className="text-gray-500">{(a.fileSize/1024).toFixed(1)} KB • {new Date(a.uploadDate).toLocaleString()}</div>
+                    </div>
+                    <span className="px-2 py-0.5 rounded text-xs bg-gray-100">{a.status}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-gray-500">No attachments yet.</p>
+            )}
           </div>
 
           <div className="bg-white border rounded p-4">

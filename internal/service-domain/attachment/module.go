@@ -19,12 +19,12 @@ type Module struct {
 	config          *Config
 	logger          *slog.Logger
 	db              *pgxpool.Pool
-	attachmentRepo  domain.AttachmentRepository
-	queueRepo       domain.ProcessingQueueRepository
-	aiRepo          domain.AIAnalysisRepository
-	attachmentService *domain.AttachmentService
-	httpHandler     *api.AttachmentHandler
-	mockHandler     *api.MockAttachmentHandler
+    attachmentRepo  domain.AttachmentRepository
+    queueRepo       domain.ProcessingQueueRepository
+    aiRepo          domain.AIAnalysisRepository
+    attachmentService *domain.AttachmentService
+    httpHandler     *api.AttachmentHandler
+    mockHandler     *api.MockAttachmentHandler
 	healthHandler   *api.HealthHandler
 	rateLimitMiddleware *middleware.RateLimitMiddleware
 	loggingMiddleware *middleware.LoggingMiddleware
@@ -64,24 +64,23 @@ func (m *Module) Initialize(ctx context.Context) error {
 		return fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	// Initialize repositories
-	m.attachmentRepo = infra.NewPostgresAttachmentRepository(m.db)
-	m.queueRepo = infra.NewPostgresProcessingQueueRepository(m.db)
-	// TODO: Initialize AI repository when needed
+    // Initialize repositories
+    m.attachmentRepo = infra.NewPostgresAttachmentRepository(m.db)
+    m.queueRepo = infra.NewPostgresProcessingQueueRepository(m.db)
+    // AI repository not implemented yet; use a noop repository
+    m.aiRepo = infra.NewNoopAIAnalysisRepository()
 
-	// Initialize service (skip stats for now due to repository issues)
-	// m.attachmentService = domain.NewAttachmentService(
-	//	m.attachmentRepo,
-	//	m.queueRepo,
-	//	m.aiRepo, // nil for now
-	//	m.logger,
-	// )
+    // Initialize service
+    m.attachmentService = domain.NewAttachmentService(
+        m.attachmentRepo,
+        m.queueRepo,
+        m.aiRepo, // nil ok; AI endpoints will be disabled
+        m.logger,
+    )
 
-	// Temporarily skip service initialization to test API routes
-	m.logger.Info("Skipping attachment service initialization for testing")
-
-	// Initialize mock HTTP handler for testing
-	m.mockHandler = api.NewMockAttachmentHandler(m.logger)
+    // Initialize real HTTP handler
+    m.httpHandler = api.NewAttachmentHandler(m.attachmentService, m.logger)
+    m.mockHandler = nil
 
 	m.logger.Info("Attachment module initialized successfully")
 	return nil
@@ -116,38 +115,22 @@ func (m *Module) MountRoutes(r chi.Router) {
 		// Then apply rate limiting middleware
 		r.Use(rateLimitMiddleware.Middleware())
 
-		// Use mock handler for testing
-		if m.mockHandler != nil {
-			// GET endpoints require 'read' permission
-			r.Group(func(r chi.Router) {
-				r.Use(middleware.RequirePermission("read", m.logger))
-				r.Get("/", m.mockHandler.ListAttachments)
-				r.Get("/stats", m.mockHandler.GetStats)
-				r.Get("/{id}", m.mockHandler.GetAttachment)
-				r.Get("/{id}/ai-analysis", m.mockHandler.GetAIAnalysis)
-			})
+        // Use real handler
+        // GET endpoints require 'read' permission
+        r.Group(func(r chi.Router) {
+            r.Use(middleware.RequirePermission("read", m.logger))
+            r.Get("/", m.httpHandler.ListAttachments)
+            r.Get("/stats", m.httpHandler.GetStats)
+            // AI analysis endpoint not yet backed by repository; keep route but handler returns 501
+            r.Get("/{id}", m.httpHandler.GetAttachment)
+            r.Get("/{id}/ai-analysis", m.httpHandler.GetAIAnalysis)
+        })
 
-			// POST endpoints require 'upload' permission
-			r.Group(func(r chi.Router) {
-				r.Use(middleware.RequirePermission("upload", m.logger))
-				r.Post("/", m.mockHandler.CreateAttachment)
-			})
-		} else {
-			// GET endpoints require 'read' permission
-			r.Group(func(r chi.Router) {
-				r.Use(middleware.RequirePermission("read", m.logger))
-				r.Get("/", m.httpHandler.ListAttachments)
-				r.Get("/stats", m.httpHandler.GetStats)
-				r.Get("/{id}", m.httpHandler.GetAttachment)
-				r.Get("/{id}/ai-analysis", m.httpHandler.GetAIAnalysis)
-			})
-
-			// POST endpoints require 'upload' permission
-			r.Group(func(r chi.Router) {
-				r.Use(middleware.RequirePermission("upload", m.logger))
-				r.Post("/", m.httpHandler.CreateAttachment)
-			})
-		}
+        // POST endpoints require 'upload' permission
+        r.Group(func(r chi.Router) {
+            r.Use(middleware.RequirePermission("upload", m.logger))
+            r.Post("/", m.httpHandler.CreateAttachment)
+        })
 
 		// TODO: Add DELETE for attachment removal (requires 'delete' permission)
 		// r.Group(func(r chi.Router) {

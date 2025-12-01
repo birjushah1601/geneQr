@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/aby-med/medical-platform/internal/service-domain/attachment/domain"
+    "github.com/aby-med/medical-platform/internal/service-domain/attachment/infra"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
@@ -172,8 +173,12 @@ func (h *AttachmentHandler) GetAIAnalysis(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	analysis, err := h.service.GetAIAnalysis(ctx, id)
+    analysis, err := h.service.GetAIAnalysis(ctx, id)
 	if err != nil {
+        if errors.Is(err, infra.ErrNotImplemented) {
+            h.respondError(w, http.StatusNotImplemented, "AI analysis not configured")
+            return
+        }
 		if errors.Is(err, fmt.Errorf("analysis not found")) {
 			h.respondError(w, http.StatusNotFound, "AI analysis not found")
 			return
