@@ -141,6 +141,13 @@ function ServiceRequestPageInner() {
         source: 'web',
         created_by: formData.requestedBy || 'web-user',
         notes: diagnosis?.summary ? `AI suggestion: ${diagnosis.summary}` : undefined,
+        parts_requested: assignedParts.map(part => ({
+          part_number: part.part_number,
+          description: part.part_name,
+          quantity: part.quantity,
+          unit_price: part.unit_price,
+          total_price: part.unit_price * part.quantity
+        })),
       };
       const created = await (await import('@/lib/api/tickets')).ticketsApi.create(payload as any);
       console.log('Ticket created', created);

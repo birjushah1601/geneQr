@@ -131,6 +131,7 @@ func (m *Module) MountRoutes(r chi.Router) {
 		r.Get("/number/{number}", m.ticketHandler.GetTicketByNumber) // Get by ticket number
 		r.Get("/{id}", m.ticketHandler.GetTicket)              // Get by ID
         r.Get("/{id}/parts", m.ticketHandler.GetTicketParts)   // Parts linked via equipment_catalog
+		r.Patch("/{id}/parts", m.ticketHandler.UpdateParts)    // Update parts for ticket
 		
 		// Ticket lifecycle operations
 		r.Post("/{id}/assign", m.ticketHandler.AssignTicket)       // Assign engineer (legacy)

@@ -101,6 +101,11 @@ func (s *TicketService) CreateTicket(ctx context.Context, req CreateTicketReques
 		ticket.Videos = req.Videos
 	}
 
+	// Add requested parts
+	if len(req.PartsRequested) > 0 {
+		ticket.PartsUsed = req.PartsRequested
+	}
+
     // Set SLA based on policy if available, else defaults
     if s.policyRepo != nil {
         if rules, _ := s.policyRepo.GetSLARules(ctx, nil); rules != nil {
@@ -602,6 +607,38 @@ func (s *TicketService) GetStatusHistory(ctx context.Context, ticketID string) (
 	return s.repo.GetStatusHistory(ctx, ticketID)
 }
 
+// UpdateParts updates the parts assigned to a ticket
+func (s *TicketService) UpdateParts(ctx context.Context, ticketID string, parts []map[string]interface{}) error {
+	s.logger.Info("Updating ticket parts", slog.String("ticket_id", ticketID))
+
+	ticket, err := s.repo.GetByID(ctx, ticketID)
+	if err != nil {
+		return err
+	}
+
+	// Update parts used - convert to []interface{} which is JSON compatible
+	partsInterface := make([]interface{}, len(parts))
+	for i, p := range parts {
+		partsInterface[i] = p
+	}
+	
+	// Store as interface slice (will be marshaled to JSONB)
+	ticket.PartsUsed = partsInterface
+
+	if err := s.repo.Update(ctx, ticket); err != nil {
+		s.logger.Error("Failed to update ticket parts", slog.String("error", err.Error()))
+		return fmt.Errorf("failed to update ticket parts: %w", err)
+	}
+
+	// Emit event: ticket.parts_updated
+	s.emitEvent(ctx, "ticket.parts_updated", "ticket", ticketID, map[string]any{
+		"parts_count": len(parts),
+	})
+
+	s.logger.Info("Ticket parts updated successfully", slog.String("ticket_id", ticketID))
+	return nil
+}
+
 // emitEvent is a best-effort outbox writer (no-op if repo is nil)
 func (s *TicketService) emitEvent(ctx context.Context, eventType, aggregateType, aggregateID string, payload map[string]any) {
     if s.eventRepo == nil { return }
@@ -656,6 +693,7 @@ type CreateTicketRequest struct {
 	Videos           []string
 	CreatedBy        string
 	InitialComment   string
+	PartsRequested   []ticketDomain.Part // Parts requested for this service
 }
 
 type ResolveTicketRequest struct {

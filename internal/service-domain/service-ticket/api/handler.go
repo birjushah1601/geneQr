@@ -525,6 +525,34 @@ func (h *TicketHandler) GetTicketParts(w http.ResponseWriter, r *http.Request) {
     })
 }
 
+// UpdateParts handles PATCH /tickets/{id}/parts
+func (h *TicketHandler) UpdateParts(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := chi.URLParam(r, "id")
+
+	if id == "" {
+		h.respondError(w, http.StatusBadRequest, "Ticket ID is required")
+		return
+	}
+
+	var req struct {
+		Parts []map[string]interface{} `json:"parts"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.respondError(w, http.StatusBadRequest, "Invalid request body: "+err.Error())
+		return
+	}
+
+	if err := h.service.UpdateParts(ctx, id, req.Parts); err != nil {
+		h.logger.Error("Failed to update parts", slog.String("error", err.Error()))
+		h.respondError(w, http.StatusInternalServerError, "Failed to update parts")
+		return
+	}
+
+	h.respondJSON(w, http.StatusOK, map[string]string{"message": "Parts updated successfully"})
+}
+
 // no-op: database/sql Null* used for scanning
 
 // respondJSON writes JSON response
