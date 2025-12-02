@@ -7,7 +7,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ticketsApi } from "@/lib/api/tickets";
 import { apiClient } from "@/lib/api/client";
 import type { ServiceTicket, TicketPriority, TicketStatus } from "@/types";
-import { ArrowLeft, Loader2, Package, User, Calendar, Wrench, Pause, Play, CheckCircle, XCircle, AlertTriangle, FileText, MessageSquare, Paperclip, Upload } from "lucide-react";
+import { ArrowLeft, Loader2, Package, User, Calendar, Wrench, Pause, Play, CheckCircle, XCircle, AlertTriangle, FileText, MessageSquare, Paperclip, Upload, Brain, Sparkles, TrendingUp, Lightbulb, Shield } from "lucide-react";
 import { attachmentsApi } from "@/lib/api/attachments";
 import { PartsAssignmentModal } from "@/components/PartsAssignmentModal";
 import { diagnosisApi, extractSymptoms } from "@/lib/api/diagnosis";
@@ -47,6 +47,13 @@ export default function TicketDetailPage() {
     queryFn: () => attachmentsApi.list({ ticket_id: String(id), page_size: 50 }),
   });
 
+  // Fetch AI diagnosis history for this ticket
+  const { data: diagnosisHistory, isLoading: loadingDiagnosis, refetch: refetchDiagnosis } = useQuery({
+    queryKey: ["ticket", id, "diagnosis"],
+    queryFn: () => diagnosisApi.getHistoryByTicket(Number(id)),
+    enabled: !!id,
+  });
+
   const [uploading, setUploading] = useState(false);
   const [aiAnalyzing, setAiAnalyzing] = useState(false);
   
@@ -82,8 +89,9 @@ export default function TicketDetailPage() {
             }
           });
           
-          // Refresh ticket data to show AI diagnosis results
+          // Refresh ticket data and diagnosis to show AI results
           await refetch();
+          await refetchDiagnosis();
         } catch (error) {
           console.error("AI analysis failed:", error);
         } finally {
@@ -192,6 +200,196 @@ export default function TicketDetailPage() {
               <p className="text-sm whitespace-pre-line">{ticket.issue_description}</p>
             </div>
           </div>
+
+          {/* AI Diagnosis Section */}
+          {diagnosisHistory && diagnosisHistory.length > 0 && (
+            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-200 rounded-lg p-5 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-semibold flex items-center gap-2">
+                  <Brain className="h-5 w-5 text-purple-600" />
+                  <span className="bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                    AI Diagnosis
+                  </span>
+                  <Sparkles className="h-4 w-4 text-yellow-500" />
+                </h2>
+                <span className="text-xs text-purple-600 font-medium">
+                  {diagnosisHistory.length} {diagnosisHistory.length === 1 ? 'analysis' : 'analyses'}
+                </span>
+              </div>
+
+              {/* Latest Diagnosis */}
+              {diagnosisHistory[0] && (() => {
+                const latestDiagnosis = diagnosisHistory[0];
+                const confidenceColor = 
+                  latestDiagnosis.confidence_level === 'HIGH' ? 'bg-green-100 text-green-800 border-green-300' :
+                  latestDiagnosis.confidence_level === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800 border-yellow-300' :
+                  'bg-red-100 text-red-800 border-red-300';
+
+                return (
+                  <div className="space-y-4">
+                    {/* Primary Diagnosis */}
+                    <div className="bg-white rounded-lg p-4 border border-purple-100">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <Shield className="h-4 w-4 text-purple-600" />
+                            <h3 className="font-semibold text-gray-900">
+                              {latestDiagnosis.primary_diagnosis.problem_type}
+                            </h3>
+                          </div>
+                          <p className="text-xs text-gray-500">
+                            {latestDiagnosis.primary_diagnosis.problem_category}
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-end gap-2">
+                          <span className={`px-2 py-1 rounded text-xs font-medium border ${confidenceColor}`}>
+                            {latestDiagnosis.confidence_level} Confidence ({Math.round(latestDiagnosis.confidence * 100)}%)
+                          </span>
+                          <span className="px-2 py-1 rounded text-xs bg-orange-100 text-orange-800 border border-orange-300">
+                            {latestDiagnosis.primary_diagnosis.severity} Severity
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3 text-sm">
+                        <div>
+                          <p className="text-gray-700 leading-relaxed">
+                            {latestDiagnosis.primary_diagnosis.description}
+                          </p>
+                        </div>
+
+                        {latestDiagnosis.primary_diagnosis.root_cause && (
+                          <div className="bg-purple-50 rounded p-3 border border-purple-100">
+                            <p className="text-xs font-semibold text-purple-900 mb-1 flex items-center gap-1">
+                              <Lightbulb className="h-3 w-3" />
+                              Root Cause
+                            </p>
+                            <p className="text-gray-700">{latestDiagnosis.primary_diagnosis.root_cause}</p>
+                          </div>
+                        )}
+
+                        {latestDiagnosis.primary_diagnosis.symptoms && latestDiagnosis.primary_diagnosis.symptoms.length > 0 && (
+                          <div>
+                            <p className="text-xs font-semibold text-gray-600 mb-2">Detected Symptoms:</p>
+                            <div className="flex flex-wrap gap-2">
+                              {latestDiagnosis.primary_diagnosis.symptoms.map((symptom: string, idx: number) => (
+                                <span key={idx} className="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs border border-blue-200">
+                                  {symptom}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Recommended Actions */}
+                    {latestDiagnosis.recommended_actions && latestDiagnosis.recommended_actions.length > 0 && (
+                      <div className="bg-white rounded-lg p-4 border border-blue-100">
+                        <h4 className="font-semibold text-sm mb-3 flex items-center gap-2 text-blue-900">
+                          <TrendingUp className="h-4 w-4 text-blue-600" />
+                          Recommended Actions
+                        </h4>
+                        <div className="space-y-2">
+                          {latestDiagnosis.recommended_actions.slice(0, 3).map((action: any, idx: number) => (
+                            <div key={idx} className="flex items-start gap-2 text-sm">
+                              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-100 text-blue-700 text-xs flex items-center justify-center font-medium">
+                                {idx + 1}
+                              </span>
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium text-gray-900">{action.action}</span>
+                                  <span className={`px-1.5 py-0.5 rounded text-xs ${
+                                    action.priority === 'high' ? 'bg-red-100 text-red-700' :
+                                    action.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                                    'bg-gray-100 text-gray-700'
+                                  }`}>
+                                    {action.priority}
+                                  </span>
+                                </div>
+                                <p className="text-gray-600 text-xs mt-0.5">{action.description}</p>
+                                {action.estimated_time && (
+                                  <p className="text-gray-500 text-xs mt-1">⏱️ Est. Time: {action.estimated_time}</p>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* AI-Suggested Parts */}
+                    {latestDiagnosis.required_parts && latestDiagnosis.required_parts.length > 0 && (
+                      <div className="bg-white rounded-lg p-4 border border-green-100">
+                        <h4 className="font-semibold text-sm mb-3 flex items-center gap-2 text-green-900">
+                          <Package className="h-4 w-4 text-green-600" />
+                          AI-Suggested Parts
+                        </h4>
+                        <div className="space-y-2">
+                          {latestDiagnosis.required_parts.slice(0, 5).map((part: any, idx: number) => (
+                            <div key={idx} className="flex items-center justify-between text-sm bg-green-50 rounded p-2 border border-green-100">
+                              <div className="flex-1">
+                                <div className="font-medium text-gray-900">{part.part_name}</div>
+                                <div className="text-xs text-gray-500">{part.part_code} • {part.manufacturer}</div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-xs text-gray-600">Qty: {part.quantity}</div>
+                                <div className="text-xs font-medium text-green-700">
+                                  {Math.round(part.probability * 100)}% match
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Vision Analysis */}
+                    {latestDiagnosis.vision_analysis && latestDiagnosis.vision_analysis.findings && latestDiagnosis.vision_analysis.findings.length > 0 && (
+                      <div className="bg-white rounded-lg p-4 border border-indigo-100">
+                        <h4 className="font-semibold text-sm mb-3 flex items-center gap-2 text-indigo-900">
+                          <AlertTriangle className="h-4 w-4 text-indigo-600" />
+                          Vision Analysis
+                        </h4>
+                        <p className="text-sm text-gray-700 mb-3">{latestDiagnosis.vision_analysis.overall_assessment}</p>
+                        <div className="space-y-2">
+                          {latestDiagnosis.vision_analysis.findings.slice(0, 3).map((finding: any, idx: number) => (
+                            <div key={idx} className="flex items-start gap-2 text-sm bg-indigo-50 rounded p-2 border border-indigo-100">
+                              <span className="text-indigo-600 font-medium text-xs">{finding.category}:</span>
+                              <span className="text-gray-700 flex-1">{finding.finding}</span>
+                              <span className="text-xs text-gray-500">{Math.round(finding.confidence * 100)}%</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* AI Metadata */}
+                    <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-purple-100">
+                      <div className="flex items-center gap-2">
+                        <span>AI Model: {latestDiagnosis.ai_metadata.model}</span>
+                        <span>•</span>
+                        <span>{new Date(latestDiagnosis.created_at).toLocaleString()}</span>
+                      </div>
+                      {latestDiagnosis.ai_metadata.alternatives_count > 0 && (
+                        <span className="text-purple-600 font-medium">
+                          +{latestDiagnosis.ai_metadata.alternatives_count} alternative diagnoses
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+
+          {/* Loading State for Diagnosis */}
+          {loadingDiagnosis && (
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 flex items-center justify-center gap-3">
+              <Loader2 className="h-5 w-5 animate-spin text-purple-600" />
+              <span className="text-sm text-purple-700">Loading AI diagnosis...</span>
+            </div>
+          )}
 
           <div className="bg-white border rounded p-4">
             <h2 className="text-base font-semibold mb-3 flex items-center gap-2"><MessageSquare className="h-4 w-4" /> Comments</h2>
