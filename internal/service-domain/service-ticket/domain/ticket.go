@@ -90,7 +90,7 @@ type ServiceTicket struct {
 	
 	// Resolution
 	ResolutionNotes string                   `json:"resolution_notes,omitempty"`
-	PartsUsed       []Part                   `json:"parts_used,omitempty"`
+	PartsUsed       interface{}              `json:"parts_used,omitempty"` // Can be []Part or []interface{} for flexibility
 	LaborHours      float64                  `json:"labor_hours"`
 	Cost            float64                  `json:"cost"`
 	

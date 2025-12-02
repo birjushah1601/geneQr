@@ -159,7 +159,7 @@ function EquipmentListPageInner() {
     if (equipment.hasQRCode) {
       // Use generated QR code image if available, otherwise try backend
       const apiBase = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
-      const imageUrl = equipment.qrCodeImageUrl || `${apiBase}/v1/equipment/qr/image/${equipment.id}`;
+      const imageUrl = equipment.qrCodeImageUrl || `${apiBase}/api/v1/equipment/qr/image/${equipment.id}`;
       setQrPreview({ id: equipment.id, url: imageUrl });
     }
   };
@@ -505,6 +505,7 @@ function EquipmentListPageInner() {
                                   title="Click to preview full size"
                                 >
                                   <img
+                                    src={`${(process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '')}/api/v1/equipment/qr/image/${equipment.id}`}
                                     src={`http://localhost:8081/api/v1/equipment/qr/image/${equipment.id}`}
                                     alt={`QR Code for ${equipment.name}`}
                                     className="w-full h-full object-contain p-1"
