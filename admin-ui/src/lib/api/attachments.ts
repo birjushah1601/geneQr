@@ -56,19 +56,19 @@ export const attachmentsApi = {
     if (params?.source) searchParams.set('source', params.source)
     if (params?.unassigned) searchParams.set('unassigned', 'true')
 
-    const { data } = await apiClient.get(`/api/v1/attachments`, { params: Object.fromEntries(searchParams) })
+    const { data } = await apiClient.get(`/v1/attachments`, { params: Object.fromEntries(searchParams) })
     return data
   },
 
   // Get single attachment by ID
   async getById(id: string): Promise<AttachmentInfo> {
-    const { data } = await apiClient.get(`/api/v1/attachments/${id}`)
+    const { data } = await apiClient.get(`/v1/attachments/${id}`)
     return data
   },
 
   // Get AI analysis for an attachment
   async getAIAnalysis(attachmentId: string): Promise<AIAnalysisResult> {
-    const { data } = await apiClient.get(`/api/v1/attachments/${attachmentId}/ai-analysis`)
+    const { data } = await apiClient.get(`/v1/attachments/${attachmentId}/ai-analysis`)
     return data
   },
 
@@ -85,7 +85,7 @@ export const attachmentsApi = {
     if (data.category) formData.append('category', data.category)
     if (data.source) formData.append('source', data.source)
 
-    const { data: resp } = await apiClient.post(`/api/v1/attachments`, formData, {
+    const { data: resp } = await apiClient.post(`/v1/attachments`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
     return resp
@@ -93,12 +93,12 @@ export const attachmentsApi = {
 
   // Delete attachment
   async delete(id: string): Promise<void> {
-    await apiClient.delete(`/api/v1/attachments/${id}`)
+    await apiClient.delete(`/v1/attachments/${id}`)
   },
 
   // Link an existing attachment to a ticket (for pre-creation uploads)
   async link(id: string, ticketId: string): Promise<void> {
-    await apiClient.post(`/api/v1/attachments/${id}/link`, { ticket_id: ticketId })
+    await apiClient.post(`/v1/attachments/${id}/link`, { ticket_id: ticketId })
   },
 
   // Get attachment statistics

@@ -70,7 +70,7 @@ export const ticketsApi = {
     try {
       const queryString = params ? buildQueryString(params) : '';
       const response = await apiClient.get<{ items: ServiceTicket[]; total: number; page: number; page_size: number }>(
-        `/api/v1/tickets?${queryString}`
+        `/v1/tickets?${queryString}`
       );
       return response.data;
     } catch (error) {
@@ -83,7 +83,7 @@ export const ticketsApi = {
    */
   async getById(id: string) {
     try {
-      const response = await apiClient.get<ServiceTicket>(`/api/v1/tickets/${id}`);
+      const response = await apiClient.get<ServiceTicket>(`/v1/tickets/${id}`);
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -95,7 +95,7 @@ export const ticketsApi = {
    */
   async getByTicketNumber(ticketNumber: string) {
     try {
-      const response = await apiClient.get<ServiceTicket>(`/api/v1/tickets/number/${ticketNumber}`);
+      const response = await apiClient.get<ServiceTicket>(`/v1/tickets/number/${ticketNumber}`);
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -145,7 +145,7 @@ export const ticketsApi = {
    */
   async assignEngineer(ticketId: string, data: AssignEngineerRequest) {
     try {
-      const response = await apiClient.post<{ message: string }>(`/api/v1/tickets/${ticketId}/assign`, data);
+      const response = await apiClient.post<{ message: string }>(`/v1/tickets/${ticketId}/assign`, data);
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -157,7 +157,7 @@ export const ticketsApi = {
    */
   async updateStatus(ticketId: string, data: UpdateTicketStatusRequest) {
     try {
-      const response = await apiClient.patch<{ message: string }>(`/api/v1/tickets/${ticketId}/status`, data);
+      const response = await apiClient.patch<{ message: string }>(`/v1/tickets/${ticketId}/status`, data);
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -169,7 +169,7 @@ export const ticketsApi = {
    */
   async update(ticketId: string, data: Partial<ServiceTicket>) {
     try {
-      const response = await apiClient.patch<{ message: string }>(`/api/v1/tickets/${ticketId}`, data);
+      const response = await apiClient.patch<{ message: string }>(`/v1/tickets/${ticketId}`, data);
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -183,7 +183,7 @@ export const ticketsApi = {
     try {
       const queryString = params ? buildQueryString(params) : '';
       const response = await apiClient.get<{ tickets: ServiceTicket[]; total: number }>(
-        `/api/v1/engineers/${engineerId}/tickets?${queryString}`
+        `/v1/engineers/${engineerId}/tickets?${queryString}`
       );
       return response.data;
     } catch (error) {
@@ -197,7 +197,7 @@ export const ticketsApi = {
   async getByEquipment(equipmentId: string) {
     try {
       const response = await apiClient.get<{ tickets: ServiceTicket[] }>(
-        `/api/v1/equipment/${equipmentId}/tickets`
+        `/v1/equipment/${equipmentId}/tickets`
       );
       return response.data;
     } catch (error) {
@@ -211,7 +211,7 @@ export const ticketsApi = {
   async getComments(ticketId: string): Promise<{ comments: TicketComment[] }> {
     try {
       const response = await apiClient.get<{ comments: TicketComment[] }>(
-        `/api/v1/tickets/${ticketId}/comments`
+        `/v1/tickets/${ticketId}/comments`
       );
       return response.data;
     } catch (error) {
@@ -222,7 +222,7 @@ export const ticketsApi = {
   async addComment(ticketId: string, payload: AddCommentRequest): Promise<{ comment: TicketComment }> {
     try {
       const response = await apiClient.post<{ comment: TicketComment }>(
-        `/api/v1/tickets/${ticketId}/comments`,
+        `/v1/tickets/${ticketId}/comments`,
         payload
       );
       return response.data;
@@ -237,7 +237,7 @@ export const ticketsApi = {
   async getFollowupTasks(ticketId: string): Promise<{ tasks: FollowupTask[] }> {
     try {
       const response = await apiClient.get<{ tasks: FollowupTask[] }>(
-        `/api/v1/tickets/${ticketId}/followups`
+        `/v1/tickets/${ticketId}/followups`
       );
       return response.data;
     } catch (error) {
@@ -248,7 +248,7 @@ export const ticketsApi = {
   async completeFollowupTask(ticketId: string, taskId: string, completionNotes?: string): Promise<{ task: FollowupTask }> {
     try {
       const response = await apiClient.post<{ task: FollowupTask }>(
-        `/api/v1/tickets/${ticketId}/followups/${taskId}/complete`,
+        `/v1/tickets/${ticketId}/followups/${taskId}/complete`,
         completionNotes ? { completion_notes: completionNotes } : undefined
       );
       return response.data;
@@ -259,9 +259,11 @@ export const ticketsApi = {
 
   async deleteFollowupTask(ticketId: string, taskId: string): Promise<void> {
     try {
-      await apiClient.delete(`/api/v1/tickets/${ticketId}/followups/${taskId}`);
+      await apiClient.delete(`/v1/tickets/${ticketId}/followups/${taskId}`);
     } catch (error) {
       throw new Error(handleApiError(error));
     }
   },
 };
+
+

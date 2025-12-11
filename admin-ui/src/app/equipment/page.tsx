@@ -505,7 +505,7 @@ function EquipmentListPageInner() {
                                   title="Click to preview full size"
                                 >
                                   <img
-                                    src={`${(process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '')}/api/v1/equipment/qr/image/${equipment.id}`}
+                                    src={equipment.qrCodeImageUrl || `data:image/png;base64,`}
                                     src={`http://localhost:8081/api/v1/equipment/qr/image/${equipment.id}`}
                                     alt={`QR Code for ${equipment.name}`}
                                     className="w-full h-full object-contain p-1"
@@ -692,3 +692,6 @@ export default function EquipmentListPage() {
     </Suspense>
   );
 }
+
+
+
