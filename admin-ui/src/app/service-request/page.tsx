@@ -9,6 +9,7 @@ import { Equipment } from '@/types';
 import { Loader2, AlertCircle, CheckCircle, Package } from 'lucide-react';
 import { DiagnosisCard, DiagnosisButton } from '@/components/diagnosis';
 import { PartsAssignmentModal } from '@/components/PartsAssignmentModal';
+import { AIAnalysisButton } from '@/components/AIAnalysisButton';
 
 function ServiceRequestPageInner() {
   const searchParams = useSearchParams();
@@ -417,21 +418,32 @@ function ServiceRequestPageInner() {
 
 </div>
 
-            {/* AI Diagnosis Section */}
+            {/* AI Analysis with Attachments - Optional */}
             {formData.description && (
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-medium text-purple-900">🤖 AI Assistant</h3>
-                  <DiagnosisButton 
-                    equipment={equipment}
-                    description={formData.description}
-                    priority={formData.priority}
-                    onDiagnosisComplete={handleDiagnosisComplete}
-                  />
+              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg p-5">
+                <div className="mb-4">
+                  <h3 className="text-base font-semibold text-purple-900 flex items-center gap-2 mb-2">
+                    <span className="text-2xl">🤖</span>
+                    AI-Powered Diagnosis (Optional)
+                  </h3>
+                  <p className="text-sm text-purple-700">
+                    Get instant AI diagnosis with visual analysis of uploaded images/videos
+                  </p>
                 </div>
-                <p className="text-xs text-purple-700">
-                  Get AI-powered diagnosis suggestions based on your issue description
-                </p>
+                
+                <AIAnalysisButton
+                  equipment={equipment}
+                  description={formData.description}
+                  priority={formData.priority}
+                  files={selectedFiles}
+                  onAnalysisComplete={(result) => {
+                    setDiagnosis(result);
+                    console.log('AI Analysis complete:', result);
+                  }}
+                  onAnalysisError={(error) => {
+                    console.error('AI Analysis error:', error);
+                  }}
+                />
               </div>
             )}
 
