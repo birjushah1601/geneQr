@@ -93,7 +93,7 @@ export function AIAnalysisButton({
         ) : (
           <>
             <Sparkles className="h-5 w-5" />
-            <span>Get AI Diagnosis{files.length > 0 ?  with ${files.length} Image(s) : ''}</span>
+            <span>Get AI Diagnosis{files.length > 0 ? ` with ${files.length} Image(s)` : ''}</span>
           </>
         )}
       </button>

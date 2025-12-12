@@ -59,7 +59,87 @@ export interface FollowupTask {
 
 export interface AddCommentRequest {
   comment: string;
-  comment_type?: string;
+  comment_type: 'customer' | 'engineer' | 'internal' | 'system';
+  author_name?: string;
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// MULTI-MODEL ASSIGNMENT TYPES
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+export interface AssignmentSuggestionsResponse {
+  ticket_id: string;
+  equipment: {
+    id: string;
+    name: string;
+    manufacturer: string;
+    category: string;
+    model_number: string;
+    location?: {
+      region: string;
+      address: string;
+      lat?: number;
+      lng?: number;
+    };
+  };
+  ticket: {
+    priority: string;
+    min_level_required: number;
+    requires_certification: boolean;
+  };
+  suggestions_by_model: {
+    [modelKey: string]: AssignmentModel;
+  };
+  assignment_tiers: {
+    tier: number;
+    name: string;
+    organization_ids: string[];
+    available_count: number;
+  }[];
+}
+
+export interface AssignmentModel {
+  model_name: string;
+  description: string;
+  engineers: EngineerSuggestion[];
+  count: number;
+}
+
+export interface EngineerSuggestion {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  engineer_level: number;
+  skills?: string[];
+  home_region?: string;
+  organization_id?: string;
+  organization_name?: string;
+  organization_tier?: number;
+  match_score: number;
+  match_reasons: string[];
+  workload?: {
+    active_tickets: number;
+    in_progress_tickets: number;
+    avg_resolution_hours?: number;
+  };
+  certifications?: {
+    manufacturer: string;
+    category: string;
+    is_certified: boolean;
+    certification_number?: string;
+    expiry?: string;
+  }[];
+  distance_km?: number;
+  estimated_travel_time_mins?: number;
+}
+
+export interface AssignEngineerPayload {
+  ticket_id: string;
+  engineer_id: string;
+  assignment_tier: string;
+  assignment_tier_name: string;
+  assigned_by: string;
 }
 
 export const ticketsApi = {
@@ -133,7 +213,7 @@ export const ticketsApi = {
       // Remove undefined keys to keep payload clean
       Object.keys(payload).forEach((k) => payload[k] === undefined && delete payload[k]);
 
-      const response = await apiClient.post<ServiceTicket>('/api/v1/tickets', payload);
+      const response = await apiClient.post<ServiceTicket>('/v1/tickets', payload);
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -240,6 +320,31 @@ export const ticketsApi = {
         `/v1/tickets/${ticketId}/followups`
       );
       return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  // ------------------------------------------------------------------
+  // Multi-Model Engineer Assignment
+  // ------------------------------------------------------------------
+  async getAssignmentSuggestions(ticketId: string): Promise<AssignmentSuggestionsResponse> {
+    try {
+      const response = await apiClient.get<AssignmentSuggestionsResponse>(
+        `/v1/tickets/${ticketId}/assignment-suggestions`
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  async assignEngineerToTicket(ticketId: string, payload: AssignEngineerPayload): Promise<void> {
+    try {
+      await apiClient.post(
+        `/v1/tickets/${ticketId}/assign-engineer`,
+        payload
+      );
     } catch (error) {
       throw new Error(handleApiError(error));
     }

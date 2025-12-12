@@ -3,6 +3,7 @@ package infra
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -378,6 +379,14 @@ func (r *AssignmentRepository) formatTierName(tier string) string {
 func (r *AssignmentRepository) AssignEngineerToTicket(ctx context.Context, req domain.AssignmentRequest) error {
 	now := time.Now()
 	
+	// Convert assignment_tier string to int for database (DB expects integer)
+	tierInt := 0
+	if req.AssignmentTier != "" {
+		if parsed, err := strconv.Atoi(req.AssignmentTier); err == nil {
+			tierInt = parsed
+		}
+	}
+	
 	query := `
 		UPDATE service_tickets SET
 			assigned_engineer_id = $2,
@@ -387,14 +396,14 @@ func (r *AssignmentRepository) AssignEngineerToTicket(ctx context.Context, req d
 			assignment_tier_name = $6,
 			assigned_at = $7,
 			status = 'assigned',
-			updated_at = $7
+			updated_at = $8
 		WHERE id = $1
 	`
 	
 	_, err := r.pool.Exec(ctx, query,
 		req.TicketID, req.EngineerID, req.EngineerName,
-		req.OrganizationID, req.AssignmentTier, req.AssignmentTierName,
-		now,
+		req.OrganizationID, tierInt, req.AssignmentTierName,
+		now, now,
 	)
 	
 	return err

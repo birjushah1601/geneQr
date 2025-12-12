@@ -109,13 +109,13 @@ export const attachmentsApi = {
     processing_queue_size: number
     avg_confidence: number
   }> {
-    const { data } = await apiClient.get('/api/v1/attachments/stats')
+    const { data } = await apiClient.get('/v1/attachments/stats')
     return data
   },
 
   // Health check specifically for attachments service
   async healthCheck(): Promise<{ status: string; database: boolean; ai: boolean }> {
-    const { data } = await apiClient.get('/api/v1/attachments/health')
+    const { data } = await apiClient.get('/v1/attachments/health')
     return data
   }
 }
@@ -130,3 +130,4 @@ export const attachmentQueryKeys = {
   aiAnalysis: (id: string) => [...attachmentQueryKeys.detail(id), 'ai-analysis'] as const,
   stats: () => [...attachmentQueryKeys.all, 'stats'] as const
 }
+

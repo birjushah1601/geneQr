@@ -147,8 +147,15 @@ function ServiceRequestPageInner() {
       setSubmitting(true);
       
       // Create real service ticket
+      const equipmentId = (equipment as any).id;
+      console.log('Creating ticket for equipment ID:', equipmentId);
+      
+      if (!equipmentId) {
+        throw new Error('Equipment ID is missing. Cannot create ticket.');
+      }
+      
       const payload = {
-        equipment_id: (equipment as any).id,
+        equipment_id: equipmentId,
         qr_code: (equipment as any).qr_code || (equipment as any).qrCode,
         serial_number: (equipment as any).serial_number || (equipment as any).serialNumber,
         equipment_name: (equipment as any).equipment_name || (equipment as any).name,
@@ -181,12 +188,12 @@ function ServiceRequestPageInner() {
             formData.append('file', file);
             formData.append('ticket_id', (created as any).id || (created as any).ticket_id);
             formData.append('entity_type', 'ticket');
-            formData.append('description', Attachment for service request);
+            formData.append('description', 'Attachment for service request');
             formData.append('uploaded_by', payload.created_by);
             
             await attachmentsApi.upload(formData);
           }
-          console.log(Uploaded  attachment(s));
+          console.log(`Uploaded ${selectedFiles.length} attachment(s)`);
         } catch (uploadErr) {
           console.error('Failed to upload attachments:', uploadErr);
           // Don't fail the whole submission if attachments fail
@@ -544,6 +551,7 @@ export default function ServiceRequestPage() {
     </Suspense>
   );
 }
+
 
 
 

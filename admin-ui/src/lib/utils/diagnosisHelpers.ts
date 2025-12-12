@@ -1,4 +1,4 @@
-﻿// ============================================================================
+// ============================================================================
 // AI Diagnosis Helpers
 // ============================================================================
 
@@ -32,21 +32,21 @@ export async function processFilesForAI(
   for (const file of files) {
     if (isImageFile(file)) {
       imageCount++;
-      onProgress?.(Processing image ${imageCount}/${files.length}...);
+      onProgress?.(`Processing image ${imageCount}/${files.length}...`);
       try {
         const base64 = await compressImage(file);
         imageData.push(base64);
       } catch (error) {
-        console.error(Error processing image ${file.name}:, error);
+        console.error(`Error processing image ${file.name}:`, error);
       }
     } else if (isVideoFile(file)) {
       videoCount++;
-      onProgress?.(Extracting frames from video ${videoCount}...);
+      onProgress?.(`Extracting frames from video ${videoCount}...`);
       try {
         const frames = await extractVideoFrames(file, 3);
         imageData.push(...frames);
       } catch (error) {
-        console.error(Error extracting video frames from ${file.name}:, error);
+        console.error(`Error extracting video frames from ${file.name}:`, error);
       }
     }
   }
@@ -67,7 +67,7 @@ export async function runAIDiagnosis(options: DiagnosisOptions): Promise<any> {
     let imageData: string[] = [];
     
     if (files && files.length > 0) {
-      onProgress?.(Processing ${files.length} file(s)...);
+      onProgress?.(`Processing ${files.length} file(s)...`);
       imageData = await processFilesForAI(files, onProgress);
     } else if (ticketId) {
       // Fetch attachments from ticket
@@ -76,7 +76,7 @@ export async function runAIDiagnosis(options: DiagnosisOptions): Promise<any> {
         const attachments = await attachmentsApi.getByEntity(ticketId, 'ticket');
         
         if (attachments && attachments.length > 0) {
-          onProgress?.(Found ${attachments.length} attachment(s)...);
+          onProgress?.(`Found ${attachments.length} attachment(s)...`);
           // Note: Backend needs to provide image URLs or base64 data
           // For now, we'll skip processing existing attachments
         }
@@ -87,11 +87,11 @@ export async function runAIDiagnosis(options: DiagnosisOptions): Promise<any> {
 
     // Step 2: Run diagnosis
     const analysisText = imageData.length > 0
-      ? Analyzing ${imageData.length} image(s) with AI...
+      ? `Analyzing ${imageData.length} image(s) with AI...`
       : 'Analyzing with AI...';
     onProgress?.(analysisText);
 
-    const diagnosisPayload = {
+    const diagnosisPayload: any = { ticket_id: ticketId || 0,
       equipment_id: equipment?.id,
       description: description,
       priority: priority || 'medium',
@@ -106,7 +106,7 @@ export async function runAIDiagnosis(options: DiagnosisOptions): Promise<any> {
       ...(imageData.length > 0 && { images: imageData }),
     };
 
-    const diagnosis = await diagnosisApi.diagnose(diagnosisPayload);
+    const diagnosis = await diagnosisApi.analyze(diagnosisPayload);
 
     onProgress?.('Analysis complete!');
 
@@ -126,18 +126,18 @@ export async function addDiagnosisComment(ticketId: number | string, diagnosis: 
     const commentsApi = (await import('@/lib/api/tickets')).ticketsApi;
     
     // Format diagnosis results as comment
-    let commentText = '🤖 **AI Diagnosis Results**\n\n';
+    let commentText = '?? **AI Diagnosis Results**\n\n';
     
     if (diagnosis.primary_diagnosis) {
-      commentText += **Problem:** ${diagnosis.primary_diagnosis.problem_type}\n;
-      commentText += **Description:** ${diagnosis.primary_diagnosis.description}\n;
-      commentText += **Confidence:** ${Math.round(diagnosis.primary_diagnosis.confidence * 100)}%\n\n;
+      commentText += `**Problem:** ${diagnosis.primary_diagnosis.problem_type}\n`;
+      commentText += `**Description:** ${diagnosis.primary_diagnosis.description}\n`;
+      commentText += `**Confidence:** ${Math.round(diagnosis.primary_diagnosis.confidence * 100)}%\n\n`;
     }
 
     if (diagnosis.vision_analysis && diagnosis.vision_analysis.findings?.length > 0) {
       commentText += '**Visual Findings:**\n';
       diagnosis.vision_analysis.findings.forEach((finding: any, idx: number) => {
-        commentText += ${idx + 1}. ${finding.finding} (${Math.round(finding.confidence * 100)}%)\n;
+        commentText += `${idx + 1}. ${finding.finding} (${Math.round(finding.confidence * 100)}%)\n`;
       });
       commentText += '\n';
     }
@@ -145,7 +145,7 @@ export async function addDiagnosisComment(ticketId: number | string, diagnosis: 
     if (diagnosis.recommended_actions && diagnosis.recommended_actions.length > 0) {
       commentText += '**Recommended Actions:**\n';
       diagnosis.recommended_actions.forEach((action: any, idx: number) => {
-        commentText += ${idx + 1}. ${action.action} - ${action.description}\n;
+        commentText += `${idx + 1}. ${action.action} - ${action.description}\n`;
       });
       commentText += '\n';
     }
@@ -153,7 +153,7 @@ export async function addDiagnosisComment(ticketId: number | string, diagnosis: 
     if (diagnosis.required_parts && diagnosis.required_parts.length > 0) {
       commentText += '**Required Parts:**\n';
       diagnosis.required_parts.forEach((part: any) => {
-        commentText += - ${part.part_name} (${part.part_code}) - ${Math.round(part.probability * 100)}% probability\n;
+        commentText += `- ${part.part_name} (${part.part_code}) - ${Math.round(part.probability * 100)}% probability\n`;
       });
     }
 
@@ -163,7 +163,7 @@ export async function addDiagnosisComment(ticketId: number | string, diagnosis: 
       created_by: 'AI Diagnosis System',
     });
 
-    console.log('✅ AI diagnosis added as comment');
+    console.log('? AI diagnosis added as comment');
   } catch (error) {
     console.error('Failed to add diagnosis comment:', error);
     throw error;
@@ -196,7 +196,7 @@ export function suggestEngineersFromDiagnosis(diagnosis: any): {
 
   return {
     specialization,
-    reasoning: Based on ${category} issue: ${type},
+    reasoning: `Based on ${category} issue: ${type}`,
   };
 }
 
@@ -218,3 +218,5 @@ export function getPartsSuggestionsFromDiagnosis(diagnosis: any): Array<{
     probability: part.probability || 0,
   }));
 }
+
+

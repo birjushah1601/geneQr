@@ -22,6 +22,7 @@ import {
 import { organizationsApi } from '@/lib/api/organizations';
 import { equipmentApi } from '@/lib/api/equipment';
 import { ticketsApi } from '@/lib/api/tickets';
+import { engineersApi } from '@/lib/api/engineers';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -40,6 +41,14 @@ export default function AdminDashboard() {
   const { data: ticketsData, isLoading: loadingTickets } = useQuery({
     queryKey: ['tickets', 'count', 'active'],
     queryFn: () => ticketsApi.list({ page: 1, page_size: 1 }),
+    retry: false,
+    // Suppress errors on dashboard
+    onError: () => {},
+  });
+
+  const { data: engineersData, isLoading: loadingEngineers } = useQuery({
+    queryKey: ['engineers', 'count'],
+    queryFn: () => engineersApi.list({ page: 1, page_size: 1 }),
   });
 
   // Calculate organization breakdown
@@ -53,17 +62,17 @@ export default function AdminDashboard() {
 
   // Calculate platform stats from API responses
   const platformStats = {
-    totalOrganizations: orgsData?.total || 0,
+    totalOrganizations: orgsData?.items?.length || 0,
     manufacturers: orgsByType.manufacturer,
     distributors: orgsByType.distributor,
     dealers: orgsByType.dealer,
     hospitals: orgsByType.hospital,
     totalEquipment: equipmentData?.total || 0,
-    totalEngineers: 90, // TODO: Add engineers API endpoint
-    activeTickets: ticketsData?.total || 0,
+    totalEngineers: engineersData?.total || 0,
+    activeTickets: ticketsData?.total || ticketsData?.tickets?.length || 0,
   };
 
-  const isLoading = loadingOrganizations || loadingEquipment || loadingTickets;
+  const isLoading = loadingOrganizations || loadingEquipment || loadingTickets || loadingEngineers;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -238,17 +247,6 @@ export default function AdminDashboard() {
               <p className="text-sm text-gray-600 mb-4">
                 {platformStats.manufacturers} active manufacturers with {platformStats.totalEquipment} total equipment pieces and {platformStats.totalEngineers} service engineers across the platform.
               </p>
-              <div className="space-y-2 mb-4">
-                {/* Top Manufacturers Preview */}
-                <div className="text-sm">
-                  <p className="font-medium text-gray-700 mb-2">Top Manufacturers:</p>
-                  <ul className="space-y-1 text-gray-600">
-                    <li>• Siemens Healthineers - 150 equipment</li>
-                    <li>• GE Healthcare - 120 equipment</li>
-                    <li>• Philips Healthcare - 95 equipment</li>
-                  </ul>
-                </div>
-              </div>
               <Button 
                 onClick={() => router.push('/manufacturers')}
                 className="w-full"
@@ -278,17 +276,6 @@ export default function AdminDashboard() {
               <p className="text-sm text-gray-600 mb-4">
                 {platformStats.distributors + platformStats.dealers} partners ({platformStats.distributors} distributors, {platformStats.dealers} dealers) providing equipment distribution and service across India.
               </p>
-              <div className="space-y-2 mb-4">
-                {/* Top Partners Preview */}
-                <div className="text-sm">
-                  <p className="font-medium text-gray-700 mb-2">Top Partners:</p>
-                  <ul className="space-y-1 text-gray-600">
-                    <li>• MedEquip Distributors - 15 locations</li>
-                    <li>• Healthcare Solutions - 12 locations</li>
-                    <li>• MediCare Dealers - 8 locations</li>
-                  </ul>
-                </div>
-              </div>
               <Button 
                 onClick={() => router.push('/organizations?type=distributor')}
                 className="w-full"
@@ -321,20 +308,6 @@ export default function AdminDashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-3 gap-4 mb-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-800">87%</div>
-                  <div className="text-sm text-purple-600">Avg Confidence</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-800">4</div>
-                  <div className="text-sm text-blue-600">Analysis Factors</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-indigo-800">2-4hr</div>
-                  <div className="text-sm text-indigo-600">Est Resolution</div>
-                </div>
-              </div>
               <p className="text-sm text-gray-700 mb-4">
                 AI-powered diagnosis system that analyzes equipment issues with confidence scoring and repair recommendations.
               </p>
@@ -368,20 +341,6 @@ export default function AdminDashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-3 gap-4 mb-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-800">4</div>
-                  <div className="text-sm text-green-600">Processing</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-teal-800">2</div>
-                  <div className="text-sm text-teal-600">With Issues</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-emerald-800">3</div>
-                  <div className="text-sm text-emerald-600">Queue Workers</div>
-                </div>
-              </div>
               <p className="text-sm text-gray-700 mb-4">
                 Complete attachment management with automated AI analysis, safety concern detection, and repair recommendations.
               </p>
@@ -397,88 +356,79 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
-        {/* Platform Activity Section */}
+        {/* Quick Links Section */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Equipment Overview */}
-          <Card>
+          {/* Equipment Quick Link */}
+          <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push('/equipment')}>
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
                   <Package className="w-4 h-4 text-blue-600" />
                 </div>
-                <CardTitle className="text-base">Equipment Overview</CardTitle>
+                <CardTitle className="text-base">Equipment</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Active</span>
-                  <span className="text-sm font-semibold text-green-600">405 (80%)</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Maintenance</span>
-                  <span className="text-sm font-semibold text-yellow-600">79 (16%)</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Inactive</span>
-                  <span className="text-sm font-semibold text-red-600">21 (4%)</span>
-                </div>
+              <p className="text-sm text-gray-600 mb-3">
+                Manage all equipment across the platform
+              </p>
+              <div className="flex items-center justify-between">
+                <span className="text-2xl font-bold text-blue-600">
+                  {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : platformStats.totalEquipment}
+                </span>
+                <Button variant="ghost" size="sm">
+                  View All <ArrowRight className="ml-1 h-3 w-3" />
+                </Button>
               </div>
             </CardContent>
           </Card>
 
-          {/* Engineers Overview */}
-          <Card>
+          {/* Engineers Quick Link */}
+          <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push('/engineers')}>
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
                   <Users className="w-4 h-4 text-green-600" />
                 </div>
-                <CardTitle className="text-base">Engineers Overview</CardTitle>
+                <CardTitle className="text-base">Engineers</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Available</span>
-                  <span className="text-sm font-semibold text-green-600">68 (76%)</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Busy</span>
-                  <span className="text-sm font-semibold text-yellow-600">20 (22%)</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Offline</span>
-                  <span className="text-sm font-semibold text-red-600">2 (2%)</span>
-                </div>
+              <p className="text-sm text-gray-600 mb-3">
+                Manage service engineers and assignments
+              </p>
+              <div className="flex items-center justify-between">
+                <span className="text-2xl font-bold text-green-600">
+                  {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : platformStats.totalEngineers}
+                </span>
+                <Button variant="ghost" size="sm">
+                  View All <ArrowRight className="ml-1 h-3 w-3" />
+                </Button>
               </div>
             </CardContent>
           </Card>
 
-          {/* Tickets Overview */}
-          <Card>
+          {/* Tickets Quick Link */}
+          <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push('/tickets')}>
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
                   <Ticket className="w-4 h-4 text-orange-600" />
                 </div>
-                <CardTitle className="text-base">Tickets Overview</CardTitle>
+                <CardTitle className="text-base">Service Tickets</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Open</span>
-                  <span className="text-sm font-semibold text-orange-600">23</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">In Progress</span>
-                  <span className="text-sm font-semibold text-blue-600">15</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Resolved Today</span>
-                  <span className="text-sm font-semibold text-green-600">12</span>
-                </div>
+              <p className="text-sm text-gray-600 mb-3">
+                Track and manage service requests
+              </p>
+              <div className="flex items-center justify-between">
+                <span className="text-2xl font-bold text-orange-600">
+                  {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : platformStats.activeTickets}
+                </span>
+                <Button variant="ghost" size="sm">
+                  View All <ArrowRight className="ml-1 h-3 w-3" />
+                </Button>
               </div>
             </CardContent>
           </Card>

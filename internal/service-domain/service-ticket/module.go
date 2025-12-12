@@ -19,13 +19,14 @@ import (
 
 // Module represents the service ticket module
 type Module struct {
-	config            ModuleConfig
-	ticketHandler     *api.TicketHandler
-	assignmentHandler *api.AssignmentHandler
-	whatsappHandler   *whatsapp.WebhookHandler
-	logger            *slog.Logger
-	dispatcher        *app.WebhookDispatcher
-	slaMonitor        *app.SLAMonitor
+	config                     ModuleConfig
+	ticketHandler              *api.TicketHandler
+	assignmentHandler          *api.AssignmentHandler
+	multiModelAssignmentHandler *api.MultiModelAssignmentHandler
+	whatsappHandler            *whatsapp.WebhookHandler
+	logger                     *slog.Logger
+	dispatcher                 *app.WebhookDispatcher
+	slaMonitor                 *app.SLAMonitor
 }
 
 // ModuleConfig holds module configuration
@@ -88,6 +89,9 @@ func (m *Module) Initialize(ctx context.Context) error {
 
 	// Create assignment service
 	assignmentService := app.NewAssignmentService(assignmentRepo, ticketRepo, m.logger)
+	
+	// Create multi-model assignment service
+	multiModelService := app.NewMultiModelAssignmentService(assignmentRepo, ticketRepo, equipmentRepo, pool, m.logger)
 
     // Create dispatcher (started conditionally)
     m.dispatcher = app.NewWebhookDispatcher(pool, m.logger)
@@ -97,6 +101,7 @@ func (m *Module) Initialize(ctx context.Context) error {
     // Create HTTP handlers
     m.ticketHandler = api.NewTicketHandler(ticketService, m.logger, pool)
 	m.assignmentHandler = api.NewAssignmentHandler(assignmentService, m.logger)
+	m.multiModelAssignmentHandler = api.NewMultiModelAssignmentHandler(multiModelService, m.logger)
 
 	// Create QR generator for WhatsApp
 	qrGenerator := qrcode.NewGenerator(m.config.BaseURL, m.config.QROutputDir)
@@ -144,7 +149,8 @@ func (m *Module) MountRoutes(r chi.Router) {
 		r.Post("/{id}/cancel", m.ticketHandler.CancelTicket)       // Cancel
 		
 		// Assignment operations (new)
-		r.Get("/{id}/suggested-engineers", m.assignmentHandler.GetSuggestedEngineers) // Get engineer suggestions
+		r.Get("/{id}/suggested-engineers", m.assignmentHandler.GetSuggestedEngineers) // Get engineer suggestions (legacy)
+		r.Get("/{id}/assignment-suggestions", m.multiModelAssignmentHandler.GetAssignmentSuggestions) // Multi-model suggestions
 		r.Post("/{id}/assign-engineer", m.assignmentHandler.AssignEngineer)           // Manual assignment with tier
 		
 		// Comments and history

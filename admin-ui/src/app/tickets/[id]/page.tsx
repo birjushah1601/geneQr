@@ -11,6 +11,7 @@ import { ArrowLeft, Loader2, Package, User, Calendar, Wrench, Pause, Play, Check
 import { attachmentsApi } from "@/lib/api/attachments";
 import { PartsAssignmentModal } from "@/components/PartsAssignmentModal";
 import { diagnosisApi, extractSymptoms } from "@/lib/api/diagnosis";
+import MultiModelAssignment from "@/components/MultiModelAssignment";
 
 function StatusBadge({ status }: { status: TicketStatus }) {
   const color = {
@@ -398,9 +399,56 @@ export default function TicketDetailPage() {
             <CommentsList ticketId={id} />
           </div>
 
+          {/* Engineer Assignment Section */}
+          {!ticket.assigned_engineer_name && (
+            <div className="bg-white border rounded p-4">
+              <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
+                <User className="h-4 w-4" /> Assign Engineer
+              </h2>
+              <MultiModelAssignment 
+                ticketId={id} 
+                onAssignmentComplete={() => refetch()}
+                layout="horizontal"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Right: actions */}
+        <div className="space-y-4">
+          {/* Currently Assigned Engineer */}
+          {ticket.assigned_engineer_name && (
+            <div className="bg-white border rounded p-4">
+              <h3 className="text-sm font-semibold mb-3">Currently Assigned</h3>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold">
+                  {ticket.assigned_engineer_name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">{ticket.assigned_engineer_name}</p>
+                  <p className="text-xs text-gray-500">Assigned Engineer</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="bg-white border rounded p-4">
+            <h3 className="text-sm font-semibold mb-3">Actions</h3>
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={() => ack.mutate()} className="px-3 py-2 border rounded text-sm flex items-center justify-center gap-2"><CheckCircle className="h-4 w-4" /> Acknowledge</button>
+              <button onClick={() => start.mutate()} className="px-3 py-2 border rounded text-sm flex items-center justify-center gap-2"><Wrench className="h-4 w-4" /> Start</button>
+              <button onClick={() => hold.mutate()} className="px-3 py-2 border rounded text-sm flex items-center justify-center gap-2"><Pause className="h-4 w-4" /> Hold</button>
+              <button onClick={() => resume.mutate()} className="px-3 py-2 border rounded text-sm flex items-center justify-center gap-2"><Play className="h-4 w-4" /> Resume</button>
+              <button onClick={() => resolve.mutate()} className="px-3 py-2 border rounded text-sm flex items-center justify-center gap-2"><CheckCircle className="h-4 w-4" /> Resolve</button>
+              <button onClick={() => close.mutate()} className="px-3 py-2 border rounded text-sm flex items-center justify-center gap-2"><FileText className="h-4 w-4" /> Close</button>
+              <button onClick={() => cancel.mutate()} className="px-3 py-2 border rounded text-sm flex items-center justify-center gap-2 col-span-2 text-red-600 border-red-300"><XCircle className="h-4 w-4" /> Cancel</button>
+            </div>
+          </div>
+
+          {/* Attachments Section */}
           <div className="bg-white border rounded p-4">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-semibold flex items-center gap-2">
+              <h3 className="text-sm font-semibold flex items-center gap-2">
                 <Paperclip className="h-4 w-4" /> Attachments
                 {aiAnalyzing && (
                   <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs">
@@ -408,7 +456,7 @@ export default function TicketDetailPage() {
                     AI Analyzing...
                   </span>
                 )}
-              </h2>
+              </h3>
               <label className="inline-flex items-center gap-2 px-3 py-1.5 border rounded text-sm cursor-pointer hover:bg-gray-50 transition-colors">
                 <Upload className="h-4 w-4" /> {uploading ? "Uploading..." : "Upload"}
                 <input 
@@ -525,56 +573,6 @@ export default function TicketDetailPage() {
             )}
           </div>
         </div>
-
-        {/* Right: actions */}
-        <div className="space-y-4">
-          <div className="bg-white border rounded p-4">
-            <h3 className="text-sm font-semibold mb-3">Assign engineer</h3>
-            <div className="space-y-2">
-              <select 
-                value={engineerName} 
-                onChange={(e) => setEngineerName(e.target.value)} 
-                className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="">Select an engineer...</option>
-                {engineers.map((eng: any) => (
-                  <option key={eng.id} value={eng.id}>
-                    {eng.name} - {eng.skills?.join(', ')} - {eng.home_region}
-                  </option>
-                ))}
-              </select>
-              <button 
-                onClick={() => assign.mutate()} 
-                disabled={!engineerName || assign.isLoading} 
-                className="w-full px-3 py-2 bg-indigo-600 text-white rounded text-sm disabled:opacity-50 hover:bg-indigo-700 transition-colors"
-              >
-                {assign.isLoading ? "Assigning..." : "Assign Engineer"}
-              </button>
-            </div>
-            {ticket.assigned_engineer_name && (
-              <div className="mt-3 pt-3 border-t">
-                <p className="text-xs text-gray-500">Currently assigned to:</p>
-                <p className="text-sm font-medium text-gray-900 flex items-center gap-2 mt-1">
-                  <User className="h-4 w-4 text-gray-400" />
-                  {ticket.assigned_engineer_name}
-                </p>
-              </div>
-            )}
-          </div>
-
-          <div className="bg-white border rounded p-4">
-            <h3 className="text-sm font-semibold mb-3">Actions</h3>
-            <div className="grid grid-cols-2 gap-2">
-              <button onClick={() => ack.mutate()} className="px-3 py-2 border rounded text-sm flex items-center justify-center gap-2"><CheckCircle className="h-4 w-4" /> Acknowledge</button>
-              <button onClick={() => start.mutate()} className="px-3 py-2 border rounded text-sm flex items-center justify-center gap-2"><Wrench className="h-4 w-4" /> Start</button>
-              <button onClick={() => hold.mutate()} className="px-3 py-2 border rounded text-sm flex items-center justify-center gap-2"><Pause className="h-4 w-4" /> Hold</button>
-              <button onClick={() => resume.mutate()} className="px-3 py-2 border rounded text-sm flex items-center justify-center gap-2"><Play className="h-4 w-4" /> Resume</button>
-              <button onClick={() => resolve.mutate()} className="px-3 py-2 border rounded text-sm flex items-center justify-center gap-2"><CheckCircle className="h-4 w-4" /> Resolve</button>
-              <button onClick={() => close.mutate()} className="px-3 py-2 border rounded text-sm flex items-center justify-center gap-2"><FileText className="h-4 w-4" /> Close</button>
-              <button onClick={() => cancel.mutate()} className="px-3 py-2 border rounded text-sm flex items-center justify-center gap-2 col-span-2 text-red-600 border-red-300"><XCircle className="h-4 w-4" /> Cancel</button>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Parts Assignment Modal */}
@@ -613,7 +611,11 @@ function CommentsList({ ticketId }: { ticketId: string }) {
 function CommentBox({ ticketId, onAdded }: { ticketId: string; onAdded: () => void }) {
   const [text, setText] = useState("");
   const add = useMutation({
-    mutationFn: () => ticketsApi.addComment(ticketId, { comment: text }),
+    mutationFn: () => ticketsApi.addComment(ticketId, { 
+      comment: text,
+      comment_type: "internal",
+      author_name: "Admin User"
+    }),
     onSuccess: () => { setText(""); onAdded(); },
   });
   return (

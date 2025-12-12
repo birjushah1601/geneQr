@@ -585,13 +585,29 @@ func (s *TicketService) CancelTicket(ctx context.Context, ticketID, reason, canc
 
 // AddComment adds a comment to a ticket
 func (s *TicketService) AddComment(ctx context.Context, req AddCommentRequest) error {
+	// Set defaults for empty fields
+	authorID := req.AuthorID
+	if authorID == "" {
+		authorID = "system"
+	}
+	
+	authorName := req.AuthorName
+	if authorName == "" {
+		authorName = "System User"
+	}
+	
+	attachments := req.Attachments
+	if attachments == nil {
+		attachments = []string{}
+	}
+	
 	comment := &ticketDomain.TicketComment{
 		TicketID:    req.TicketID,
 		CommentType: req.CommentType,
-		AuthorID:    req.AuthorID,
-		AuthorName:  req.AuthorName,
+		AuthorID:    authorID,
+		AuthorName:  authorName,
 		Comment:     req.Comment,
-		Attachments: req.Attachments,
+		Attachments: attachments,
 	}
 
 	return s.repo.AddComment(ctx, comment)
