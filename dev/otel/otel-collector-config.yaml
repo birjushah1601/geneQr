@@ -38,7 +38,7 @@ exporters:
 
 extensions:
   health_check:
-    endpoint: :8888
+    endpoint: :13133
   pprof:
     endpoint: :1888
   zpages:
