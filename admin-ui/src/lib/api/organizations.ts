@@ -39,26 +39,26 @@ export const organizationsApi = {
     if (params?.status) searchParams.set('status', params.status);
     
     const response = await apiClient.get<{ items: Organization[] }>(
-      `/v1/organizations?${searchParams.toString()}`
+      `/organizations?${searchParams.toString()}`
     );
     return response.data.items;
   },
 
   get: async (id: string) => {
-    const response = await apiClient.get<Organization>(`/v1/organizations/${id}`);
+    const response = await apiClient.get<Organization>(`/organizations/${id}`);
     return response.data;
   },
 
   listFacilities: async (orgId: string) => {
     const response = await apiClient.get<{ items: Facility[] }>(
-      `/v1/organizations/${orgId}/facilities`
+      `/organizations/${orgId}/facilities`
     );
     return response.data.items;
   },
 
   listRelationships: async (orgId: string) => {
     const response = await apiClient.get<{ items: OrgRelationship[] }>(
-      `/v1/organizations/${orgId}/relationships`
+      `/organizations/${orgId}/relationships`
     );
     return response.data.items;
   },
