@@ -237,3 +237,4 @@ export function extractSymptoms(description: string): string[] {
   
   return symptoms;
 }
+

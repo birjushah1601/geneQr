@@ -18,7 +18,7 @@ export const engineersApi = {
     try {
       const queryString = params ? buildQueryString(params) : '';
       const response = await apiClient.get<{ engineers: Engineer[]; total: number; page: number; page_size: number; total_pages: number }>(
-        `/engineers?${queryString}`
+        `/v1/engineers?${queryString}`
       );
       return response.data;
     } catch (error) {
@@ -31,7 +31,7 @@ export const engineersApi = {
    */
   async getById(id: string) {
     try {
-      const response = await apiClient.get<Engineer>(`/engineers/${id}`);
+      const response = await apiClient.get<Engineer>(`/v1/engineers/${id}`);
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -43,7 +43,7 @@ export const engineersApi = {
    */
   async create(data: any) {
     try {
-      const response = await apiClient.post<Engineer>('/engineers', data);
+      const response = await apiClient.post<Engineer>('/v1/engineers', data);
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -55,7 +55,7 @@ export const engineersApi = {
    */
   async update(id: string, data: Partial<Engineer>) {
     try {
-      const response = await apiClient.patch<{ message: string }>(`/engineers/${id}`, data);
+      const response = await apiClient.patch<{ message: string }>(`/v1/engineers/${id}`, data);
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -67,7 +67,7 @@ export const engineersApi = {
    */
   async delete(id: string) {
     try {
-      const response = await apiClient.delete<{ message: string }>(`/engineers/${id}`);
+      const response = await apiClient.delete<{ message: string }>(`/v1/engineers/${id}`);
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -82,7 +82,7 @@ export const engineersApi = {
       const formData = new FormData();
       formData.append('csv_file', file);
       
-      const response = await apiClient.post<CSVImportResult>('/engineers/import', formData, {
+      const response = await apiClient.post<CSVImportResult>('/v1/engineers/import', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -99,7 +99,7 @@ export const engineersApi = {
    */
   async updateAvailability(id: string, availability: 'available' | 'on_job' | 'off_duty') {
     try {
-      const response = await apiClient.patch<{ message: string }>(`/engineers/${id}/availability`, {
+      const response = await apiClient.patch<{ message: string }>(`/v1/engineers/${id}/availability`, {
         availability,
       });
       return response.data;
@@ -111,3 +111,4 @@ export const engineersApi = {
 
 export default engineersApi;
 export type { Engineer };
+

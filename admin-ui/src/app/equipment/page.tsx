@@ -82,6 +82,7 @@ function EquipmentListPageInner() {
           lastService: item.last_service_date,
           qrCode: item.qr_code,
           qrCodeUrl: item.qr_code_url,
+          qrCodeImageUrl: item.qr_code_image ? `data:image/png;base64,${item.qr_code_image}` : undefined,
           hasQRCode: !!item.qr_code_generated_at || !!item.qr_code_image,
         }));
         
@@ -505,8 +506,7 @@ function EquipmentListPageInner() {
                                   title="Click to preview full size"
                                 >
                                   <img
-                                    src={`${(process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '')}/api/v1/equipment/qr/image/${equipment.id}`}
-                                    src={`http://localhost:8081/api/v1/equipment/qr/image/${equipment.id}`}
+                                    src={equipment.qrCodeImageUrl || `http://localhost:8081/api/v1/equipment/qr/image/${equipment.id}`}
                                     alt={`QR Code for ${equipment.name}`}
                                     className="w-full h-full object-contain p-1"
                                     onError={(e) => {
@@ -692,3 +692,6 @@ export default function EquipmentListPage() {
     </Suspense>
   );
 }
+
+
+

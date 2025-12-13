@@ -65,7 +65,7 @@ export default function TicketsListPage() {
   });
 
   const items: ServiceTicket[] = useMemo(() => {
-    const all = (data as any)?.items || [];
+    const all = (data as any)?.tickets || (data as any)?.items || [];
     if (!search) return all;
     const q = search.toLowerCase();
     return all.filter((t: ServiceTicket) =>

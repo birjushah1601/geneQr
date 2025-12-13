@@ -3,11 +3,13 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { equipmentApi } from '@/lib/api/equipment';
+import { attachmentsApi } from '@/lib/api/attachments';
 import { diagnosisApi, DiagnosisDecisionFeedback } from '@/lib/api/diagnosis';
 import { Equipment } from '@/types';
 import { Loader2, AlertCircle, CheckCircle, Package } from 'lucide-react';
 import { DiagnosisCard, DiagnosisButton } from '@/components/diagnosis';
 import { PartsAssignmentModal } from '@/components/PartsAssignmentModal';
+import { AIAnalysisButton } from '@/components/AIAnalysisButton';
 
 function ServiceRequestPageInner() {
   const searchParams = useSearchParams();
@@ -26,6 +28,10 @@ function ServiceRequestPageInner() {
   // Parts Assignment state
   const [isPartsModalOpen, setIsPartsModalOpen] = useState(false);
   const [assignedParts, setAssignedParts] = useState<any[]>([]);
+  
+  // File attachment state
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [uploadingFiles, setUploadingFiles] = useState(false);
   
   const [formData, setFormData] = useState({
     description: '',
@@ -67,6 +73,20 @@ function ServiceRequestPageInner() {
   const handlePartsAssign = (parts: any[]) => {
     setAssignedParts(parts);
     console.log('Parts assigned:', parts);
+  };
+
+  // Handle file selection
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files) {
+      const newFiles = Array.from(files);
+      setSelectedFiles(prev => [...prev, ...newFiles]);
+    }
+  };
+
+  // Remove selected file
+  const handleRemoveFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   // Handle diagnosis accept/reject
@@ -127,8 +147,15 @@ function ServiceRequestPageInner() {
       setSubmitting(true);
       
       // Create real service ticket
+      const equipmentId = (equipment as any).id;
+      console.log('Creating ticket for equipment ID:', equipmentId);
+      
+      if (!equipmentId) {
+        throw new Error('Equipment ID is missing. Cannot create ticket.');
+      }
+      
       const payload = {
-        equipment_id: (equipment as any).id,
+        equipment_id: equipmentId,
         qr_code: (equipment as any).qr_code || (equipment as any).qrCode,
         serial_number: (equipment as any).serial_number || (equipment as any).serialNumber,
         equipment_name: (equipment as any).equipment_name || (equipment as any).name,
@@ -152,8 +179,33 @@ function ServiceRequestPageInner() {
       const created = await (await import('@/lib/api/tickets')).ticketsApi.create(payload as any);
       console.log('Ticket created', created);
       
+      // Upload attachments if any files selected
+      if (selectedFiles.length > 0) {
+        setUploadingFiles(true);
+        try {
+          for (const file of selectedFiles) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('ticket_id', (created as any).id || (created as any).ticket_id);
+            formData.append('entity_type', 'ticket');
+            formData.append('description', 'Attachment for service request');
+            formData.append('uploaded_by', payload.created_by);
+            
+            await attachmentsApi.upload(formData);
+          }
+          console.log(`Uploaded ${selectedFiles.length} attachment(s)`);
+        } catch (uploadErr) {
+          console.error('Failed to upload attachments:', uploadErr);
+          // Don't fail the whole submission if attachments fail
+        } finally {
+          setUploadingFiles(false);
+        }
+      }
+      
       setSuccess(true);
       setFormData({ description: '', priority: 'medium', requestedBy: '' });
+      setSelectedFiles([]);
+      setAssignedParts([]);
       
     } catch (err) {
       alert(`Failed to create service request: ${err instanceof Error ? err.message : 'Unknown error'}`);
@@ -310,23 +362,95 @@ function ServiceRequestPageInner() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Describe the issue or service needed..."
               />
+            {/* File Attachments Section */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Attach Photos/Documents (Optional)
+              </label>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+                <input
+                  type="file"
+                  id="file-upload"
+                  multiple
+                  accept="image/*,video/*,.pdf,.doc,.docx"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                <label htmlFor="file-upload" className="cursor-pointer">
+                  <div className="flex flex-col items-center">
+                    <svg className="h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <p className="text-sm text-gray-600 mb-1">
+                      <span className="text-blue-600 font-medium">Click to upload</span> or drag and drop
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Images, Videos, PDF, DOC (max 50MB each)
+                    </p>
+                  </div>
+                </label>
+              </div>
+
+              {/* Selected Files List */}
+              {selectedFiles.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  <p className="text-sm font-medium text-gray-700">
+                    Selected Files ({selectedFiles.length})
+                  </p>
+                  {selectedFiles.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between bg-gray-50 p-3 rounded-md border border-gray-200">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <svg className="h-5 w-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
+                          <p className="text-xs text-gray-500">{(file.size / 1024).toFixed(1)} KB</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveFile(index)}
+                        className="ml-3 text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors"
+                      >
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* AI Diagnosis Section */}
+</div>
+
+            {/* AI Analysis with Attachments - Optional */}
             {formData.description && (
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-medium text-purple-900">🤖 AI Assistant</h3>
-                  <DiagnosisButton 
-                    equipment={equipment}
-                    description={formData.description}
-                    priority={formData.priority}
-                    onDiagnosisComplete={handleDiagnosisComplete}
-                  />
+              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg p-5">
+                <div className="mb-4">
+                  <h3 className="text-base font-semibold text-purple-900 flex items-center gap-2 mb-2">
+                    <span className="text-2xl">🤖</span>
+                    AI-Powered Diagnosis (Optional)
+                  </h3>
+                  <p className="text-sm text-purple-700">
+                    Get instant AI diagnosis with visual analysis of uploaded images/videos
+                  </p>
                 </div>
-                <p className="text-xs text-purple-700">
-                  Get AI-powered diagnosis suggestions based on your issue description
-                </p>
+                
+                <AIAnalysisButton
+                  equipment={equipment}
+                  description={formData.description}
+                  priority={formData.priority}
+                  files={selectedFiles}
+                  onAnalysisComplete={(result) => {
+                    setDiagnosis(result);
+                    console.log('AI Analysis complete:', result);
+                  }}
+                  onAnalysisError={(error) => {
+                    console.error('AI Analysis error:', error);
+                  }}
+                />
               </div>
             )}
 
@@ -382,7 +506,7 @@ function ServiceRequestPageInner() {
                 className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {submitting && <Loader2 className="h-5 w-5 animate-spin" />}
-                {submitting ? 'Submitting...' : 'Submit Service Request'}
+                {submitting ? (uploadingFiles ? 'Uploading files...' : 'Creating ticket...') : 'Submit Service Request'}
               </button>
             </div>
           </form>
@@ -427,3 +551,12 @@ export default function ServiceRequestPage() {
     </Suspense>
   );
 }
+
+
+
+
+
+
+
+
+
