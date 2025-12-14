@@ -1,4 +1,4 @@
-package api
+﻿package api
 
 import (
 	"encoding/json"
@@ -520,4 +520,39 @@ func (h *AttachmentHandler) saveFile(file multipart.File, storagePath string) er
 	}
 	
 	return nil
+}
+
+// DeleteAttachment handles DELETE /api/v1/attachments/{id}
+func (h *AttachmentHandler) DeleteAttachment(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	idStr := chi.URLParam(r, "id")
+
+	// Parse UUID
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		h.respondError(w, http.StatusBadRequest, "Invalid attachment ID")
+		return
+	}
+
+	// Delete attachment
+	if err := h.service.DeleteAttachment(ctx, id); err != nil {
+		h.logger.Error("Failed to delete attachment",
+			slog.String("id", idStr),
+			slog.String("error", err.Error()),
+		)
+		
+		if strings.Contains(err.Error(), "not found") {
+			h.respondError(w, http.StatusNotFound, "Attachment not found")
+			return
+		}
+		
+		h.respondError(w, http.StatusInternalServerError, "Failed to delete attachment")
+		return
+	}
+
+	// Return success response
+	h.respondJSON(w, http.StatusOK, map[string]interface{}{
+		"success": true,
+		"message": "Attachment deleted successfully",
+	})
 }

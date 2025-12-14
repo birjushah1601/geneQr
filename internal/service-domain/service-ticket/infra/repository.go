@@ -1,4 +1,4 @@
-package infra
+﻿package infra
 
 import (
 	"context"
@@ -477,7 +477,7 @@ func (r *TicketRepository) AddComment(ctx context.Context, comment *domain.Ticke
 // GetComments retrieves all comments for a ticket
 func (r *TicketRepository) GetComments(ctx context.Context, ticketID string) ([]*domain.TicketComment, error) {
 	query := `
-		SELECT id, ticket_id, comment_type, author_id, author_name, comment, attachments, created_at
+		SELECT id, ticket_id, comment_type, author_id, author_name, comment, attachments, created_at::text
 		FROM ticket_comments
 		WHERE ticket_id = $1
 		ORDER BY created_at ASC
@@ -553,4 +553,24 @@ func (r *TicketRepository) GetStatusHistory(ctx context.Context, ticketID string
 	}
 
 	return history, nil
+}
+
+// DeleteComment removes a comment from a ticket
+func (r *TicketRepository) DeleteComment(ctx context.Context, commentID string, ticketID string) error {
+	query := `
+		DELETE FROM ticket_comments 
+		WHERE id = $1 AND ticket_id = $2
+	`
+	
+	result, err := r.pool.Exec(ctx, query, commentID, ticketID)
+	if err != nil {
+		return fmt.Errorf("failed to delete comment: %w", err)
+	}
+	
+	rowsAffected := result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("comment not found or does not belong to this ticket")
+	}
+	
+	return nil
 }

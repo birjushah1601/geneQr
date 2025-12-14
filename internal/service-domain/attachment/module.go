@@ -1,4 +1,4 @@
-package attachment
+﻿package attachment
 
 import (
 	"context"
@@ -105,7 +105,7 @@ func (m *Module) MountRoutes(r chi.Router) {
 	// Create health handler
 	m.healthHandler = api.NewHealthHandler(m.logger, m.db, rateLimitMiddleware)
 
-	r.Route("/api/v1/attachments", func(r chi.Router) {
+	r.Route("/attachments", func(r chi.Router) {
 		// Apply logging middleware first
 		r.Use(loggingMiddleware.Middleware())
 		
@@ -133,11 +133,11 @@ func (m *Module) MountRoutes(r chi.Router) {
             r.Post("/{id}/link", m.httpHandler.LinkAttachment)
         })
 
-		// TODO: Add DELETE for attachment removal (requires 'delete' permission)
-		// r.Group(func(r chi.Router) {
-		//     r.Use(middleware.RequirePermission("delete", m.logger))
-		//     r.Delete("/{id}", m.httpHandler.DeleteAttachment)
-		// })
+		// DELETE for attachment removal (requires 'delete' permission)
+		r.Group(func(r chi.Router) {
+		    r.Use(middleware.RequirePermission("upload", m.logger))
+		    r.Delete("/{id}", m.httpHandler.DeleteAttachment)
+	})
 	})
 
 	// Health check endpoints (no auth required)

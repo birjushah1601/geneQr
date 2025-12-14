@@ -1,4 +1,4 @@
-package serviceticket
+﻿package serviceticket
 
 import (
 	"context"
@@ -156,6 +156,7 @@ func (m *Module) MountRoutes(r chi.Router) {
 		// Comments and history
 		r.Post("/{id}/comments", m.ticketHandler.AddComment)       // Add comment
 		r.Get("/{id}/comments", m.ticketHandler.GetComments)       // Get comments
+		r.Delete("/{id}/comments/{commentId}", m.ticketHandler.DeleteComment) // Delete comment
 		r.Get("/{id}/history", m.ticketHandler.GetStatusHistory)   // Get status history
 	})
 

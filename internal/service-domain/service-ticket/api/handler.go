@@ -1,4 +1,4 @@
-package api
+﻿package api
 
 import (
     "database/sql"
@@ -428,7 +428,7 @@ func (h *TicketHandler) GetComments(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.respondJSON(w, http.StatusOK, comments)
+	h.respondJSON(w, http.StatusOK, map[string]interface{}{"comments": comments})
 }
 
 // GetStatusHistory handles GET /tickets/{id}/history
@@ -565,4 +565,26 @@ func (h *TicketHandler) respondJSON(w http.ResponseWriter, status int, data inte
 // respondError writes error response
 func (h *TicketHandler) respondError(w http.ResponseWriter, status int, message string) {
 	h.respondJSON(w, status, map[string]string{"error": message})
+}
+
+
+// DeleteComment handles DELETE /api/v1/tickets/{id}/comments/{commentId}
+func (h *TicketHandler) DeleteComment(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	ticketID := chi.URLParam(r, "id")
+	commentID := chi.URLParam(r, "commentId")
+
+	if ticketID == "" || commentID == "" {
+		http.Error(w, "ticket ID and comment ID are required", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.service.DeleteComment(ctx, ticketID, commentID); err != nil {
+		http.Error(w, "failed to delete comment", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Comment deleted"})
 }

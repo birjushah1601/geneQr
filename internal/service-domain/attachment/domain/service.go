@@ -1,4 +1,4 @@
-package domain
+﻿package domain
 
 import (
 	"context"
@@ -343,3 +343,4 @@ func (s *AttachmentService) determinePriority(attachment *Attachment) QueuePrior
 type AttachmentProcessor interface {
 	Process(ctx context.Context, attachment *Attachment) error
 }
+
