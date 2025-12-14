@@ -1,4 +1,4 @@
-package infra
+﻿package infra
 
 import (
 	"context"
@@ -30,16 +30,17 @@ func NewPostgresAttachmentRepository(db *pgxpool.Pool) domain.AttachmentReposito
 func (r *PostgresAttachmentRepository) Create(ctx context.Context, attachment *domain.Attachment) error {
 	query := `
 		INSERT INTO ticket_attachments (
-			id, ticket_id, filename, file_type, file_size_bytes, storage_path, 
+			id, ticket_id, filename, original_filename, file_type, file_size_bytes, storage_path, 
 			attachment_category, source, processing_status, created_at, updated_at
 		) VALUES (
-			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
 		)`
 
     _, err := r.db.Exec(ctx, query,
         attachment.ID,
         attachment.TicketID,
 		attachment.Filename,
+		attachment.OriginalFilename,
 		attachment.FileType,
 		attachment.FileSizeBytes,
 		attachment.StoragePath,
@@ -61,7 +62,7 @@ func (r *PostgresAttachmentRepository) Create(ctx context.Context, attachment *d
 // GetByID retrieves an attachment by its ID
 func (r *PostgresAttachmentRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Attachment, error) {
 	query := `
-		SELECT id, ticket_id, filename, file_type, file_size_bytes, storage_path, 
+		SELECT id, ticket_id, filename, original_filename, file_type, file_size_bytes, storage_path, 
 		       attachment_category, source, processing_status, created_at, updated_at
 		FROM ticket_attachments 
 		WHERE id = $1`
@@ -71,7 +72,7 @@ func (r *PostgresAttachmentRepository) GetByID(ctx context.Context, id uuid.UUID
         &attachment.ID,
         &attachment.TicketID,
 		&attachment.Filename,
-		&attachment.FileType,
+		&attachment.OriginalFilename,		&attachment.FileType,
 		&attachment.FileSizeBytes,
 		&attachment.StoragePath,
 		&attachment.AttachmentCategory,
@@ -91,7 +92,7 @@ func (r *PostgresAttachmentRepository) GetByID(ctx context.Context, id uuid.UUID
 // GetByTicketID retrieves all attachments for a specific ticket
 func (r *PostgresAttachmentRepository) GetByTicketID(ctx context.Context, ticketID string) ([]*domain.Attachment, error) {
 	query := `
-		SELECT id, ticket_id, filename, file_type, file_size_bytes, storage_path, 
+		SELECT id, ticket_id, filename, original_filename, file_type, file_size_bytes, storage_path, 
 		       attachment_category, source, processing_status, created_at, updated_at
 		FROM ticket_attachments 
 		WHERE ticket_id = $1
@@ -110,7 +111,7 @@ func (r *PostgresAttachmentRepository) GetByTicketID(ctx context.Context, ticket
             &attachment.ID,
             &attachment.TicketID,
             &attachment.Filename,
-            &attachment.FileType,
+		&attachment.OriginalFilename,            &attachment.FileType,
             &attachment.FileSizeBytes,
             &attachment.StoragePath,
             &attachment.AttachmentCategory,
@@ -158,7 +159,7 @@ func (r *PostgresAttachmentRepository) List(ctx context.Context, req *domain.Lis
 
 	// Build main query
 	query := `
-		SELECT id, ticket_id, filename, file_type, file_size_bytes, storage_path, 
+		SELECT id, ticket_id, filename, original_filename, file_type, file_size_bytes, storage_path, 
 		       attachment_category, source, processing_status, created_at, updated_at
 		FROM ticket_attachments 
 		WHERE 1=1`
@@ -203,7 +204,7 @@ func (r *PostgresAttachmentRepository) List(ctx context.Context, req *domain.Lis
             &attachment.ID,
             &attachment.TicketID,
             &attachment.Filename,
-            &attachment.FileType,
+		&attachment.OriginalFilename,            &attachment.FileType,
             &attachment.FileSizeBytes,
             &attachment.StoragePath,
             &attachment.AttachmentCategory,
@@ -238,6 +239,7 @@ func (r *PostgresAttachmentRepository) Update(ctx context.Context, attachment *d
 	_, err := r.db.Exec(ctx, query,
 		attachment.ID,
 		attachment.Filename,
+		attachment.OriginalFilename,
 		attachment.FileType,
 		attachment.FileSizeBytes,
 		attachment.StoragePath,
@@ -307,7 +309,7 @@ func (r *PostgresAttachmentRepository) LinkToTicket(ctx context.Context, id uuid
 // GetPendingForProcessing retrieves attachments that need processing
 func (r *PostgresAttachmentRepository) GetPendingForProcessing(ctx context.Context, limit int) ([]*domain.Attachment, error) {
 	query := `
-		SELECT id, ticket_id, filename, file_type, file_size_bytes, storage_path, 
+		SELECT id, ticket_id, filename, original_filename, file_type, file_size_bytes, storage_path, 
 		       attachment_category, source, processing_status, created_at, updated_at
 		FROM ticket_attachments 
 		WHERE processing_status = 'pending'
@@ -327,7 +329,7 @@ func (r *PostgresAttachmentRepository) GetPendingForProcessing(ctx context.Conte
 			&attachment.ID,
 			&attachment.TicketID,
 			&attachment.Filename,
-			&attachment.FileType,
+		&attachment.OriginalFilename,			&attachment.FileType,
 			&attachment.FileSizeBytes,
 			&attachment.StoragePath,
 			&attachment.AttachmentCategory,
@@ -358,3 +360,4 @@ func (r *PostgresAttachmentRepository) GetStats(ctx context.Context) (*domain.At
 
 	return stats, nil
 }
+

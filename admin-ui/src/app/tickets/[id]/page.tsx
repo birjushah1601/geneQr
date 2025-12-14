@@ -7,7 +7,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ticketsApi } from "@/lib/api/tickets";
 import { apiClient } from "@/lib/api/client";
 import type { ServiceTicket, TicketPriority, TicketStatus } from "@/types";
-import { ArrowLeft, Loader2, Package, User, Calendar, Wrench, Pause, Play, CheckCircle, XCircle, AlertTriangle, FileText, MessageSquare, Paperclip, Upload, Brain, Sparkles, TrendingUp, Lightbulb, Shield } from "lucide-react";
+import { ArrowLeft, Loader2, Package, User, Calendar, Wrench, Pause, Play, CheckCircle, XCircle, AlertTriangle, FileText, MessageSquare, Paperclip, Upload, Brain, Sparkles, TrendingUp, Lightbulb, Shield , Trash } from "lucide-react";
+import { AIDiagnosisModal } from "@/components/AIDiagnosisModal";
+import { EngineerReassignModal } from "@/components/EngineerReassignModal";
 import { attachmentsApi } from "@/lib/api/attachments";
 import { PartsAssignmentModal } from "@/components/PartsAssignmentModal";
 import { diagnosisApi, extractSymptoms } from "@/lib/api/diagnosis";
@@ -28,6 +30,8 @@ function StatusBadge({ status }: { status: TicketStatus }) {
 
 export default function TicketDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const [showDiagnosisModal, setShowDiagnosisModal] = useState(false);
+  const [showReassignModal, setShowReassignModal] = useState(false);
   const router = useRouter();
   const qc = useQueryClient();
 
@@ -51,13 +55,73 @@ export default function TicketDetailPage() {
   // Fetch AI diagnosis history for this ticket
   const { data: diagnosisHistory, isLoading: loadingDiagnosis, refetch: refetchDiagnosis } = useQuery({
     queryKey: ["ticket", id, "diagnosis"],
-    queryFn: () => diagnosisApi.getHistoryByTicket(Number(id)),
+    queryFn: () => diagnosisApi.getHistoryByTicket(String(id)),
     enabled: !!id,
   });
 
   const [uploading, setUploading] = useState(false);
   const [aiAnalyzing, setAiAnalyzing] = useState(false);
   
+  const onDelete = async (attachmentId: string) => {
+    if (!confirm('Are you sure you want to delete this attachment?')) return;
+    
+    try {
+      await attachmentsApi.delete(attachmentId);
+      await refetchAttachments();
+      alert('Attachment deleted successfully!');
+    } catch (error) {
+      console.error('Failed to delete attachment:', error);
+      alert('Failed to delete attachment. Please try again.');
+    }
+  };
+  
+  const onDeleteComment = async (commentId: string) => {
+    if (!confirm('Are you sure you want to delete this comment?')) return;
+    
+    try {
+      await ticketsApi.deleteComment(id as string, commentId);
+      qc.invalidateQueries({ queryKey: ['ticket', id, 'comments'] });
+      alert('Comment deleted successfully!');
+    } catch (error) {
+      console.error('Failed to delete comment:', error);
+      alert('Failed to delete comment. Please try again.');
+    }
+  };
+
+  const triggerAIAnalysis = async () => {
+    if (!ticket) return;
+    setAiAnalyzing(true);
+    try {
+      await diagnosisApi.analyze({
+        ticket_id: String(id),
+        equipment_id: ticket.equipment_id || "",
+        symptoms: extractSymptoms(ticket.issue_description || ""),
+        description: ticket.issue_description || "",
+        options: {
+          include_vision_analysis: true,
+          include_historical_context: true,
+          include_similar_tickets: true,
+        }
+      });
+      await refetchDiagnosis();
+      alert('AI analysis completed successfully!');
+    } catch (error) {
+      console.error('AI analysis failed:', error);
+      alert('AI analysis failed. Please try again.');
+    } finally {
+      setAiAnalyzing(false);
+    }
+  };
+
+  const handleReassignEngineer = async (engineerId: string, engineerName: string) => {
+    await apiClient.post(`/v1/tickets/${id}/assign`, {
+      engineer_name: engineerName,
+      engineer_id: engineerId,
+      assigned_by: "admin"
+    });
+    qc.invalidateQueries({ queryKey: ["ticket", id] });
+  };
+
   const onUpload = async (file: File) => {
     try {
       setUploading(true);
@@ -181,7 +245,16 @@ export default function TicketDetailPage() {
             <h1 className="text-lg font-semibold">Ticket {ticket.ticket_number}</h1>
             <StatusBadge status={ticket.status} />
           </div>
-          <Link href="/tickets" className="text-sm text-blue-600 hover:underline">All tickets</Link>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowDiagnosisModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
+            >
+              <Brain className="h-4 w-4" />
+              AI Diagnosis
+            </button>
+            <Link href="/tickets" className="text-sm text-blue-600 hover:underline">All tickets</Link>
+          </div>
         </div>
       </div>
 
@@ -310,7 +383,7 @@ export default function TicketDetailPage() {
                                 </div>
                                 <p className="text-gray-600 text-xs mt-0.5">{action.description}</p>
                                 {action.estimated_time && (
-                                  <p className="text-gray-500 text-xs mt-1">⏱️ Est. Time: {action.estimated_time}</p>
+                                  <p className="text-gray-500 text-xs mt-1">â±ï¸ Est. Time: {action.estimated_time}</p>
                                 )}
                               </div>
                             </div>
@@ -331,7 +404,7 @@ export default function TicketDetailPage() {
                             <div key={idx} className="flex items-center justify-between text-sm bg-green-50 rounded p-2 border border-green-100">
                               <div className="flex-1">
                                 <div className="font-medium text-gray-900">{part.part_name}</div>
-                                <div className="text-xs text-gray-500">{part.part_code} • {part.manufacturer}</div>
+                                <div className="text-xs text-gray-500">{part.part_code} â€¢ {part.manufacturer}</div>
                               </div>
                               <div className="text-right">
                                 <div className="text-xs text-gray-600">Qty: {part.quantity}</div>
@@ -369,7 +442,7 @@ export default function TicketDetailPage() {
                     <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-purple-100">
                       <div className="flex items-center gap-2">
                         <span>AI Model: {latestDiagnosis.ai_metadata.model}</span>
-                        <span>•</span>
+                        <span>â€¢</span>
                         <span>{new Date(latestDiagnosis.created_at).toLocaleString()}</span>
                       </div>
                       {latestDiagnosis.ai_metadata.alternatives_count > 0 && (
@@ -396,7 +469,7 @@ export default function TicketDetailPage() {
             <h2 className="text-base font-semibold mb-3 flex items-center gap-2"><MessageSquare className="h-4 w-4" /> Comments</h2>
             {/* Simple add comment box */}
             <CommentBox ticketId={id} onAdded={() => qc.invalidateQueries({ queryKey: ["ticket", id, "comments"] })} />
-            <CommentsList ticketId={id} />
+            <CommentsList ticketId={id as string} onDeleteComment={onDeleteComment} />
           </div>
 
           {/* Engineer Assignment Section */}
@@ -427,6 +500,13 @@ export default function TicketDetailPage() {
                 <div>
                   <p className="font-medium text-gray-900">{ticket.assigned_engineer_name}</p>
                   <p className="text-xs text-gray-500">Assigned Engineer</p>
+
+                  <button
+                    onClick={() => setShowReassignModal(true)}
+                    className="mt-2 text-sm text-blue-600 hover:text-blue-800 underline"
+                  >
+                    Reassign
+                  </button>
                 </div>
               </div>
             </div>
@@ -470,10 +550,10 @@ export default function TicketDetailPage() {
             </div>
             {loadingAttachments ? (
               <p className="text-sm text-gray-500">Loading attachments...</p>
-            ) : attachmentList?.items?.length ? (
+            ) : attachmentList?.data?.items?.length ? (
               <>
                 <ul className="divide-y">
-                  {attachmentList.items.map(a => {
+                  {attachmentList.data.items.map(a => {
                     const isImage = a.fileName.match(/\.(jpg|jpeg|png|gif|webp)$/i);
                     const isVideo = a.fileName.match(/\.(mp4|mov|avi|webm)$/i);
                     return (
@@ -490,15 +570,24 @@ export default function TicketDetailPage() {
                               )}
                             </div>
                             <div className="text-gray-500 mt-1">
-                              {(a.fileSize/1024).toFixed(1)} KB • {new Date(a.uploadDate).toLocaleString()}
+                              {(a.fileSize/1024).toFixed(1)} KB â€¢ {new Date(a.uploadDate).toLocaleString()}
                             </div>
                             {(isImage || isVideo) && (
                               <div className="mt-2 text-xs text-purple-600">
-                                💡 This file can be analyzed by AI for automatic diagnosis
+                                ðŸ’¡ This file can be analyzed by AI for automatic diagnosis
                               </div>
                             )}
                           </div>
-                          <span className="px-2 py-0.5 rounded text-xs bg-gray-100 ml-2">{a.status}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 rounded text-xs bg-gray-100">{a.status}</span>
+                            <button
+                              onClick={() => onDelete(a.id)}
+                              className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
+                              title="Delete attachment"
+                            >
+                              <Trash className="h-4 w-4" />
+                            </button>
+                          </div>
                         </div>
                       </li>
                     );
@@ -508,12 +597,12 @@ export default function TicketDetailPage() {
                   <div className="text-sm text-gray-600">
                     <div className="flex items-center justify-between">
                       <span>Total Attachments:</span>
-                      <span className="font-medium">{attachmentList.items.length}</span>
+                      <span className="font-medium">{attachmentList.data.items.length}</span>
                     </div>
                     <div className="flex items-center justify-between mt-1">
                       <span>AI-Analyzable:</span>
                       <span className="font-medium text-purple-600">
-                        {attachmentList.items.filter(a => 
+                        {attachmentList.data.items.filter(a => 
                           a.fileName.match(/\.(jpg|jpeg|png|gif|webp|mp4|mov|avi|webm)$/i)
                         ).length}
                       </span>
@@ -552,7 +641,7 @@ export default function TicketDetailPage() {
                       </div>
                       <div className="text-right text-gray-600">
                         {p.quantity_required ? <div>Qty: {p.quantity_required}</div> : null}
-                        {p.unit_price ? <div>₹{p.unit_price}</div> : null}
+                        {p.unit_price ? <div>â‚¹{p.unit_price}</div> : null}
                       </div>
                     </li>
                   ))}
@@ -564,7 +653,7 @@ export default function TicketDetailPage() {
                   </div>
                   <div className="flex justify-between text-sm mt-1">
                     <span className="text-gray-600">Total Cost:</span>
-                    <span className="font-medium">₹{parts.parts.reduce((sum, p) => sum + ((p.unit_price || 0) * (p.quantity_required || 1)), 0).toLocaleString()}</span>
+                    <span className="font-medium">â‚¹{parts.parts.reduce((sum, p) => sum + ((p.unit_price || 0) * (p.quantity_required || 1)), 0).toLocaleString()}</span>
                   </div>
                 </div>
               </>
@@ -574,6 +663,25 @@ export default function TicketDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* AI Diagnosis Modal */}
+      <AIDiagnosisModal
+        isOpen={showDiagnosisModal}
+        onClose={() => setShowDiagnosisModal(false)}
+        diagnosis={diagnosisHistory}
+        isLoading={aiAnalyzing}
+        onTriggerAnalysis={triggerAIAnalysis}
+      />
+      // 
+      {/* Engineer Reassignment Modal */}
+      <EngineerReassignModal
+        isOpen={showReassignModal}
+        onClose={() => setShowReassignModal(false)}
+        currentEngineer={ticket?.assigned_engineer_name || null}
+        engineers={engineers}
+        onReassign={handleReassignEngineer}
+        isLoading={false}
+      />
 
       {/* Parts Assignment Modal */}
       <PartsAssignmentModal
@@ -587,7 +695,7 @@ export default function TicketDetailPage() {
   );
 }
 
-function CommentsList({ ticketId }: { ticketId: string }) {
+function CommentsList({ ticketId, onDeleteComment }: { ticketId: string; onDeleteComment: (id: string) => void }) {
   const { data, isLoading } = useQuery<{ comments: any[] }>({
     queryKey: ["ticket", ticketId, "comments"],
     queryFn: () => ticketsApi.getComments(ticketId),
@@ -599,8 +707,18 @@ function CommentsList({ ticketId }: { ticketId: string }) {
         <div key={c.id} className="p-3 text-sm">
           <div className="flex items-center justify-between">
             <div className="font-medium">{c.author_name || "User"}</div>
-            <div className="text-xs text-gray-500">{new Date(c.created_at).toLocaleString()}</div>
-          </div>
+            <div className="flex items-center gap-2">
+              <div className="text-xs text-gray-500">{new Date(c.created_at).toLocaleString()}</div>
+              <button
+                onClick={() => onDeleteComment(c.id)}
+                className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
+                title="Delete comment"
+              >
+                <Trash className="h-3 w-3" />
+              </button>
+              </div>
+            </div>
+         
           <p className="mt-1 whitespace-pre-line">{c.comment}</p>
         </div>
       )) : <div className="p-3 text-sm text-gray-500">No comments yet.</div>}

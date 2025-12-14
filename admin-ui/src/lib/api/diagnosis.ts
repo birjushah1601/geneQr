@@ -177,7 +177,7 @@ export const diagnosisApi = {
   /**
    * Get diagnosis history for a ticket
    */
-  async getHistoryByTicket(ticketId: number): Promise<DiagnosisResponse[]> {
+  async getHistoryByTicket(ticketId: string): Promise<DiagnosisResponse[]> {
     try {
       const response = await apiClient.get<DiagnosisResponse[]>(`/v1/diagnosis/ticket/${ticketId}/history`);
       return response.data;

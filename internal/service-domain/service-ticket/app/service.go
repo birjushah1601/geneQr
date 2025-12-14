@@ -1,4 +1,4 @@
-package app
+﻿package app
 
 import (
 	"context"
@@ -721,11 +721,27 @@ type ResolveTicketRequest struct {
 }
 
 type AddCommentRequest struct {
-	TicketID    string
-	CommentType string
-	AuthorID    string
-	AuthorName  string
-	Comment     string
-	Attachments []string
+	TicketID    string   `json:"ticket_id"`
+	CommentType string   `json:"comment_type"`
+	AuthorID    string   `json:"author_id"`
+	AuthorName  string   `json:"author_name"`
+	Comment     string   `json:"comment"`
+	Attachments []string   `json:"attachments"`
 }
 
+
+// DeleteComment deletes a comment from a ticket
+func (s *TicketService) DeleteComment(ctx context.Context, ticketID string, commentID string) error {
+	// Validate ticket exists
+	_, err := s.repo.GetByID(ctx, ticketID)
+	if err != nil {
+		return fmt.Errorf("ticket not found: %w", err)
+	}
+	
+	// Delete the comment
+	if err := s.repo.DeleteComment(ctx, commentID, ticketID); err != nil {
+		return fmt.Errorf("failed to delete comment: %w", err)
+	}
+	
+	return nil
+}

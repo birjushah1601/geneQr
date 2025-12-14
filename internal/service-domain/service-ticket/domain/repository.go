@@ -1,4 +1,4 @@
-package domain
+﻿package domain
 
 import (
     "context"
@@ -39,6 +39,7 @@ type TicketRepository interface {
 	
 	// GetComments retrieves all comments for a ticket
 	GetComments(ctx context.Context, ticketID string) ([]*TicketComment, error)
+	DeleteComment(ctx context.Context, commentID string, ticketID string) error
 	
 	// AddStatusHistory records a status change
 	AddStatusHistory(ctx context.Context, history *StatusHistory) error
