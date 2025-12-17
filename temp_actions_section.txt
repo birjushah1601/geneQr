@@ -1,0 +1,62 @@
+﻿        {/* Actions */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold mb-4">Actions</h3>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => ack.mutate()}
+              disabled={!getActionState('acknowledge', ticket.status).isValid}
+              className={`px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 ${getButtonClass('acknowledge', ticket.status)}`}
+            >
+              <CheckCircle className="h-4 w-4" />
+              Acknowledge
+            </button>
+            <button
+              onClick={() => start.mutate()}
+              disabled={!getActionState('start', ticket.status).isValid}
+              className={`px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 ${getButtonClass('start', ticket.status)}`}
+            >
+              <Play className="h-4 w-4" />
+              Start
+            </button>
+            <button
+              onClick={() => hold.mutate()}
+              disabled={!getActionState('hold', ticket.status).isValid}
+              className={`px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 ${getButtonClass('hold', ticket.status)}`}
+            >
+              <Pause className="h-4 w-4" />
+              Hold
+            </button>
+            <button
+              onClick={() => resume.mutate()}
+              disabled={!getActionState('resume', ticket.status).isValid}
+              className={`px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 ${getButtonClass('resume', ticket.status)}`}
+            >
+              <Play className="h-4 w-4" />
+              Resume
+            </button>
+            <button
+              onClick={() => resolve.mutate()}
+              disabled={!getActionState('resolve', ticket.status).isValid}
+              className={`px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 ${getButtonClass('resolve', ticket.status)}`}
+            >
+              <CheckCircle className="h-4 w-4" />
+              Resolve
+            </button>
+            <button
+              onClick={() => close.mutate()}
+              disabled={!getActionState('close', ticket.status).isValid}
+              className={`px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 ${getButtonClass('close', ticket.status)}`}
+            >
+              <XCircle className="h-4 w-4" />
+              Close
+            </button>
+          </div>
+          <button
+            onClick={() => cancel.mutate()}
+            disabled={!getActionState('cancel', ticket.status).isValid}
+            className={`w-full mt-3 px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 ${getButtonClass('cancel', ticket.status)} border-red-300 text-red-600 hover:bg-red-50`}
+          >
+            <XCircle className="h-4 w-4" />
+            Cancel
+          </button>
+        </div>

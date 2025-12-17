@@ -1,4 +1,4 @@
-// ============================================================================
+﻿// ============================================================================
 // AI Diagnosis Helpers
 // ============================================================================
 
@@ -158,9 +158,10 @@ export async function addDiagnosisComment(ticketId: number | string, diagnosis: 
     }
 
     // Add comment via tickets API
-    await commentsApi.addComment(ticketId, {
-      comment_text: commentText,
-      created_by: 'AI Diagnosis System',
+    await ticketsApi.addComment(ticketId, {
+      comment: commentText,
+      comment_type: 'system',
+      author_name: 'AI Diagnosis System',
     });
 
     console.log('? AI diagnosis added as comment');

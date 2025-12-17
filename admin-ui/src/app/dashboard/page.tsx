@@ -43,7 +43,7 @@ export default function AdminDashboard() {
     queryFn: () => ticketsApi.list({ page: 1, page_size: 1 }),
     retry: false,
     // Suppress errors on dashboard
-    onError: () => {},
+    throwOnError: false,
   });
 
   const { data: engineersData, isLoading: loadingEngineers } = useQuery({

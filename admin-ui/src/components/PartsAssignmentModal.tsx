@@ -85,6 +85,7 @@ export function PartsAssignmentModal({
   equipmentName
 }: PartsAssignmentModalProps) {
   const [parts, setParts] = useState<SparePart[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [filteredParts, setFilteredParts] = useState<SparePart[]>([]);
   const [selectedParts, setSelectedParts] = useState<Map<string, SelectedPart>>(new Map());
   const [loading, setLoading] = useState(false);

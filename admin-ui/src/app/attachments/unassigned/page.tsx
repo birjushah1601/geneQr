@@ -55,9 +55,15 @@ function AttachmentRow({ id, fileName, fileType, fileSize, uploadDate, onLinked 
       </div>
       <div className="flex items-center gap-2">
         <input value={ticketId} onChange={(e) => setTicketId(e.target.value)} placeholder="Ticket ID" className="border rounded px-2 py-1 text-sm" />
-        <button onClick={() => link.mutate()} disabled={!ticketId || link.isLoading} className="px-3 py-1.5 bg-indigo-600 text-white rounded text-sm disabled:opacity-50">
-          {link.isLoading ? "Linking…" : "Link"}
-        </button>
+        
+<button
+  onClick={() => link.mutate()}
+  disabled={!ticketId || link.isPending}
+  className="px-3 py-1.5 bg-indigo-600 text-white rounded text-sm disabled:opacity-50"
+>
+  {link.isPending ? "Linking…" : "Link"}
+</button>
+
       </div>
     </div>
   );
