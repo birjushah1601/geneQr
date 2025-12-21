@@ -1,6 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -10,114 +11,79 @@ import {
   Ticket,
   ArrowLeft,
   Upload,
-  Plus
+  Plus,
+  Loader2
 } from 'lucide-react';
+import { organizationsApi } from '@/lib/api/organizations';
 
 export default function ManufacturerDashboard() {
   const params = useParams();
   const router = useRouter();
   const manufacturerId = params.id as string;
 
-  // Mock manufacturer data - in production this would come from API
-  const manufacturerData: Record<string, any> = {
-    'MFR-001': {
-      id: 'MFR-001',
-      name: 'Siemens Healthineers',
-      contactPerson: 'Dr. Michael Schmidt',
-      email: 'michael.schmidt@siemens-healthineers.com',
-      phone: '+91-9876543210',
-      website: 'www.siemens-healthineers.com',
-      address: 'Mumbai, Maharashtra, India',
-      equipmentCount: 150,
-      engineersCount: 25,
-      activeTickets: 5,
-      createdAt: '2023-10-15',
-    },
-    'MFR-002': {
-      id: 'MFR-002',
-      name: 'GE Healthcare',
-      contactPerson: 'Sarah Johnson',
-      email: 'sarah.johnson@ge.com',
-      phone: '+91-9876543211',
-      website: 'www.gehealthcare.com',
-      address: 'Bangalore, Karnataka, India',
-      equipmentCount: 120,
-      engineersCount: 20,
-      activeTickets: 3,
-      createdAt: '2023-11-20',
-    },
-    'MFR-003': {
-      id: 'MFR-003',
-      name: 'Philips Healthcare',
-      contactPerson: 'Raj Kumar',
-      email: 'raj.kumar@philips.com',
-      phone: '+91-9876543212',
-      website: 'www.philips.com/healthcare',
-      address: 'Delhi, India',
-      equipmentCount: 95,
-      engineersCount: 18,
-      activeTickets: 2,
-      createdAt: '2023-09-05',
-    },
-    'MFR-004': {
-      id: 'MFR-004',
-      name: 'Medtronic India',
-      contactPerson: 'Anita Verma',
-      email: 'anita.verma@medtronic.com',
-      phone: '+91-9876543213',
-      website: 'www.medtronic.com',
-      address: 'Hyderabad, Telangana, India',
-      equipmentCount: 80,
-      engineersCount: 15,
-      activeTickets: 4,
-      createdAt: '2024-01-10',
-    },
-    'MFR-005': {
-      id: 'MFR-005',
-      name: 'Carestream Health',
-      contactPerson: 'Priya Sharma',
-      email: 'priya.sharma@carestream.com',
-      phone: '+91-9876543214',
-      website: 'www.carestream.com',
-      address: 'Pune, Maharashtra, India',
-      equipmentCount: 60,
-      engineersCount: 12,
-      activeTickets: 1,
-      createdAt: '2023-12-01',
-    },
-  };
-
-  // Check localStorage for manufacturer data (for dynamically created manufacturers)
-  let manufacturer = manufacturerData[manufacturerId];
-  
-  if (!manufacturer && typeof window !== 'undefined') {
-    const currentMfr = localStorage.getItem('current_manufacturer');
-    if (currentMfr) {
+  // Fetch manufacturer data from API
+  const { data: manufacturer, isLoading, error } = useQuery({
+    queryKey: ['manufacturer', manufacturerId],
+    queryFn: async () => {
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8081/api';
+      
+      // Fetch organization details with all counts in one API call
+      let org;
+      let equipmentCount = 0;
+      let engineersCount = 0;
+      let activeTickets = 0;
+      
       try {
-        const mfrData = JSON.parse(currentMfr);
-        if (mfrData.id === manufacturerId) {
-          // Convert localStorage format to dashboard format
-          manufacturer = {
-            id: mfrData.id,
-            name: mfrData.name,
-            contactPerson: mfrData.contact_person || 'N/A',
-            email: mfrData.email || 'N/A',
-            phone: mfrData.phone || 'N/A',
-            website: mfrData.website || 'N/A',
-            address: mfrData.address || 'N/A',
-            equipmentCount: localStorage.getItem('equipment_imported') === 'true' ? 398 : 0,
-            engineersCount: localStorage.getItem('engineers') ? JSON.parse(localStorage.getItem('engineers') || '[]').length : 0,
-            activeTickets: 0,
-            createdAt: mfrData.created_at || new Date().toISOString().split('T')[0],
-          };
+        const orgResponse = await fetch(
+          `${apiBaseUrl}/v1/organizations/${manufacturerId}?include_counts=true`,
+          { headers: { 'X-Tenant-ID': 'default' } }
+        );
+        if (orgResponse.ok) {
+          org = await orgResponse.json();
+          equipmentCount = org.equipment_count || 0;
+          engineersCount = org.engineers_count || 0;
+          activeTickets = org.active_tickets || 0;
+        } else {
+          // Fallback to basic org API without counts
+          org = await organizationsApi.get(manufacturerId);
         }
-      } catch (error) {
-        console.error('Error loading manufacturer from localStorage:', error);
+      } catch (e) {
+        console.error('Failed to fetch organization with counts:', e);
+        org = await organizationsApi.get(manufacturerId);
       }
-    }
+      
+      return {
+        id: org.id,
+        name: org.name,
+        contactPerson: org.metadata?.contact_person || 'N/A',
+        email: org.metadata?.email || 'N/A',
+        phone: org.metadata?.phone || 'N/A',
+        website: org.metadata?.website || 'N/A',
+        address: org.metadata?.address?.city || 'N/A',
+        equipmentCount,
+        engineersCount,
+        activeTickets,
+        createdAt: new Date().toISOString().split('T')[0],
+        metadata: org.metadata,
+      };
+    },
+    enabled: !!manufacturerId,
+  });
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading manufacturer dashboard...</p>
+        </div>
+      </div>
+    );
   }
 
-  if (!manufacturer) {
+  // Error state
+  if (error || !manufacturer) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Card className="max-w-md">

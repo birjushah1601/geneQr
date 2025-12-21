@@ -1,0 +1,1 @@
+PARTS WORKING CORRECTLY - 4 tickets show parts when using equipment_registry IDs

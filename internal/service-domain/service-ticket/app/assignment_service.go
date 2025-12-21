@@ -115,16 +115,27 @@ func (s *AssignmentService) GetSuggestedEngineers(ctx context.Context, ticketID 
 		minLevel = domain.EngineerLevelL1
 	}
 	
-	// TODO: Extract manufacturer and category from equipment
-	// For now, we'll need to pass these from the equipment details
-	// This will require joining with equipment table or passing equipment details
+	// Extract manufacturer and category from equipment
+	_, manufacturerName, category, err := s.assignRepo.GetEquipmentDetails(ctx, ticket.EquipmentID)
+	if err != nil {
+		s.logger.Warn("Failed to get equipment details, continuing with empty manufacturer/category",
+			slog.String("equipment_id", ticket.EquipmentID),
+			slog.String("error", err.Error()))
+		manufacturerName = ""
+		category = ""
+	}
+	
+	s.logger.Info("Retrieved equipment details for engineer assignment",
+		slog.String("equipment_id", ticket.EquipmentID),
+		slog.String("manufacturer", manufacturerName),
+		slog.String("category", category))
 	
 	// Get suggestions from repository
 	suggestions, err := s.assignRepo.GetSuggestedEngineers(
 		ctx,
 		ticket.EquipmentID,
-		"", // manufacturer - needs to be extracted from equipment
-		"", // category - needs to be extracted from equipment
+		manufacturerName,
+		category,
 		minLevel,
 	)
 	if err != nil {

@@ -71,8 +71,10 @@ function ServiceRequestPageInner() {
 
   // Handle parts assignment
   const handlePartsAssign = (parts: any[]) => {
+    console.log('Parts assigned - received:', parts);
+    console.log('Parts count:', parts.length);
     setAssignedParts(parts);
-    console.log('Parts assigned:', parts);
+    console.log('assignedParts state updated');
   };
 
   // Handle file selection
@@ -482,16 +484,32 @@ function ServiceRequestPageInner() {
                 </p>
               ) : (
                 <div className="mt-2 space-y-2">
-                  {assignedParts.slice(0, 3).map((part) => (
-                    <div key={part.id} className="flex justify-between text-xs bg-white p-2 rounded border border-green-100">
-                      <span className="font-medium">{part.part_name}</span>
-                      <span className="text-gray-600">
-                        {part.quantity}x • ₹{part.unit_price * part.quantity}
-                      </span>
+                  {assignedParts.slice(0, 3).map((part, index) => (
+                    <div key={part.id || index} className="flex items-start justify-between text-xs bg-white p-3 rounded border border-green-100 shadow-sm">
+                      <div className="flex items-center gap-3 flex-1">
+                        {part.image_url && (
+                          <img 
+                            src={part.image_url} 
+                            alt={part.part_name}
+                            className="w-10 h-10 rounded object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
+                        )}
+                        <div className="flex-1">
+                          <p className="font-medium text-gray-900">{part.part_name}</p>
+                          <p className="text-gray-500 text-[10px]">{part.part_number}</p>
+                        </div>
+                      </div>
+                      <div className="text-right ml-2">
+                        <p className="font-semibold text-green-700">{part.quantity}x</p>
+                        <p className="text-gray-600">₹{((part.unit_price || 0) * (part.quantity || 1)).toLocaleString()}</p>
+                      </div>
                     </div>
                   ))}
                   {assignedParts.length > 3 && (
-                    <p className="text-xs text-green-600 text-center">
+                    <p className="text-xs text-green-600 text-center py-1">
                       +{assignedParts.length - 3} more part{assignedParts.length - 3 > 1 ? 's' : ''}
                     </p>
                   )}

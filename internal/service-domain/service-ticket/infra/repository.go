@@ -23,6 +23,78 @@ func NewTicketRepository(pool *pgxpool.Pool) *TicketRepository {
 	return &TicketRepository{pool: pool}
 }
 
+// UpdateTicketParts updates the parts assigned to a ticket in ticket_parts table
+func (r *TicketRepository) UpdateTicketParts(ctx context.Context, ticketID string, parts []map[string]interface{}) error {
+	// Clear existing parts for this ticket
+	deleteQuery := `DELETE FROM ticket_parts WHERE ticket_id = $1`
+	if _, err := r.pool.Exec(ctx, deleteQuery, ticketID); err != nil {
+		return fmt.Errorf("failed to clear existing parts: %w", err)
+	}
+
+	// Insert new parts into ticket_parts table
+	insertQuery := `
+		INSERT INTO ticket_parts (
+			ticket_id, 
+			spare_part_id, 
+			quantity_required, 
+			is_critical,
+			unit_price,
+			total_price,
+			currency,
+			assigned_by,
+			status
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+	`
+
+	for _, part := range parts {
+		partID, ok := part["part_id"].(string)
+		if !ok || partID == "" {
+			continue // Skip invalid parts
+		}
+
+		quantity := 1
+		if q, ok := part["quantity"].(float64); ok {
+			quantity = int(q)
+		}
+
+		isCritical := false
+		if c, ok := part["is_critical"].(bool); ok {
+			isCritical = c
+		}
+
+		var unitPrice, totalPrice float64
+		if p, ok := part["unit_price"].(float64); ok {
+			unitPrice = p
+			totalPrice = unitPrice * float64(quantity)
+		}
+
+		currency := "USD"
+		if c, ok := part["currency"].(string); ok && c != "" {
+			currency = c
+		}
+
+		assignedBy := "system"
+		if a, ok := part["assigned_by"].(string); ok && a != "" {
+			assignedBy = a
+		}
+
+		status := "pending"
+		if st, ok := part["status"].(string); ok && st != "" {
+			status = st
+		}
+
+		_, err := r.pool.Exec(ctx, insertQuery,
+			ticketID, partID, quantity, isCritical,
+			unitPrice, totalPrice, currency, assignedBy, status,
+		)
+		if err != nil {
+			return fmt.Errorf("failed to insert part %s: %w", partID, err)
+		}
+	}
+
+	return nil
+}
+
 // Create creates a new service ticket
 func (r *TicketRepository) Create(ctx context.Context, ticket *domain.ServiceTicket) error {
 	if ticket.ID == "" {

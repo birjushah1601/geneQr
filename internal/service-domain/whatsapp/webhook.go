@@ -15,6 +15,7 @@ import (
 	
 	qrcode "github.com/aby-med/medical-platform/internal/service-domain/equipment-registry/qrcode"
     attachmentDomain "github.com/aby-med/medical-platform/internal/service-domain/attachment/domain"
+	ticketApp "github.com/aby-med/medical-platform/internal/service-domain/service-ticket/app"
 )
 
 // WebhookHandler handles WhatsApp webhook events
@@ -31,22 +32,7 @@ type WebhookHandler struct {
 
 // TicketCreator interface for creating tickets from WhatsApp messages
 type TicketCreator interface {
-	CreateFromWhatsApp(ctx context.Context, req WhatsAppTicketRequest) (string, error)
-}
-
-// WhatsAppTicketRequest represents a ticket creation request from WhatsApp
-type WhatsAppTicketRequest struct {
-	EquipmentID      string
-	QRCode           string
-	SerialNumber     string
-	EquipmentName    string
-	CustomerName     string
-	CustomerPhone    string
-	CustomerWhatsApp string
-	IssueDescription string
-	Photos           []string
-	Videos           []string
-	SourceMessageID  string
+	CreateFromWhatsApp(ctx context.Context, req ticketApp.WhatsAppTicketRequest) (string, error)
 }
 
 // WebhookConfig holds WhatsApp webhook configuration
@@ -232,11 +218,10 @@ func (h *WebhookHandler) handleImageMessage(ctx context.Context, msg Message, co
 	h.logger.Info("QR code decoded", slog.Any("data", qrData))
 	
 	// Create ticket request
-	ticketReq := WhatsAppTicketRequest{
+	ticketReq := ticketApp.WhatsAppTicketRequest{
 		EquipmentID:      qrData.ID,
 		QRCode:           qrData.QRCode,
 		SerialNumber:     qrData.SerialNo,
-		EquipmentName:    fmt.Sprintf("Equipment %s", qrData.SerialNo),
 		CustomerName:     contactName,
 		CustomerPhone:    msg.From,
 		CustomerWhatsApp: msg.From,
@@ -266,7 +251,7 @@ func (h *WebhookHandler) handleImageMessage(ctx context.Context, msg Message, co
 			"Equipment: %s\n"+
 			"Serial: %s\n\n"+
 			"Our engineer will contact you soon. Thank you!",
-		ticketID, ticketReq.EquipmentName, ticketReq.SerialNumber)
+		ticketID, ticketReq.SerialNumber, ticketReq.SerialNumber)
 	
 	return h.sendMessage(msg.From, response)
 }

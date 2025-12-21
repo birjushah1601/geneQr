@@ -257,6 +257,25 @@ func (r *AssignmentRepository) UpdateEquipmentServiceConfig(ctx context.Context,
 	return err
 }
 
+// GetEquipmentDetails retrieves manufacturer and category information for an equipment
+func (r *AssignmentRepository) GetEquipmentDetails(ctx context.Context, equipmentID string) (manufacturerID, manufacturerName, category string, err error) {
+	query := `
+		SELECT 
+			COALESCE(er.manufacturer_id::text, '') as manufacturer_id,
+			COALESCE(er.manufacturer_name, '') as manufacturer_name,
+			COALESCE(er.category, '') as category
+		FROM equipment_registry er
+		WHERE er.id = $1
+	`
+	
+	err = r.pool.QueryRow(ctx, query, equipmentID).Scan(&manufacturerID, &manufacturerName, &category)
+	if err != nil {
+		return "", "", "", err
+	}
+	
+	return manufacturerID, manufacturerName, category, nil
+}
+
 // GetSuggestedEngineers retrieves suggested engineers for a service ticket
 // This implements the core assignment algorithm
 func (r *AssignmentRepository) GetSuggestedEngineers(ctx context.Context, equipmentID string, manufacturer, category string, minLevel domain.EngineerLevel) ([]*domain.SuggestedEngineer, error) {

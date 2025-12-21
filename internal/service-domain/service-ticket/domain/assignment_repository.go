@@ -20,6 +20,9 @@ type EngineerSuggestionRepository interface {
 	CreateEquipmentServiceConfig(ctx context.Context, config *EquipmentServiceConfig) error
 	UpdateEquipmentServiceConfig(ctx context.Context, config *EquipmentServiceConfig) error
 	
+	// Equipment details
+	GetEquipmentDetails(ctx context.Context, equipmentID string) (manufacturerID, manufacturerName, category string, err error)
+	
 	// Assignment suggestion algorithm
 	GetSuggestedEngineers(ctx context.Context, equipmentID string, manufacturer, category string, minLevel EngineerLevel) ([]*SuggestedEngineer, error)
 	

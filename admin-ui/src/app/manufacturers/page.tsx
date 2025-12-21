@@ -2,23 +2,26 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Search, Plus, Upload, Download, Building2, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
+import { organizationsApi } from '@/lib/api/organizations';
 
 interface Manufacturer {
   id: string;
   name: string;
-  contactPerson: string;
-  email: string;
-  phone: string;
-  website: string;
-  address: string;
-  equipmentCount: number;
-  engineersCount: number;
+  contactPerson?: string;
+  email?: string;
+  phone?: string;
+  website?: string;
+  address?: string;
+  equipmentCount?: number;
+  engineersCount?: number;
   status: string;
-  createdAt: string;
+  createdAt?: string;
+  org_type: string;
 }
 
 export default function ManufacturersListPage() {
@@ -26,8 +29,44 @@ export default function ManufacturersListPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
-  // Mock manufacturers data (since backend API doesn't exist yet)
-  const manufacturersData: Manufacturer[] = useMemo(() => [
+  // Fetch manufacturers from API with equipment counts
+  const { data: organizationsData, isLoading, error } = useQuery({
+    queryKey: ['organizations', 'manufacturer', 'with-counts'],
+    queryFn: async () => {
+      // Use the same base URL as apiClient (includes /api)
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8081/api';
+      const response = await fetch(`${apiBaseUrl}/v1/organizations?type=manufacturer&include_counts=true&limit=1000`, {
+        headers: { 'X-Tenant-ID': 'default' }
+      });
+      if (!response.ok) throw new Error('Failed to fetch manufacturers');
+      const data = await response.json();
+      return data.items || [];
+    },
+  });
+
+  // Transform API data to match expected format
+  const manufacturersData: Manufacturer[] = useMemo(() => {
+    if (!organizationsData || !Array.isArray(organizationsData)) return [];
+    
+    return organizationsData.map((org: any) => ({
+      id: org.id,
+      name: org.name,
+      org_type: org.org_type,
+      status: org.status === 'active' ? 'Active' : 'Inactive',
+      contactPerson: org.metadata?.contact_person || 'N/A',
+      email: org.metadata?.email || 'N/A',
+      phone: org.metadata?.phone || 'N/A',
+      website: org.metadata?.website || 'N/A',
+      address: org.metadata?.address?.city || org.metadata?.city || 'N/A',
+      equipmentCount: org.equipment_count || 0,
+      engineersCount: org.engineers_count || 0,
+      activeTickets: org.active_tickets || 0,
+      createdAt: org.created_at || new Date().toISOString(),
+    }));
+  }, [organizationsData]);
+
+  // Keep the mock data as fallback only if API fails
+  const fallbackManufacturers: Manufacturer[] = useMemo(() => [
       {
         id: 'MFR-001-OLD',
         name: 'Siemens Healthineers',
@@ -95,35 +134,44 @@ export default function ManufacturersListPage() {
       },
     ], []);
 
+  // Use real data if available, fallback to mock data if API fails
+  const displayManufacturers = useMemo(() => {
+    return manufacturersData.length > 0 ? manufacturersData : (error ? fallbackManufacturers : []);
+  }, [manufacturersData, fallbackManufacturers, error]);
+
   // Filter manufacturers based on search and status
   const filteredManufacturers = useMemo(() => {
-    return manufacturersData.filter(manufacturer => {
+    return displayManufacturers.filter(manufacturer => {
       const matchesSearch = searchQuery === '' || 
         manufacturer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        manufacturer.contactPerson.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        manufacturer.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        manufacturer.phone.includes(searchQuery) ||
-        manufacturer.address.toLowerCase().includes(searchQuery.toLowerCase());
+        (manufacturer.contactPerson && manufacturer.contactPerson.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (manufacturer.email && manufacturer.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (manufacturer.phone && manufacturer.phone.includes(searchQuery)) ||
+        (manufacturer.address && manufacturer.address.toLowerCase().includes(searchQuery.toLowerCase()));
 
       const matchesStatus = filterStatus === 'all' || manufacturer.status.toLowerCase() === filterStatus.toLowerCase();
 
       return matchesSearch && matchesStatus;
     });
-  }, [manufacturersData, searchQuery, filterStatus]);
+  }, [displayManufacturers, searchQuery, filterStatus]);
 
   const statusCounts = useMemo(() => {
-    return manufacturersData.reduce((acc, mfr) => {
+    return displayManufacturers.reduce((acc, mfr) => {
       acc[mfr.status] = (acc[mfr.status] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
-  }, [manufacturersData]);
+  }, [displayManufacturers]);
 
   const totalEquipment = useMemo(() => {
-    return manufacturersData.reduce((sum, mfr) => sum + mfr.equipmentCount, 0);
+    return manufacturersData.reduce((sum, mfr) => sum + (mfr.equipmentCount || 0), 0);
   }, [manufacturersData]);
 
   const totalEngineers = useMemo(() => {
-    return manufacturersData.reduce((sum, mfr) => sum + mfr.engineersCount, 0);
+    return manufacturersData.reduce((sum, mfr) => sum + (mfr.engineersCount || 0), 0);
+  }, [manufacturersData]);
+  
+  const totalActiveTickets = useMemo(() => {
+    return manufacturersData.reduce((sum, mfr) => sum + (mfr.activeTickets || 0), 0);
   }, [manufacturersData]);
 
   const getStatusColor = (status: string) => {
@@ -175,29 +223,45 @@ export default function ManufacturersListPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>Total Manufacturers</CardDescription>
-              <CardTitle className="text-3xl">{manufacturersData.length}</CardTitle>
+              <CardTitle className="text-3xl">
+                {isLoading ? <Loader2 className="h-8 w-8 animate-spin" /> : manufacturersData.length}
+              </CardTitle>
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>Active</CardDescription>
-              <CardTitle className="text-3xl text-green-600">{statusCounts['Active'] || 0}</CardTitle>
+              <CardTitle className="text-3xl text-green-600">
+                {isLoading ? <Loader2 className="h-8 w-8 animate-spin" /> : (statusCounts['Active'] || 0)}
+              </CardTitle>
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>Total Equipment</CardDescription>
-              <CardTitle className="text-3xl text-blue-600">{totalEquipment}</CardTitle>
+              <CardTitle className="text-3xl text-blue-600">
+                {isLoading ? <Loader2 className="h-8 w-8 animate-spin" /> : totalEquipment}
+              </CardTitle>
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>Total Engineers</CardDescription>
-              <CardTitle className="text-3xl text-purple-600">{totalEngineers}</CardTitle>
+              <CardTitle className="text-3xl text-purple-600">
+                {isLoading ? <Loader2 className="h-8 w-8 animate-spin" /> : totalEngineers}
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>Active Tickets</CardDescription>
+              <CardTitle className="text-3xl text-orange-600">
+                {isLoading ? <Loader2 className="h-8 w-8 animate-spin" /> : totalActiveTickets}
+              </CardTitle>
             </CardHeader>
           </Card>
         </div>
@@ -235,14 +299,28 @@ export default function ManufacturersListPage() {
             
             {searchQuery || filterStatus !== 'all' ? (
               <div className="mt-4 text-sm text-gray-600">
-                Showing {filteredManufacturers.length} of {manufacturersData.length} manufacturers
+                Showing {filteredManufacturers.length} of {displayManufacturers.length} manufacturers
               </div>
             ) : null}
+            
+            {error && (
+              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-yellow-600" />
+                <p className="text-sm text-yellow-800">Using fallback data. API error: {error.message}</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
         {/* Manufacturers List */}
-        {manufacturersData.length === 0 ? (
+        {isLoading ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <Loader2 className="h-12 w-12 animate-spin mx-auto text-gray-400 mb-4" />
+              <p className="text-gray-600">Loading manufacturers...</p>
+            </CardContent>
+          </Card>
+        ) : displayManufacturers.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
               <div className="text-gray-400 mb-4">

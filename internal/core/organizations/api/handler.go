@@ -24,11 +24,30 @@ func (h *Handler) ListOrgs(w http.ResponseWriter, r *http.Request) {
     ctx := r.Context()
     limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
     offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
-    items, err := h.repo.ListOrgs(ctx, limit, offset)
+    orgType := r.URL.Query().Get("type")
+    status := r.URL.Query().Get("status")
+    includeCounts := r.URL.Query().Get("include_counts") == "true"
+    
+    items, err := h.repo.ListOrgs(ctx, limit, offset, orgType, status)
     if err != nil {
         h.respondError(w, http.StatusInternalServerError, "failed to list orgs: "+err.Error())
         return
     }
+    
+    // If include_counts is requested, fetch equipment, engineer, and ticket counts for each org
+    if includeCounts && orgType == "manufacturer" {
+        for i := range items {
+            equipmentCount, _ := h.repo.GetEquipmentCount(ctx, items[i].ID)
+            items[i].EquipmentCount = equipmentCount
+            
+            engineersCount, _ := h.repo.GetEngineersCount(ctx, items[i].ID)
+            items[i].EngineersCount = engineersCount
+            
+            activeTickets, _ := h.repo.GetActiveTicketsCount(ctx, items[i].ID)
+            items[i].ActiveTickets = activeTickets
+        }
+    }
+    
     h.respondJSON(w, http.StatusOK, map[string]any{"items": items})
 }
 
@@ -44,6 +63,20 @@ func (h *Handler) GetOrg(w http.ResponseWriter, r *http.Request) {
         h.respondError(w, http.StatusInternalServerError, "failed to get org: "+err.Error())
         return
     }
+    
+    // If include_counts parameter is set, fetch counts
+    includeCounts := r.URL.Query().Get("include_counts") == "true"
+    if includeCounts && org.OrgType == "manufacturer" {
+        equipmentCount, _ := h.repo.GetEquipmentCount(ctx, org.ID)
+        org.EquipmentCount = equipmentCount
+        
+        engineersCount, _ := h.repo.GetEngineersCount(ctx, org.ID)
+        org.EngineersCount = engineersCount
+        
+        activeTickets, _ := h.repo.GetActiveTicketsCount(ctx, org.ID)
+        org.ActiveTickets = activeTickets
+    }
+    
     h.respondJSON(w, http.StatusOK, org)
 }
 

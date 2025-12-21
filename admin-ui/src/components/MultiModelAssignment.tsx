@@ -28,6 +28,17 @@ export default function MultiModelAssignment({ ticketId, onAssignmentComplete, l
   // Assign engineer mutation
   const assignMutation = useMutation({
     mutationFn: async (engineer: EngineerSuggestion) => {
+      // Validate engineer ID
+      if (!engineer.id || engineer.id.trim() === "") {
+        throw new Error("Invalid engineer: Engineer ID is missing or empty");
+      }
+      
+      console.log("Assigning engineer:", {
+        engineerId: engineer.id,
+        engineerName: engineer.name,
+        ticketId: ticketId
+      });
+      
       await ticketsApi.assignEngineerToTicket(ticketId, {
         ticket_id: ticketId,
         engineer_id: engineer.id,
@@ -44,6 +55,10 @@ export default function MultiModelAssignment({ ticketId, onAssignmentComplete, l
       if (onAssignmentComplete) {
         onAssignmentComplete();
       }
+    },
+    onError: (error: any) => {
+      console.error("Assignment failed:", error);
+      alert(`Failed to assign engineer: ${error.message || "Unknown error"}`);
     },
   });
 

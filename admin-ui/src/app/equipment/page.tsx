@@ -65,28 +65,46 @@ function EquipmentListPageInner() {
           page_size: 1000,
         });
         
-        console.log('API Response:', response);
+        console.log('[Equipment Load] API Response:', response);
         
         // Map API response to component format
         const responseData: any = response;
-        const mappedEquipment: Equipment[] = (responseData.items || responseData.equipment || []).map((item: any) => ({
-          id: item.id,
-          name: item.equipment_name,
-          serialNumber: item.serial_number,
-          model: item.model_number || 'N/A',
-          manufacturer: item.manufacturer_name,
-          category: item.category || 'Unknown',
-          location: item.installation_location || item.customer_name,
-          status: item.status === 'operational' ? 'Active' : item.status === 'down' ? 'Inactive' : 'Maintenance',
-          installDate: item.installation_date || item.created_at?.split('T')[0],
-          lastService: item.last_service_date,
-          qrCode: item.qr_code,
-          qrCodeUrl: item.qr_code_url,
-          qrCodeImageUrl: item.qr_code_image ? `data:image/png;base64,${item.qr_code_image}` : undefined,
-          hasQRCode: !!item.qr_code_generated_at || !!item.qr_code_image,
-        }));
+        const equipmentItems = responseData.items || responseData.equipment || [];
         
-        console.log(`Loaded ${mappedEquipment.length} equipment items from API`);
+        const mappedEquipment: Equipment[] = equipmentItems.map((item: any, index: number) => {
+          const hasQR = !!item.qr_code && !!item.qr_code_url;
+          
+          // Debug first few items
+          if (index < 3) {
+            console.log('[Equipment Load] Item:', {
+              id: item.id,
+              name: item.equipment_name,
+              qr_code: item.qr_code,
+              qr_code_url: item.qr_code_url,
+              hasQRCode: hasQR
+            });
+          }
+          
+          return {
+            id: item.id,
+            name: item.equipment_name,
+            serialNumber: item.serial_number,
+            model: item.model_number || 'N/A',
+            manufacturer: item.manufacturer_name,
+            category: item.category || 'Unknown',
+            location: item.installation_location || item.customer_name,
+            status: item.status === 'operational' ? 'Active' : item.status === 'down' ? 'Inactive' : 'Maintenance',
+            installDate: item.installation_date || item.created_at?.split('T')[0],
+            lastService: item.last_service_date,
+            qrCode: item.qr_code,
+            qrCodeUrl: item.qr_code_url,
+            qrCodeImageUrl: item.qr_code_image ? `data:image/png;base64,${item.qr_code_image}` : undefined,
+            hasQRCode: hasQR, // Check if qr_code and qr_code_url exist
+          };
+        });
+        
+        const withQR = mappedEquipment.filter(e => e.hasQRCode).length;
+        console.log(`[Equipment Load] Loaded ${mappedEquipment.length} equipment items (${withQR} with QR codes)`);
         setEquipmentData(mappedEquipment);
       } catch (err) {
         console.error('Failed to fetch equipment from API:', err);
@@ -142,26 +160,31 @@ function EquipmentListPageInner() {
     try {
       setGeneratingQR(equipmentId);
       
+      console.log('[QR Generation] Starting for equipment:', equipmentId);
+      
       // Call real backend API to generate and store QR code
       const result: any = await equipmentApi.generateQRCode(equipmentId);
       
-      // Reload the page to fetch updated equipment with QR code
-      alert(`✅ QR Code generated and stored successfully!\n\nEquipment: ${equipmentId}\nQR Code: ${result.qr_code || `QR-${equipmentId}`}`);
-      window.location.reload();
+      console.log('[QR Generation] Success! Result:', result);
+      
+      // Instead of alert + reload, just reload to fetch updated data
+      setTimeout(() => {
+        console.log('[QR Generation] Reloading page to show updated QR code...');
+        window.location.reload();
+      }, 500);
+      
     } catch (error) {
-      console.error('QR generation failed:', error);
+      console.error('[QR Generation] Failed:', error);
       alert(`Failed to generate QR code: ${error instanceof Error ? error.message : 'Unknown error'}\n\nPlease ensure backend API is reachable.`);
-    } finally {
       setGeneratingQR(null);
     }
   };
 
   const handlePreviewQR = (equipment: Equipment) => {
     if (equipment.hasQRCode) {
-      // Use generated QR code image if available, otherwise try backend
-      const apiBase = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
-      const imageUrl = equipment.qrCodeImageUrl || `${apiBase}/api/v1/equipment/qr/image/${equipment.id}`;
-      setQrPreview({ id: equipment.id, url: imageUrl });
+      // Generate QR code image that encodes the service-request URL
+      const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(equipment.qrCodeUrl || '')}`;
+      setQrPreview({ id: equipment.id, url: qrImageUrl });
     }
   };
 
@@ -208,19 +231,43 @@ function EquipmentListPageInner() {
   };
 
   const handleGenerateSelected = async () => {
-    if (selectedIds.size === 0) return;
+    if (selectedIds.size === 0) {
+      alert('Please select at least one equipment item');
+      return;
+    }
+    
+    const count = selectedIds.size;
+    const confirmed = confirm(`Generate QR codes for ${count} selected equipment items?`);
+    if (!confirmed) return;
+    
     try {
       setBulkGenerating(true);
+      console.log(`[Bulk QR] Generating for ${count} equipment items...`);
+      
+      let success = 0;
+      let failed = 0;
+      
       for (const id of Array.from(selectedIds)) {
         try {
+          console.log(`[Bulk QR] Generating for: ${id}`);
           await equipmentApi.generateQRCode(id);
+          success++;
         } catch (e) {
-          console.error('Failed to generate for', id, e);
+          console.error(`[Bulk QR] Failed for ${id}:`, e);
+          failed++;
         }
       }
-      alert(`Generated QR for ${selectedIds.size} selected equipment`);
-      window.location.reload();
-    } finally {
+      
+      console.log(`[Bulk QR] Complete! Success: ${success}, Failed: ${failed}`);
+      
+      // Reload after a short delay
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+      
+    } catch (error) {
+      console.error('[Bulk QR] Error:', error);
+      alert('Failed to generate QR codes. Check console for details.');
       setBulkGenerating(false);
     }
   };
@@ -506,12 +553,11 @@ function EquipmentListPageInner() {
                                   title="Click to preview full size"
                                 >
                                   <img
-                                    src={equipment.qrCodeImageUrl || `http://localhost:8081/api/v1/equipment/qr/image/${equipment.id}`}
+                                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(equipment.qrCodeUrl || '')}`}
                                     alt={`QR Code for ${equipment.name}`}
                                     className="w-full h-full object-contain p-1"
                                     onError={(e) => {
                                       console.error('Failed to load QR image for', equipment.id);
-                                      e.currentTarget.style.display = 'none';
                                     }}
                                   />
                                 </div>

@@ -15,7 +15,7 @@ interface Engineer {
   phone: string;
   email: string;
   skills: string[];
-  engineer_level: number;
+  engineer_level: number | string; // Can be number (1,2,3) or string ("L1","L2","L3")
   home_region: string;
   metadata?: any;
   created_at: string;
@@ -31,18 +31,53 @@ export default function EngineersListPage() {
   const [filterSkill, setFilterSkill] = useState<string>('all');
   const [filterRegion, setFilterRegion] = useState<string>('all');
   const [filterLevel, setFilterLevel] = useState<string>('all');
+  const [manufacturerName, setManufacturerName] = useState<string>('');
+  
+  // Get manufacturer filter from URL params
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const manufacturerFilter = searchParams?.get('manufacturer') || '';
+  
+  // Fetch manufacturer name if filtering
+  useEffect(() => {
+    if (manufacturerFilter) {
+      const fetchManufacturerName = async () => {
+        try {
+          const response = await apiClient.get(`/v1/organizations/${manufacturerFilter}`);
+          setManufacturerName(response.data.name || '');
+        } catch (err) {
+          console.error('Failed to fetch manufacturer name:', err);
+        }
+      };
+      fetchManufacturerName();
+    }
+  }, [manufacturerFilter]);
 
   // Fetch engineers from API
   useEffect(() => {
     loadEngineers();
-  }, []);
+  }, [manufacturerFilter]);
 
   const loadEngineers = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await apiClient.get('/engineers?limit=100');
-      setEngineers(response.data.items || []);
+      
+      // Build URL with manufacturer filter if present
+      let url = '/v1/engineers?limit=100';
+      if (manufacturerFilter) {
+        url += `&organization_id=${manufacturerFilter}`;
+      }
+      
+      const response = await apiClient.get(url);
+      // Backend returns 'engineers' array, not 'items'
+      const engineersData = response.data.engineers || response.data.items || [];
+      
+      // Deduplicate engineers by ID (backend may return duplicates for multi-org assignments)
+      const uniqueEngineers = Array.from(
+        new Map(engineersData.map((eng: Engineer) => [eng.id, eng])).values()
+      ) as Engineer[];
+      
+      setEngineers(uniqueEngineers);
     } catch (err) {
       console.error('Failed to load engineers:', err);
       setError('Failed to load engineers. Please try again.');
@@ -100,18 +135,43 @@ export default function EngineersListPage() {
 
   // Statistics
   const stats = useMemo(() => {
+    const byLevel = engineers.reduce((acc, eng) => {
+      // Handle both integer (1, 2, 3) and string ("L1", "L2", "L3") formats
+      let level: number;
+      if (typeof eng.engineer_level === 'string') {
+        if (eng.engineer_level.startsWith('L')) {
+          level = parseInt(eng.engineer_level.substring(1), 10);
+        } else {
+          level = parseInt(eng.engineer_level, 10);
+        }
+      } else {
+        level = eng.engineer_level;
+      }
+      const levelNum = level || 1;
+      acc[levelNum] = (acc[levelNum] || 0) + 1;
+      return acc;
+    }, {} as Record<number, number>);
+    
     return {
       total: engineers.length,
       filtered: filteredEngineers.length,
-      byLevel: engineers.reduce((acc, eng) => {
-        const level = eng.engineer_level || 1;
-        acc[level] = (acc[level] || 0) + 1;
-        return acc;
-      }, {} as Record<number, number>),
+      byLevel,
     };
   }, [engineers, filteredEngineers]);
 
-  const getLevelBadge = (level: number) => {
+  const getLevelBadge = (level: number | string) => {
+    // Convert string levels to numbers
+    let numLevel: number;
+    if (typeof level === 'string') {
+      if (level.startsWith('L')) {
+        numLevel = parseInt(level.substring(1), 10);
+      } else {
+        numLevel = parseInt(level, 10);
+      }
+    } else {
+      numLevel = level;
+    }
+    
     const colors = {
       1: 'bg-blue-100 text-blue-800',
       2: 'bg-green-100 text-green-800',
@@ -123,8 +183,8 @@ export default function EngineersListPage() {
       3: 'Expert',
     };
     return {
-      color: colors[level as keyof typeof colors] || 'bg-gray-100 text-gray-800',
-      label: labels[level as keyof typeof labels] || `Level ${level}`,
+      color: colors[numLevel as keyof typeof colors] || 'bg-gray-100 text-gray-800',
+      label: labels[numLevel as keyof typeof labels] || `Level ${numLevel}`,
     };
   };
 
@@ -160,15 +220,31 @@ export default function EngineersListPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
+        {/* Back button if filtering by manufacturer */}
+        {manufacturerFilter && (
+          <Button
+            variant="ghost"
+            onClick={() => router.push(`/manufacturers/${manufacturerFilter}/dashboard`)}
+            className="mb-4"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to {manufacturerName || 'Manufacturer'} Dashboard
+          </Button>
+        )}
+        
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
               <Users className="h-8 w-8 text-blue-600" />
               Engineers Management
+              {manufacturerName && <span className="text-blue-600">- {manufacturerName}</span>}
             </h1>
             <p className="text-gray-600 mt-1">
-              Manage field engineers and service technicians
+              {manufacturerFilter 
+                ? `Showing ${filteredEngineers.length} engineers for ${manufacturerName || 'selected manufacturer'}`
+                : 'Manage field engineers and service technicians'
+              }
             </p>
           </div>
           <div className="flex gap-2">

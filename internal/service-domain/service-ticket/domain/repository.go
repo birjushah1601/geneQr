@@ -49,6 +49,9 @@ type TicketRepository interface {
 
     // UpdateResponsibility sets responsible_org_id and policy_provenance (Phase 4 optional)
     UpdateResponsibility(ctx context.Context, ticketID string, responsibleOrgID *string, provenance json.RawMessage) error
+	
+	// UpdateTicketParts updates parts assigned to a ticket in ticket_parts table
+	UpdateTicketParts(ctx context.Context, ticketID string, parts []map[string]interface{}) error
 }
 
 // ListCriteria defines filtering criteria for listing tickets

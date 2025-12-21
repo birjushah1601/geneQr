@@ -1,0 +1,182 @@
+"use client";
+
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
+import { setRefreshTokenFunction } from '@/lib/api/client';
+
+interface User {
+  user_id: string;
+  email: string;
+  name: string;
+  organization_id?: string;
+  role?: string;
+  permissions?: string[];
+}
+
+interface AuthContextType {
+  user: User | null;
+  accessToken: string | null;
+  refreshToken: string | null;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  login: (accessToken: string, refreshToken: string) => Promise<void>;
+  logout: () => Promise<void>;
+  refreshAccessToken: () => Promise<boolean>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081';
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+
+  // Load tokens from localStorage on mount
+  useEffect(() => {
+    const loadTokens = async () => {
+      try {
+        const storedAccessToken = localStorage.getItem('access_token');
+        const storedRefreshToken = localStorage.getItem('refresh_token');
+
+        if (storedAccessToken && storedRefreshToken) {
+          setAccessToken(storedAccessToken);
+          setRefreshToken(storedRefreshToken);
+
+          // Fetch user info
+          await fetchUserInfo(storedAccessToken);
+        }
+      } catch (error) {
+        console.error('Failed to load tokens:', error);
+        clearTokens();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadTokens();
+  }, []);
+
+  // Register token refresh function with API client
+  useEffect(() => {
+    setRefreshTokenFunction(refreshAccessToken);
+  }, [refreshToken]);
+
+  // Fetch user information
+  const fetchUserInfo = async (token: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/auth/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+      } else {
+        throw new Error('Failed to fetch user info');
+      }
+    } catch (error) {
+      console.error('Failed to fetch user info:', error);
+      throw error;
+    }
+  };
+
+  // Login function
+  const login = async (newAccessToken: string, newRefreshToken: string) => {
+    setAccessToken(newAccessToken);
+    setRefreshToken(newRefreshToken);
+
+    // Store in localStorage
+    localStorage.setItem('access_token', newAccessToken);
+    localStorage.setItem('refresh_token', newRefreshToken);
+
+    // Fetch user info
+    await fetchUserInfo(newAccessToken);
+  };
+
+  // Logout function
+  const logout = async () => {
+    try {
+      if (refreshToken) {
+        await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({ refresh_token: refreshToken }),
+        });
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      clearTokens();
+      router.push('/login');
+    }
+  };
+
+  // Clear tokens
+  const clearTokens = () => {
+    setUser(null);
+    setAccessToken(null);
+    setRefreshToken(null);
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+  };
+
+  // Refresh access token
+  const refreshAccessToken = async (): Promise<boolean> => {
+    if (!refreshToken) {
+      return false;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refresh_token: refreshToken }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        await login(data.access_token, data.refresh_token);
+        return true;
+      } else {
+        clearTokens();
+        return false;
+      }
+    } catch (error) {
+      console.error('Token refresh error:', error);
+      clearTokens();
+      return false;
+    }
+  };
+
+  const value: AuthContextType = {
+    user,
+    accessToken,
+    refreshToken,
+    isLoading,
+    isAuthenticated: !!user && !!accessToken,
+    login,
+    logout,
+    refreshAccessToken,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}

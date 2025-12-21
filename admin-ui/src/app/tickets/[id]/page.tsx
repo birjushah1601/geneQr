@@ -7,13 +7,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ticketsApi } from "@/lib/api/tickets";
 import { apiClient } from "@/lib/api/client";
 import type { ServiceTicket, TicketPriority, TicketStatus } from "@/types";
-import { ArrowLeft, Loader2, Package, User, Calendar, Wrench, Pause, Play, CheckCircle, XCircle, AlertTriangle, FileText, MessageSquare, Paperclip, Upload, Brain, Sparkles, TrendingUp, Lightbulb, Shield , Trash } from "lucide-react";
+import { ArrowLeft, Loader2, Package, User, Calendar, Wrench, Pause, Play, CheckCircle, XCircle, AlertTriangle, FileText, MessageSquare, Paperclip, Upload, Brain, Sparkles, TrendingUp, Lightbulb, Shield, Trash, X } from "lucide-react";
 import { AIDiagnosisModal } from "@/components/AIDiagnosisModal";
-import { EngineerReassignModal } from "@/components/EngineerReassignModal";
 import { attachmentsApi } from "@/lib/api/attachments";
 import { PartsAssignmentModal } from "@/components/PartsAssignmentModal";
 import { diagnosisApi, extractSymptoms } from "@/lib/api/diagnosis";
 import MultiModelAssignment from "@/components/MultiModelAssignment";
+import EngineerSelectionModal from "@/components/EngineerSelectionModal";
+import AssignmentHistory from "@/components/AssignmentHistory";
 
 function StatusBadge({ status }: { status: TicketStatus }) {
   const color = {
@@ -31,7 +32,8 @@ function StatusBadge({ status }: { status: TicketStatus }) {
 export default function TicketDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [showDiagnosisModal, setShowDiagnosisModal] = useState(false);
-  const [showReassignModal, setShowReassignModal] = useState(false);
+  const [showReassignMultiModel, setShowReassignMultiModel] = useState(false);
+  const [showEngineerSelection, setShowEngineerSelection] = useState(false);
   const router = useRouter();
   const qc = useQueryClient();
 
@@ -41,11 +43,25 @@ export default function TicketDetailPage() {
     enabled: !!id,
   });
 
-  const { data: parts } = useQuery<{ ticket_id: string; count: number; parts: any[] }>({
+  const { data: parts, error: partsError, isLoading: partsLoading } = useQuery<{ ticket_id: string; count: number; parts: any[] }>({
     queryKey: ["ticket", id, "parts"],
-    queryFn: async () => (await apiClient.get(`/v1/tickets/${id}/parts`)).data,
+    queryFn: async () => {
+      console.log(`Fetching parts for ticket: ${id}`);
+      const response = await apiClient.get(`/v1/tickets/${id}/parts`);
+      console.log('Parts API response:', response.data);
+      return response.data;
+    },
     enabled: !!id,
   });
+
+  useEffect(() => {
+    if (partsError) {
+      console.error('Error fetching parts:', partsError);
+    }
+    if (parts) {
+      console.log(`Parts loaded: ${parts.count} part(s)`, parts.parts);
+    }
+  }, [parts, partsError]);
 
   const { data: attachmentList, refetch: refetchAttachments, isLoading: loadingAttachments } = useQuery({
     queryKey: ["ticket", id, "attachments"],
@@ -196,17 +212,35 @@ export default function TicketDetailPage() {
 
   // Handle parts assignment
   const handlePartsAssign = async (assignedParts: any[]) => {
+    console.log('Ticket Detail - Parts assigned:', assignedParts);
+    console.log('Ticket ID:', id);
+    console.log('Parts count:', assignedParts.length);
+    
     try {
-      // Call real API endpoint to update ticket parts
-      await apiClient.patch(`/v1/tickets/${id}/parts`, {
-        parts: assignedParts
-      });
+      // Create ticket_parts entries for each assigned part
+      for (const part of assignedParts) {
+        await apiClient.post(`/v1/tickets/${id}/parts`, {
+          spare_part_id: part.id,
+          quantity_required: part.quantity || 1,
+          unit_price: part.unit_price,
+          total_price: (part.unit_price || 0) * (part.quantity || 1),
+          is_critical: part.requires_engineer || false,
+          status: 'pending',
+          notes: `Added via admin UI for ${part.part_name}`
+        });
+      }
+      
+      console.log('Parts successfully added to ticket');
       
       // Refresh the parts query
       qc.invalidateQueries({ queryKey: ["ticket", id, "parts"] });
       setIsPartsModalOpen(false);
+      
+      // Show success message
+      alert(`Successfully assigned ${assignedParts.length} part(s) to ticket!`);
     } catch (error) {
       console.error("Failed to assign parts:", error);
+      console.error("Error details:", JSON.stringify(error, null, 2));
       alert("Failed to assign parts. Please try again.");
     }
   };
@@ -478,12 +512,37 @@ export default function TicketDetailPage() {
               <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
                 <User className="h-4 w-4" /> Assign Engineer
               </h2>
+              
+              {/* Smart Engineer Selection Button */}
+              <button
+                onClick={() => setShowEngineerSelection(true)}
+                className="w-full mb-4 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 font-medium"
+              >
+                <Sparkles className="h-5 w-5" />
+                Smart Engineer Selection
+              </button>
+              
+              {/* Or use multi-model assignment */}
+              <div className="relative mb-4">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-200"></div>
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="px-2 bg-white text-gray-500">or use manual assignment</span>
+                </div>
+              </div>
+              
               <MultiModelAssignment 
                 ticketId={id} 
                 onAssignmentComplete={() => refetch()}
                 layout="horizontal"
               />
             </div>
+          )}
+          
+          {/* Assignment History - Show for all tickets */}
+          {ticket.assigned_engineer_name && (
+            <AssignmentHistory ticketId={id} />
           )}
         </div>
 
@@ -502,10 +561,10 @@ export default function TicketDetailPage() {
                   <p className="text-xs text-gray-500">Assigned Engineer</p>
 
                   <button
-                    onClick={() => setShowReassignModal(true)}
+                    onClick={() => setShowReassignMultiModel(true)}
                     className="mt-2 text-sm text-blue-600 hover:text-blue-800 underline"
                   >
-                    Reassign
+                    Reassign Engineer
                   </button>
                 </div>
               </div>
@@ -672,16 +731,37 @@ export default function TicketDetailPage() {
         isLoading={aiAnalyzing}
         onTriggerAnalysis={triggerAIAnalysis}
       />
-      // 
-      {/* Engineer Reassignment Modal */}
-      <EngineerReassignModal
-        isOpen={showReassignModal}
-        onClose={() => setShowReassignModal(false)}
-        currentEngineer={ticket?.assigned_engineer_name || null}
-        engineers={engineers}
-        onReassign={handleReassignEngineer}
-        isLoading={false}
-      />
+      {/* Engineer Reassignment - Multi-Model Assignment */}
+      {showReassignMultiModel && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-7xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between z-10">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">Reassign Engineer</h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  Current: {ticket?.assigned_engineer_name || "None"}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowReassignMultiModel(false)}
+                className="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <MultiModelAssignment 
+                ticketId={id} 
+                onAssignmentComplete={() => {
+                  setShowReassignMultiModel(false);
+                  refetch();
+                }}
+                layout="horizontal"
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Parts Assignment Modal */}
       <PartsAssignmentModal
@@ -690,6 +770,18 @@ export default function TicketDetailPage() {
         onAssign={handlePartsAssign}
         equipmentId={ticket.equipment_id || "unknown"}
         equipmentName={ticket.equipment_name || "Equipment"}
+      />
+      
+      {/* Smart Engineer Selection Modal */}
+      <EngineerSelectionModal
+        isOpen={showEngineerSelection}
+        onClose={() => setShowEngineerSelection(false)}
+        ticketId={id}
+        equipmentName={ticket.equipment_name || "Equipment"}
+        onAssignmentSuccess={() => {
+          setShowEngineerSelection(false);
+          refetch();
+        }}
       />
     </div>
   );

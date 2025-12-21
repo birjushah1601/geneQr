@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/aby-med/medical-platform/internal/service-domain/service-ticket/app"
 	"github.com/aby-med/medical-platform/internal/service-domain/service-ticket/domain"
@@ -44,6 +45,54 @@ func (h *TicketHandler) CreateTicket(w http.ResponseWriter, r *http.Request) {
 		h.logger.Error("Failed to create ticket", slog.String("error", err.Error()))
 		h.respondError(w, http.StatusInternalServerError, "Failed to create ticket: "+err.Error())
 		return
+	}
+
+	// If parts_requested are provided, create ticket_parts entries
+	if len(req.PartsRequested) > 0 && h.pool != nil {
+		h.logger.Info("Creating ticket_parts entries",
+			slog.String("ticket_id", ticket.ID),
+			slog.Int("parts_count", len(req.PartsRequested)))
+
+		for _, part := range req.PartsRequested {
+			// Query spare_parts_catalog to get spare_part_id by part_number
+			var sparePartID string
+			err := h.pool.QueryRow(ctx,
+				`SELECT id FROM spare_parts_catalog WHERE part_number = $1 LIMIT 1`,
+				part.PartNumber,
+			).Scan(&sparePartID)
+
+			if err != nil {
+				h.logger.Warn("Part not found in catalog, skipping",
+					slog.String("part_number", part.PartNumber),
+					slog.String("error", err.Error()))
+				continue
+			}
+
+			// Insert into ticket_parts
+			_, err = h.pool.Exec(ctx, `
+				INSERT INTO ticket_parts (
+					ticket_id, spare_part_id, quantity_required,
+					unit_price, total_price, status, notes, assigned_at
+				) VALUES ($1, $2, $3, $4, $5, 'pending', $6, NOW())
+			`,
+				ticket.ID,
+				sparePartID,
+				part.Quantity,
+				part.UnitPrice,
+				part.TotalPrice,
+				part.Description,
+			)
+
+			if err != nil {
+				h.logger.Warn("Failed to create ticket_part entry",
+					slog.String("part_number", part.PartNumber),
+					slog.String("error", err.Error()))
+			} else {
+				h.logger.Info("Created ticket_part entry",
+					slog.String("ticket_id", ticket.ID),
+					slog.String("spare_part_id", sparePartID))
+			}
+		}
 	}
 
 	h.respondJSON(w, http.StatusCreated, ticket)
@@ -452,6 +501,7 @@ func (h *TicketHandler) GetStatusHistory(w http.ResponseWriter, r *http.Request)
 }
 
 // GetTicketParts handles GET /tickets/{id}/parts
+// Returns parts assigned to this specific ticket from ticket_parts table
 func (h *TicketHandler) GetTicketParts(w http.ResponseWriter, r *http.Request) {
     ctx := r.Context()
     id := chi.URLParam(r, "id")
@@ -465,10 +515,31 @@ func (h *TicketHandler) GetTicketParts(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+    // Query ticket_parts table with join to spare_parts_catalog for details
     const q = `
-        SELECT spare_part_id, part_number, part_name, unit_price, currency,
-               is_critical, quantity_required, part_category, stock_status, lead_time_days
-        FROM get_parts_for_ticket($1)
+        SELECT 
+            tp.id,
+            tp.spare_part_id,
+            sp.part_number,
+            sp.part_name,
+            tp.quantity_required,
+            tp.quantity_used,
+            tp.is_critical,
+            tp.status,
+            tp.unit_price,
+            tp.total_price,
+            tp.currency,
+            sp.category,
+            sp.stock_status,
+            sp.lead_time_days,
+            tp.assigned_by,
+            tp.assigned_at,
+            tp.installed_at,
+            tp.notes
+        FROM ticket_parts tp
+        JOIN spare_parts_catalog sp ON tp.spare_part_id = sp.id
+        WHERE tp.ticket_id = $1
+        ORDER BY tp.assigned_at DESC
     `
 
     rows, err := h.pool.Query(ctx, q, id)
@@ -480,41 +551,62 @@ func (h *TicketHandler) GetTicketParts(w http.ResponseWriter, r *http.Request) {
     defer rows.Close()
 
     type Part struct {
-        SparePartID      string   `json:"spare_part_id"`
-        PartNumber       string   `json:"part_number"`
-        PartName         string   `json:"part_name"`
-        UnitPrice        *float64 `json:"unit_price,omitempty"`
-        Currency         *string  `json:"currency,omitempty"`
-        IsCritical       *bool    `json:"is_critical,omitempty"`
-        QuantityRequired *int64   `json:"quantity_required,omitempty"`
-        PartCategory     *string  `json:"category,omitempty"`
-        StockStatus      *string  `json:"stock_status,omitempty"`
-        LeadTimeDays     *int64   `json:"lead_time_days,omitempty"`
+        AssignmentID     string    `json:"assignment_id"`
+        SparePartID      string    `json:"spare_part_id"`
+        PartNumber       string    `json:"part_number"`
+        PartName         string    `json:"part_name"`
+        QuantityRequired int       `json:"quantity_required"`
+        QuantityUsed     *int      `json:"quantity_used,omitempty"`
+        IsCritical       bool      `json:"is_critical"`
+        Status           string    `json:"status"`
+        UnitPrice        *float64  `json:"unit_price,omitempty"`
+        TotalPrice       *float64  `json:"total_price,omitempty"`
+        Currency         string    `json:"currency"`
+        Category         *string   `json:"category,omitempty"`
+        StockStatus      *string   `json:"stock_status,omitempty"`
+        LeadTimeDays     *int      `json:"lead_time_days,omitempty"`
+        AssignedBy       *string   `json:"assigned_by,omitempty"`
+        AssignedAt       time.Time `json:"assigned_at"`
+        InstalledAt      *time.Time `json:"installed_at,omitempty"`
+        Notes            *string   `json:"notes,omitempty"`
     }
 
     parts := make([]Part, 0, 8)
     for rows.Next() {
         var p Part
         var (
-            unitPrice sql.NullFloat64
-            currency  sql.NullString
-            isCrit    sql.NullBool
-            qty       sql.NullInt64
-            cat       sql.NullString
-            status    sql.NullString
-            lead      sql.NullInt64
+            qtyUsed     sql.NullInt64
+            unitPrice   sql.NullFloat64
+            totalPrice  sql.NullFloat64
+            category    sql.NullString
+            stockStatus sql.NullString
+            leadTime    sql.NullInt64
+            assignedBy  sql.NullString
+            installedAt sql.NullTime
+            notes       sql.NullString
         )
-        if err := rows.Scan(&p.SparePartID, &p.PartNumber, &p.PartName,
-            &unitPrice, &currency, &isCrit, &qty, &cat, &status, &lead); err != nil {
+        
+        if err := rows.Scan(
+            &p.AssignmentID, &p.SparePartID, &p.PartNumber, &p.PartName,
+            &p.QuantityRequired, &qtyUsed, &p.IsCritical, &p.Status,
+            &unitPrice, &totalPrice, &p.Currency,
+            &category, &stockStatus, &leadTime,
+            &assignedBy, &p.AssignedAt, &installedAt, &notes,
+        ); err != nil {
+            h.logger.Warn("Failed to scan ticket part", slog.String("error", err.Error()))
             continue
         }
+        
+        if qtyUsed.Valid { v := int(qtyUsed.Int64); p.QuantityUsed = &v }
         if unitPrice.Valid { v := unitPrice.Float64; p.UnitPrice = &v }
-        if currency.Valid { v := currency.String; p.Currency = &v }
-        if isCrit.Valid { v := isCrit.Bool; p.IsCritical = &v }
-        if qty.Valid { v := qty.Int64; p.QuantityRequired = &v }
-        if cat.Valid { v := cat.String; p.PartCategory = &v }
-        if status.Valid { v := status.String; p.StockStatus = &v }
-        if lead.Valid { v := lead.Int64; p.LeadTimeDays = &v }
+        if totalPrice.Valid { v := totalPrice.Float64; p.TotalPrice = &v }
+        if category.Valid { v := category.String; p.Category = &v }
+        if stockStatus.Valid { v := stockStatus.String; p.StockStatus = &v }
+        if leadTime.Valid { v := int(leadTime.Int64); p.LeadTimeDays = &v }
+        if assignedBy.Valid { v := assignedBy.String; p.AssignedBy = &v }
+        if installedAt.Valid { p.InstalledAt = &installedAt.Time }
+        if notes.Valid { v := notes.String; p.Notes = &v }
+        
         parts = append(parts, p)
     }
 
@@ -522,6 +614,95 @@ func (h *TicketHandler) GetTicketParts(w http.ResponseWriter, r *http.Request) {
         "ticket_id": id,
         "count": len(parts),
         "parts": parts,
+    })
+}
+
+// AddTicketPart handles POST /tickets/{id}/parts
+// Adds a single part to the ticket_parts table
+func (h *TicketHandler) AddTicketPart(w http.ResponseWriter, r *http.Request) {
+    ctx := r.Context()
+    ticketID := chi.URLParam(r, "id")
+    
+    if ticketID == "" {
+        h.respondError(w, http.StatusBadRequest, "Ticket ID is required")
+        return
+    }
+    
+    if h.pool == nil {
+        h.respondError(w, http.StatusInternalServerError, "DB pool not initialized")
+        return
+    }
+    
+    // Parse request body
+    var req struct {
+        SparePartID      string   `json:"spare_part_id"`
+        QuantityRequired int      `json:"quantity_required"`
+        UnitPrice        *float64 `json:"unit_price"`
+        TotalPrice       *float64 `json:"total_price"`
+        IsCritical       bool     `json:"is_critical"`
+        Status           string   `json:"status"`
+        Notes            string   `json:"notes"`
+    }
+    
+    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+        h.respondError(w, http.StatusBadRequest, "Invalid request body: "+err.Error())
+        return
+    }
+    
+    // Validate required fields
+    if req.SparePartID == "" {
+        h.respondError(w, http.StatusBadRequest, "spare_part_id is required")
+        return
+    }
+    if req.QuantityRequired <= 0 {
+        req.QuantityRequired = 1
+    }
+    if req.Status == "" {
+        req.Status = "pending"
+    }
+    
+    // Insert into ticket_parts table
+    const insertQuery = `
+        INSERT INTO ticket_parts (
+            ticket_id, spare_part_id, quantity_required, 
+            unit_price, total_price, is_critical, status, notes,
+            assigned_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+        RETURNING id, assigned_at
+    `
+    
+    var partID string
+    var assignedAt time.Time
+    err := h.pool.QueryRow(ctx, insertQuery,
+        ticketID, req.SparePartID, req.QuantityRequired,
+        req.UnitPrice, req.TotalPrice, req.IsCritical,
+        req.Status, req.Notes,
+    ).Scan(&partID, &assignedAt)
+    
+    if err != nil {
+        h.logger.Error("Failed to add part to ticket",
+            slog.String("ticket_id", ticketID),
+            slog.String("spare_part_id", req.SparePartID),
+            slog.String("error", err.Error()))
+        h.respondError(w, http.StatusInternalServerError, "Failed to add part: "+err.Error())
+        return
+    }
+    
+    h.logger.Info("Part added to ticket",
+        slog.String("ticket_id", ticketID),
+        slog.String("part_id", partID))
+    
+    h.respondJSON(w, http.StatusCreated, map[string]interface{}{
+        "id":                partID,
+        "ticket_id":         ticketID,
+        "spare_part_id":     req.SparePartID,
+        "quantity_required": req.QuantityRequired,
+        "unit_price":        req.UnitPrice,
+        "total_price":       req.TotalPrice,
+        "is_critical":       req.IsCritical,
+        "status":            req.Status,
+        "notes":             req.Notes,
+        "assigned_at":       assignedAt,
     })
 }
 

@@ -1,5 +1,3 @@
-//go:build ignore
-
 package whatsapp
 
 import (
@@ -53,7 +51,7 @@ type TicketCreatedResponse struct {
 // WhatsAppHandler handles WhatsApp webhook events
 type WhatsAppHandler struct {
 	equipmentService *equipmentApp.EquipmentService
-	ticketService    *ticketApp.ServiceTicketService
+	ticketService    *ticketApp.TicketService
 	whatsappService  *WhatsAppService // For sending messages back
 	logger           *slog.Logger
 }
@@ -61,7 +59,7 @@ type WhatsAppHandler struct {
 // NewWhatsAppHandler creates a new WhatsApp webhook handler
 func NewWhatsAppHandler(
 	equipmentService *equipmentApp.EquipmentService,
-	ticketService *ticketApp.ServiceTicketService,
+	ticketService *ticketApp.TicketService,
 	whatsappService *WhatsAppService,
 	logger *slog.Logger,
 ) *WhatsAppHandler {

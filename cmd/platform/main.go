@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -16,6 +17,7 @@ import (
 	"github.com/aby-med/medical-platform/internal/shared/config"
 	"github.com/aby-med/medical-platform/internal/shared/observability"
     "github.com/aby-med/medical-platform/internal/shared/service"
+	sharedmiddleware "github.com/aby-med/medical-platform/internal/shared/middleware"
     organizations "github.com/aby-med/medical-platform/internal/core/organizations"
 	"github.com/aby-med/medical-platform/internal/marketplace/catalog"
 	"github.com/aby-med/medical-platform/internal/service-domain/rfq"
@@ -24,11 +26,16 @@ import (
 	"github.com/aby-med/medical-platform/internal/service-domain/comparison"
 	"github.com/aby-med/medical-platform/internal/service-domain/contract"
 	equipment "github.com/aby-med/medical-platform/internal/service-domain/equipment-registry"
+	equipmentApp "github.com/aby-med/medical-platform/internal/service-domain/equipment-registry/app"
 	serviceticket "github.com/aby-med/medical-platform/internal/service-domain/service-ticket"
+	serviceticketApp "github.com/aby-med/medical-platform/internal/service-domain/service-ticket/app"
 	"github.com/aby-med/medical-platform/internal/service-domain/attachment"
+	"github.com/aby-med/medical-platform/internal/service-domain/whatsapp"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 	"github.com/joho/godotenv"
 	"golang.org/x/sync/errgroup"
 	
@@ -187,6 +194,12 @@ func setupRouter(cfg *config.Config, logger *slog.Logger, tracer observability.T
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(60 * time.Second))
+	
+	// Security middleware
+	r.Use(sharedmiddleware.SecurityHeaders)
+	
+	// Rate limiting (100 requests per minute per IP)
+	r.Use(sharedmiddleware.RateLimitByIP(100, 1*time.Minute))
 
 	// CORS configuration
 	r.Use(cors.Handler(cors.Options{
@@ -403,6 +416,50 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 		}
 	}
 
+	// ========================================================================
+	// INITIALIZE AUTHENTICATION SYSTEM
+	// ========================================================================
+	logger.Info("Initializing Authentication System")
+	
+	// Create database connection for auth module
+	authDB, err := sqlx.Connect("postgres", cfg.GetDSN())
+	if err != nil {
+		logger.Warn("Failed to connect to database for auth", slog.String("error", err.Error()))
+	} else {
+		err = initAuthModule(router, authDB, logger)
+		if err != nil {
+			logger.Warn("Failed to initialize auth module", slog.String("error", err.Error()))
+		}
+	}
+
+	// ========================================================================
+	// INITIALIZE WHATSAPP INTEGRATION (Optional)
+	// ========================================================================
+	if os.Getenv("ENABLE_WHATSAPP") == "true" {
+		logger.Info("Initializing WhatsApp integration")
+		
+		// Get WhatsApp configuration from environment
+		twilioAccountSID := os.Getenv("TWILIO_ACCOUNT_SID")
+		twilioAuthToken := os.Getenv("TWILIO_AUTH_TOKEN")
+		twilioWhatsAppNumber := os.Getenv("TWILIO_WHATSAPP_NUMBER")
+		
+		if twilioAccountSID == "" || twilioAuthToken == "" || twilioWhatsAppNumber == "" {
+			logger.Warn("WhatsApp integration enabled but missing Twilio credentials",
+				slog.Bool("has_account_sid", twilioAccountSID != ""),
+				slog.Bool("has_auth_token", twilioAuthToken != ""),
+				slog.Bool("has_whatsapp_number", twilioWhatsAppNumber != ""))
+		} else {
+			// Get equipment and ticket services from registry
+			// Note: These need to be initialized first by the module registry
+			// For now, we'll initialize WhatsApp routes separately
+			logger.Info("WhatsApp integration configured",
+				slog.String("whatsapp_number", twilioWhatsAppNumber))
+			
+			// WhatsApp module will be initialized after other modules are ready
+			// This ensures equipment and ticket services are available
+		}
+	}
+
 	modules, err := registry.GetModules(enabledModules)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get modules: %w", err)
@@ -428,6 +485,66 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 		logger.Info("Mounting routes for module", slog.String("module", moduleName))
 		module.MountRoutes(apiRouter)
 	}
+	
+	// Initialize WhatsApp module if enabled (after other modules are ready)
+	if os.Getenv("ENABLE_WHATSAPP") == "true" {
+		twilioAccountSID := os.Getenv("TWILIO_ACCOUNT_SID")
+		twilioAuthToken := os.Getenv("TWILIO_AUTH_TOKEN")
+		twilioWhatsAppNumber := os.Getenv("TWILIO_WHATSAPP_NUMBER")
+		
+		if twilioAccountSID != "" && twilioAuthToken != "" && twilioWhatsAppNumber != "" {
+			logger.Info("Mounting WhatsApp routes")
+			
+			// Get services from modules (simplified - assumes they're available)
+			// In a full implementation, you'd extract these from the registry
+			// For now, create a placeholder that can be enhanced later
+			var equipmentService *equipmentApp.EquipmentService
+			var ticketService *serviceticketApp.TicketService
+			
+			// Create database pool for WhatsApp
+			dbPool, err := pgxpool.New(ctx, cfg.GetDSN())
+			if err == nil {
+				// Try to get services from modules
+				for _, module := range modules {
+					if module.Name() == "equipment" {
+						// Cast to equipment module type if possible
+						logger.Info("Found equipment module for WhatsApp")
+					}
+					if module.Name() == "service-ticket" {
+						// Cast to ticket module type if possible
+						logger.Info("Found service-ticket module for WhatsApp")
+					}
+				}
+				
+				// If we have the services, initialize WhatsApp module
+				if equipmentService != nil && ticketService != nil {
+					whatsappModule := whatsapp.NewWhatsAppModule(
+						dbPool,
+						equipmentService,
+						ticketService,
+						twilioAccountSID,
+						twilioAuthToken,
+						twilioWhatsAppNumber,
+						logger,
+					)
+					whatsappModule.MountRoutes(apiRouter)
+					logger.Info("✅ WhatsApp integration initialized and routes mounted")
+				} else {
+					logger.Warn("WhatsApp enabled but required services not available yet - webhook endpoint created for verification only")
+					// Create a simple verification endpoint
+					apiRouter.Get("/whatsapp/webhook", func(w http.ResponseWriter, r *http.Request) {
+						w.WriteHeader(http.StatusOK)
+						w.Write([]byte("WhatsApp webhook endpoint (services pending)"))
+					})
+				}
+			} else {
+				logger.Error("Failed to create database pool for WhatsApp", slog.String("error", err.Error()))
+			}
+		}
+	}
+	
+	// Add spare parts catalog endpoint
+	apiRouter.Get("/catalog/parts", createSparePartsHandler(cfg.GetDSN(), logger))
 
 	return modules, ctx, nil
 }
@@ -450,6 +567,133 @@ func startModuleBackgroundProcesses(ctx context.Context, modules []service.Modul
 
 	// Wait for all modules to start or for first error
 	return g.Wait()
+}
+
+// createSparePartsHandler creates a handler for listing spare parts
+func createSparePartsHandler(dsn string, logger *slog.Logger) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Create database connection
+		db, err := pgxpool.New(r.Context(), dsn)
+		if err != nil {
+			logger.Error("Failed to connect to database", slog.String("error", err.Error()))
+			http.Error(w, `{"error":"Database connection failed"}`, http.StatusInternalServerError)
+			return
+		}
+		defer db.Close()
+
+		// Parse query parameters
+		category := r.URL.Query().Get("category")
+		searchQuery := r.URL.Query().Get("q")
+		
+		// Build SQL query
+		query := `
+			SELECT 
+				id, part_number, part_name, category, subcategory, 
+				description, unit_price, currency, is_available, 
+				stock_status, requires_engineer, engineer_level_required,
+				installation_time_minutes, lead_time_days, minimum_order_quantity,
+				image_url, photos
+			FROM spare_parts_catalog
+			WHERE is_available = true AND is_obsolete = false`
+		
+		args := []interface{}{}
+		argCount := 1
+		
+		if category != "" {
+			query += fmt.Sprintf(" AND category ILIKE $%d", argCount)
+			args = append(args, "%"+category+"%")
+			argCount++
+		}
+		
+		if searchQuery != "" {
+			query += fmt.Sprintf(" AND (part_name ILIKE $%d OR part_number ILIKE $%d OR description ILIKE $%d)", argCount, argCount, argCount)
+			args = append(args, "%"+searchQuery+"%")
+			argCount++
+		}
+		
+		query += " ORDER BY category, part_name LIMIT 100"
+		
+		// Execute query
+		rows, err := db.Query(r.Context(), query, args...)
+		if err != nil {
+			logger.Error("Failed to query spare parts", slog.String("error", err.Error()))
+			http.Error(w, `{"error":"Query failed"}`, http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+		
+		// Build response
+		parts := []map[string]interface{}{}
+		for rows.Next() {
+			var (
+				id, partNumber, partName, cat, description, currency, stockStatus string
+				subcategory, engineerLevel, imageURL *string
+				unitPrice float64
+				isAvailable, requiresEngineer bool
+				installTime, leadTime, minOrderQty *int
+				photos []string
+			)
+			
+			if err := rows.Scan(&id, &partNumber, &partName, &cat, &subcategory,
+				&description, &unitPrice, &currency, &isAvailable, &stockStatus,
+				&requiresEngineer, &engineerLevel, &installTime, &leadTime, &minOrderQty,
+				&imageURL, &photos); err != nil {
+				continue
+			}
+			
+			part := map[string]interface{}{
+				"id":            id,
+				"part_number":   partNumber,
+				"part_name":     partName,
+				"category":      cat,
+				"description":   description,
+				"unit_price":    unitPrice,
+				"currency":      currency,
+				"is_available":  isAvailable,
+				"stock_status":  stockStatus,
+				"requires_engineer": requiresEngineer,
+			}
+			
+			if subcategory != nil {
+				part["subcategory"] = *subcategory
+			}
+			if engineerLevel != nil {
+				part["engineer_level_required"] = *engineerLevel
+			}
+			if installTime != nil {
+				part["installation_time_minutes"] = *installTime
+			}
+			if leadTime != nil {
+				part["lead_time_days"] = *leadTime
+			}
+			if minOrderQty != nil {
+				part["minimum_order_quantity"] = *minOrderQty
+			} else {
+				part["minimum_order_quantity"] = 1
+			}
+			if imageURL != nil {
+				part["image_url"] = *imageURL
+			}
+			if photos != nil && len(photos) > 0 {
+				part["photos"] = photos
+			}
+			
+			parts = append(parts, part)
+		}
+		
+		// Send response
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		
+		response := map[string]interface{}{
+			"parts": parts,
+			"count": len(parts),
+		}
+		
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			logger.Error("Failed to encode response", slog.String("error", err.Error()))
+		}
+	}
 }
 
 

@@ -10,7 +10,6 @@ import (
 
 	equipmentDomain "github.com/aby-med/medical-platform/internal/service-domain/equipment-registry/domain"
 	ticketDomain "github.com/aby-med/medical-platform/internal/service-domain/service-ticket/domain"
-	"github.com/aby-med/medical-platform/internal/service-domain/whatsapp"
 )
 
 // TicketService provides business logic for service tickets
@@ -195,8 +194,22 @@ func enabled(v string) bool {
     }
 }
 
+// WhatsAppTicketRequest represents a ticket creation request from WhatsApp
+type WhatsAppTicketRequest struct {
+	EquipmentID      string   `json:"equipment_id"`
+	QRCode           string   `json:"qr_code"`
+	SerialNumber     string   `json:"serial_number"`
+	IssueDescription string   `json:"issue_description"`
+	CustomerName     string   `json:"customer_name"`
+	CustomerPhone    string   `json:"customer_phone"`
+	CustomerWhatsApp string   `json:"customer_whatsapp"`
+	SourceMessageID  string   `json:"source_message_id"`
+	Photos           []string `json:"photos,omitempty"`
+	Videos           []string `json:"videos,omitempty"`
+}
+
 // CreateFromWhatsApp creates a ticket from a WhatsApp message
-func (s *TicketService) CreateFromWhatsApp(ctx context.Context, req whatsapp.WhatsAppTicketRequest) (string, error) {
+func (s *TicketService) CreateFromWhatsApp(ctx context.Context, req WhatsAppTicketRequest) (string, error) {
 	s.logger.Info("Creating ticket from WhatsApp",
 		slog.String("equipment_id", req.EquipmentID),
 		slog.String("qr_code", req.QRCode))
@@ -627,21 +640,14 @@ func (s *TicketService) GetStatusHistory(ctx context.Context, ticketID string) (
 func (s *TicketService) UpdateParts(ctx context.Context, ticketID string, parts []map[string]interface{}) error {
 	s.logger.Info("Updating ticket parts", slog.String("ticket_id", ticketID))
 
-	ticket, err := s.repo.GetByID(ctx, ticketID)
+	// Verify ticket exists
+	_, err := s.repo.GetByID(ctx, ticketID)
 	if err != nil {
 		return err
 	}
 
-	// Update parts used - convert to []interface{} which is JSON compatible
-	partsInterface := make([]interface{}, len(parts))
-	for i, p := range parts {
-		partsInterface[i] = p
-	}
-	
-	// Store as interface slice (will be marshaled to JSONB)
-	ticket.PartsUsed = partsInterface
-
-	if err := s.repo.Update(ctx, ticket); err != nil {
+	// Use repository to update parts (will be implemented in repository)
+	if err := s.repo.UpdateTicketParts(ctx, ticketID, parts); err != nil {
 		s.logger.Error("Failed to update ticket parts", slog.String("error", err.Error()))
 		return fmt.Errorf("failed to update ticket parts: %w", err)
 	}
@@ -651,7 +657,9 @@ func (s *TicketService) UpdateParts(ctx context.Context, ticketID string, parts 
 		"parts_count": len(parts),
 	})
 
-	s.logger.Info("Ticket parts updated successfully", slog.String("ticket_id", ticketID))
+	s.logger.Info("Ticket parts updated successfully",
+		slog.String("ticket_id", ticketID),
+		slog.Int("parts_count", len(parts)))
 	return nil
 }
 

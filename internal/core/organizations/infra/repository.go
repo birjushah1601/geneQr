@@ -2,6 +2,8 @@ package infra
 
 import (
     "context"
+    "encoding/json"
+    "fmt"
     "log/slog"
 
     "github.com/jackc/pgx/v5"
@@ -9,11 +11,14 @@ import (
 )
 
 type Organization struct {
-    ID       string `json:"id"`
-    Name     string `json:"name"`
-    OrgType  string `json:"org_type"`
-    Status   string `json:"status"`
-    Metadata []byte `json:"metadata"`
+    ID                string          `json:"id"`
+    Name              string          `json:"name"`
+    OrgType           string          `json:"org_type"`
+    Status            string          `json:"status"`
+    Metadata          json.RawMessage `json:"metadata"`
+    EquipmentCount    int             `json:"equipment_count,omitempty"`
+    EngineersCount    int             `json:"engineers_count,omitempty"`
+    ActiveTickets     int             `json:"active_tickets,omitempty"`
 }
 
 type Relationship struct {
@@ -32,10 +37,31 @@ func NewRepository(db *pgxpool.Pool, logger *slog.Logger) *Repository {
     return &Repository{db: db, logger: logger}
 }
 
-func (r *Repository) ListOrgs(ctx context.Context, limit, offset int) ([]Organization, error) {
+func (r *Repository) ListOrgs(ctx context.Context, limit, offset int, orgType, status string) ([]Organization, error) {
     if limit <= 0 || limit > 500 { limit = 100 }
     if offset < 0 { offset = 0 }
-    rows, err := r.db.Query(ctx, `SELECT id, name, org_type, status, COALESCE(metadata, '{}'::jsonb) FROM organizations ORDER BY created_at DESC LIMIT $1 OFFSET $2`, limit, offset)
+    
+    query := `SELECT id, name, org_type, status, COALESCE(metadata, '{}'::jsonb) FROM organizations WHERE 1=1`
+    args := []interface{}{}
+    argPos := 1
+    
+    // Add filters if provided
+    if orgType != "" {
+        query += ` AND org_type = $` + fmt.Sprintf("%d", argPos)
+        args = append(args, orgType)
+        argPos++
+    }
+    
+    if status != "" {
+        query += ` AND status = $` + fmt.Sprintf("%d", argPos)
+        args = append(args, status)
+        argPos++
+    }
+    
+    query += ` ORDER BY created_at DESC LIMIT $` + fmt.Sprintf("%d", argPos) + ` OFFSET $` + fmt.Sprintf("%d", argPos+1)
+    args = append(args, limit, offset)
+    
+    rows, err := r.db.Query(ctx, query, args...)
     if err != nil { return nil, err }
     defer rows.Close()
     var out []Organization
@@ -54,6 +80,40 @@ func (r *Repository) GetOrgByID(ctx context.Context, id string) (*Organization, 
         return nil, err
     }
     return &o, nil
+}
+
+func (r *Repository) GetEquipmentCount(ctx context.Context, manufacturerID string) (int, error) {
+    var count int
+    err := r.db.QueryRow(ctx, `SELECT COUNT(*) FROM equipment_registry WHERE manufacturer_id = $1`, manufacturerID).Scan(&count)
+    if err != nil {
+        return 0, err
+    }
+    return count, nil
+}
+
+func (r *Repository) GetEngineersCount(ctx context.Context, organizationID string) (int, error) {
+    var count int
+    err := r.db.QueryRow(ctx, `SELECT COUNT(DISTINCT engineer_id) FROM engineer_org_memberships WHERE org_id = $1`, organizationID).Scan(&count)
+    if err != nil {
+        return 0, err
+    }
+    return count, nil
+}
+
+func (r *Repository) GetActiveTicketsCount(ctx context.Context, manufacturerID string) (int, error) {
+    var count int
+    query := `
+        SELECT COUNT(DISTINCT st.id) 
+        FROM service_tickets st
+        JOIN equipment_registry er ON st.equipment_id = er.id
+        WHERE er.manufacturer_id = $1 
+        AND st.status != 'closed'
+    `
+    err := r.db.QueryRow(ctx, query, manufacturerID).Scan(&count)
+    if err != nil {
+        return 0, err
+    }
+    return count, nil
 }
 
 type Facility struct {

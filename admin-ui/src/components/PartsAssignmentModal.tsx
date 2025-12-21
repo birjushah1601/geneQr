@@ -54,6 +54,8 @@ interface SparePart {
   installation_time_minutes?: number;
   lead_time_days?: number;
   minimum_order_quantity: number;
+  image_url?: string;
+  photos?: string[];
 }
 
 interface SelectedPart extends SparePart {
@@ -358,6 +360,21 @@ export function PartsAssignmentModal({
                               onCheckedChange={() => handleSelectPart(part)}
                               onClick={(e) => e.stopPropagation()}
                             />
+                            
+                            {/* Part Image */}
+                            {part.image_url && (
+                              <div className="w-20 h-20 flex-shrink-0 rounded-md overflow-hidden bg-gray-100">
+                                <img 
+                                  src={part.image_url} 
+                                  alt={part.part_name}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    // Hide image if it fails to load
+                                    (e.target as HTMLImageElement).style.display = 'none';
+                                  }}
+                                />
+                              </div>
+                            )}
                             
                             <div className="flex-1 space-y-2">
                               <div className="flex items-start justify-between">

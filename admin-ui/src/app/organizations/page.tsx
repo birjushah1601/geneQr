@@ -1,17 +1,32 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { organizationsApi, Organization } from '@/lib/api/organizations';
 import { Building2, MapPin, Users, Filter, Search, Loader2, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 
 export default function OrganizationsPage() {
+  const searchParams = useSearchParams();
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
+
+  // Initialize filters from URL query parameters
+  useEffect(() => {
+    const typeParam = searchParams.get('type');
+    const statusParam = searchParams.get('status');
+    
+    if (typeParam) {
+      setFilterType(typeParam);
+    }
+    if (statusParam) {
+      setFilterStatus(statusParam);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     loadOrganizations();

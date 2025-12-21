@@ -35,34 +35,57 @@ export default function AdminDashboard() {
 
   const { data: equipmentData, isLoading: loadingEquipment } = useQuery({
     queryKey: ['equipment', 'count'],
-    queryFn: () => equipmentApi.list({ page: 1, page_size: 1 }),
+    queryFn: async () => {
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8081/api';
+      const response = await fetch(`${apiBaseUrl}/v1/equipment?limit=1000`, {
+        headers: { 'X-Tenant-ID': 'default' }
+      });
+      const data = await response.json();
+      return { equipment: data.equipment || [], total: data.equipment?.length || 0 };
+    },
   });
 
   const { data: ticketsData, isLoading: loadingTickets } = useQuery({
     queryKey: ['tickets', 'count', 'active'],
-    queryFn: () => ticketsApi.list({ page: 1, page_size: 1 }),
+    queryFn: async () => {
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8081/api';
+      const response = await fetch(`${apiBaseUrl}/v1/tickets?limit=1000`, {
+        headers: { 'X-Tenant-ID': 'default' }
+      });
+      if (!response.ok) return { total: 0 };
+      const data = await response.json();
+      // Filter active tickets (not closed)
+      const activeTickets = (data.tickets || []).filter((t: any) => t.status !== 'closed');
+      return { total: activeTickets.length, tickets: activeTickets };
+    },
     retry: false,
-    // Suppress errors on dashboard
     throwOnError: false,
   });
 
   const { data: engineersData, isLoading: loadingEngineers } = useQuery({
     queryKey: ['engineers', 'count'],
-    queryFn: () => engineersApi.list({ page: 1, page_size: 1 }),
+    queryFn: async () => {
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8081/api';
+      const response = await fetch(`${apiBaseUrl}/v1/engineers?limit=1000`, {
+        headers: { 'X-Tenant-ID': 'default' }
+      });
+      const data = await response.json();
+      return { total: data.engineers?.length || 0, engineers: data.engineers || [] };
+    },
   });
 
   // Calculate organization breakdown
-  const orgsData: any = organizationsData;
+  const orgsArray = Array.isArray(organizationsData) ? organizationsData : [];
   const orgsByType = {
-    manufacturer: orgsData?.items?.filter((o: any) => o.org_type === 'manufacturer').length || 0,
-    distributor: orgsData?.items?.filter((o: any) => o.org_type === 'distributor').length || 0,
-    dealer: orgsData?.items?.filter((o: any) => o.org_type === 'dealer').length || 0,
-    hospital: orgsData?.items?.filter((o: any) => o.org_type === 'hospital').length || 0,
+    manufacturer: orgsArray.filter((o: any) => o.org_type === 'manufacturer').length,
+    distributor: orgsArray.filter((o: any) => o.org_type === 'distributor').length,
+    dealer: orgsArray.filter((o: any) => o.org_type === 'dealer').length,
+    hospital: orgsArray.filter((o: any) => o.org_type === 'hospital').length,
   };
 
   // Calculate platform stats from API responses
   const platformStats = {
-    totalOrganizations: orgsData?.items?.length || 0,
+    totalOrganizations: orgsArray.length,
     manufacturers: orgsByType.manufacturer,
     distributors: orgsByType.distributor,
     dealers: orgsByType.dealer,

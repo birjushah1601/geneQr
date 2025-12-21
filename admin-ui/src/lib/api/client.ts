@@ -28,14 +28,8 @@ apiClient.interceptors.request.use(
     // Add tenant ID header
     config.headers['X-Tenant-ID'] = DEFAULT_TENANT_ID;
 
-    // API key for backend auth (dev)
-    const apiKey = process.env.NEXT_PUBLIC_API_KEY || 'dev-key-001';
-    if (apiKey) {
-      config.headers['X-API-Key'] = apiKey;
-    }
-
-    // Add auth token (when implemented)
-    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+    // Add auth token from localStorage (JWT from AuthContext)
+    const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -51,22 +45,83 @@ apiClient.interceptors.request.use(
 // RESPONSE INTERCEPTOR
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+let refreshTokenFunction: (() => Promise<boolean>) | null = null;
+let isRefreshing = false;
+let failedQueue: Array<{ resolve: (value?: any) => void; reject: (reason?: any) => void }> = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  
+  failedQueue = [];
+};
+
+// Function to set refresh token callback (called from AuthProvider)
+export const setRefreshTokenFunction = (fn: () => Promise<boolean>) => {
+  refreshTokenFunction = fn;
+};
+
 apiClient.interceptors.response.use(
   (response) => {
     return response;
   },
-  (error: AxiosError) => {
-    // Handle common errors
+  async (error: AxiosError) => {
+    const originalRequest: any = error.config;
+
+    // Handle 401 Unauthorized with token refresh
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        // Queue requests while refreshing
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then(() => {
+          return apiClient(originalRequest);
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      if (refreshTokenFunction) {
+        try {
+          const success = await refreshTokenFunction();
+          if (success) {
+            processQueue(null, null);
+            // Retry original request with new token
+            const newToken = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+            if (newToken) {
+              originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            }
+            return apiClient(originalRequest);
+          }
+        } catch (err) {
+          processQueue(err, null);
+          // Redirect to login
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+          }
+          return Promise.reject(err);
+        } finally {
+          isRefreshing = false;
+        }
+      }
+
+      // No refresh function available, redirect to login
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+    }
+
+    // Handle other errors
     if (error.response) {
       const status = error.response.status;
       
       switch (status) {
-        case 401:
-          // Unauthorized - redirect to login
-          if (typeof window !== 'undefined') {
-            window.location.href = '/login';
-          }
-          break;
         case 403:
           console.error('Access forbidden');
           break;
