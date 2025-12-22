@@ -7,15 +7,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aby-med/internal/infrastructure/config"
-	"github.com/aby-med/internal/infrastructure/email"
+	"github.com/aby-med/medical-platform/internal/infrastructure/config"
 	"github.com/robfig/cron/v3"
 )
 
 // ReportScheduler handles scheduling of daily reports
 type ReportScheduler struct {
 	reportService *DailyReportService
-	emailService  *email.NotificationService
+	sendgridAPIKey string
+	fromEmail      string
+	fromName       string
 	featureFlags  *config.FeatureFlags
 	logger        *slog.Logger
 	cron          *cron.Cron
@@ -30,7 +31,7 @@ type ReportScheduler struct {
 // NewReportScheduler creates a new report scheduler
 func NewReportScheduler(
 	reportService *DailyReportService,
-	emailService *email.NotificationService,
+	sendgridAPIKey, fromEmail, fromName string,
 	featureFlags *config.FeatureFlags,
 	logger *slog.Logger,
 	morningTime, eveningTime string,
@@ -48,15 +49,17 @@ func NewReportScheduler(
 	cronScheduler := cron.New(cron.WithLocation(loc))
 
 	return &ReportScheduler{
-		reportService: reportService,
-		emailService:  emailService,
-		featureFlags:  featureFlags,
-		logger:        logger,
-		cron:          cronScheduler,
-		morningTime:   morningTime,
-		eveningTime:   eveningTime,
-		recipients:    recipients,
-		timezone:      loc,
+		reportService:  reportService,
+		sendgridAPIKey: sendgridAPIKey,
+		fromEmail:      fromEmail,
+		fromName:       fromName,
+		featureFlags:   featureFlags,
+		logger:         logger,
+		cron:           cronScheduler,
+		morningTime:    morningTime,
+		eveningTime:    eveningTime,
+		recipients:     recipients,
+		timezone:       loc,
 	}, nil
 }
 
@@ -150,7 +153,7 @@ func (s *ReportScheduler) sendScheduledReport(reportType string) {
 	}
 
 	// Send email
-	err = s.emailService.SendDailyReportEmail(ctx, report, s.recipients)
+	err = SendDailyReportEmail(ctx, s.sendgridAPIKey, s.fromEmail, s.fromName, report, s.recipients)
 	if err != nil {
 		s.logger.Error("Failed to send daily report email",
 			slog.String("type", reportType),
@@ -182,7 +185,7 @@ func (s *ReportScheduler) SendNow(reportType string) error {
 	}
 
 	// Send email
-	err = s.emailService.SendDailyReportEmail(ctx, report, s.recipients)
+	err = SendDailyReportEmail(ctx, s.sendgridAPIKey, s.fromEmail, s.fromName, report, s.recipients)
 	if err != nil {
 		return fmt.Errorf("failed to send report email: %w", err)
 	}

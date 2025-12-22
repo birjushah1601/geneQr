@@ -20,6 +20,7 @@ import (
 	sharedmiddleware "github.com/aby-med/medical-platform/internal/shared/middleware"
 	appmiddleware "github.com/aby-med/medical-platform/internal/middleware"
     organizations "github.com/aby-med/medical-platform/internal/core/organizations"
+	"github.com/aby-med/medical-platform/internal/infrastructure/reports"
 	"github.com/aby-med/medical-platform/internal/marketplace/catalog"
 	"github.com/aby-med/medical-platform/internal/service-domain/rfq"
 	"github.com/aby-med/medical-platform/internal/service-domain/supplier"
@@ -435,6 +436,25 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 		err = initAuthModule(router, authDB, logger)
 		if err != nil {
 			logger.Warn("Failed to initialize auth module", slog.String("error", err.Error()))
+		}
+	}
+
+	// ========================================================================
+	// INITIALIZE NOTIFICATIONS AND REPORTS SYSTEMS
+	// ========================================================================
+	var reportScheduler *reports.ReportScheduler
+	if authDB != nil {
+		notifMgr, scheduler, err := initNotificationsAndReports(ctx, authDB, logger)
+		if err != nil {
+			logger.Warn("Failed to initialize notifications/reports", slog.String("error", err.Error()))
+		}
+		// Store notification manager and scheduler for cleanup
+		_ = notifMgr // Available for use in modules if needed
+		reportScheduler = scheduler
+		
+		// Schedule cleanup on shutdown
+		if reportScheduler != nil {
+			defer reportScheduler.Stop()
 		}
 	}
 

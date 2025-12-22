@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/aby-med/internal/infrastructure/config"
-	"github.com/aby-med/internal/infrastructure/email"
+	"github.com/aby-med/medical-platform/internal/infrastructure/config"
+	"github.com/aby-med/medical-platform/internal/infrastructure/email"
 )
 
 // Manager handles all notification types with feature flag support

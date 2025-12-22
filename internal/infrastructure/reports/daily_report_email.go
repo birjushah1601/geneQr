@@ -1,22 +1,20 @@
-package email
+package reports
 
 import (
 	"context"
 	"fmt"
-	"time"
 
-	"github.com/aby-med/internal/infrastructure/reports"
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
 // SendDailyReportEmail sends the daily report email to admins
-func (s *NotificationService) SendDailyReportEmail(ctx context.Context, report *reports.DailyReportData, recipients []string) error {
+func SendDailyReportEmail(ctx context.Context, apiKey, fromEmail, fromName string, report *DailyReportData, recipients []string) error {
 	if len(recipients) == 0 {
 		return fmt.Errorf("no recipients provided for daily report")
 	}
 
-	from := mail.NewEmail(s.fromName, s.fromEmail)
+	from := mail.NewEmail(fromName, fromEmail)
 	
 	// Determine subject based on report type
 	var subject string
@@ -27,11 +25,11 @@ func (s *NotificationService) SendDailyReportEmail(ctx context.Context, report *
 	}
 
 	// Generate email content
-	plainText := s.generateDailyReportPlainText(report)
-	htmlContent := s.generateDailyReportHTML(report)
+	plainText := generateDailyReportPlainText(report)
+	htmlContent := generateDailyReportHTML(report)
 
 	// Send to each recipient
-	client := sendgrid.NewSendClient(s.apiKey)
+	client := sendgrid.NewSendClient(apiKey)
 	
 	for _, recipientEmail := range recipients {
 		to := mail.NewEmail("Admin", recipientEmail)
@@ -51,7 +49,7 @@ func (s *NotificationService) SendDailyReportEmail(ctx context.Context, report *
 }
 
 // generateDailyReportPlainText generates plain text version of the report
-func (s *NotificationService) generateDailyReportPlainText(report *reports.DailyReportData) string {
+func generateDailyReportPlainText(report *DailyReportData) string {
 	reportTime := "Morning"
 	if report.ReportType == "evening" {
 		reportTime = "Evening"
@@ -144,7 +142,7 @@ ABY-MED Admin System
 }
 
 // generateDailyReportHTML generates HTML version of the report
-func (s *NotificationService) generateDailyReportHTML(report *reports.DailyReportData) string {
+func generateDailyReportHTML(report *DailyReportData) string {
 	reportTime := "Morning"
 	headerColor := "#f59e0b" // Orange for morning
 	if report.ReportType == "evening" {
