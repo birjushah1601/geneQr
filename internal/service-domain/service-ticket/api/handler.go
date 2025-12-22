@@ -10,29 +10,33 @@ import (
 
 	"github.com/aby-med/medical-platform/internal/service-domain/service-ticket/app"
 	"github.com/aby-med/medical-platform/internal/service-domain/service-ticket/domain"
+	"github.com/aby-med/medical-platform/internal/shared/audit"
 	"github.com/go-chi/chi/v5"
     "github.com/jackc/pgx/v5/pgxpool"
 )
 
 // TicketHandler handles HTTP requests for service tickets
 type TicketHandler struct {
-	service *app.TicketService
-	logger  *slog.Logger
-    pool    *pgxpool.Pool
+	service     *app.TicketService
+	logger      *slog.Logger
+    pool        *pgxpool.Pool
+	auditLogger *audit.AuditLogger
 }
 
 // NewTicketHandler creates a new ticket HTTP handler
-func NewTicketHandler(service *app.TicketService, logger *slog.Logger, pool *pgxpool.Pool) *TicketHandler {
+func NewTicketHandler(service *app.TicketService, logger *slog.Logger, pool *pgxpool.Pool, auditLogger *audit.AuditLogger) *TicketHandler {
 	return &TicketHandler{
-		service: service,
-		logger:  logger.With(slog.String("component", "ticket_handler")),
-        pool:    pool,
+		service:     service,
+		logger:      logger.With(slog.String("component", "ticket_handler")),
+        pool:        pool,
+		auditLogger: auditLogger,
 	}
 }
 
 // CreateTicket handles POST /tickets
 func (h *TicketHandler) CreateTicket(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	startTime := time.Now()
 
 	var req app.CreateTicketRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -44,6 +48,28 @@ func (h *TicketHandler) CreateTicket(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.logger.Error("Failed to create ticket", slog.String("error", err.Error()))
 		h.respondError(w, http.StatusInternalServerError, "Failed to create ticket: "+err.Error())
+		
+		// Log failure to audit
+		if h.auditLogger != nil {
+			errorMsg := err.Error()
+			durationMs := int(time.Since(startTime).Milliseconds())
+			h.auditLogger.LogAsync(ctx, &audit.AuditEvent{
+				EventType:     "ticket_create_failed",
+				EventCategory: audit.CategoryTicket,
+				EventAction:   audit.ActionCreate,
+				EventStatus:   audit.StatusFailure,
+				IPAddress:     stringPtr(audit.ExtractIPAddress(r)),
+				UserAgent:     stringPtr(audit.ExtractUserAgent(r)),
+				RequestMethod: stringPtr(r.Method),
+				RequestPath:   stringPtr(r.URL.Path),
+				ErrorMessage:  &errorMsg,
+				DurationMs:    &durationMs,
+				Metadata: map[string]interface{}{
+					"qr_code":      req.QRCode,
+					"equipment_id": req.EquipmentID,
+				},
+			})
+		}
 		return
 	}
 
@@ -95,7 +121,49 @@ func (h *TicketHandler) CreateTicket(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Log successful ticket creation to audit
+	if h.auditLogger != nil {
+		durationMs := int(time.Since(startTime).Milliseconds())
+		ipAddress := audit.ExtractIPAddress(r)
+		
+		metadata := map[string]interface{}{
+			"qr_code":        req.QRCode,
+			"equipment_id":   req.EquipmentID,
+			"priority":       req.Priority,
+			"parts_count":    len(req.PartsRequested),
+			"source":         req.Source,
+		}
+		
+		if req.CustomerName != "" {
+			metadata["customer_name"] = req.CustomerName
+		}
+		if req.CustomerPhone != "" {
+			metadata["customer_phone"] = req.CustomerPhone
+		}
+
+		h.auditLogger.LogAsync(ctx, &audit.AuditEvent{
+			EventType:     "ticket_created",
+			EventCategory: audit.CategoryTicket,
+			EventAction:   audit.ActionCreate,
+			EventStatus:   audit.StatusSuccess,
+			ResourceType:  stringPtr("ticket"),
+			ResourceID:    &ticket.ID,
+			ResourceName:  stringPtr(ticket.TicketNumber),
+			IPAddress:     &ipAddress,
+			UserAgent:     stringPtr(audit.ExtractUserAgent(r)),
+			RequestMethod: stringPtr(r.Method),
+			RequestPath:   stringPtr(r.URL.Path),
+			DurationMs:    &durationMs,
+			Metadata:      metadata,
+		})
+	}
+
 	h.respondJSON(w, http.StatusCreated, ticket)
+}
+
+// Helper function
+func stringPtr(s string) *string {
+	return &s
 }
 
 // GetTicket handles GET /tickets/{id}

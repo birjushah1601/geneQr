@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aby-med/medical-platform/internal/middleware"
+	"github.com/aby-med/medical-platform/internal/pkg/orgfilter"
 	"github.com/aby-med/medical-platform/internal/service-domain/service-ticket/domain"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/segmentio/ksuid"
@@ -24,6 +26,9 @@ func NewAssignmentRepository(pool *pgxpool.Pool) *AssignmentRepository {
 
 // ListEngineers retrieves engineers, optionally filtered by organization
 func (r *AssignmentRepository) ListEngineers(ctx context.Context, organizationID *string, limit, offset int) ([]*domain.Engineer, error) {
+	// Get organization context for filtering
+	orgID, hasOrgID := middleware.GetOrganizationID(ctx)
+	
 	if limit <= 0 {
 		limit = 100
 	}
@@ -48,9 +53,17 @@ func (r *AssignmentRepository) ListEngineers(ctx context.Context, organizationID
 	
 	args := []interface{}{}
 	argPos := 1
-	
-	if organizationID != nil && *organizationID != "" {
-		query += fmt.Sprintf(" AND eom.org_id = $%d", argPos)
+
+	// Apply organization filter (CRITICAL for multi-tenancy)
+	// Engineers belong to organizations through engineer_org_memberships
+	if hasOrgID && !orgfilter.IsSystemAdmin(ctx) {
+		query += fmt.Sprintf(` AND eom.org_id = $%d AND eom.status = 'active'`, argPos)
+		args = append(args, orgID.String())
+		argPos++
+		fmt.Printf("[ORGFILTER] Engineer list filtered for org_id=%s\n", orgID)
+	} else if organizationID != nil && *organizationID != "" {
+		// Fallback to parameter-based filtering if provided
+		query += fmt.Sprintf(` AND eom.org_id = $%d AND eom.status = 'active'`, argPos)
 		args = append(args, *organizationID)
 		argPos++
 	}
@@ -426,4 +439,66 @@ func (r *AssignmentRepository) AssignEngineerToTicket(ctx context.Context, req d
 	)
 	
 	return err
+}
+
+// GetAssignmentHistoryByTicketID retrieves all assignment history for a ticket
+func (r *AssignmentRepository) GetAssignmentHistoryByTicketID(ctx context.Context, ticketID string) ([]*domain.EngineerAssignment, error) {
+	query := `
+		SELECT 
+			id,
+			ticket_id,
+			engineer_id,
+			engineer_name,
+			assigned_by,
+			assigned_at,
+			reason,
+			previous_engineer_id,
+			previous_engineer_name
+		FROM ticket_assignment_history
+		WHERE ticket_id = $1
+		ORDER BY assigned_at DESC
+	`
+	
+	rows, err := r.pool.Query(ctx, query, ticketID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query assignment history: %w", err)
+	}
+	defer rows.Close()
+	
+	var assignments []*domain.EngineerAssignment
+	for rows.Next() {
+		var a domain.EngineerAssignment
+		var prevEngineerID, prevEngineerName, reason *string
+		
+		err := rows.Scan(
+			&a.ID,
+			&a.TicketID,
+			&a.EngineerID,
+			&a.EngineerName,
+			&a.AssignedBy,
+			&a.AssignedAt,
+			&reason,
+			&prevEngineerID,
+			&prevEngineerName,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan assignment: %w", err)
+		}
+		
+		// Set optional fields
+		if reason != nil {
+			a.AssignmentReason = *reason
+		}
+		
+		// Determine status based on presence in history
+		a.Status = domain.AssignmentStatusCompleted
+		
+		assignments = append(assignments, &a)
+	}
+	
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating assignment history: %w", err)
+	}
+	
+	return assignments, nil
 }

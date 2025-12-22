@@ -334,3 +334,29 @@ func (h *AssignmentHandler) respondJSON(w http.ResponseWriter, status int, data 
 func (h *AssignmentHandler) respondError(w http.ResponseWriter, status int, message string) {
 	h.respondJSON(w, status, map[string]string{"error": message})
 }
+
+// GetAssignmentHistory handles GET /tickets/{id}/assignments/history
+func (h *AssignmentHandler) GetAssignmentHistory(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	ticketID := chi.URLParam(r, "id")
+	
+	if ticketID == "" {
+		h.respondError(w, http.StatusBadRequest, "Ticket ID is required")
+		return
+	}
+	
+	history, err := h.service.GetAssignmentHistory(ctx, ticketID)
+	if err != nil {
+		h.logger.Error("Failed to get assignment history",
+			slog.String("ticket_id", ticketID),
+			slog.String("error", err.Error()))
+		h.respondError(w, http.StatusInternalServerError, "Failed to get assignment history: "+err.Error())
+		return
+	}
+	
+	h.respondJSON(w, http.StatusOK, map[string]interface{}{
+		"ticket_id":   ticketID,
+		"count":       len(history),
+		"assignments": history,
+	})
+}

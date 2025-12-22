@@ -64,10 +64,11 @@ const (
 
 // EngineerAssignment represents an engineer assigned to work on a service ticket
 type EngineerAssignment struct {
-	ID          string `json:"id"`
-	TicketID    string `json:"ticket_id"`
-	EngineerID  string `json:"engineer_id"`
-	EquipmentID string `json:"equipment_id"`
+	ID           string `json:"id"`
+	TicketID     string `json:"ticket_id"`
+	EngineerID   string `json:"engineer_id"`
+	EngineerName string `json:"engineer_name"`
+	EquipmentID  string `json:"equipment_id"`
 
 	// Sequence tracking
 	AssignmentSequence int    `json:"assignment_sequence"` // 1, 2, 3... for escalations

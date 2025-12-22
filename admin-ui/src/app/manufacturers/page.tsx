@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Search, Plus, Upload, Download, Building2, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
 import { organizationsApi } from '@/lib/api/organizations';
+import DashboardLayout from '@/components/DashboardLayout';
 
 interface Manufacturer {
   id: string;
@@ -188,7 +189,7 @@ export default function ManufacturersListPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <DashboardLayout>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">
@@ -436,6 +437,6 @@ export default function ManufacturersListPage() {
           </Card>
         )}
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

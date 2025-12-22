@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ticketsApi } from "@/lib/api/tickets";
 import type { ServiceTicket, TicketPriority, TicketStatus } from "@/types";
 import { Loader2, Filter, Search, Ticket as TicketIcon, User, Package, Calendar } from "lucide-react";
+import DashboardLayout from "@/components/DashboardLayout";
 
 function StatusBadge({ status }: { status: TicketStatus }) {
   const color = {
@@ -76,9 +77,9 @@ export default function TicketsListPage() {
   }, [data, search]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+    <DashboardLayout>
+      <div className="bg-white border-b -mx-6 -mt-6 px-6 py-4 mb-6">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <TicketIcon className="h-6 w-6 text-gray-700" />
             <h1 className="text-xl font-semibold">Service Tickets</h1>
@@ -87,7 +88,7 @@ export default function TicketsListPage() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6">
+      <div>
         {/* Filters */}
         <div className="bg-white rounded-md border p-4 mb-4">
           <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
@@ -171,6 +172,6 @@ export default function TicketsListPage() {
           </div>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

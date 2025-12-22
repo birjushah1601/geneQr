@@ -37,6 +37,8 @@ function ServiceRequestPageInner() {
     description: '',
     priority: 'medium',
     requestedBy: '',
+    contactName: '',
+    contactPhone: '',
   });
 
   useEffect(() => {

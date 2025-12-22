@@ -16,6 +16,7 @@ type AuthService struct {
 	jwtService   *JWTService
 	pwdService   *PasswordService
 	auditRepo    domain.AuditRepository
+	orgRepo      domain.OrganizationRepository
 	config       *AuthConfig
 }
 
@@ -33,6 +34,7 @@ func NewAuthService(
 	jwtService *JWTService,
 	pwdService *PasswordService,
 	auditRepo domain.AuditRepository,
+	orgRepo domain.OrganizationRepository,
 	config *AuthConfig,
 ) *AuthService {
 	if config == nil {
@@ -49,6 +51,7 @@ func NewAuthService(
 		jwtService: jwtService,
 		pwdService: pwdService,
 		auditRepo:  auditRepo,
+		orgRepo:    orgRepo,
 		config:     config,
 	}
 }
@@ -248,33 +251,44 @@ func (s *AuthService) VerifyOTPAndLogin(ctx context.Context, req *VerifyOTPLogin
 
 // LoginWithPassword handles password-based login
 func (s *AuthService) LoginWithPassword(ctx context.Context, req *LoginPasswordRequest) (*TokenResponse, error) {
+	fmt.Printf("[DEBUG] LoginWithPassword called, identifier=%s\n", req.Identifier)
+	
 	// Get user
 	user, err := s.userRepo.GetByEmailOrPhone(ctx, req.Identifier)
 	if err != nil {
+		fmt.Printf("[DEBUG] User not found: %v\n", err)
 		s.logAudit(ctx, nil, domain.AuditActionLoginFailed, false, req.IPAddress, "User not found")
 		return nil, fmt.Errorf("invalid credentials")
 	}
 
+	fmt.Printf("[DEBUG] User found: id=%s, email=%v, status=%s\n", user.ID, user.Email, user.Status)
+
 	// Check if account is locked
 	if user.IsLocked() {
+		fmt.Printf("[DEBUG] Account is locked\n")
 		s.logAudit(ctx, &user.ID, domain.AuditActionLoginFailed, false, req.IPAddress, "Account locked")
 		return nil, fmt.Errorf("account is locked until %s", user.LockedUntil.Format(time.RFC3339))
 	}
 
 	// Check if account can login
 	if !user.CanLogin() {
+		fmt.Printf("[DEBUG] Account cannot login, status=%s\n", user.Status)
 		s.logAudit(ctx, &user.ID, domain.AuditActionLoginFailed, false, req.IPAddress, "Account inactive")
 		return nil, fmt.Errorf("account is not active")
 	}
 
 	// Check if user has password set
 	if user.PasswordHash == nil {
+		fmt.Printf("[DEBUG] No password set\n")
 		s.logAudit(ctx, &user.ID, domain.AuditActionLoginFailed, false, req.IPAddress, "No password set")
 		return nil, fmt.Errorf("password login not available, please use OTP")
 	}
 
+	fmt.Printf("[DEBUG] Verifying password, hash_length=%d\n", len(*user.PasswordHash))
+
 	// Verify password
 	if err := s.pwdService.VerifyPassword(req.Password, *user.PasswordHash); err != nil {
+		fmt.Printf("[DEBUG] Password verification failed: %v\n", err)
 		// Increment failed attempts
 		s.userRepo.IncrementFailedAttempts(ctx, user.ID)
 
@@ -301,6 +315,18 @@ func (s *AuthService) LoginWithPassword(ctx context.Context, req *LoginPasswordR
 		primaryOrg = &userOrgs[0]
 	}
 
+	// Fetch organization details to get org_type
+	var orgType string
+	if primaryOrg != nil {
+		org, err := s.orgRepo.GetByID(ctx, primaryOrg.OrganizationID)
+		if err == nil {
+			orgType = org.Type
+			fmt.Printf("[DEBUG] Fetched organization: name=%s, type=%s\n", org.Name, org.Type)
+		} else {
+			fmt.Printf("[DEBUG] Failed to fetch organization: %v\n", err)
+		}
+	}
+
 	// Generate tokens
 	tokenReq := &TokenRequest{
 		UserID:     user.ID,
@@ -311,6 +337,7 @@ func (s *AuthService) LoginWithPassword(ctx context.Context, req *LoginPasswordR
 	}
 	if primaryOrg != nil {
 		tokenReq.OrganizationID = primaryOrg.OrganizationID.String()
+		tokenReq.OrganizationType = orgType
 		tokenReq.Role = primaryOrg.Role
 		tokenReq.Permissions = primaryOrg.Permissions
 	}

@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -145,11 +146,15 @@ func (h *AuthHandler) LoginWithPassword(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		fmt.Printf("[DEBUG] Failed to decode login request: %v\n", err)
 		respondError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
+	fmt.Printf("[DEBUG] Login attempt: identifier=%s, has_password=%v\n", req.Identifier, len(req.Password) > 0)
+
 	if req.Identifier == "" || req.Password == "" {
+		fmt.Printf("[DEBUG] Missing identifier or password\n")
 		respondError(w, http.StatusBadRequest, "identifier and password are required")
 		return
 	}
@@ -161,10 +166,12 @@ func (h *AuthHandler) LoginWithPassword(w http.ResponseWriter, r *http.Request) 
 		IPAddress:  getIPAddress(r),
 	})
 	if err != nil {
+		fmt.Printf("[DEBUG] Login failed: identifier=%s, error=%v\n", req.Identifier, err)
 		respondError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
 
+	fmt.Printf("[DEBUG] Login successful: identifier=%s\n", req.Identifier)
 	respondJSON(w, http.StatusOK, tokens)
 }
 

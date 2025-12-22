@@ -1,6 +1,11 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import DashboardLayout from '@/components/DashboardLayout';
+import ManufacturerDashboard from '@/components/dashboards/ManufacturerDashboard';
+import HospitalDashboard from '@/components/dashboards/HospitalDashboard';
+import DistributorDashboard from '@/components/dashboards/DistributorDashboard';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,6 +31,38 @@ import { engineersApi } from '@/lib/api/engineers';
 
 export default function AdminDashboard() {
   const router = useRouter();
+  const { organizationContext, isLoading: authLoading } = useAuth();
+
+  // Route to organization-specific dashboard based on org_type
+  const getDashboardContent = () => {
+    if (!authLoading && organizationContext) {
+      const orgType = organizationContext.organization_type;
+      
+      switch (orgType) {
+        case 'manufacturer':
+          return <ManufacturerDashboard />;
+        case 'hospital':
+        case 'imaging_center':
+          return <HospitalDashboard />;
+        case 'distributor':
+        case 'dealer':
+          return <DistributorDashboard />;
+        // If no specific dashboard, fall through to admin dashboard
+      }
+    }
+
+    // Default: Return admin dashboard content
+    return null; // Will render admin dashboard below
+  };
+
+  const dashboardContent = getDashboardContent();
+  
+  // If we have org-specific dashboard, wrap it with layout and return
+  if (dashboardContent) {
+    return <DashboardLayout>{dashboardContent}</DashboardLayout>;
+  }
+
+  // Default: Show admin/system dashboard (for system_admin or unrecognized org types)
 
   // Fetch organizations stats from new unified API
   const { data: organizationsData, isLoading: loadingOrganizations } = useQuery({
@@ -98,32 +135,8 @@ export default function AdminDashboard() {
   const isLoading = loadingOrganizations || loadingEquipment || loadingTickets || loadingEngineers;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">GenQ Admin Portal</h1>
-              <p className="text-gray-600">
-                Platform Administration
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="text-right">
-                <p className="text-sm font-medium">Admin</p>
-                <p className="text-xs text-gray-500">admin@genq.com</p>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold">
-                A
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
+    <DashboardLayout>
+      <div>
         {/* Welcome Message */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold mb-2">Admin Dashboard</h2>
@@ -457,6 +470,6 @@ export default function AdminDashboard() {
           </Card>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

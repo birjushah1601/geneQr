@@ -1,9 +1,14 @@
 ﻿package serviceticket
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
+	"net/http"
+	"time"
 
 	equipmentInfra "github.com/aby-med/medical-platform/internal/service-domain/equipment-registry/infra"
 	"github.com/aby-med/medical-platform/internal/service-domain/equipment-registry/qrcode"
@@ -11,6 +16,8 @@ import (
 	"github.com/aby-med/medical-platform/internal/service-domain/service-ticket/app"
 	"github.com/aby-med/medical-platform/internal/service-domain/service-ticket/infra"
 	"github.com/aby-med/medical-platform/internal/service-domain/whatsapp"
+	"github.com/aby-med/medical-platform/internal/shared/audit"
+	sharedMiddleware "github.com/aby-med/medical-platform/internal/shared/middleware"
 	attachmentDomain "github.com/aby-med/medical-platform/internal/service-domain/attachment/domain"
 	attachmentInfra "github.com/aby-med/medical-platform/internal/service-domain/attachment/infra"
 	"github.com/go-chi/chi/v5"
@@ -27,6 +34,10 @@ type Module struct {
 	logger                     *slog.Logger
 	dispatcher                 *app.WebhookDispatcher
 	slaMonitor                 *app.SLAMonitor
+	qrRateLimiter              *sharedMiddleware.QRRateLimiter
+	ipRateLimiter              *sharedMiddleware.IPRateLimiter
+	inputSanitizer             *sharedMiddleware.InputSanitizer
+	auditLogger                *audit.AuditLogger
 }
 
 // ModuleConfig holds module configuration
@@ -98,8 +109,12 @@ func (m *Module) Initialize(ctx context.Context) error {
     // Create SLA monitor (started conditionally)
     m.slaMonitor = app.NewSLAMonitor(pool, m.logger)
 
-    // Create HTTP handlers
-    m.ticketHandler = api.NewTicketHandler(ticketService, m.logger, pool)
+	// Initialize audit logger first (needed by handlers)
+	m.auditLogger = audit.NewAuditLogger(pool, m.logger)
+	m.logger.Info("Audit logger initialized")
+	
+    // Create HTTP handlers (with audit logger)
+    m.ticketHandler = api.NewTicketHandler(ticketService, m.logger, pool, m.auditLogger)
 	m.assignmentHandler = api.NewAssignmentHandler(assignmentService, m.logger)
 	m.multiModelAssignmentHandler = api.NewMultiModelAssignmentHandler(multiModelService, m.logger)
 
@@ -121,6 +136,20 @@ func (m *Module) Initialize(ctx context.Context) error {
 	}
 	m.whatsappHandler = whatsapp.NewWebhookHandler(whatsappConfig, qrGenerator, ticketService, m.logger, attService)
 
+	// Initialize QR-based rate limiter
+	// 5 tickets per QR code per hour (prevents spam while allowing legitimate use)
+	m.qrRateLimiter = sharedMiddleware.NewQRRateLimiter(5, 1*time.Hour, m.logger)
+	m.logger.Info("QR rate limiter initialized", slog.Int("limit", 5), slog.String("window", "1 hour"))
+
+	// Initialize IP-based rate limiter
+	// 20 tickets per IP per hour (prevents multi-QR spam attacks)
+	m.ipRateLimiter = sharedMiddleware.NewIPRateLimiter(20, 1*time.Hour, m.logger)
+	m.logger.Info("IP rate limiter initialized", slog.Int("limit", 20), slog.String("window", "1 hour"))
+
+	// Initialize input sanitizer
+	m.inputSanitizer = sharedMiddleware.NewInputSanitizer(m.logger)
+	m.logger.Info("Input sanitizer initialized")
+
 	m.logger.Info("Service Ticket module initialized successfully")
 	return nil
 }
@@ -129,9 +158,35 @@ func (m *Module) Initialize(ctx context.Context) error {
 func (m *Module) MountRoutes(r chi.Router) {
 	m.logger.Info("Mounting Service Ticket routes")
 
+	// QR code extractor for rate limiting
+	qrCodeExtractor := func(r *http.Request) string {
+		var body map[string]interface{}
+		// Read body for QR code
+		if r.Body != nil {
+			json.NewDecoder(r.Body).Decode(&body)
+			// Restore body for handler
+			r.Body = io.NopCloser(bytes.NewReader([]byte{}))
+		}
+		if qrCode, ok := body["QRCode"].(string); ok {
+			return qrCode
+		}
+		if qrCode, ok := body["qr_code"].(string); ok {
+			return qrCode
+		}
+		return ""
+	}
+
 	// Service ticket management routes
 	r.Route("/tickets", func(r chi.Router) {
-		r.Post("/", m.ticketHandler.CreateTicket)              // Create ticket
+		// Apply multiple security middlewares to ticket creation
+		// 1. Input sanitization (strip HTML/scripts, limit sizes)
+		// 2. IP rate limiting (20 tickets per IP per hour)
+		// 3. QR rate limiting (5 tickets per QR code per hour)
+		r.With(
+			m.inputSanitizer.Middleware(sharedMiddleware.DefaultSanitizeConfig()),
+			m.ipRateLimiter.Middleware,
+			m.qrRateLimiter.Middleware(qrCodeExtractor),
+		).Post("/", m.ticketHandler.CreateTicket)
 		r.Get("/", m.ticketHandler.ListTickets)                // List tickets
 		r.Get("/number/{number}", m.ticketHandler.GetTicketByNumber) // Get by ticket number
 		r.Get("/{id}", m.ticketHandler.GetTicket)              // Get by ID
@@ -153,6 +208,7 @@ func (m *Module) MountRoutes(r chi.Router) {
 		r.Get("/{id}/suggested-engineers", m.assignmentHandler.GetSuggestedEngineers) // Get engineer suggestions (legacy)
 		r.Get("/{id}/assignment-suggestions", m.multiModelAssignmentHandler.GetAssignmentSuggestions) // Multi-model suggestions
 		r.Post("/{id}/assign-engineer", m.assignmentHandler.AssignEngineer)           // Manual assignment with tier
+		r.Get("/{id}/assignments/history", m.assignmentHandler.GetAssignmentHistory)  // Get assignment history
 		
 		// Comments and history
 		r.Post("/{id}/comments", m.ticketHandler.AddComment)       // Add comment

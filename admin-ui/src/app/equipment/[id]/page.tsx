@@ -8,6 +8,7 @@ import type { Equipment, ServiceTicket } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ArrowLeft, QrCode, Download, RefreshCw } from "lucide-react";
+import DashboardLayout from "@/components/DashboardLayout";
 
 type Tab = "overview" | "specs" | "history" | "qr";
 
@@ -97,7 +98,7 @@ export default function EquipmentDetailPage({ params }: { params: { id: string }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <DashboardLayout>
       <div className="max-w-6xl mx-auto">
         <div className="mb-6 flex items-center justify-between">
           <Button variant="ghost" onClick={() => router.push("/equipment")}> 
@@ -247,6 +248,6 @@ export default function EquipmentDetailPage({ params }: { params: { id: string }
           </div>
         )}
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

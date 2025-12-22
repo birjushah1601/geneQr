@@ -231,3 +231,20 @@ type RemoveEquipmentTypeRequest struct {
 	Manufacturer string `json:"manufacturer"`
 	Category     string `json:"category"`
 }
+
+// GetAssignmentHistory retrieves assignment history for a ticket
+func (s *AssignmentService) GetAssignmentHistory(ctx context.Context, ticketID string) ([]*domain.EngineerAssignment, error) {
+	s.logger.Info("Getting assignment history",
+		slog.String("ticket_id", ticketID))
+	
+	history, err := s.assignRepo.GetAssignmentHistoryByTicketID(ctx, ticketID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get assignment history: %w", err)
+	}
+	
+	s.logger.Info("Retrieved assignment history",
+		slog.String("ticket_id", ticketID),
+		slog.Int("count", len(history)))
+	
+	return history, nil
+}

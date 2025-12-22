@@ -52,15 +52,16 @@ type JWTConfig struct {
 
 // Claims represents JWT claims
 type Claims struct {
-	UserID         string                 `json:"sub"`
-	Email          string                 `json:"email,omitempty"`
-	Name           string                 `json:"name,omitempty"`
-	OrganizationID string                 `json:"org_id,omitempty"`
-	Role           string                 `json:"role,omitempty"`
-	Permissions    []string               `json:"permissions,omitempty"`
-	TokenType      string                 `json:"type"` // "access" or "refresh"
-	TokenID        string                 `json:"jti,omitempty"`
-	Metadata       map[string]interface{} `json:"metadata,omitempty"`
+	UserID           string                 `json:"sub"`
+	Email            string                 `json:"email,omitempty"`
+	Name             string                 `json:"name,omitempty"`
+	OrganizationID   string                 `json:"organization_id,omitempty"`
+	OrganizationType string                 `json:"organization_type,omitempty"` // manufacturer, hospital, etc.
+	Role             string                 `json:"role,omitempty"`
+	Permissions      []string               `json:"permissions,omitempty"`
+	TokenType        string                 `json:"type"` // "access" or "refresh"
+	TokenID          string                 `json:"jti,omitempty"`
+	Metadata         map[string]interface{} `json:"metadata,omitempty"`
 	jwt.RegisteredClaims
 }
 
@@ -92,13 +93,14 @@ func (s *JWTService) GenerateTokenPair(ctx context.Context, req *TokenRequest) (
 	
 	// Generate access token
 	accessClaims := &Claims{
-		UserID:         req.UserID.String(),
-		Email:          req.Email,
-		Name:           req.Name,
-		OrganizationID: req.OrganizationID,
-		Role:           req.Role,
-		Permissions:    req.Permissions,
-		TokenType:      "access",
+		UserID:           req.UserID.String(),
+		Email:            req.Email,
+		Name:             req.Name,
+		OrganizationID:   req.OrganizationID,
+		OrganizationType: req.OrganizationType,
+		Role:             req.Role,
+		Permissions:      req.Permissions,
+		TokenType:        "access",
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    s.issuer,
 			Subject:   req.UserID.String(),
@@ -280,14 +282,15 @@ func (s *JWTService) ParseUnverified(tokenString string) (*Claims, error) {
 // Request/Response types
 
 type TokenRequest struct {
-	UserID         uuid.UUID
-	Email          string
-	Name           string
-	OrganizationID string
-	Role           string
-	Permissions    []string
-	DeviceInfo     map[string]interface{}
-	IPAddress      string
+	UserID           uuid.UUID
+	Email            string
+	Name             string
+	OrganizationID   string
+	OrganizationType string // manufacturer, hospital, distributor, dealer, etc.
+	Role             string
+	Permissions      []string
+	DeviceInfo       map[string]interface{}
+	IPAddress        string
 }
 
 type TokenResponse struct {

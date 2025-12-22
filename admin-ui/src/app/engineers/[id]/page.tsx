@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import DashboardLayout from '@/components/DashboardLayout';
 import {
   ArrowLeft,
   Edit,
@@ -138,7 +139,8 @@ export default function EngineerDetailPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <DashboardLayout>
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -443,6 +445,7 @@ export default function EngineerDetailPage() {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }

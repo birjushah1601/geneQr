@@ -18,6 +18,7 @@ import (
 	"github.com/aby-med/medical-platform/internal/shared/observability"
     "github.com/aby-med/medical-platform/internal/shared/service"
 	sharedmiddleware "github.com/aby-med/medical-platform/internal/shared/middleware"
+	appmiddleware "github.com/aby-med/medical-platform/internal/middleware"
     organizations "github.com/aby-med/medical-platform/internal/core/organizations"
 	"github.com/aby-med/medical-platform/internal/marketplace/catalog"
 	"github.com/aby-med/medical-platform/internal/service-domain/rfq"
@@ -213,6 +214,11 @@ func setupRouter(cfg *config.Config, logger *slog.Logger, tracer observability.T
 
 	// Observability middleware
 	r.Use(observability.LoggingMiddleware(logger))
+
+	// CRITICAL: Organization context middleware for multi-tenant data isolation
+	// Must be registered BEFORE any routes are mounted
+	r.Use(appmiddleware.OrganizationContextMiddleware(logger))
+	logger.Info("✅ Organization context middleware registered")
 
 	// Health check endpoint
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {

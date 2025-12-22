@@ -120,6 +120,7 @@ func NewModule(db *sqlx.DB, config *Config) (*Module, error) {
 	otpRepo := infra.NewOTPRepository(db)
 	refreshTokenRepo := infra.NewRefreshTokenRepository(db)
 	auditRepo := infra.NewAuditRepository(db)
+	orgRepo := infra.NewOrganizationRepository(db)
 
 	// Initialize services
 	otpService := app.NewOTPService(
@@ -165,6 +166,7 @@ func NewModule(db *sqlx.DB, config *Config) (*Module, error) {
 		jwtService,
 		passwordService,
 		auditRepo,
+		orgRepo,
 		&app.AuthConfig{
 			MaxFailedAttempts: config.MaxFailedAttempts,
 			LockoutDuration:   config.LockoutDuration,

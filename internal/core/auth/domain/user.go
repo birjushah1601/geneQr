@@ -1,6 +1,9 @@
 package domain
 
 import (
+	"database/sql/driver"
+	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -137,8 +140,64 @@ type NotificationPreferences struct {
 // JSONBMap represents a JSONB map column
 type JSONBMap map[string]interface{}
 
+// Scan implements sql.Scanner interface for JSONBMap
+func (j *JSONBMap) Scan(value interface{}) error {
+	if value == nil {
+		*j = make(map[string]interface{})
+		return nil
+	}
+	
+	var bytes []byte
+	switch v := value.(type) {
+	case []byte:
+		bytes = v
+	case string:
+		bytes = []byte(v)
+	default:
+		return fmt.Errorf("unsupported type for JSONBMap: %T", value)
+	}
+	
+	return json.Unmarshal(bytes, j)
+}
+
+// Value implements driver.Valuer interface for JSONBMap
+func (j JSONBMap) Value() (driver.Value, error) {
+	if j == nil {
+		return nil, nil
+	}
+	return json.Marshal(j)
+}
+
 // JSONBArray represents a JSONB array column
 type JSONBArray []string
+
+// Scan implements sql.Scanner interface for JSONBArray
+func (j *JSONBArray) Scan(value interface{}) error {
+	if value == nil {
+		*j = []string{}
+		return nil
+	}
+	
+	var bytes []byte
+	switch v := value.(type) {
+	case []byte:
+		bytes = v
+	case string:
+		bytes = []byte(v)
+	default:
+		return fmt.Errorf("unsupported type for JSONBArray: %T", value)
+	}
+	
+	return json.Unmarshal(bytes, j)
+}
+
+// Value implements driver.Valuer interface for JSONBArray
+func (j JSONBArray) Value() (driver.Value, error) {
+	if j == nil {
+		return nil, nil
+	}
+	return json.Marshal(j)
+}
 
 // UserStatus constants
 const (

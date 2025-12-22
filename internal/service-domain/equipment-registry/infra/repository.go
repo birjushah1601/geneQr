@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aby-med/medical-platform/internal/middleware"
+	"github.com/aby-med/medical-platform/internal/pkg/orgfilter"
 	"github.com/aby-med/medical-platform/internal/service-domain/equipment-registry/domain"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -136,13 +138,36 @@ func (r *EquipmentRepository) Create(ctx context.Context, equipment *domain.Equi
 
 // GetByID retrieves equipment by ID
 func (r *EquipmentRepository) GetByID(ctx context.Context, id string) (*domain.Equipment, error) {
-	query := `
-        SELECT ` + equipmentSelectColumns + `
-		FROM equipment_registry
-		WHERE id = $1
-	`
+	// Get organization context
+	orgID, hasOrgID := middleware.GetOrganizationID(ctx)
+	orgType, _ := middleware.GetOrganizationType(ctx)
+	
+	// Build query with organization filter
+	query := `SELECT ` + equipmentSelectColumns + ` FROM equipment_registry WHERE id = $1`
+	
+	// Add org filter for non-system-admin users
+	if hasOrgID && !orgfilter.IsSystemAdmin(ctx) {
+		switch orgType {
+		case "manufacturer":
+			query += " AND manufacturer_id = $2"
+		case "hospital", "imaging_center":
+			query += " AND (customer_id = $2 OR organization_id = $2)"
+		case "distributor", "dealer":
+			query += " AND (distributor_org_id = $2 OR service_provider_org_id = $2)"
+		default:
+			query += " AND customer_id = $2"
+		}
+	}
 
-	equipment, err := r.scanEquipment(r.pool.QueryRow(ctx, query, id))
+	var equipment *domain.Equipment
+	var err error
+	
+	if hasOrgID && !orgfilter.IsSystemAdmin(ctx) {
+		equipment, err = r.scanEquipment(r.pool.QueryRow(ctx, query, id, orgID.String()))
+	} else {
+		equipment, err = r.scanEquipment(r.pool.QueryRow(ctx, query, id))
+	}
+	
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, domain.ErrEquipmentNotFound
@@ -193,6 +218,10 @@ func (r *EquipmentRepository) GetBySerialNumber(ctx context.Context, serialNumbe
 
 // List retrieves equipment with filtering
 func (r *EquipmentRepository) List(ctx context.Context, criteria domain.ListCriteria) (*domain.ListResult, error) {
+	// Get organization context for filtering
+	orgID, hasOrgID := middleware.GetOrganizationID(ctx)
+	orgType, _ := middleware.GetOrganizationType(ctx)
+	
 	// Build query with filters
 	queryBuilder := strings.Builder{}
 	queryBuilder.WriteString(`
@@ -203,6 +232,34 @@ func (r *EquipmentRepository) List(ctx context.Context, criteria domain.ListCrit
 
 	args := []interface{}{}
 	argCount := 1
+
+	// Apply organization filter (CRITICAL for multi-tenancy)
+	if hasOrgID && !orgfilter.IsSystemAdmin(ctx) {
+		switch orgType {
+		case "manufacturer":
+			// Manufacturers see equipment they manufactured
+			queryBuilder.WriteString(fmt.Sprintf(" AND manufacturer_id = $%d", argCount))
+			args = append(args, orgID.String())
+			argCount++
+		case "hospital", "imaging_center":
+			// Hospitals see equipment they own
+			queryBuilder.WriteString(fmt.Sprintf(" AND (customer_id = $%d OR organization_id = $%d)", argCount, argCount))
+			args = append(args, orgID.String())
+			argCount++
+		case "distributor", "dealer":
+			// Distributors see equipment they sold/service
+			queryBuilder.WriteString(fmt.Sprintf(" AND (distributor_org_id = $%d OR service_provider_org_id = $%d)", argCount, argCount))
+			args = append(args, orgID.String())
+			argCount++
+		default:
+			// Default: only owned equipment
+			queryBuilder.WriteString(fmt.Sprintf(" AND customer_id = $%d", argCount))
+			args = append(args, orgID.String())
+			argCount++
+		}
+		
+		log.Printf("[ORGFILTER] Equipment list filtered for org_id=%s, org_type=%s", orgID, orgType)
+	}
 
 	// Apply filters
 	if criteria.CustomerID != "" {

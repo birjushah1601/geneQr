@@ -15,6 +15,7 @@ import { diagnosisApi, extractSymptoms } from "@/lib/api/diagnosis";
 import MultiModelAssignment from "@/components/MultiModelAssignment";
 import EngineerSelectionModal from "@/components/EngineerSelectionModal";
 import AssignmentHistory from "@/components/AssignmentHistory";
+import DashboardLayout from "@/components/DashboardLayout";
 
 function StatusBadge({ status }: { status: TicketStatus }) {
   const color = {
@@ -271,8 +272,8 @@ export default function TicketDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b">
+    <DashboardLayout>
+      <div className="bg-white border-b -mx-6 -mt-6 px-6 mb-6">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button onClick={() => router.back()} className="p-2 rounded hover:bg-gray-100"><ArrowLeft className="h-5 w-5" /></button>
@@ -783,7 +784,7 @@ export default function TicketDetailPage() {
           refetch();
         }}
       />
-    </div>
+    </DashboardLayout>
   );
 }
 

@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { setRefreshTokenFunction } from '@/lib/api/client';
+import { decodeJWT, type JWTClaims } from '@/lib/jwt';
 
 interface User {
   user_id: string;
@@ -13,10 +14,17 @@ interface User {
   permissions?: string[];
 }
 
+interface OrganizationContext {
+  organization_id: string;
+  organization_type: string; // manufacturer, hospital, distributor, dealer, supplier, imaging_center
+  role: string;
+}
+
 interface AuthContextType {
   user: User | null;
   accessToken: string | null;
   refreshToken: string | null;
+  organizationContext: OrganizationContext | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (accessToken: string, refreshToken: string) => Promise<void>;
@@ -32,6 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
+  const [organizationContext, setOrganizationContext] = useState<OrganizationContext | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
@@ -45,6 +54,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (storedAccessToken && storedRefreshToken) {
           setAccessToken(storedAccessToken);
           setRefreshToken(storedRefreshToken);
+
+          // Extract organization context from JWT
+          extractOrganizationContext(storedAccessToken);
 
           // Fetch user info
           await fetchUserInfo(storedAccessToken);
@@ -64,6 +76,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     setRefreshTokenFunction(refreshAccessToken);
   }, [refreshToken]);
+
+  // Extract organization context from JWT token
+  const extractOrganizationContext = (token: string) => {
+    const claims = decodeJWT(token);
+    
+    if (claims && claims.organization_id && claims.organization_type) {
+      setOrganizationContext({
+        organization_id: claims.organization_id,
+        organization_type: claims.organization_type,
+        role: claims.role,
+      });
+      
+      console.log('[AUTH] Organization context extracted:', {
+        org_id: claims.organization_id,
+        org_type: claims.organization_type,
+        role: claims.role,
+      });
+    } else {
+      console.warn('[AUTH] Failed to extract organization context from token');
+      setOrganizationContext(null);
+    }
+  };
 
   // Fetch user information
   const fetchUserInfo = async (token: string) => {
@@ -95,6 +129,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('access_token', newAccessToken);
     localStorage.setItem('refresh_token', newRefreshToken);
 
+    // Extract organization context from JWT
+    extractOrganizationContext(newAccessToken);
+
     // Fetch user info
     await fetchUserInfo(newAccessToken);
   };
@@ -125,6 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setAccessToken(null);
     setRefreshToken(null);
+    setOrganizationContext(null);
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
   };
@@ -163,6 +201,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     accessToken,
     refreshToken,
+    organizationContext,
     isLoading,
     isAuthenticated: !!user && !!accessToken,
     login,

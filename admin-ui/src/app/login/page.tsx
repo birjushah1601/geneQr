@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import OTPInput from '@/components/auth/OTPInput';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8081';
 
 type LoginStep = 'identifier' | 'otp' | 'password';
 
@@ -17,7 +17,7 @@ export default function LoginPage() {
   const [identifier, setIdentifier] = useState('');
   const [otp, setOtp] = useState('');
   const [password, setPassword] = useState('');
-  const [usePassword, setUsePassword] = useState(false);
+  const [usePassword, setUsePassword] = useState(true); // Default to password instead of OTP
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [otpSentTo, setOtpSentTo] = useState('');
@@ -40,7 +40,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/send-otp`, {
+      const response = await fetch(`${API_BASE_URL}/v1/auth/send-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier }),
@@ -75,7 +75,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/verify-otp`, {
+      const response = await fetch(`${API_BASE_URL}/v1/auth/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier, code: otp }),
@@ -104,19 +104,25 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/login-password`, {
+      const response = await fetch(`${API_BASE_URL}/v1/auth/login-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier, password }),
       });
 
+      const data = await response.json();
+      console.log('Login response:', { status: response.status, data });
+      
       if (response.ok) {
-        const data = await response.json();
-        await login(data.access_token, data.refresh_token);
-        router.push('/dashboard');
+        if (data.access_token && data.refresh_token) {
+          await login(data.access_token, data.refresh_token);
+          router.push('/dashboard');
+        } else {
+          console.error('Missing tokens in response:', data);
+          setError('Invalid server response. Please check backend logs.');
+        }
       } else {
-        const data = await response.json();
-        setError(data.error?.message || 'Invalid credentials');
+        setError(data.error?.message || data.message || 'Invalid credentials');
       }
     } catch (err) {
       setError('Network error. Please try again.');

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import OTPInput from '@/components/auth/OTPInput';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8081';
 
 type RegisterStep = 'details' | 'verify';
 
@@ -72,7 +72,7 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/register`, {
+      const response = await fetch(`${API_BASE_URL}/v1/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -111,7 +111,7 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/verify-otp`, {
+      const response = await fetch(`${API_BASE_URL}/v1/auth/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier, code: otp }),
@@ -139,7 +139,7 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/send-otp`, {
+      const response = await fetch(`${API_BASE_URL}/v1/auth/send-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier }),

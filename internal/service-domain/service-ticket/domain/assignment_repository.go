@@ -28,4 +28,7 @@ type EngineerSuggestionRepository interface {
 	
 	// Manual assignment
 	AssignEngineerToTicket(ctx context.Context, req AssignmentRequest) error
+	
+	// Assignment history
+	GetAssignmentHistoryByTicketID(ctx context.Context, ticketID string) ([]*EngineerAssignment, error)
 }

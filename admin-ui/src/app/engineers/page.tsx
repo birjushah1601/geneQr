@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Search, Plus, Upload, Download, UserCheck, UserX, Users, Loader2, Filter } from 'lucide-react';
 import apiClient from '@/lib/api/client';
+import DashboardLayout from '@/components/DashboardLayout';
 
 interface Engineer {
   id: string;
@@ -218,7 +219,7 @@ export default function EngineersListPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <DashboardLayout>
       <div className="max-w-7xl mx-auto">
         {/* Back button if filtering by manufacturer */}
         {manufacturerFilter && (
@@ -513,6 +514,6 @@ export default function EngineersListPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

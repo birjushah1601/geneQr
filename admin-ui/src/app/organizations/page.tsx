@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { organizationsApi, Organization } from '@/lib/api/organizations';
 import { Building2, MapPin, Users, Filter, Search, Loader2, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
+import DashboardLayout from '@/components/DashboardLayout';
 
 export default function OrganizationsPage() {
   const searchParams = useSearchParams();
@@ -85,7 +86,8 @@ export default function OrganizationsPage() {
   };
 
   return (
-    <div className="p-8">
+    <DashboardLayout>
+      <div>
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Organizations</h1>
@@ -254,6 +256,7 @@ export default function OrganizationsPage() {
           Showing {filteredOrganizations.length} of {organizations.length} organizations
         </div>
       )}
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }

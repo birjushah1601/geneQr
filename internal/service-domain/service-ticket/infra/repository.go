@@ -7,6 +7,8 @@ import (
 	"math"
 	"strings"
 
+	"github.com/aby-med/medical-platform/internal/middleware"
+	"github.com/aby-med/medical-platform/internal/pkg/orgfilter"
 	"github.com/aby-med/medical-platform/internal/service-domain/service-ticket/domain"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -154,6 +156,10 @@ func (r *TicketRepository) UpdateResponsibility(ctx context.Context, ticketID st
 
 // GetByID retrieves a ticket by ID
 func (r *TicketRepository) GetByID(ctx context.Context, id string) (*domain.ServiceTicket, error) {
+	// Get organization context
+	orgID, hasOrgID := middleware.GetOrganizationID(ctx)
+	orgType, _ := middleware.GetOrganizationType(ctx)
+	
 	query := `
 		SELECT 
 			id, ticket_number, equipment_id, qr_code, serial_number, equipment_name,
@@ -171,22 +177,57 @@ func (r *TicketRepository) GetByID(ctx context.Context, id string) (*domain.Serv
 		WHERE id = $1
 	`
 
+	// Add org filter for non-system-admin users
+	if hasOrgID && !orgfilter.IsSystemAdmin(ctx) {
+		switch orgType {
+		case "manufacturer":
+			query += ` AND EXISTS (
+				SELECT 1 FROM equipment_registry e 
+				WHERE e.id = service_tickets.equipment_id 
+				AND e.manufacturer_id = $2
+			)`
+		case "hospital", "imaging_center":
+			query += " AND requester_org_id = $2"
+		case "distributor", "dealer":
+			query += " AND (assigned_org_id = $2 OR service_provider_org_id = $2)"
+		default:
+			query += " AND requester_org_id = $2"
+		}
+	}
+
 	var ticket domain.ServiceTicket
 	var partsUsed, photos, videos, documents []byte
 
-	err := r.pool.QueryRow(ctx, query, id).Scan(
-		&ticket.ID, &ticket.TicketNumber, &ticket.EquipmentID, &ticket.QRCode, &ticket.SerialNumber, &ticket.EquipmentName,
-		&ticket.CustomerID, &ticket.CustomerName, &ticket.CustomerPhone, &ticket.CustomerWhatsApp,
-		&ticket.IssueCategory, &ticket.IssueDescription, &ticket.Priority, &ticket.Severity,
-		&ticket.Source, &ticket.SourceMessageID,
-		&ticket.AssignedEngineerID, &ticket.AssignedEngineerName, &ticket.AssignedAt,
-		&ticket.Status, &ticket.CreatedAt, &ticket.AcknowledgedAt, &ticket.StartedAt, &ticket.ResolvedAt, &ticket.ClosedAt,
-		&ticket.SLAResponseDue, &ticket.SLAResolutionDue, &ticket.SLABreached,
-		&ticket.ResolutionNotes, &partsUsed, &ticket.LaborHours, &ticket.Cost,
-		&photos, &videos, &documents,
-		&ticket.AMCContractID, &ticket.CoveredUnderAMC,
-		&ticket.UpdatedAt, &ticket.CreatedBy,
-	)
+	var err error
+	if hasOrgID && !orgfilter.IsSystemAdmin(ctx) {
+		err = r.pool.QueryRow(ctx, query, id, orgID.String()).Scan(
+			&ticket.ID, &ticket.TicketNumber, &ticket.EquipmentID, &ticket.QRCode, &ticket.SerialNumber, &ticket.EquipmentName,
+			&ticket.CustomerID, &ticket.CustomerName, &ticket.CustomerPhone, &ticket.CustomerWhatsApp,
+			&ticket.IssueCategory, &ticket.IssueDescription, &ticket.Priority, &ticket.Severity,
+			&ticket.Source, &ticket.SourceMessageID,
+			&ticket.AssignedEngineerID, &ticket.AssignedEngineerName, &ticket.AssignedAt,
+			&ticket.Status, &ticket.CreatedAt, &ticket.AcknowledgedAt, &ticket.StartedAt, &ticket.ResolvedAt, &ticket.ClosedAt,
+			&ticket.SLAResponseDue, &ticket.SLAResolutionDue, &ticket.SLABreached,
+			&ticket.ResolutionNotes, &partsUsed, &ticket.LaborHours, &ticket.Cost,
+			&photos, &videos, &documents,
+			&ticket.AMCContractID, &ticket.CoveredUnderAMC,
+			&ticket.UpdatedAt, &ticket.CreatedBy,
+		)
+	} else {
+		err = r.pool.QueryRow(ctx, query, id).Scan(
+			&ticket.ID, &ticket.TicketNumber, &ticket.EquipmentID, &ticket.QRCode, &ticket.SerialNumber, &ticket.EquipmentName,
+			&ticket.CustomerID, &ticket.CustomerName, &ticket.CustomerPhone, &ticket.CustomerWhatsApp,
+			&ticket.IssueCategory, &ticket.IssueDescription, &ticket.Priority, &ticket.Severity,
+			&ticket.Source, &ticket.SourceMessageID,
+			&ticket.AssignedEngineerID, &ticket.AssignedEngineerName, &ticket.AssignedAt,
+			&ticket.Status, &ticket.CreatedAt, &ticket.AcknowledgedAt, &ticket.StartedAt, &ticket.ResolvedAt, &ticket.ClosedAt,
+			&ticket.SLAResponseDue, &ticket.SLAResolutionDue, &ticket.SLABreached,
+			&ticket.ResolutionNotes, &partsUsed, &ticket.LaborHours, &ticket.Cost,
+			&photos, &videos, &documents,
+			&ticket.AMCContractID, &ticket.CoveredUnderAMC,
+			&ticket.UpdatedAt, &ticket.CreatedBy,
+		)
+	}
 
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -305,10 +346,46 @@ func (r *TicketRepository) Update(ctx context.Context, ticket *domain.ServiceTic
 
 // List retrieves tickets based on criteria
 func (r *TicketRepository) List(ctx context.Context, criteria domain.ListCriteria) (*domain.TicketListResult, error) {
+	// Get organization context
+	orgID, hasOrgID := middleware.GetOrganizationID(ctx)
+	orgType, _ := middleware.GetOrganizationType(ctx)
+	
 	// Build WHERE clause
 	var conditions []string
 	var args []interface{}
 	argPos := 1
+
+	// Apply organization filter (CRITICAL for multi-tenancy)
+	if hasOrgID && !orgfilter.IsSystemAdmin(ctx) {
+		switch orgType {
+		case "manufacturer":
+			// Manufacturers see tickets for their equipment
+			conditions = append(conditions, fmt.Sprintf(`EXISTS (
+				SELECT 1 FROM equipment_registry e 
+				WHERE e.id = service_tickets.equipment_id 
+				AND e.manufacturer_id = $%d
+			)`, argPos))
+			args = append(args, orgID.String())
+			argPos++
+		case "hospital", "imaging_center":
+			// Hospitals see tickets they created
+			conditions = append(conditions, fmt.Sprintf("requester_org_id = $%d", argPos))
+			args = append(args, orgID.String())
+			argPos++
+		case "distributor", "dealer":
+			// Service providers see tickets assigned to them
+			conditions = append(conditions, fmt.Sprintf("(assigned_org_id = $%d OR service_provider_org_id = $%d)", argPos, argPos))
+			args = append(args, orgID.String())
+			argPos++
+		default:
+			// Default: tickets user's org created
+			conditions = append(conditions, fmt.Sprintf("requester_org_id = $%d", argPos))
+			args = append(args, orgID.String())
+			argPos++
+		}
+		
+		fmt.Printf("[ORGFILTER] Ticket list filtered for org_id=%s, org_type=%s\n", orgID, orgType)
+	}
 
 	if len(criteria.Status) > 0 {
 		placeholders := make([]string, len(criteria.Status))
