@@ -1,0 +1,9 @@
+product_code,product_name,manufacturer_name,model_number,category,subcategory,description,base_price,currency,weight_kg,recommended_service_interval_days,estimated_lifespan_years,maintenance_complexity
+SURG-TABLE-001,Surgical Operating Table,Maquet,Magnus,Surgical,OR Table,"Multi-purpose surgical table with imaging compatibility",85000,USD,350,180,15,medium
+SURG-LIGHT-001,LED Surgical Light,Trumpf Medical,iLED 7,Surgical,Lighting,"Shadow-free LED surgical lighting system",45000,USD,65,365,12,low
+SURG-ANES-001,Anesthesia Workstation,Drager,Fabius MRI,Anesthesia,Workstation,"Complete anesthesia delivery system with ventilation",95000,USD,185,90,12,high
+SURG-ELECT-001,Electrosurgical Unit,Medtronic,ForceTriad,Surgical,Electrosurgery,"Advanced bipolar/monopolar electrosurgical generator",18000,USD,12,180,10,medium
+SURG-LAP-001,Laparoscopy Tower,Stryker,1688 AIM Platform,Surgical,Laparoscopy,"Complete laparoscopic imaging and insufflation system",125000,USD,95,180,10,high
+SURG-ROBOT-001,Surgical Robot,Intuitive Surgical,da Vinci Xi,Surgical,Robotic Surgery,"Robotic-assisted surgical system with 4-arm configuration",2000000,USD,650,90,10,high
+SURG-SCOPE-001,Surgical Microscope,Carl Zeiss,OPMI Lumera,Surgical,Microscopy,"Operating microscope for neurosurgery and ENT",250000,USD,125,180,15,medium
+SURG-C-ARM-001,Mobile C-Arm,Siemens Healthineers,Cios Alpha,X-Ray,Fluoroscopy,"Compact mobile C-arm for intraoperative imaging",180000,USD,285,90,10,high

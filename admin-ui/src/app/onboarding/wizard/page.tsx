@@ -4,6 +4,7 @@ import React from 'react';
 import OnboardingWizard, { WizardStep } from '@/components/onboarding/OnboardingWizard';
 import CompanyProfileStep from '@/components/onboarding/steps/CompanyProfileStep';
 import OrganizationsUploadStep from '@/components/onboarding/steps/OrganizationsUploadStep';
+import EquipmentUploadStep from '@/components/onboarding/steps/EquipmentUploadStep';
 import CompletionStep from '@/components/onboarding/steps/CompletionStep';
 import { useRouter } from 'next/navigation';
 
@@ -22,6 +23,12 @@ export default function OnboardingWizardPage() {
       title: 'Import Organizations',
       description: 'Bulk import manufacturers, suppliers, partners',
       component: OrganizationsUploadStep
+    },
+    {
+      id: 'equipment-upload',
+      title: 'Equipment Catalog',
+      description: 'Import equipment by industry',
+      component: EquipmentUploadStep
     },
     {
       id: 'completion',
