@@ -35,7 +35,6 @@ function ServiceRequestPageInner() {
   
   const [formData, setFormData] = useState({
     description: '',
-    priority: 'medium',
     requestedBy: '',
     contactName: '',
     contactPhone: '',
@@ -168,7 +167,7 @@ function ServiceRequestPageInner() {
         customer_phone: '9999999999',
         issue_category: 'breakdown',
         issue_description: formData.description,
-        priority: formData.priority as any,
+        priority: 'medium', // Default priority, admin can update later
         source: 'web',
         created_by: formData.requestedBy || 'web-user',
         notes: diagnosis?.summary ? `AI suggestion: ${diagnosis.summary}` : undefined,
@@ -207,7 +206,7 @@ function ServiceRequestPageInner() {
       }
       
       setSuccess(true);
-      setFormData({ description: '', priority: 'medium', requestedBy: '' });
+      setFormData({ description: '', requestedBy: '', contactName: '', contactPhone: '' });
       setSelectedFiles([]);
       setAssignedParts([]);
       
@@ -337,23 +336,6 @@ function ServiceRequestPageInner() {
             </div>
 
             <div>
-              <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-2">
-                Priority *
-              </label>
-              <select
-                id="priority"
-                required
-                value={formData.priority}
-                onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="low">Low - Routine maintenance</option>
-                <option value="medium">Medium - Issue affecting performance</option>
-                <option value="high">High - Critical issue, equipment down</option>
-              </select>
-            </div>
-
-            <div>
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
                 Issue Description *
               </label>
@@ -369,14 +351,14 @@ function ServiceRequestPageInner() {
             {/* File Attachments Section */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Attach Photos/Documents (Optional)
+                Attach Photos/Audio/Documents (Optional)
               </label>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
                 <input
                   type="file"
                   id="file-upload"
                   multiple
-                  accept="image/*,video/*,.pdf,.doc,.docx"
+                  accept="image/*,video/*,audio/*,.pdf,.doc,.docx"
                   onChange={handleFileSelect}
                   className="hidden"
                 />
@@ -389,7 +371,7 @@ function ServiceRequestPageInner() {
                       <span className="text-blue-600 font-medium">Click to upload</span> or drag and drop
                     </p>
                     <p className="text-xs text-gray-500">
-                      Images, Videos, PDF, DOC (max 50MB each)
+                      Images, Videos, Audio, PDF, DOC (max 50MB each)
                     </p>
                   </div>
                 </label>
@@ -445,7 +427,7 @@ function ServiceRequestPageInner() {
                 <AIAnalysisButton
                   equipment={equipment}
                   description={formData.description}
-                  priority={formData.priority}
+                  priority="medium"
                   files={selectedFiles}
                   onAnalysisComplete={(result) => {
                     setDiagnosis(result);
