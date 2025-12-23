@@ -43,7 +43,7 @@ export default function CompletionStep({
     },
     {
       icon: Package,
-      label: 'Equipment',
+      label: 'Equipment Catalog',
       value: data?.equipmentUpload?.uploadResult?.success_count || 0,
       color: 'green'
     },

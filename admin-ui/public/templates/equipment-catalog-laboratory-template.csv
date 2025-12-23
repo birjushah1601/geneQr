@@ -1,0 +1,9 @@
+product_code,product_name,manufacturer_name,model_number,category,subcategory,description,base_price,currency,weight_kg,recommended_service_interval_days,estimated_lifespan_years,maintenance_complexity
+LAB-HEMA-001,Hematology Analyzer,Sysmex,XN-1000,Laboratory,Hematology,"Automated complete blood count analyzer with 5-part differential",95000,USD,115,90,10,medium
+LAB-CHEM-001,Chemistry Analyzer,Roche Diagnostics,cobas c 502,Laboratory,Chemistry,"High-throughput clinical chemistry analyzer",185000,USD,285,90,10,high
+LAB-IMMUNO-001,Immunoassay Analyzer,Abbott,Architect i2000SR,Laboratory,Immunology,"Chemiluminescent immunoassay system for serology",145000,USD,195,90,10,high
+LAB-COAG-001,Coagulation Analyzer,Instrumentation Laboratory,ACL TOP 750,Laboratory,Coagulation,"Automated coagulation analyzer with multiple test menu",78000,USD,68,90,8,medium
+LAB-MICRO-001,Microbiology ID System,bioMerieux,VITEK 2 Compact,Laboratory,Microbiology,"Automated microbial identification and susceptibility testing",125000,USD,45,90,10,medium
+LAB-PCR-001,Real-Time PCR System,Applied Biosystems,QuantStudio 5,Laboratory,Molecular,"5-color real-time PCR system for molecular diagnostics",48000,USD,28,180,10,medium
+LAB-CENT-001,Refrigerated Centrifuge,Thermo Scientific,Sorvall ST 16R,Laboratory,Sample Prep,"High-speed refrigerated benchtop centrifuge",12000,USD,42,180,12,low
+LAB-MICRO-002,Laboratory Microscope,Nikon,Eclipse Ci-L,Laboratory,Microscopy,"LED microscope for clinical laboratory applications",3500,USD,4.5,365,15,low

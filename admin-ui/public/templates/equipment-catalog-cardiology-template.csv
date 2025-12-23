@@ -1,0 +1,9 @@
+product_code,product_name,manufacturer_name,model_number,category,subcategory,description,base_price,currency,weight_kg,recommended_service_interval_days,estimated_lifespan_years,maintenance_complexity
+CARD-CATH-001,Cardiac Catheterization Lab,Siemens Healthineers,Artis Q,Surgical,Cath Lab,"Biplane angiography system for cardiac interventions",3500000,USD,12000,90,12,high
+CARD-ECHO-001,Echocardiography System,Philips Healthcare,EPIQ CVx,Ultrasound,Cardiology,"Premium cardiac ultrasound with 3D/4D imaging",125000,USD,110,180,10,medium
+CARD-ECG-001,12-Lead ECG Machine,GE Healthcare,MAC 2000,Patient Monitor,ECG,"Resting ECG with advanced interpretation algorithms",8500,USD,6,365,8,low
+CARD-HOLTER-001,Holter Monitor System,Welch Allyn,DigiTrak XT,Patient Monitor,Holter,"24-48 hour ambulatory ECG monitoring system",3500,USD,0.2,365,6,low
+CARD-STRESS-001,Stress Test System,Schiller,Cardiovit CS-200,Patient Monitor,Stress Test,"Complete exercise stress test system with ECG",28000,USD,85,180,10,medium
+CARD-DEFIB-001,Automated External Defibrillator,Philips Healthcare,HeartStart FRx,Patient Monitor,Defibrillator,"Rugged AED for emergency cardiac response",1800,USD,1.8,730,8,low
+CARD-TELEM-001,Telemetry Monitoring System,GE Healthcare,CARESCAPE Gateway,Patient Monitor,Telemetry,"Wireless patient monitoring with real-time alerts",95000,USD,180,180,10,medium
+CARD-PACE-001,Temporary Pacemaker,Medtronic,5388,Other,Pacemaker,"External temporary cardiac pacing system",4500,USD,2.5,365,5,medium
