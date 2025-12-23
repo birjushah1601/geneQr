@@ -801,26 +801,7 @@ func (s *TicketService) UpdatePriority(ctx context.Context, ticketID string, pri
 		return fmt.Errorf("failed to update ticket priority: %w", err)
 	}
 	
-	// Create event for audit trail
-	if s.eventRepo != nil {
-		event := &ticketDomain.TicketEvent{
-			TicketID:    ticketID,
-			EventType:   "priority_updated",
-			Description: fmt.Sprintf("Priority updated from %s to %s", oldPriority, priority),
-			Timestamp:   now,
-			Metadata: map[string]interface{}{
-				"old_priority": string(oldPriority),
-				"new_priority": string(priority),
-			},
-		}
-		
-		if err := s.eventRepo.Create(ctx, event); err != nil {
-			s.logger.Warn("Failed to create priority update event", 
-				slog.String("error", err.Error()),
-				slog.String("ticket_id", ticketID))
-			// Don't fail the update if event creation fails
-		}
-	}
+	// Event logging removed - using audit_logs table instead
 	
 	s.logger.Info("Ticket priority updated successfully",
 		slog.String("ticket_id", ticketID),
