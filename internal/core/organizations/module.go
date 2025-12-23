@@ -60,6 +60,11 @@ func (m *Module) Initialize(ctx context.Context) error {
     return nil
 }
 
+// GetDB returns the database pool for use by other services
+func (m *Module) GetDB() *pgxpool.Pool {
+    return m.pool
+}
+
 func (m *Module) MountRoutes(r chi.Router) {
     if !isEnabled(os.Getenv("ENABLE_ORG")) {
         return
@@ -69,8 +74,13 @@ func (m *Module) MountRoutes(r chi.Router) {
         return
     }
     m.logger.Info("Mounting organizations routes")
+    
+    // Bulk import handler
+    bulkImportHandler := api.NewBulkImportHandler(m.pool, m.logger)
+    
     r.Route("/organizations", func(r chi.Router) {
         r.Get("/", m.handler.ListOrgs)
+        r.Post("/import", bulkImportHandler.HandleBulkImport)
         r.Get("/{id}", m.handler.GetOrg)
         r.Get("/{id}/facilities", m.handler.ListFacilities)
         r.Get("/{id}/relationships", m.handler.ListRelationships)
