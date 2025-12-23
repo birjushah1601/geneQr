@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import AdminRoute from '@/components/auth/AdminRoute';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8081';
 
@@ -88,7 +89,8 @@ MedSupply Co,supplier,sales@medsupply.com,+1-555-0300,"789 Supply Rd",Chicago,IL
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <AdminRoute>
+      <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
@@ -308,6 +310,7 @@ MedSupply Co,supplier,sales@medsupply.com,+1-555-0300,"789 Supply Rd",Chicago,IL
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </AdminRoute>
   );
 }

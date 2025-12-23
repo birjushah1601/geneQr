@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import AdminRoute from '@/components/auth/AdminRoute';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8081';
 
@@ -74,7 +75,8 @@ export default function AddManufacturerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <AdminRoute>
+      <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
@@ -316,6 +318,7 @@ export default function AddManufacturerPage() {
           </div>
         </form>
       </div>
-    </div>
+      </div>
+    </AdminRoute>
   );
 }
