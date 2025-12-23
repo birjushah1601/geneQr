@@ -20,6 +20,7 @@ import (
 	sharedmiddleware "github.com/aby-med/medical-platform/internal/shared/middleware"
 	appmiddleware "github.com/aby-med/medical-platform/internal/middleware"
     organizations "github.com/aby-med/medical-platform/internal/core/organizations"
+	equipmentcore "github.com/aby-med/medical-platform/internal/core/equipment"
 	"github.com/aby-med/medical-platform/internal/infrastructure/reports"
 	"github.com/aby-med/medical-platform/internal/marketplace/catalog"
 	"github.com/aby-med/medical-platform/internal/service-domain/rfq"
@@ -251,6 +252,11 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
     if os.Getenv("ENABLE_ORG") == "true" || os.Getenv("ENABLE_ORG") == "1" || os.Getenv("ENABLE_ORG") == "on" {
         registry.Register(organizations.New(cfg, logger))
     }
+	
+	// Register Equipment module behind feature flag
+	if os.Getenv("ENABLE_EQUIPMENT") == "true" || os.Getenv("ENABLE_EQUIPMENT") == "1" || os.Getenv("ENABLE_EQUIPMENT") == "on" {
+		registry.Register(equipmentcore.New(cfg, logger))
+	}
 	
 	// Register RFQ module
 	rfqConfig := &rfq.Config{
