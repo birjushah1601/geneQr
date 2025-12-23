@@ -194,6 +194,11 @@ func (m *Module) MountRoutes(r chi.Router) {
 		r.Post("/{id}/parts", m.ticketHandler.AddTicketPart)   // Add single part to ticket
 		r.Patch("/{id}/parts", m.ticketHandler.UpdateParts)    // Update parts for ticket
 		
+		// Admin-only: Update ticket priority
+		// NOTE: In production, add proper JWT auth middleware to verify admin role
+		// For now, checks X-User-Role header in handler
+		r.Patch("/{id}/priority", m.ticketHandler.UpdateTicketPriority)
+		
 		// Ticket lifecycle operations
 		r.Post("/{id}/assign", m.ticketHandler.AssignTicket)       // Assign engineer (legacy)
 		r.Post("/{id}/acknowledge", m.ticketHandler.AcknowledgeTicket) // Acknowledge

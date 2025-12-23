@@ -837,3 +837,142 @@ func (h *TicketHandler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Comment deleted"})
 }
+
+// UpdateTicketPriority handles PATCH /api/v1/tickets/{id}/priority (admin-only)
+func (h *TicketHandler) UpdateTicketPriority(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	startTime := time.Now()
+	ticketID := chi.URLParam(r, "id")
+	
+	if ticketID == "" {
+		h.respondError(w, http.StatusBadRequest, "Ticket ID is required")
+		return
+	}
+	
+	// Extract user role from context (set by auth middleware)
+	// For now, we'll check a header - in production, use proper JWT middleware
+	userRole := r.Header.Get("X-User-Role")
+	userID := r.Header.Get("X-User-ID")
+	
+	// Only admins can update priority
+	if userRole != "admin" && userRole != "super_admin" {
+		h.logger.Warn("Unauthorized priority update attempt",
+			slog.String("ticket_id", ticketID),
+			slog.String("user_role", userRole))
+		h.respondError(w, http.StatusForbidden, "Only admins can update ticket priority")
+		return
+	}
+	
+	var req struct {
+		Priority string `json:"priority"`
+	}
+	
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.respondError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+	
+	// Validate priority
+	validPriorities := map[string]bool{
+		"critical": true,
+		"high":     true,
+		"medium":   true,
+		"low":      true,
+	}
+	
+	if !validPriorities[req.Priority] {
+		h.respondError(w, http.StatusBadRequest, "Invalid priority value. Must be: critical, high, medium, or low")
+		return
+	}
+	
+	// Get current ticket to log old priority
+	ticket, err := h.service.GetTicket(ctx, ticketID)
+	if err != nil {
+		if err == domain.ErrTicketNotFound {
+			h.respondError(w, http.StatusNotFound, "Ticket not found")
+			return
+		}
+		h.logger.Error("Failed to get ticket", slog.String("error", err.Error()))
+		h.respondError(w, http.StatusInternalServerError, "Failed to get ticket")
+		return
+	}
+	
+	oldPriority := string(ticket.Priority)
+	
+	// Update ticket priority
+	if err := h.service.UpdatePriority(ctx, ticketID, domain.TicketPriority(req.Priority)); err != nil {
+		h.logger.Error("Failed to update ticket priority",
+			slog.String("ticket_id", ticketID),
+			slog.String("error", err.Error()))
+		h.respondError(w, http.StatusInternalServerError, "Failed to update priority")
+		
+		// Log failure to audit
+		if h.auditLogger != nil {
+			errorMsg := err.Error()
+			durationMs := int(time.Since(startTime).Milliseconds())
+			h.auditLogger.LogAsync(ctx, &audit.AuditEvent{
+				EventType:     "ticket_priority_update_failed",
+				EventCategory: audit.CategoryTicket,
+				EventAction:   audit.ActionUpdate,
+				EventStatus:   audit.StatusFailure,
+				ResourceType:  stringPtr("ticket"),
+				ResourceID:    &ticketID,
+				IPAddress:     stringPtr(audit.ExtractIPAddress(r)),
+				UserAgent:     stringPtr(audit.ExtractUserAgent(r)),
+				RequestMethod: stringPtr(r.Method),
+				RequestPath:   stringPtr(r.URL.Path),
+				ErrorMessage:  &errorMsg,
+				DurationMs:    &durationMs,
+				Metadata: map[string]interface{}{
+					"old_priority": oldPriority,
+					"new_priority": req.Priority,
+					"user_id":      userID,
+					"user_role":    userRole,
+				},
+			})
+		}
+		return
+	}
+	
+	// Log successful priority update to audit
+	if h.auditLogger != nil {
+		durationMs := int(time.Since(startTime).Milliseconds())
+		ipAddress := audit.ExtractIPAddress(r)
+		
+		h.auditLogger.LogAsync(ctx, &audit.AuditEvent{
+			EventType:     "ticket_priority_updated",
+			EventCategory: audit.CategoryTicket,
+			EventAction:   audit.ActionUpdate,
+			EventStatus:   audit.StatusSuccess,
+			ResourceType:  stringPtr("ticket"),
+			ResourceID:    &ticketID,
+			ResourceName:  stringPtr(ticket.TicketNumber),
+			IPAddress:     &ipAddress,
+			UserAgent:     stringPtr(audit.ExtractUserAgent(r)),
+			RequestMethod: stringPtr(r.Method),
+			RequestPath:   stringPtr(r.URL.Path),
+			DurationMs:    &durationMs,
+			Metadata: map[string]interface{}{
+				"old_priority": oldPriority,
+				"new_priority": req.Priority,
+				"user_id":      userID,
+				"user_role":    userRole,
+			},
+		})
+	}
+	
+	h.logger.Info("Ticket priority updated",
+		slog.String("ticket_id", ticketID),
+		slog.String("ticket_number", ticket.TicketNumber),
+		slog.String("old_priority", oldPriority),
+		slog.String("new_priority", req.Priority),
+		slog.String("updated_by", userID))
+	
+	h.respondJSON(w, http.StatusOK, map[string]interface{}{
+		"status":       "success",
+		"ticket_id":    ticketID,
+		"old_priority": oldPriority,
+		"new_priority": req.Priority,
+		"message":      "Priority updated successfully",
+	})
+}

@@ -753,3 +753,79 @@ func (s *TicketService) DeleteComment(ctx context.Context, ticketID string, comm
 	
 	return nil
 }
+
+// UpdatePriority updates the priority of a ticket (admin-only operation)
+func (s *TicketService) UpdatePriority(ctx context.Context, ticketID string, priority ticketDomain.TicketPriority) error {
+	s.logger.Info("Updating ticket priority",
+		slog.String("ticket_id", ticketID),
+		slog.String("priority", string(priority)))
+	
+	// Get existing ticket
+	ticket, err := s.repo.GetByID(ctx, ticketID)
+	if err != nil {
+		return fmt.Errorf("failed to get ticket: %w", err)
+	}
+	
+	oldPriority := ticket.Priority
+	
+	// Update priority
+	ticket.Priority = priority
+	
+	// Update SLA deadlines based on new priority
+	now := time.Now()
+	switch priority {
+	case ticketDomain.PriorityCritical:
+		responseDue := now.Add(time.Duration(s.defaultSLA.CriticalResponseHours) * time.Hour)
+		resolutionDue := now.Add(time.Duration(s.defaultSLA.CriticalResolutionHours) * time.Hour)
+		ticket.SLAResponseDue = &responseDue
+		ticket.SLAResolutionDue = &resolutionDue
+	case ticketDomain.PriorityHigh:
+		responseDue := now.Add(time.Duration(s.defaultSLA.HighResponseHours) * time.Hour)
+		resolutionDue := now.Add(time.Duration(s.defaultSLA.HighResolutionHours) * time.Hour)
+		ticket.SLAResponseDue = &responseDue
+		ticket.SLAResolutionDue = &resolutionDue
+	case ticketDomain.PriorityMedium:
+		responseDue := now.Add(time.Duration(s.defaultSLA.MediumResponseHours) * time.Hour)
+		resolutionDue := now.Add(time.Duration(s.defaultSLA.MediumResolutionHours) * time.Hour)
+		ticket.SLAResponseDue = &responseDue
+		ticket.SLAResolutionDue = &resolutionDue
+	case ticketDomain.PriorityLow:
+		responseDue := now.Add(time.Duration(s.defaultSLA.LowResponseHours) * time.Hour)
+		resolutionDue := now.Add(time.Duration(s.defaultSLA.LowResolutionHours) * time.Hour)
+		ticket.SLAResponseDue = &responseDue
+		ticket.SLAResolutionDue = &resolutionDue
+	}
+	
+	// Save to database
+	if err := s.repo.Update(ctx, ticket); err != nil {
+		return fmt.Errorf("failed to update ticket priority: %w", err)
+	}
+	
+	// Create event for audit trail
+	if s.eventRepo != nil {
+		event := &ticketDomain.TicketEvent{
+			TicketID:    ticketID,
+			EventType:   "priority_updated",
+			Description: fmt.Sprintf("Priority updated from %s to %s", oldPriority, priority),
+			Timestamp:   now,
+			Metadata: map[string]interface{}{
+				"old_priority": string(oldPriority),
+				"new_priority": string(priority),
+			},
+		}
+		
+		if err := s.eventRepo.Create(ctx, event); err != nil {
+			s.logger.Warn("Failed to create priority update event", 
+				slog.String("error", err.Error()),
+				slog.String("ticket_id", ticketID))
+			// Don't fail the update if event creation fails
+		}
+	}
+	
+	s.logger.Info("Ticket priority updated successfully",
+		slog.String("ticket_id", ticketID),
+		slog.String("old_priority", string(oldPriority)),
+		slog.String("new_priority", string(priority)))
+	
+	return nil
+}
