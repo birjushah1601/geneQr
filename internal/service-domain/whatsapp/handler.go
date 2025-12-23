@@ -1,15 +1,21 @@
 package whatsapp
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
 
+	attachmentDomain "github.com/aby-med/medical-platform/internal/service-domain/attachment/domain"
 	"github.com/aby-med/medical-platform/internal/service-domain/equipment-registry/domain"
 	equipmentApp "github.com/aby-med/medical-platform/internal/service-domain/equipment-registry/app"
 	ticketDomain "github.com/aby-med/medical-platform/internal/service-domain/service-ticket/domain"
@@ -106,10 +112,17 @@ func (h *WhatsAppHandler) HandleWebhook(w http.ResponseWriter, r *http.Request) 
 func (h *WhatsAppHandler) handleIncomingMessage(ctx context.Context, msg *WhatsAppMessage) {
 	h.logger.Info("Received WhatsApp message",
 		slog.String("from", msg.From),
+		slog.String("type", msg.Type),
 		slog.String("text", msg.Text),
 	)
 
-	// Extract QR code from message
+	// Handle audio messages
+	if msg.Type == "audio" {
+		h.handleAudioMessage(ctx, msg)
+		return
+	}
+
+	// Extract QR code from message (text messages)
 	qrCode := h.extractQRCode(msg.Text)
 	
 	if qrCode == "" {
@@ -324,4 +337,277 @@ func (h *WhatsAppHandler) handleMessageStatus(ctx context.Context, status *Messa
 	)
 	
 	// TODO: Update ticket with delivery status if needed
+}
+
+// handleAudioMessage processes WhatsApp audio messages
+func (h *WhatsAppHandler) handleAudioMessage(ctx context.Context, msg *WhatsAppMessage) {
+	h.logger.Info("Processing audio message",
+		slog.String("from", msg.From),
+		slog.String("media_url", msg.MediaURL),
+	)
+	
+	// Extract QR code from caption (text field for audio messages)
+	qrCode := h.extractQRCode(msg.Text)
+	
+	if qrCode == "" {
+		h.sendErrorMessage(ctx, msg.From, "Please include the QR code in your message. Example: 'QR-20251001-832300 Equipment issue'")
+		return
+	}
+	
+	// Lookup equipment
+	equipment, err := h.equipmentService.GetEquipmentByQR(ctx, qrCode)
+	if err != nil {
+		h.logger.Error("Equipment not found", 
+			slog.String("qr_code", qrCode),
+			slog.String("error", err.Error()))
+		h.sendErrorMessage(ctx, msg.From, "Equipment not found. Please check the QR code.")
+		return
+	}
+	
+	// Download audio file (if MediaURL is available)
+	var audioFilePath string
+	if msg.MediaURL != "" {
+		audioFilePath, err = h.downloadAudioFile(ctx, msg.MediaURL, msg.ID)
+		if err != nil {
+			h.logger.Warn("Failed to download audio file", slog.String("error", err.Error()))
+			// Continue without audio file
+		}
+	}
+	
+	// Transcribe audio using Whisper API
+	var transcription string
+	if audioFilePath != "" {
+		transcription, err = h.transcribeAudio(ctx, audioFilePath)
+		if err != nil {
+			h.logger.Warn("Audio transcription failed", slog.String("error", err.Error()))
+			// Continue without transcription
+		} else {
+			h.logger.Info("Audio transcribed successfully",
+				slog.Int("transcript_length", len(transcription)))
+		}
+	}
+	
+	// Build issue description
+	issueDescription := msg.Text
+	if transcription != "" {
+		issueDescription = fmt.Sprintf("%s\n\n[Audio transcription]: %s", msg.Text, transcription)
+	} else if audioFilePath != "" {
+		issueDescription = fmt.Sprintf("%s\n\n[Audio message received - transcription unavailable]", msg.Text)
+	}
+	
+	// Clean up QR code from description
+	issueDescription = strings.ReplaceAll(issueDescription, qrCode, "")
+	issueDescription = strings.TrimSpace(issueDescription)
+	
+	if issueDescription == "" || issueDescription == "[Audio message received - transcription unavailable]" {
+		issueDescription = "Audio message received - equipment issue reported"
+	}
+	
+	// Determine priority
+	priority := h.determinePriority(issueDescription)
+	
+	// Create ticket
+	ticket, err := h.createTicketFromWhatsApp(ctx, equipment, msg, issueDescription, priority)
+	if err != nil {
+		h.logger.Error("Failed to create ticket", slog.String("error", err.Error()))
+		h.sendErrorMessage(ctx, msg.From, "Failed to create service ticket. Please try again.")
+		return
+	}
+	
+	// Attach audio file to ticket (async)
+	if audioFilePath != "" {
+		go h.attachAudioToTicket(context.Background(), ticket.ID, audioFilePath, transcription)
+	}
+	
+	// Send confirmation
+	h.sendTicketConfirmation(ctx, msg.From, ticket)
+	
+	h.logger.Info("Audio message processed successfully",
+		slog.String("ticket_number", ticket.TicketNumber),
+		slog.Bool("has_audio", audioFilePath != ""),
+		slog.Bool("has_transcript", transcription != ""))
+}
+
+// downloadAudioFile downloads audio file from WhatsApp and stores locally
+func (h *WhatsAppHandler) downloadAudioFile(ctx context.Context, mediaURL, messageID string) (string, error) {
+	// Create storage directory
+	storageDir := "./storage/whatsapp_audio"
+	if envDir := os.Getenv("WHATSAPP_MEDIA_DIR"); envDir != "" {
+		storageDir = envDir + "/audio"
+	}
+	
+	if err := os.MkdirAll(storageDir, 0755); err != nil {
+		return "", fmt.Errorf("failed to create storage directory: %w", err)
+	}
+	
+	// Create HTTP request
+	req, err := http.NewRequestWithContext(ctx, "GET", mediaURL, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to create request: %w", err)
+	}
+	
+	// Add WhatsApp auth (if needed)
+	if accessToken := os.Getenv("WHATSAPP_ACCESS_TOKEN"); accessToken != "" {
+		req.Header.Set("Authorization", "Bearer "+accessToken)
+	}
+	
+	// Execute request
+	client := &http.Client{Timeout: 30 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("failed to download audio: %w", err)
+	}
+	defer resp.Body.Close()
+	
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("download failed with status: %d", resp.StatusCode)
+	}
+	
+	// Generate filename
+	timestamp := time.Now().Format("20060102_150405")
+	filename := fmt.Sprintf("audio_%s_%s.ogg", timestamp, messageID[:8])
+	filePath := fmt.Sprintf("%s/%s", storageDir, filename)
+	
+	// Create file
+	file, err := os.Create(filePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to create file: %w", err)
+	}
+	defer file.Close()
+	
+	// Copy audio content
+	written, err := io.Copy(file, resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to write audio file: %w", err)
+	}
+	
+	h.logger.Info("Audio file downloaded",
+		slog.String("file_path", filePath),
+		slog.Int64("bytes", written))
+	
+	return filePath, nil
+}
+
+// transcribeAudio converts audio to text using OpenAI Whisper API
+func (h *WhatsAppHandler) transcribeAudio(ctx context.Context, audioFilePath string) (string, error) {
+	apiKey := os.Getenv("OPENAI_API_KEY")
+	if apiKey == "" {
+		return "", fmt.Errorf("OPENAI_API_KEY not configured")
+	}
+	
+	// Open audio file
+	file, err := os.Open(audioFilePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to open audio file: %w", err)
+	}
+	defer file.Close()
+	
+	// Create multipart form request
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	
+	// Add file
+	part, err := writer.CreateFormFile("file", filepath.Base(audioFilePath))
+	if err != nil {
+		return "", fmt.Errorf("failed to create form file: %w", err)
+	}
+	if _, err := io.Copy(part, file); err != nil {
+		return "", fmt.Errorf("failed to copy file: %w", err)
+	}
+	
+	// Add model
+	writer.WriteField("model", "whisper-1")
+	
+	// Add language (auto-detect if not specified)
+	if lang := os.Getenv("WHISPER_LANGUAGE"); lang != "" {
+		writer.WriteField("language", lang) // e.g., "en" or "hi"
+	}
+	
+	writer.Close()
+	
+	// Create HTTP request
+	req, err := http.NewRequestWithContext(ctx, "POST",
+		"https://api.openai.com/v1/audio/transcriptions", body)
+	if err != nil {
+		return "", fmt.Errorf("failed to create request: %w", err)
+	}
+	
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	
+	// Execute request
+	client := &http.Client{Timeout: 60 * time.Second} // Longer timeout for transcription
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("API request failed: %w", err)
+	}
+	defer resp.Body.Close()
+	
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("API returned status %d: %s", resp.StatusCode, string(bodyBytes))
+	}
+	
+	// Parse response
+	var result struct {
+		Text string `json:"text"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return "", fmt.Errorf("failed to decode response: %w", err)
+	}
+	
+	return result.Text, nil
+}
+
+// attachAudioToTicket saves audio file and transcription as ticket attachment
+func (h *WhatsAppHandler) attachAudioToTicket(ctx context.Context, ticketID string, audioFilePath string, transcription string) {
+	// Get file info
+	fileInfo, err := os.Stat(audioFilePath)
+	if err != nil {
+		h.logger.Error("Failed to stat audio file", 
+			slog.String("path", audioFilePath),
+			slog.String("error", err.Error()))
+		return
+	}
+	
+	// Create attachment via attachment service
+	attachment := &attachmentDomain.Attachment{
+		EntityType:  attachmentDomain.EntityTypeTicket,
+		EntityID:    ticketID,
+		Filename:    filepath.Base(audioFilePath),
+		FileType:    "audio/ogg",
+		FileSize:    fileInfo.Size(),
+		StoragePath: audioFilePath,
+		UploadedBy:  "whatsapp_system",
+		Description: "WhatsApp audio message",
+		Category:    "audio_message",
+		Source:      "whatsapp",
+	}
+	
+	// Store metadata including transcription
+	if transcription != "" {
+		attachment.Metadata = map[string]interface{}{
+			"transcription":     transcription,
+			"has_transcription": true,
+			"transcript_length": len(transcription),
+		}
+	} else {
+		attachment.Metadata = map[string]interface{}{
+			"has_transcription": false,
+			"transcription_failed": true,
+		}
+	}
+	
+	// Save attachment
+	if err := h.attachmentService.CreateAttachment(ctx, attachment); err != nil {
+		h.logger.Error("Failed to create attachment record",
+			slog.String("ticket_id", ticketID),
+			slog.String("error", err.Error()))
+		return
+	}
+	
+	h.logger.Info("Audio attachment created successfully",
+		slog.String("ticket_id", ticketID),
+		slog.String("attachment_id", attachment.ID),
+		slog.Bool("has_transcript", transcription != ""))
 }
