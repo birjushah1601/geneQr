@@ -11,14 +11,24 @@ This documentation is organized by purpose and audience for easy navigation.
 ```
 docs/
 ├── README.md (this file)
-├── 01-GETTING-STARTED.md
-├── 02-ARCHITECTURE.md
-├── 03-FEATURES.md
-├── 04-API-REFERENCE.md
-├── 05-DEPLOYMENT.md
-├── 06-PERSONAS.md
-└── archives/ (old progress logs and summaries)
+├── 01-06 Master Documentation (6 files)
+├── Core Guides (9 files)
+├── guides/ (Implementation guides - 6 files)
+├── design/ (Design & planning docs - 5 files)
+└── archives/ (Historical logs - 103 files)
 ```
+
+### Root Directory
+- **Master Docs:** 01-GETTING-STARTED through 06-PERSONAS
+- **Quick References:** QUICK-REFERENCE, EXECUTIVE-SUMMARY
+- **Deployment:** DEPLOYMENT-GUIDE, PRODUCTION-CHECKLIST, EXTERNAL-SERVICES
+- **Systems:** NOTIFICATIONS-SYSTEM, SECURITY-IMPLEMENTATION
+- **Config:** LOGIN-PASSWORD-DEFAULT
+
+### Subdirectories
+- **guides/** - Implementation guides for features
+- **design/** - Design documents and planning specs
+- **archives/** - Historical progress logs (not needed for current work)
 
 ---
 
