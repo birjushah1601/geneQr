@@ -218,10 +218,16 @@ func (s *AuthService) VerifyOTPAndLogin(ctx context.Context, req *VerifyOTPLogin
 	s.userRepo.UpdateLastLogin(ctx, user.ID)
 
 	// Get user organizations
-	userOrgs, _ := s.userRepo.GetUserOrganizations(ctx, user.ID)
+	userOrgs, err := s.userRepo.GetUserOrganizations(ctx, user.ID)
+	if err != nil {
+		fmt.Printf("[ERROR] Failed to get user organizations for user %s: %v\n", user.ID, err)
+	}
 	var primaryOrg *domain.UserOrganization
 	if len(userOrgs) > 0 {
 		primaryOrg = &userOrgs[0]
+		fmt.Printf("[DEBUG] Found primary org for user %s: org_id=%s, role=%s\n", user.ID, primaryOrg.OrganizationID, primaryOrg.Role)
+	} else {
+		fmt.Printf("[WARN] No organizations found for user %s\n", user.ID)
 	}
 
 	// Generate tokens
@@ -236,6 +242,7 @@ func (s *AuthService) VerifyOTPAndLogin(ctx context.Context, req *VerifyOTPLogin
 		tokenReq.OrganizationID = primaryOrg.OrganizationID.String()
 		tokenReq.Role = primaryOrg.Role
 		tokenReq.Permissions = primaryOrg.Permissions
+		fmt.Printf("[DEBUG] Token request includes: org_id=%s, role=%s\n", tokenReq.OrganizationID, tokenReq.Role)
 	}
 
 	tokens, err := s.jwtService.GenerateTokenPair(ctx, tokenReq)
@@ -309,10 +316,16 @@ func (s *AuthService) LoginWithPassword(ctx context.Context, req *LoginPasswordR
 	s.userRepo.UpdateLastLogin(ctx, user.ID)
 
 	// Get user organizations
-	userOrgs, _ := s.userRepo.GetUserOrganizations(ctx, user.ID)
+	userOrgs, err := s.userRepo.GetUserOrganizations(ctx, user.ID)
+	if err != nil {
+		fmt.Printf("[ERROR] Failed to get user organizations for user %s: %v\n", user.ID, err)
+	}
 	var primaryOrg *domain.UserOrganization
 	if len(userOrgs) > 0 {
 		primaryOrg = &userOrgs[0]
+		fmt.Printf("[DEBUG] Found primary org for user %s: org_id=%s, role=%s\n", user.ID, primaryOrg.OrganizationID, primaryOrg.Role)
+	} else {
+		fmt.Printf("[WARN] No organizations found for user %s\n", user.ID)
 	}
 
 	// Fetch organization details to get org_type
@@ -323,7 +336,7 @@ func (s *AuthService) LoginWithPassword(ctx context.Context, req *LoginPasswordR
 			orgType = org.Type
 			fmt.Printf("[DEBUG] Fetched organization: name=%s, type=%s\n", org.Name, org.Type)
 		} else {
-			fmt.Printf("[DEBUG] Failed to fetch organization: %v\n", err)
+			fmt.Printf("[ERROR] Failed to fetch organization: %v\n", err)
 		}
 	}
 
@@ -340,6 +353,9 @@ func (s *AuthService) LoginWithPassword(ctx context.Context, req *LoginPasswordR
 		tokenReq.OrganizationType = orgType
 		tokenReq.Role = primaryOrg.Role
 		tokenReq.Permissions = primaryOrg.Permissions
+		fmt.Printf("[DEBUG] Token request includes: org_id=%s, org_type=%s, role=%s\n", tokenReq.OrganizationID, tokenReq.OrganizationType, tokenReq.Role)
+	} else {
+		fmt.Printf("[WARN] No primary org, token will not include organization data\n")
 	}
 
 	tokens, err := s.jwtService.GenerateTokenPair(ctx, tokenReq)
