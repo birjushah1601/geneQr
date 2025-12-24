@@ -9,6 +9,7 @@ import (
 	"github.com/aby-med/medical-platform/internal/core/auth/domain"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 )
 
 type userRepository struct {
@@ -286,7 +287,6 @@ func (r *userRepository) UnlockAccount(ctx context.Context, userID uuid.UUID) er
 
 // GetUserOrganizations retrieves all organizations for a user
 func (r *userRepository) GetUserOrganizations(ctx context.Context, userID uuid.UUID) ([]domain.UserOrganization, error) {
-	var userOrgs []domain.UserOrganization
 	query := `
 		SELECT id, user_id, organization_id, role, permissions,
 			   is_primary, status, joined_at, left_at
@@ -295,9 +295,38 @@ func (r *userRepository) GetUserOrganizations(ctx context.Context, userID uuid.U
 		ORDER BY is_primary DESC, joined_at DESC
 	`
 
-	err := r.db.SelectContext(ctx, &userOrgs, query, userID)
+	rows, err := r.db.QueryxContext(ctx, query, userID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get user organizations: %w", err)
+		return nil, fmt.Errorf("failed to query user organizations: %w", err)
+	}
+	defer rows.Close()
+
+	var userOrgs []domain.UserOrganization
+	for rows.Next() {
+		var userOrg domain.UserOrganization
+		var permissions pq.StringArray
+		
+		err := rows.Scan(
+			&userOrg.ID,
+			&userOrg.UserID,
+			&userOrg.OrganizationID,
+			&userOrg.Role,
+			&permissions,
+			&userOrg.IsPrimary,
+			&userOrg.Status,
+			&userOrg.JoinedAt,
+			&userOrg.LeftAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan user organization: %w", err)
+		}
+		
+		userOrg.Permissions = []string(permissions)
+		userOrgs = append(userOrgs, userOrg)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating user organizations: %w", err)
 	}
 
 	return userOrgs, nil

@@ -36,7 +36,7 @@ type UserOrganization struct {
 	UserID         uuid.UUID  `json:"user_id" db:"user_id"`
 	OrganizationID uuid.UUID  `json:"organization_id" db:"organization_id"`
 	Role           string     `json:"role" db:"role"`
-	Permissions    JSONBArray `json:"permissions" db:"permissions"`
+	Permissions    []string   `json:"permissions" db:"permissions"`
 	IsPrimary      bool       `json:"is_primary" db:"is_primary"`
 	Status         string     `json:"status" db:"status"`
 	JoinedAt       time.Time  `json:"joined_at" db:"joined_at"`
