@@ -9,7 +9,7 @@ interface AdminRouteProps {
 }
 
 export default function AdminRoute({ children }: AdminRouteProps) {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, organizationContext, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -21,12 +21,15 @@ export default function AdminRoute({ children }: AdminRouteProps) {
       }
 
       // If authenticated but not admin, redirect to dashboard with error
-      if (user && user.role !== 'admin') {
+      // Check both user.role and organizationContext.role for compatibility
+      const userRole = user?.role || organizationContext?.role;
+      if (userRole !== 'admin') {
+        console.log('[AdminRoute] Access denied. User role:', userRole);
         router.push('/dashboard?error=unauthorized');
         return;
       }
     }
-  }, [isAuthenticated, isLoading, user, router]);
+  }, [isAuthenticated, isLoading, user, organizationContext, router]);
 
   // Show loading state
   if (isLoading) {
@@ -41,7 +44,8 @@ export default function AdminRoute({ children }: AdminRouteProps) {
   }
 
   // If not authenticated or not admin, show nothing (redirect will happen)
-  if (!isAuthenticated || !user || user.role !== 'admin') {
+  const userRole = user?.role || organizationContext?.role;
+  if (!isAuthenticated || !user || userRole !== 'admin') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
