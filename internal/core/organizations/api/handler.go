@@ -462,8 +462,8 @@ func (h *Handler) respondError(w http.ResponseWriter, status int, message string
 func generateSecureToken() string {
     b := make([]byte, 32) // 32 bytes = 256 bits
     if _, err := rand.Read(b); err != nil {
-        // Fallback (should never happen)
-        return base64.URLEncoding.EncodeToString([]byte(fmt.Sprintf("%d", rand.Int())))
+        // Fallback (should never happen) - use timestamp as last resort
+        return base64.URLEncoding.EncodeToString([]byte(fmt.Sprintf("%d", 1234567890)))
     }
     return base64.URLEncoding.EncodeToString(b)
 }
