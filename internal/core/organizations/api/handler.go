@@ -80,6 +80,93 @@ func (h *Handler) GetOrg(w http.ResponseWriter, r *http.Request) {
     h.respondJSON(w, http.StatusOK, org)
 }
 
+func (h *Handler) CreateOrg(w http.ResponseWriter, r *http.Request) {
+    ctx := r.Context()
+    
+    var req struct {
+        Name        string          `json:"name"`
+        OrgType     string          `json:"type"`
+        Status      string          `json:"status"`
+        Email       string          `json:"email"`
+        Phone       string          `json:"phone"`
+        Address     string          `json:"address"`
+        City        string          `json:"city"`
+        State       string          `json:"state"`
+        Country     string          `json:"country"`
+        PostalCode  string          `json:"postal_code"`
+        Website     string          `json:"website"`
+        ContactPerson string        `json:"contact_person"`
+    }
+    
+    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+        h.respondError(w, http.StatusBadRequest, "invalid json: "+err.Error())
+        return
+    }
+    
+    // Validation
+    if req.Name == "" {
+        h.respondError(w, http.StatusBadRequest, "name is required")
+        return
+    }
+    if req.OrgType == "" {
+        h.respondError(w, http.StatusBadRequest, "type is required")
+        return
+    }
+    if req.Status == "" {
+        req.Status = "active"
+    }
+    
+    // Build metadata JSON
+    metadata := make(map[string]interface{})
+    if req.Email != "" {
+        metadata["email"] = req.Email
+    }
+    if req.Phone != "" {
+        metadata["phone"] = req.Phone
+    }
+    if req.Address != "" {
+        metadata["address"] = req.Address
+    }
+    if req.City != "" {
+        metadata["city"] = req.City
+    }
+    if req.State != "" {
+        metadata["state"] = req.State
+    }
+    if req.Country != "" {
+        metadata["country"] = req.Country
+    }
+    if req.PostalCode != "" {
+        metadata["postal_code"] = req.PostalCode
+    }
+    if req.Website != "" {
+        metadata["website"] = req.Website
+    }
+    if req.ContactPerson != "" {
+        metadata["contact_person"] = req.ContactPerson
+    }
+    
+    metadataJSON, _ := json.Marshal(metadata)
+    
+    // Insert into database
+    var orgID string
+    query := `INSERT INTO organizations (name, org_type, status, metadata) 
+              VALUES ($1, $2, $3, $4) 
+              RETURNING id`
+    
+    err := h.repo.DB().QueryRow(ctx, query, req.Name, req.OrgType, req.Status, metadataJSON).Scan(&orgID)
+    if err != nil {
+        h.logger.Error("failed to create organization", slog.String("error", err.Error()))
+        h.respondError(w, http.StatusInternalServerError, "failed to create organization: "+err.Error())
+        return
+    }
+    
+    h.respondJSON(w, http.StatusCreated, map[string]interface{}{
+        "id":      orgID,
+        "message": "Organization created successfully",
+    })
+}
+
 func (h *Handler) ListFacilities(w http.ResponseWriter, r *http.Request) {
     ctx := r.Context()
     id := chi.URLParam(r, "id")

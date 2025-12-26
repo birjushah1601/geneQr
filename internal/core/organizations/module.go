@@ -80,6 +80,7 @@ func (m *Module) MountRoutes(r chi.Router) {
     
     r.Route("/organizations", func(r chi.Router) {
         r.Get("/", m.handler.ListOrgs)
+        r.Post("/", m.handler.CreateOrg)
         r.Post("/import", bulkImportHandler.HandleBulkImport)
         r.Get("/{id}", m.handler.GetOrg)
         r.Get("/{id}/facilities", m.handler.ListFacilities)

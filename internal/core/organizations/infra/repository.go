@@ -37,6 +37,10 @@ func NewRepository(db *pgxpool.Pool, logger *slog.Logger) *Repository {
     return &Repository{db: db, logger: logger}
 }
 
+func (r *Repository) DB() *pgxpool.Pool {
+    return r.db
+}
+
 func (r *Repository) ListOrgs(ctx context.Context, limit, offset int, orgType, status string) ([]Organization, error) {
     if limit <= 0 || limit > 500 { limit = 100 }
     if offset < 0 { offset = 0 }
