@@ -552,3 +552,50 @@ type ResetPasswordRequest struct {
 	NewPassword string
 	IPAddress   string
 }
+
+// GetDB returns the database pool for direct queries (used by password reset token operations)
+func (s *AuthService) GetDB() interface {
+	QueryRow(ctx context.Context, sql string, args ...interface{}) interface {
+		Scan(dest ...interface{}) error
+	}
+	Exec(ctx context.Context, sql string, args ...interface{}) (interface{}, error)
+} {
+	return s.userRepo.(interface {
+		GetDB() interface {
+			QueryRow(ctx context.Context, sql string, args ...interface{}) interface {
+				Scan(dest ...interface{}) error
+			}
+			Exec(ctx context.Context, sql string, args ...interface{}) (interface{}, error)
+		}
+	}).GetDB()
+}
+
+// SetPasswordByUserID sets a password for a user by their ID (used for password setup via token)
+func (s *AuthService) SetPasswordByUserID(ctx context.Context, userID uuid.UUID, newPassword string) error {
+	// Validate password strength
+	if err := s.pwdService.ValidatePasswordStrength(newPassword); err != nil {
+		return fmt.Errorf("weak password: %w", err)
+	}
+
+	// Hash the password
+	hashedPassword, err := s.pwdService.HashPassword(newPassword)
+	if err != nil {
+		return fmt.Errorf("failed to hash password: %w", err)
+	}
+
+	// Update user with new password and activate
+	err = s.userRepo.UpdatePassword(ctx, userID, hashedPassword)
+	if err != nil {
+		return fmt.Errorf("failed to update password: %w", err)
+	}
+
+	// Activate user if pending
+	query := `UPDATE users SET status = 'active', email_verified = true WHERE id = $1 AND status = 'pending'`
+	_, err = s.GetDB().Exec(ctx, query, userID)
+	if err != nil {
+		// Log but don't fail - password is already set
+		fmt.Printf("Warning: Failed to activate user: %v\n", err)
+	}
+
+	return nil
+}

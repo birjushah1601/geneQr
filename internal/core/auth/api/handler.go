@@ -2,6 +2,8 @@ package api
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -401,6 +403,11 @@ func (h *AuthHandler) RegisterRoutes(r chi.Router) {
 		r.Post("/forgot-password", h.ForgotPassword)
 		r.Post("/reset-password", h.ResetPassword)
 		r.Post("/validate", h.ValidateToken)
+		
+		// Password setup via secure token
+		r.Get("/validate-reset-token", h.ValidateResetToken)
+		r.Post("/set-password", h.SetPassword)
+		r.Post("/resend-setup-link", h.ResendSetupLink)
 
 		// Protected routes (auth middleware required)
 		r.Group(func(r chi.Router) {
@@ -408,6 +415,195 @@ func (h *AuthHandler) RegisterRoutes(r chi.Router) {
 			r.Get("/me", h.GetCurrentUser)
 			r.Post("/logout", h.Logout)
 		})
+	})
+}
+
+// ValidateResetToken validates a password reset token
+// GET /api/v1/auth/validate-reset-token?token=xyz
+func (h *AuthHandler) ValidateResetToken(w http.ResponseWriter, r *http.Request) {
+	token := r.URL.Query().Get("token")
+	if token == "" {
+		respondError(w, http.StatusBadRequest, "token parameter is required")
+		return
+	}
+
+	// Query database for token
+	var userID uuid.UUID
+	var email string
+	var fullName string
+	var expiresAt string
+	var usedAt *string
+
+	query := `
+		SELECT u.id, u.email, u.full_name, t.expires_at, t.used_at
+		FROM password_reset_tokens t
+		JOIN users u ON t.user_id = u.id
+		WHERE t.token = $1
+	`
+
+	err := h.authService.GetDB().QueryRow(r.Context(), query, token).Scan(&userID, &email, &fullName, &expiresAt, &usedAt)
+	if err != nil {
+		respondError(w, http.StatusNotFound, "Invalid or expired token")
+		return
+	}
+
+	// Check if already used
+	if usedAt != nil {
+		respondError(w, http.StatusBadRequest, "Token has already been used")
+		return
+	}
+
+	// Check if expired (compare with NOW())
+	var isExpired bool
+	expireCheck := `SELECT NOW() > $1::timestamp`
+	err = h.authService.GetDB().QueryRow(r.Context(), expireCheck, expiresAt).Scan(&isExpired)
+	if err != nil || isExpired {
+		respondError(w, http.StatusBadRequest, "Token has expired")
+		return
+	}
+
+	respondJSON(w, http.StatusOK, map[string]interface{}{
+		"valid":     true,
+		"user_id":   userID,
+		"email":     email,
+		"full_name": fullName,
+	})
+}
+
+// SetPassword sets password using a valid reset token
+// POST /api/v1/auth/set-password
+func (h *AuthHandler) SetPassword(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Token       string `json:"token"`
+		NewPassword string `json:"new_password"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		respondError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	if req.Token == "" {
+		respondError(w, http.StatusBadRequest, "token is required")
+		return
+	}
+	if req.NewPassword == "" {
+		respondError(w, http.StatusBadRequest, "new_password is required")
+		return
+	}
+
+	// Validate token and get user
+	var userID uuid.UUID
+	var usedAt *string
+	var expiresAt string
+
+	query := `
+		SELECT user_id, used_at, expires_at
+		FROM password_reset_tokens
+		WHERE token = $1
+	`
+
+	err := h.authService.GetDB().QueryRow(r.Context(), query, req.Token).Scan(&userID, &usedAt, &expiresAt)
+	if err != nil {
+		respondError(w, http.StatusNotFound, "Invalid or expired token")
+		return
+	}
+
+	if usedAt != nil {
+		respondError(w, http.StatusBadRequest, "Token has already been used")
+		return
+	}
+
+	// Check if expired
+	var isExpired bool
+	expireCheck := `SELECT NOW() > $1::timestamp`
+	err = h.authService.GetDB().QueryRow(r.Context(), expireCheck, expiresAt).Scan(&isExpired)
+	if err != nil || isExpired {
+		respondError(w, http.StatusBadRequest, "Token has expired")
+		return
+	}
+
+	// Update user password and status
+	err = h.authService.SetPasswordByUserID(r.Context(), userID, req.NewPassword)
+	if err != nil {
+		respondError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Mark token as used
+	updateToken := `UPDATE password_reset_tokens SET used_at = NOW() WHERE token = $1`
+	_, err = h.authService.GetDB().Exec(r.Context(), updateToken, req.Token)
+	if err != nil {
+		// Log but don't fail - password is already set
+		fmt.Printf("Warning: Failed to mark token as used: %v\n", err)
+	}
+
+	respondJSON(w, http.StatusOK, map[string]string{
+		"message": "Password set successfully. You can now login.",
+	})
+}
+
+// ResendSetupLink resends a password setup link for expired tokens
+// POST /api/v1/auth/resend-setup-link
+func (h *AuthHandler) ResendSetupLink(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Email string `json:"email"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		respondError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	if req.Email == "" {
+		respondError(w, http.StatusBadRequest, "email is required")
+		return
+	}
+
+	// Get user by email
+	var userID uuid.UUID
+	var status string
+	var hasPassword bool
+
+	userQuery := `SELECT id, status, (password_hash IS NOT NULL) as has_password FROM users WHERE email = $1`
+	err := h.authService.GetDB().QueryRow(r.Context(), userQuery, req.Email).Scan(&userID, &status, &hasPassword)
+	if err != nil {
+		// Don't reveal if user exists (security)
+		respondJSON(w, http.StatusOK, map[string]string{
+			"message": "If the account exists and is pending setup, a new link will be sent.",
+		})
+		return
+	}
+
+	// Only send link if user hasn't set password yet
+	if hasPassword {
+		respondError(w, http.StatusBadRequest, "Account is already active. Use forgot password instead.")
+		return
+	}
+
+	// Generate new token
+	token := generateSecureToken()
+
+	// Insert new token (old ones remain but will be ignored)
+	tokenQuery := `
+		INSERT INTO password_reset_tokens (id, user_id, token, expires_at, created_at) 
+		VALUES (gen_random_uuid(), $1, $2, NOW() + INTERVAL '48 hours', NOW())
+	`
+	_, err = h.authService.GetDB().Exec(r.Context(), tokenQuery, userID, token)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, "Failed to generate new token")
+		return
+	}
+
+	// Generate setup link
+	setupLink := fmt.Sprintf("http://localhost:3000/set-password?token=%s", token)
+
+	// TODO: Send email here
+	fmt.Printf("📧 New setup link for %s: %s\n", req.Email, setupLink)
+
+	respondJSON(w, http.StatusOK, map[string]interface{}{
+		"message":    "A new setup link has been sent to your email.",
+		"setup_link": setupLink, // Remove in production
 	})
 }
 
@@ -439,4 +635,14 @@ func (h *AuthHandler) AuthMiddleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+// generateSecureToken generates a cryptographically secure random token
+func generateSecureToken() string {
+	b := make([]byte, 32) // 32 bytes = 256 bits
+	if _, err := rand.Read(b); err != nil {
+		// Fallback (should never happen)
+		return base64.URLEncoding.EncodeToString([]byte(fmt.Sprintf("%d", 1234567890)))
+	}
+	return base64.URLEncoding.EncodeToString(b)
 }

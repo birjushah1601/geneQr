@@ -21,6 +21,11 @@ func NewUserRepository(db *sqlx.DB) domain.UserRepository {
 	return &userRepository{db: db}
 }
 
+// GetDB returns the underlying database connection for direct queries
+func (r *userRepository) GetDB() *sqlx.DB {
+	return r.db
+}
+
 // Create creates a new user
 func (r *userRepository) Create(ctx context.Context, user *domain.User) error {
 	query := `
