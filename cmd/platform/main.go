@@ -21,7 +21,7 @@ import (
 	appmiddleware "github.com/aby-med/medical-platform/internal/middleware"
 	auth "github.com/aby-med/medical-platform/internal/core/auth"
     organizations "github.com/aby-med/medical-platform/internal/core/organizations"
-	equipmentcore "github.com/aby-med/medical-platform/internal/core/equipment"
+	// equipmentcore "github.com/aby-med/medical-platform/internal/core/equipment" // Disabled - using equipment-registry instead
 	"github.com/aby-med/medical-platform/internal/infrastructure/reports"
 	"github.com/aby-med/medical-platform/internal/marketplace/catalog"
 	"github.com/aby-med/medical-platform/internal/service-domain/rfq"
@@ -29,8 +29,8 @@ import (
 	"github.com/aby-med/medical-platform/internal/service-domain/quote"
 	"github.com/aby-med/medical-platform/internal/service-domain/comparison"
 	"github.com/aby-med/medical-platform/internal/service-domain/contract"
-	// equipment "github.com/aby-med/medical-platform/internal/service-domain/equipment-registry" // Disabled - using core/equipment instead
-	// equipmentApp "github.com/aby-med/medical-platform/internal/service-domain/equipment-registry/app" // Disabled
+	equipment "github.com/aby-med/medical-platform/internal/service-domain/equipment-registry"
+	// equipmentApp "github.com/aby-med/medical-platform/internal/service-domain/equipment-registry/app" // Only used by WhatsApp (disabled)
 	serviceticket "github.com/aby-med/medical-platform/internal/service-domain/service-ticket"
 	// serviceticketApp "github.com/aby-med/medical-platform/internal/service-domain/service-ticket/app" // Disabled - used only by WhatsApp
 	"github.com/aby-med/medical-platform/internal/service-domain/attachment"
@@ -290,10 +290,7 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
         registry.Register(organizations.New(cfg, logger))
     }
 	
-	// Register Equipment module behind feature flag
-	if os.Getenv("ENABLE_EQUIPMENT") == "true" || os.Getenv("ENABLE_EQUIPMENT") == "1" || os.Getenv("ENABLE_EQUIPMENT") == "on" {
-		registry.Register(equipmentcore.New(cfg, logger))
-	}
+	// Equipment module is registered below as equipment-registry (not using core/equipment)
 	
 	// Register RFQ module
 	rfqConfig := &rfq.Config{
@@ -342,11 +339,8 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 		dbPort = 5432 // Default PostgreSQL port
 	}
 	
-	// NOTE: Equipment Registry module (Field Service Management) is DISABLED
-	// We're using the core/equipment module instead (has multi-tenant filtering)
-	// Commenting out to avoid route conflicts on /equipment
-	/*
-	
+	// Register Equipment Registry module (Field Service Management)
+	// This module has multi-tenant filtering built-in
 	equipmentModule, err := equipment.NewModule(equipment.ModuleConfig{
 		DBHost:      cfg.Database.Host,
 		DBPort:      dbPort,
@@ -359,7 +353,6 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 	if err == nil {
 		registry.Register(equipmentModule)
 	}
-	*/
 	
 	// Register Service Ticket module (includes WhatsApp integration)
 	whatsappVerifyToken := os.Getenv("WHATSAPP_VERIFY_TOKEN")
