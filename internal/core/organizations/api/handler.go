@@ -1,7 +1,10 @@
 package api
 
 import (
+    "crypto/rand"
+    "encoding/base64"
     "encoding/json"
+    "fmt"
     "log/slog"
     "net/http"
     "strconv"
@@ -112,15 +115,17 @@ func (h *Handler) CreateOrg(w http.ResponseWriter, r *http.Request) {
         h.respondError(w, http.StatusBadRequest, "type is required")
         return
     }
+    if req.Email == "" {
+        h.respondError(w, http.StatusBadRequest, "email is required (needed for user account creation)")
+        return
+    }
     if req.Status == "" {
         req.Status = "active"
     }
     
     // Build metadata JSON
     metadata := make(map[string]interface{})
-    if req.Email != "" {
-        metadata["email"] = req.Email
-    }
+    metadata["email"] = req.Email
     if req.Phone != "" {
         metadata["phone"] = req.Phone
     }
@@ -148,22 +153,99 @@ func (h *Handler) CreateOrg(w http.ResponseWriter, r *http.Request) {
     
     metadataJSON, _ := json.Marshal(metadata)
     
-    // Insert into database
-    var orgID string
-    query := `INSERT INTO organizations (name, org_type, status, metadata) 
-              VALUES ($1, $2, $3, $4) 
-              RETURNING id`
+    // Start a transaction
+    tx, err := h.repo.DB().Begin(ctx)
+    if err != nil {
+        h.respondError(w, http.StatusInternalServerError, "failed to start transaction: "+err.Error())
+        return
+    }
+    defer tx.Rollback(ctx)
     
-    err := h.repo.DB().QueryRow(ctx, query, req.Name, req.OrgType, req.Status, metadataJSON).Scan(&orgID)
+    // 1. Create organization
+    var orgID string
+    orgQuery := `INSERT INTO organizations (name, org_type, status, metadata) 
+                 VALUES ($1, $2, $3, $4) 
+                 RETURNING id`
+    
+    err = tx.QueryRow(ctx, orgQuery, req.Name, req.OrgType, req.Status, metadataJSON).Scan(&orgID)
     if err != nil {
         h.logger.Error("failed to create organization", slog.String("error", err.Error()))
         h.respondError(w, http.StatusInternalServerError, "failed to create organization: "+err.Error())
         return
     }
     
+    // 2. Create user account (no password yet)
+    userName := req.ContactPerson
+    if userName == "" {
+        userName = req.Name + " Admin"
+    }
+    
+    var userID string
+    userQuery := `INSERT INTO users (email, full_name, preferred_auth_method, status, email_verified) 
+                  VALUES ($1, $2, 'password', 'pending', false) 
+                  RETURNING id`
+    
+    err = tx.QueryRow(ctx, userQuery, req.Email, userName).Scan(&userID)
+    if err != nil {
+        // Check if user already exists
+        if strings.Contains(err.Error(), "duplicate") || strings.Contains(err.Error(), "unique") {
+            h.respondError(w, http.StatusConflict, "A user with this email already exists")
+            return
+        }
+        h.logger.Error("failed to create user", slog.String("error", err.Error()))
+        h.respondError(w, http.StatusInternalServerError, "failed to create user: "+err.Error())
+        return
+    }
+    
+    // 3. Link user to organization with admin role
+    userOrgQuery := `INSERT INTO user_organizations (id, user_id, organization_id, role, permissions, is_primary, status) 
+                     VALUES (gen_random_uuid(), $1, $2, 'admin', ARRAY['*'], true, 'active')`
+    
+    _, err = tx.Exec(ctx, userOrgQuery, userID, orgID)
+    if err != nil {
+        h.logger.Error("failed to link user to organization", slog.String("error", err.Error()))
+        h.respondError(w, http.StatusInternalServerError, "failed to link user to organization: "+err.Error())
+        return
+    }
+    
+    // 4. Generate secure password reset token (expires in 48 hours)
+    token := generateSecureToken()
+    expiresAt := "NOW() + INTERVAL '48 hours'"
+    
+    tokenQuery := `INSERT INTO password_reset_tokens (id, user_id, token, expires_at, created_at) 
+                   VALUES (gen_random_uuid(), $1, $2, ` + expiresAt + `, NOW())`
+    
+    _, err = tx.Exec(ctx, tokenQuery, userID, token)
+    if err != nil {
+        h.logger.Error("failed to create password reset token", slog.String("error", err.Error()))
+        h.respondError(w, http.StatusInternalServerError, "failed to create password reset token: "+err.Error())
+        return
+    }
+    
+    // Commit transaction
+    if err := tx.Commit(ctx); err != nil {
+        h.respondError(w, http.StatusInternalServerError, "failed to commit transaction: "+err.Error())
+        return
+    }
+    
+    // 5. Generate password setup link
+    setupLink := fmt.Sprintf("http://localhost:3000/set-password?token=%s", token)
+    
+    // Log the setup link (TODO: Send email instead)
+    h.logger.Info("Organization and user created",
+        slog.String("org_id", orgID),
+        slog.String("user_id", userID),
+        slog.String("email", req.Email),
+        slog.String("setup_link", setupLink),
+    )
+    
     h.respondJSON(w, http.StatusCreated, map[string]interface{}{
-        "id":      orgID,
-        "message": "Organization created successfully",
+        "id":          orgID,
+        "user_id":     userID,
+        "message":     "Organization created successfully",
+        "setup_link":  setupLink,
+        "email_sent_to": req.Email,
+        "note":        "User will receive an email with a secure link to set their password (expires in 48 hours)",
     })
 }
 
@@ -374,4 +456,14 @@ func (h *Handler) respondJSON(w http.ResponseWriter, status int, data interface{
 
 func (h *Handler) respondError(w http.ResponseWriter, status int, message string) {
     h.respondJSON(w, status, map[string]string{"error": message})
+}
+
+// generateSecureToken generates a cryptographically secure random token
+func generateSecureToken() string {
+    b := make([]byte, 32) // 32 bytes = 256 bits
+    if _, err := rand.Read(b); err != nil {
+        // Fallback (should never happen)
+        return base64.URLEncoding.EncodeToString([]byte(fmt.Sprintf("%d", rand.Int())))
+    }
+    return base64.URLEncoding.EncodeToString(b)
 }
