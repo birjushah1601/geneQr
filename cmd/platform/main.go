@@ -112,8 +112,9 @@ func main() {
 	// ========================================================================
 	// INITIALIZE AUTH MODULE FIRST (required for protecting other routes)
 	// ========================================================================
-	authDB, err := sqlx.Connect("postgres", cfg.GetDSN())
+	var authDB *sqlx.DB
 	var authModule *auth.Module
+	authDB, err = sqlx.Connect("postgres", cfg.GetDSN())
 	if err != nil {
 		logger.Warn("Failed to connect to database for auth", slog.String("error", err.Error()))
 	} else {
@@ -130,6 +131,25 @@ func main() {
 	if err != nil {
 		logger.Error("Failed to initialize modules", slog.String("error", err.Error()))
 		os.Exit(1)
+	}
+
+	// ========================================================================
+	// INITIALIZE NOTIFICATIONS AND REPORTS SYSTEMS
+	// ========================================================================
+	var reportScheduler *reports.ReportScheduler
+	if authDB != nil {
+		notifMgr, scheduler, err := initNotificationsAndReports(ctx, authDB, logger)
+		if err != nil {
+			logger.Warn("Failed to initialize notifications/reports", slog.String("error", err.Error()))
+		}
+		// Store notification manager and scheduler for cleanup
+		_ = notifMgr // Available for use in modules if needed
+		reportScheduler = scheduler
+		
+		// Schedule cleanup on shutdown
+		if reportScheduler != nil {
+			defer reportScheduler.Stop()
+		}
 	}
 
 	// Start HTTP server
@@ -443,31 +463,6 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 				// TODO Phase 3: Mount AI service routes
 				// TODO Phase 4: Integrate with service ticket workflow
 			}
-		}
-	}
-
-	// ========================================================================
-	// INITIALIZE AUTHENTICATION SYSTEM
-	// ========================================================================
-	logger.Info("Initializing Authentication System")
-	// Auth module already initialized above (before modules)
-
-	// ========================================================================
-	// INITIALIZE NOTIFICATIONS AND REPORTS SYSTEMS
-	// ========================================================================
-	var reportScheduler *reports.ReportScheduler
-	if authDB != nil {
-		notifMgr, scheduler, err := initNotificationsAndReports(ctx, authDB, logger)
-		if err != nil {
-			logger.Warn("Failed to initialize notifications/reports", slog.String("error", err.Error()))
-		}
-		// Store notification manager and scheduler for cleanup
-		_ = notifMgr // Available for use in modules if needed
-		reportScheduler = scheduler
-		
-		// Schedule cleanup on shutdown
-		if reportScheduler != nil {
-			defer reportScheduler.Stop()
 		}
 	}
 
