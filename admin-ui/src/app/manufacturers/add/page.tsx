@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminRoute from '@/components/auth/AdminRoute';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8081';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8081/api';
 
 // Organization types
 const ORG_TYPES = [
@@ -50,7 +50,7 @@ export default function AddManufacturerPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/organizations`, {
+      const response = await fetch(`${API_BASE_URL}/v1/organizations`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
