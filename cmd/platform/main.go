@@ -29,12 +29,12 @@ import (
 	"github.com/aby-med/medical-platform/internal/service-domain/quote"
 	"github.com/aby-med/medical-platform/internal/service-domain/comparison"
 	"github.com/aby-med/medical-platform/internal/service-domain/contract"
-	equipment "github.com/aby-med/medical-platform/internal/service-domain/equipment-registry"
-	equipmentApp "github.com/aby-med/medical-platform/internal/service-domain/equipment-registry/app"
+	// equipment "github.com/aby-med/medical-platform/internal/service-domain/equipment-registry" // Disabled - using core/equipment instead
+	// equipmentApp "github.com/aby-med/medical-platform/internal/service-domain/equipment-registry/app" // Disabled
 	serviceticket "github.com/aby-med/medical-platform/internal/service-domain/service-ticket"
-	serviceticketApp "github.com/aby-med/medical-platform/internal/service-domain/service-ticket/app"
+	// serviceticketApp "github.com/aby-med/medical-platform/internal/service-domain/service-ticket/app" // Disabled - used only by WhatsApp
 	"github.com/aby-med/medical-platform/internal/service-domain/attachment"
-	"github.com/aby-med/medical-platform/internal/service-domain/whatsapp"
+	// "github.com/aby-med/medical-platform/internal/service-domain/whatsapp" // Disabled - depends on equipment-registry
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -326,7 +326,7 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 	}
 	registry.Register(contract.NewModule(*contractConfig, logger))
 	
-	// Register Equipment Registry module (Field Service Management)
+	// Setup common variables for Equipment Registry and Service Ticket modules
 	baseURL := os.Getenv("BASE_URL")
 	if baseURL == "" {
 		baseURL = "https://service.yourcompany.com"
@@ -342,6 +342,11 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 		dbPort = 5432 // Default PostgreSQL port
 	}
 	
+	// NOTE: Equipment Registry module (Field Service Management) is DISABLED
+	// We're using the core/equipment module instead (has multi-tenant filtering)
+	// Commenting out to avoid route conflicts on /equipment
+	/*
+	
 	equipmentModule, err := equipment.NewModule(equipment.ModuleConfig{
 		DBHost:      cfg.Database.Host,
 		DBPort:      dbPort,
@@ -354,6 +359,7 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 	if err == nil {
 		registry.Register(equipmentModule)
 	}
+	*/
 	
 	// Register Service Ticket module (includes WhatsApp integration)
 	whatsappVerifyToken := os.Getenv("WHATSAPP_VERIFY_TOKEN")
@@ -466,34 +472,6 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 		}
 	}
 
-	// ========================================================================
-	// INITIALIZE WHATSAPP INTEGRATION (Optional)
-	// ========================================================================
-	if os.Getenv("ENABLE_WHATSAPP") == "true" {
-		logger.Info("Initializing WhatsApp integration")
-		
-		// Get WhatsApp configuration from environment
-		twilioAccountSID := os.Getenv("TWILIO_ACCOUNT_SID")
-		twilioAuthToken := os.Getenv("TWILIO_AUTH_TOKEN")
-		twilioWhatsAppNumber := os.Getenv("TWILIO_WHATSAPP_NUMBER")
-		
-		if twilioAccountSID == "" || twilioAuthToken == "" || twilioWhatsAppNumber == "" {
-			logger.Warn("WhatsApp integration enabled but missing Twilio credentials",
-				slog.Bool("has_account_sid", twilioAccountSID != ""),
-				slog.Bool("has_auth_token", twilioAuthToken != ""),
-				slog.Bool("has_whatsapp_number", twilioWhatsAppNumber != ""))
-		} else {
-			// Get equipment and ticket services from registry
-			// Note: These need to be initialized first by the module registry
-			// For now, we'll initialize WhatsApp routes separately
-			logger.Info("WhatsApp integration configured",
-				slog.String("whatsapp_number", twilioWhatsAppNumber))
-			
-			// WhatsApp module will be initialized after other modules are ready
-			// This ensures equipment and ticket services are available
-		}
-	}
-
 	modules, err := registry.GetModules(enabledModules)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get modules: %w", err)
@@ -529,6 +507,8 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 		module.MountRoutes(apiRouter)
 	}
 	
+	// WhatsApp integration disabled (depends on equipment-registry module which is disabled)
+	/*
 	// Initialize WhatsApp module if enabled (after other modules are ready)
 	if os.Getenv("ENABLE_WHATSAPP") == "true" {
 		twilioAccountSID := os.Getenv("TWILIO_ACCOUNT_SID")
@@ -541,8 +521,9 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 			// Get services from modules (simplified - assumes they're available)
 			// In a full implementation, you'd extract these from the registry
 			// For now, create a placeholder that can be enhanced later
-			var equipmentService *equipmentApp.EquipmentService
+			// var equipmentService *equipmentApp.EquipmentService // Disabled - equipment-registry not used
 			var ticketService *serviceticketApp.TicketService
+			var equipmentService interface{} // Placeholder
 			
 			// Create database pool for WhatsApp
 			dbPool, err := pgxpool.New(ctx, cfg.GetDSN())
@@ -585,6 +566,7 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 			}
 		}
 	}
+	*/
 	
 	// Add spare parts catalog endpoint
 	apiRouter.Get("/catalog/parts", createSparePartsHandler(cfg.GetDSN(), logger))
