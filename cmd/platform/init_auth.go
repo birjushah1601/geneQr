@@ -10,22 +10,23 @@ import (
 )
 
 // initAuthModule initializes the authentication module if enabled
-func initAuthModule(router *chi.Mux, db *sqlx.DB, logger *slog.Logger) error {
+// Returns the auth module for accessing middleware, or nil if disabled/failed
+func initAuthModule(router *chi.Mux, db *sqlx.DB, logger *slog.Logger) (*auth.Module, error) {
 	// Check if auth module is enabled
 	enableAuth := getEnvBool("ENABLE_AUTH", true) // Default: enabled
 	
 	if !enableAuth {
 		logger.Info("Authentication module is disabled")
-		return nil
+		return nil, nil
 	}
 
 	logger.Info("Initializing authentication module...")
 
 	// Initialize auth module
-	err := auth.IntegrateAuthModule(router, db, logger)
+	authModule, err := auth.IntegrateAuthModuleWithReturn(router, db, logger)
 	if err != nil {
 		logger.Error("Failed to initialize auth module", slog.String("error", err.Error()))
-		return err
+		return nil, err
 	}
 
 	logger.Info("✅ Authentication module initialized successfully",
@@ -33,7 +34,7 @@ func initAuthModule(router *chi.Mux, db *sqlx.DB, logger *slog.Logger) error {
 		slog.Bool("jwt_enabled", true),
 		slog.Bool("otp_enabled", true))
 
-	return nil
+	return authModule, nil
 }
 
 // Helper function to get boolean from env

@@ -19,6 +19,7 @@ import (
     "github.com/aby-med/medical-platform/internal/shared/service"
 	sharedmiddleware "github.com/aby-med/medical-platform/internal/shared/middleware"
 	appmiddleware "github.com/aby-med/medical-platform/internal/middleware"
+	auth "github.com/aby-med/medical-platform/internal/core/auth"
     organizations "github.com/aby-med/medical-platform/internal/core/organizations"
 	equipmentcore "github.com/aby-med/medical-platform/internal/core/equipment"
 	"github.com/aby-med/medical-platform/internal/infrastructure/reports"
@@ -108,8 +109,24 @@ func main() {
 	// Initialize router with middleware
 	router := setupRouter(cfg, logger, tracer)
 
-	// Initialize modules (non-blocking)
-	modules, modulesCtx, err := initializeModules(ctx, router, enabledModules, cfg, logger)
+	// ========================================================================
+	// INITIALIZE AUTH MODULE FIRST (required for protecting other routes)
+	// ========================================================================
+	authDB, err := sqlx.Connect("postgres", cfg.GetDSN())
+	var authModule *auth.Module
+	if err != nil {
+		logger.Warn("Failed to connect to database for auth", slog.String("error", err.Error()))
+	} else {
+		authModule, err = initAuthModule(router, authDB, logger)
+		if err != nil {
+			logger.Warn("Failed to initialize auth module", slog.String("error", err.Error()))
+		} else if authModule != nil {
+			logger.Info("✅ Auth module initialized - will protect API routes")
+		}
+	}
+
+	// Initialize modules (non-blocking) with auth middleware
+	modules, modulesCtx, err := initializeModules(ctx, router, enabledModules, cfg, logger, authModule)
 	if err != nil {
 		logger.Error("Failed to initialize modules", slog.String("error", err.Error()))
 		os.Exit(1)
@@ -243,7 +260,7 @@ func setupRouter(cfg *config.Config, logger *slog.Logger, tracer observability.T
 }
 
 // initializeModules initializes all enabled modules and mounts their routes (non-blocking)
-func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []string, cfg *config.Config, logger *slog.Logger) ([]service.Module, context.Context, error) {
+func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []string, cfg *config.Config, logger *slog.Logger, authModule *auth.Module) ([]service.Module, context.Context, error) {
 	// Get all available modules
 	registry := service.NewRegistry(cfg, logger)
 	// Register individual modules here
@@ -433,17 +450,7 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 	// INITIALIZE AUTHENTICATION SYSTEM
 	// ========================================================================
 	logger.Info("Initializing Authentication System")
-	
-	// Create database connection for auth module
-	authDB, err := sqlx.Connect("postgres", cfg.GetDSN())
-	if err != nil {
-		logger.Warn("Failed to connect to database for auth", slog.String("error", err.Error()))
-	} else {
-		err = initAuthModule(router, authDB, logger)
-		if err != nil {
-			logger.Warn("Failed to initialize auth module", slog.String("error", err.Error()))
-		}
-	}
+	// Auth module already initialized above (before modules)
 
 	// ========================================================================
 	// INITIALIZE NOTIFICATIONS AND REPORTS SYSTEMS
@@ -510,8 +517,17 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 		}
 	}
 
-	// Mount routes for each module
-	apiRouter := router.Route("/api/v1", func(r chi.Router) {})
+	// Mount routes for each module with auth protection
+	apiRouter := router.Route("/api/v1", func(r chi.Router) {
+		// Apply auth middleware to all /api/v1/* routes
+		// Auth routes are already public, middleware skips them
+		if authModule != nil {
+			r.Use(authModule.Handler.AuthMiddleware)
+			logger.Info("✅ Auth middleware applied to /api/v1/* routes")
+		} else {
+			logger.Warn("⚠️  Auth module not available - API routes are unprotected!")
+		}
+	})
 	for _, module := range modules {
 		moduleName := module.Name()
 		logger.Info("Mounting routes for module", slog.String("module", moduleName))

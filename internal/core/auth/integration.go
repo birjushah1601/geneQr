@@ -12,8 +12,20 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// IntegrateAuthModuleWithReturn adds authentication to the application and returns the module
+func IntegrateAuthModuleWithReturn(router chi.Router, db *sqlx.DB, logger *slog.Logger) (*Module, error) {
+	authModule, err := integrateAuthModuleInternal(router, db, logger)
+	return authModule, err
+}
+
 // IntegrateAuthModule adds authentication to the application
 func IntegrateAuthModule(router chi.Router, db *sqlx.DB, logger *slog.Logger) error {
+	_, err := integrateAuthModuleInternal(router, db, logger)
+	return err
+}
+
+// integrateAuthModuleInternal is the internal implementation
+func integrateAuthModuleInternal(router chi.Router, db *sqlx.DB, logger *slog.Logger) (*Module, error) {
 	logger.Info("Initializing authentication module")
 
 	// Get configuration from environment
@@ -69,14 +81,14 @@ func IntegrateAuthModule(router chi.Router, db *sqlx.DB, logger *slog.Logger) er
 		SMSSender:           smsSender,
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Register routes
 	authModule.RegisterRoutes(router)
 
 	logger.Info("Authentication module initialized successfully")
-	return nil
+	return authModule, nil
 }
 
 func getEnvOrDefault(key, defaultValue string) string {
