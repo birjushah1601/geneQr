@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -19,6 +20,15 @@ const (
 	UserIDKey              contextKey = "user_id"
 	UserEmailKey           contextKey = "user_email"
 )
+
+// Helper function to get keys from map
+func getKeys(m map[string]interface{}) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
+}
 
 // OrganizationContextMiddleware extracts organization info from JWT claims
 // and injects it into the request context for downstream handlers
@@ -52,17 +62,19 @@ func OrganizationContextMiddleware(logger *slog.Logger) func(http.Handler) http.
 			if orgIDStr, ok := claims["organization_id"].(string); ok && orgIDStr != "" {
 				if orgID, err := uuid.Parse(orgIDStr); err == nil {
 					ctx = context.WithValue(ctx, OrganizationIDKey, orgID)
-					logger.Debug("Organization context set",
+					logger.Info("✅ Organization context set",
 						"organization_id", orgID,
 						"path", r.URL.Path,
 						"method", r.Method)
 				} else {
-					logger.Warn("Invalid organization_id in JWT",
+					logger.Warn("❌ Invalid organization_id in JWT",
 						"organization_id", orgIDStr,
 						"error", err)
 				}
 			} else {
-				logger.Debug("No organization_id in JWT claims", "path", r.URL.Path)
+				logger.Warn("⚠️  No organization_id in JWT claims", 
+					"path", r.URL.Path,
+					"claims_keys", fmt.Sprintf("%v", getKeys(claims)))
 			}
 
 			// Extract organization_type
