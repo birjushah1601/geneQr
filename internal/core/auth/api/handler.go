@@ -628,9 +628,19 @@ func (h *AuthHandler) AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		// Add claims to context
+		// Add claims to context for downstream middleware
+		// Convert Claims struct to map for OrganizationContextMiddleware
 		ctx := r.Context()
-		ctx = context.WithValue(ctx, "claims", claims)
+		claimsMap := map[string]interface{}{
+			"user_id":           claims.UserID,
+			"email":             claims.Email,
+			"name":              claims.Name,
+			"organization_id":   claims.OrganizationID,
+			"organization_type": claims.OrganizationType,
+			"role":              claims.Role,
+			"permissions":       claims.Permissions,
+		}
+		ctx = context.WithValue(ctx, "claims", claimsMap)
 		ctx = context.WithValue(ctx, "user_id", claims.UserID)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
