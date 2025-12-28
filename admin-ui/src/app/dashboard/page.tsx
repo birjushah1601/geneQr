@@ -73,27 +73,23 @@ export default function AdminDashboard() {
   const { data: equipmentData, isLoading: loadingEquipment } = useQuery({
     queryKey: ['equipment', 'count'],
     queryFn: async () => {
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8081/api';
-      const response = await fetch(`${apiBaseUrl}/v1/equipment?limit=1000`, {
-        headers: { 'X-Tenant-ID': 'default' }
-      });
-      const data = await response.json();
-      return { equipment: data.equipment || [], total: data.equipment?.length || 0 };
+      const response = await equipmentApi.list({ page_size: 100 });
+      return { equipment: response.items || [], total: response.total || 0 };
     },
   });
 
   const { data: ticketsData, isLoading: loadingTickets } = useQuery({
     queryKey: ['tickets', 'count', 'active'],
     queryFn: async () => {
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8081/api';
-      const response = await fetch(`${apiBaseUrl}/v1/tickets?limit=1000`, {
-        headers: { 'X-Tenant-ID': 'default' }
-      });
-      if (!response.ok) return { total: 0 };
-      const data = await response.json();
-      // Filter active tickets (not closed)
-      const activeTickets = (data.tickets || []).filter((t: any) => t.status !== 'closed');
-      return { total: activeTickets.length, tickets: activeTickets };
+      try {
+        const response = await ticketsApi.list({ page_size: 100 });
+        // Filter active tickets (not closed)
+        const activeTickets = (response.items || []).filter((t: any) => t.status !== 'closed');
+        return { total: activeTickets.length, tickets: activeTickets };
+      } catch (error) {
+        console.error('Failed to fetch tickets:', error);
+        return { total: 0, tickets: [] };
+      }
     },
     retry: false,
     throwOnError: false,
@@ -102,12 +98,13 @@ export default function AdminDashboard() {
   const { data: engineersData, isLoading: loadingEngineers } = useQuery({
     queryKey: ['engineers', 'count'],
     queryFn: async () => {
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8081/api';
-      const response = await fetch(`${apiBaseUrl}/v1/engineers?limit=1000`, {
-        headers: { 'X-Tenant-ID': 'default' }
-      });
-      const data = await response.json();
-      return { total: data.engineers?.length || 0, engineers: data.engineers || [] };
+      try {
+        const response = await engineersApi.list({ page_size: 100 });
+        return { total: response.items?.length || 0, engineers: response.items || [] };
+      } catch (error) {
+        console.error('Failed to fetch engineers:', error);
+        return { total: 0, engineers: [] };
+      }
     },
   });
 
