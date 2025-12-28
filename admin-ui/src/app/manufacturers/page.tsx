@@ -34,14 +34,16 @@ export default function ManufacturersListPage() {
   const { data: organizationsData, isLoading, error } = useQuery({
     queryKey: ['organizations', 'manufacturer', 'with-counts'],
     queryFn: async () => {
-      // Use the same base URL as apiClient (includes /api)
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8081/api';
-      const response = await fetch(`${apiBaseUrl}/v1/organizations?type=manufacturer&include_counts=true&limit=1000`, {
-        headers: { 'X-Tenant-ID': 'default' }
-      });
-      if (!response.ok) throw new Error('Failed to fetch manufacturers');
-      const data = await response.json();
-      return data.items || [];
+      try {
+        const response = await organizationsApi.list({ 
+          org_type: 'manufacturer',
+          page_size: 100 
+        });
+        return response.items || [];
+      } catch (error) {
+        console.error('Failed to fetch manufacturers:', error);
+        throw error;
+      }
     },
   });
 
