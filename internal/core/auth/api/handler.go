@@ -252,15 +252,20 @@ func (h *AuthHandler) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userClaims := claims.(*app.Claims)
+	// Claims is now a map[string]interface{} (set by AuthMiddleware)
+	claimsMap, ok := claims.(map[string]interface{})
+	if !ok {
+		respondError(w, http.StatusInternalServerError, "Invalid claims format")
+		return
+	}
 	
 	respondJSON(w, http.StatusOK, map[string]interface{}{
-		"user_id":         userClaims.UserID,
-		"email":           userClaims.Email,
-		"name":            userClaims.Name,
-		"organization_id": userClaims.OrganizationID,
-		"role":            userClaims.Role,
-		"permissions":     userClaims.Permissions,
+		"user_id":         claimsMap["user_id"],
+		"email":           claimsMap["email"],
+		"name":            claimsMap["name"],
+		"organization_id": claimsMap["organization_id"],
+		"role":            claimsMap["role"],
+		"permissions":     claimsMap["permissions"],
 	})
 }
 
@@ -611,6 +616,7 @@ func (h *AuthHandler) ResendSetupLink(w http.ResponseWriter, r *http.Request) {
 // AuthMiddleware validates JWT token and adds claims to context
 func (h *AuthHandler) AuthMiddleware(next http.Handler) http.Handler {
 	// Public endpoints that don't require authentication
+	// Note: /api/v1/auth/me is NOT public - it requires auth to get user info
 	publicPaths := map[string]bool{
 		"/health":                             true,
 		"/metrics":                            true,
