@@ -31,12 +31,14 @@ export const organizationsApi = {
     offset?: number; 
     type?: string;
     status?: string;
+    include_counts?: boolean;
   }) => {
     const searchParams = new URLSearchParams();
     if (params?.limit) searchParams.set('limit', params.limit.toString());
     if (params?.offset) searchParams.set('offset', params.offset.toString());
     if (params?.type) searchParams.set('type', params.type);
     if (params?.status) searchParams.set('status', params.status);
+    if (params?.include_counts) searchParams.set('include_counts', 'true');
     
     const response = await apiClient.get<{ items: Organization[] }>(
       `/v1/organizations?${searchParams.toString()}`

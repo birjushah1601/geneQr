@@ -37,7 +37,8 @@ export default function ManufacturersListPage() {
       try {
         const response = await organizationsApi.list({ 
           type: 'manufacturer',
-          limit: 100 
+          limit: 100,
+          include_counts: true
         });
         return response || [];
       } catch (error) {
