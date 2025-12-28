@@ -36,13 +36,18 @@ func OrganizationContextMiddleware(logger *slog.Logger) func(http.Handler) http.
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Get JWT claims from context (set by auth middleware)
-			claims, ok := r.Context().Value("claims").(map[string]interface{})
+			claimsRaw := r.Context().Value("claims")
+			logger.Info("🔍 OrganizationContextMiddleware - claims raw type", "type", fmt.Sprintf("%T", claimsRaw))
+			
+			claims, ok := claimsRaw.(map[string]interface{})
 			if !ok {
 				// No claims - might be public endpoint or auth not required
-				logger.Debug("No JWT claims found in request context", "path", r.URL.Path)
+				logger.Warn("⚠️  JWT claims type assertion failed", "path", r.URL.Path, "type", fmt.Sprintf("%T", claimsRaw))
 				next.ServeHTTP(w, r)
 				return
 			}
+			
+			logger.Info("🔍 OrganizationContextMiddleware - claims map", "keys", fmt.Sprintf("%v", getKeys(claims)), "org_id", claims["organization_id"])
 
 			ctx := r.Context()
 

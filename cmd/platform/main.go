@@ -484,21 +484,27 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 	}
 
 	// Mount routes for each module with auth protection
-	apiRouter := router.Route("/api/v1", func(r chi.Router) {
+	// Create /api/v1 subrouter and apply auth middleware to ALL routes under it
+	router.Route("/api/v1", func(apiRouter chi.Router) {
 		// Apply auth middleware to all /api/v1/* routes
-		// Auth routes are already public, middleware skips them
+		// This runs BEFORE module routes are mounted
 		if authModule != nil {
-			r.Use(authModule.Handler.AuthMiddleware)
+			apiRouter.Use(authModule.Handler.AuthMiddleware)
 			logger.Info("✅ Auth middleware applied to /api/v1/* routes")
 		} else {
 			logger.Warn("⚠️  Auth module not available - API routes are unprotected!")
 		}
+		
+		// Now mount all module routes (they will all use the auth middleware)
+		for _, module := range modules {
+			moduleName := module.Name()
+			logger.Info("Mounting routes for module", slog.String("module", moduleName))
+			module.MountRoutes(apiRouter)
+		}
+		
+		// Add spare parts catalog endpoint
+		apiRouter.Get("/catalog/parts", createSparePartsHandler(cfg.GetDSN(), logger))
 	})
-	for _, module := range modules {
-		moduleName := module.Name()
-		logger.Info("Mounting routes for module", slog.String("module", moduleName))
-		module.MountRoutes(apiRouter)
-	}
 	
 	// WhatsApp integration disabled (depends on equipment-registry module which is disabled)
 	/*
@@ -560,9 +566,6 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 		}
 	}
 	*/
-	
-	// Add spare parts catalog endpoint
-	apiRouter.Get("/catalog/parts", createSparePartsHandler(cfg.GetDSN(), logger))
 
 	return modules, ctx, nil
 }
