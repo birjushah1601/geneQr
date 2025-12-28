@@ -610,7 +610,30 @@ func (h *AuthHandler) ResendSetupLink(w http.ResponseWriter, r *http.Request) {
 
 // AuthMiddleware validates JWT token and adds claims to context
 func (h *AuthHandler) AuthMiddleware(next http.Handler) http.Handler {
+	// Public endpoints that don't require authentication
+	publicPaths := map[string]bool{
+		"/health":                             true,
+		"/metrics":                            true,
+		"/api/v1/auth/login-password":         true,
+		"/api/v1/auth/register":               true,
+		"/api/v1/auth/send-otp":               true,
+		"/api/v1/auth/verify-otp":             true,
+		"/api/v1/auth/refresh":                true,
+		"/api/v1/auth/forgot-password":        true,
+		"/api/v1/auth/reset-password":         true,
+		"/api/v1/auth/validate":               true,
+		"/api/v1/auth/validate-reset-token":   true,
+		"/api/v1/auth/set-password":           true,
+		"/api/v1/auth/resend-setup-link":      true,
+	}
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Skip auth for public endpoints
+		if publicPaths[r.URL.Path] {
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
 			respondError(w, http.StatusUnauthorized, "Authorization header required")
