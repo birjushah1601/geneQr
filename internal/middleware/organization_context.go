@@ -37,7 +37,6 @@ func OrganizationContextMiddleware(logger *slog.Logger) func(http.Handler) http.
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Get JWT claims from context (set by auth middleware)
 			claimsRaw := r.Context().Value("claims")
-			logger.Info("🔍 OrganizationContextMiddleware - claims raw type", "type", fmt.Sprintf("%T", claimsRaw))
 			
 			claims, ok := claimsRaw.(map[string]interface{})
 			if !ok {
@@ -46,8 +45,6 @@ func OrganizationContextMiddleware(logger *slog.Logger) func(http.Handler) http.
 				next.ServeHTTP(w, r)
 				return
 			}
-			
-			logger.Info("🔍 OrganizationContextMiddleware - claims map", "keys", fmt.Sprintf("%v", getKeys(claims)), "org_id", claims["organization_id"])
 
 			ctx := r.Context()
 

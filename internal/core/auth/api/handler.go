@@ -671,10 +671,6 @@ func (h *AuthHandler) AuthMiddleware(next http.Handler) http.Handler {
 			"permissions":       claims.Permissions,
 		}
 		
-		// DEBUG: Log what we're setting in context
-		log.Printf("🔍 AuthMiddleware - Setting claims in context: org_id=%s, org_type=%s, role=%s", 
-			claims.OrganizationID, claims.OrganizationType, claims.Role)
-		
 		ctx = context.WithValue(ctx, "claims", claimsMap)
 		ctx = context.WithValue(ctx, "user_id", claims.UserID)
 
