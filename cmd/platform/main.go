@@ -106,11 +106,8 @@ func main() {
 	enabledModules := parseEnabledModules(cfg.EnabledModulesString)
 	logger.Info("Modules enabled", slog.Any("modules", enabledModules))
 
-	// Initialize router with middleware
-	router := setupRouter(cfg, logger, tracer)
-
 	// ========================================================================
-	// INITIALIZE AUTH MODULE FIRST (required for protecting other routes)
+	// INITIALIZE AUTH MODULE FIRST (before router setup)
 	// ========================================================================
 	var authDB *sqlx.DB
 	var authModule *auth.Module
@@ -118,12 +115,23 @@ func main() {
 	if err != nil {
 		logger.Warn("Failed to connect to database for auth", slog.String("error", err.Error()))
 	} else {
-		authModule, err = initAuthModule(router, authDB, logger)
+		// Initialize auth but DON'T register routes yet
+		authModule, err = initAuthModule(nil, authDB, logger)
 		if err != nil {
 			logger.Warn("Failed to initialize auth module", slog.String("error", err.Error()))
+			authModule = nil
 		} else if authModule != nil {
-			logger.Info("✅ Auth module initialized - will protect API routes")
+			logger.Info("✅ Auth module initialized")
 		}
+	}
+
+	// Initialize router with middleware (including auth)
+	router := setupRouter(cfg, logger, tracer, authModule)
+	
+	// NOW register auth routes (after middleware is set up)
+	if authModule != nil {
+		authModule.RegisterRoutes(router)
+		logger.Info("✅ Auth routes registered")
 	}
 
 	// Initialize modules (non-blocking) with auth middleware
@@ -224,7 +232,7 @@ func parseEnabledModules(modulesStr string) []string {
 }
 
 // setupRouter initializes the HTTP router with middleware
-func setupRouter(cfg *config.Config, logger *slog.Logger, tracer observability.Tracer) *chi.Mux {
+func setupRouter(cfg *config.Config, logger *slog.Logger, tracer observability.Tracer, authModule *auth.Module) *chi.Mux {
 	r := chi.NewRouter()
 	// tracer is currently unused (otelchi middleware removed); keep reference to avoid linter warnings
 	_ = tracer
@@ -254,8 +262,15 @@ func setupRouter(cfg *config.Config, logger *slog.Logger, tracer observability.T
 	// Observability middleware
 	r.Use(observability.LoggingMiddleware(logger))
 
+	// CRITICAL: Auth middleware must run BEFORE Organization context middleware
+	// This validates JWT and sets claims in context
+	if authModule != nil {
+		r.Use(authModule.Handler.AuthMiddleware)
+		logger.Info("✅ Auth middleware applied GLOBALLY (runs before org middleware)")
+	}
+
 	// CRITICAL: Organization context middleware for multi-tenant data isolation
-	// Must be registered BEFORE any routes are mounted
+	// Extracts org info from JWT claims (set by auth middleware above)
 	r.Use(appmiddleware.OrganizationContextMiddleware(logger))
 	logger.Info("✅ Organization context middleware registered")
 
@@ -483,19 +498,10 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 		}
 	}
 
-	// Mount routes for each module with auth protection
-	// Create /api/v1 subrouter and apply auth middleware to ALL routes under it
+	// Mount routes for each module
+	// Auth middleware is already applied globally, so all routes are protected
 	router.Route("/api/v1", func(apiRouter chi.Router) {
-		// Apply auth middleware to all /api/v1/* routes
-		// This runs BEFORE module routes are mounted
-		if authModule != nil {
-			apiRouter.Use(authModule.Handler.AuthMiddleware)
-			logger.Info("✅ Auth middleware applied to /api/v1/* routes")
-		} else {
-			logger.Warn("⚠️  Auth module not available - API routes are unprotected!")
-		}
-		
-		// Now mount all module routes (they will all use the auth middleware)
+		// Mount all module routes
 		for _, module := range modules {
 			moduleName := module.Name()
 			logger.Info("Mounting routes for module", slog.String("module", moduleName))
