@@ -36,10 +36,10 @@ export default function ManufacturersListPage() {
     queryFn: async () => {
       try {
         const response = await organizationsApi.list({ 
-          org_type: 'manufacturer',
-          page_size: 100 
+          type: 'manufacturer',
+          limit: 100 
         });
-        return response.items || [];
+        return response || [];
       } catch (error) {
         console.error('Failed to fetch manufacturers:', error);
         throw error;
