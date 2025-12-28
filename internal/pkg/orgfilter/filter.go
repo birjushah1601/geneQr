@@ -113,7 +113,15 @@ func BuildWhereClause(filterTemplate string, paramIndex int, additionalCondition
 }
 
 // IsSystemAdmin checks if user has system admin role (can see all orgs)
+// Users with org_type="system" are considered system admins regardless of role
 func IsSystemAdmin(ctx context.Context) bool {
+	// Check if organization type is "system" (GENEQR platform admins)
+	orgType, hasOrgType := middleware.GetOrganizationType(ctx)
+	if hasOrgType && orgType == "system" {
+		return true
+	}
+	
+	// Also check for specific system admin roles
 	role, ok := middleware.GetUserRole(ctx)
 	if !ok {
 		return false
