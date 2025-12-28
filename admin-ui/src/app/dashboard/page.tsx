@@ -82,9 +82,11 @@ export default function AdminDashboard() {
     queryKey: ['tickets', 'count', 'active'],
     queryFn: async () => {
       try {
-        const response = await ticketsApi.list({ page_size: 100 });
+        const response: any = await ticketsApi.list({ page_size: 100 });
+        // Tickets API returns { tickets: [], total: number } not { items: [] }
+        const ticketsList = response.tickets || response.items || [];
         // Filter active tickets (not closed)
-        const activeTickets = (response.items || []).filter((t: any) => t.status !== 'closed');
+        const activeTickets = ticketsList.filter((t: any) => t.status !== 'closed');
         return { total: activeTickets.length, tickets: activeTickets };
       } catch (error) {
         console.error('Failed to fetch tickets:', error);
@@ -99,8 +101,10 @@ export default function AdminDashboard() {
     queryKey: ['engineers', 'count'],
     queryFn: async () => {
       try {
-        const response = await engineersApi.list({ page_size: 100 });
-        return { total: response.items?.length || 0, engineers: response.items || [] };
+        const response: any = await engineersApi.list({ page_size: 100 });
+        // Engineers API returns { engineers: [], total: number } not { items: [] }
+        const engineersList = response.engineers || response.items || [];
+        return { total: engineersList.length, engineers: engineersList };
       } catch (error) {
         console.error('Failed to fetch engineers:', error);
         return { total: 0, engineers: [] };
