@@ -187,29 +187,29 @@ export const ticketsApi = {
    */
   async create(data: CreateTicketRequest) {
     try {
-      // Backend expects PascalCase keys (matching Go struct fields).
-      // Map our snake_case CreateTicketRequest to the expected payload.
-      const d: any = data as any;
+      // Backend now accepts snake_case with JSON tags
+      // Send data as-is, just clean up undefined fields
       const payload: Record<string, any> = {
-        EquipmentID: d.equipment_id ?? '',
-        QRCode: d.qr_code ?? '',
-        SerialNumber: d.serial_number ?? '',
-        // Optional contextual fields if present
-        EquipmentName: d.equipment_name ?? undefined,
-        CustomerID: d.customer_id ?? undefined,
-        CustomerName: d.customer_name ?? undefined,
-        CustomerPhone: d.customer_phone,
-        CustomerWhatsApp: d.customer_whatsapp ?? undefined,
-        IssueCategory: d.issue_category,
-        IssueDescription: d.issue_description,
-        Priority: d.priority,
-        Source: d.source,
-        SourceMessageID: d.source_message_id ?? undefined,
-        Photos: d.photos ?? undefined,
-        Videos: d.videos ?? undefined,
-        CreatedBy: d.created_by,
-        InitialComment: d.notes ?? undefined,
+        equipment_id: data.equipment_id,
+        qr_code: data.qr_code,
+        serial_number: data.serial_number,
+        equipment_name: data.equipment_name,
+        customer_id: data.customer_id,
+        customer_name: data.customer_name,
+        customer_phone: data.customer_phone,
+        customer_whatsapp: data.customer_whatsapp,
+        issue_category: data.issue_category,
+        issue_description: data.issue_description,
+        priority: data.priority,
+        source: data.source,
+        source_message_id: data.source_message_id,
+        photos: data.photos,
+        videos: data.videos,
+        created_by: data.created_by,
+        initial_comment: (data as any).notes || data.initial_comment,
+        parts_requested: (data as any).parts_requested,
       };
+      
       // Remove undefined keys to keep payload clean
       Object.keys(payload).forEach((k) => payload[k] === undefined && delete payload[k]);
 
