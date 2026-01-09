@@ -700,24 +700,24 @@ func (s *TicketService) setSLA(ticket *ticketDomain.ServiceTicket) {
 // Request/Response DTOs
 
 type CreateTicketRequest struct {
-	EquipmentID      string
-	QRCode           string
-	SerialNumber     string
-	EquipmentName    string
-	CustomerID       string
-	CustomerName     string
-	CustomerPhone    string
-	CustomerWhatsApp string
-	IssueCategory    string
-	IssueDescription string
-	Priority         ticketDomain.TicketPriority
-	Source           ticketDomain.TicketSource
-	SourceMessageID  string
-	Photos           []string
-	Videos           []string
-	CreatedBy        string
-	InitialComment   string
-	PartsRequested   []ticketDomain.Part // Parts requested for this service
+	EquipmentID      string                      `json:"equipment_id"`
+	QRCode           string                      `json:"qr_code"`
+	SerialNumber     string                      `json:"serial_number"`
+	EquipmentName    string                      `json:"equipment_name"`
+	CustomerID       string                      `json:"customer_id"`
+	CustomerName     string                      `json:"customer_name"`
+	CustomerPhone    string                      `json:"customer_phone"`
+	CustomerWhatsApp string                      `json:"customer_whatsapp"`
+	IssueCategory    string                      `json:"issue_category"`
+	IssueDescription string                      `json:"issue_description"`
+	Priority         ticketDomain.TicketPriority `json:"priority"`
+	Source           ticketDomain.TicketSource   `json:"source"`
+	SourceMessageID  string                      `json:"source_message_id"`
+	Photos           []string                    `json:"photos"`
+	Videos           []string                    `json:"videos"`
+	CreatedBy        string                      `json:"created_by"`
+	InitialComment   string                      `json:"initial_comment"`
+	PartsRequested   []ticketDomain.Part         `json:"parts_requested"` // Parts requested for this service
 }
 
 type ResolveTicketRequest struct {
