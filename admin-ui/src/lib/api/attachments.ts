@@ -85,9 +85,8 @@ export const attachmentsApi = {
     if (data.category) formData.append('category', data.category)
     if (data.source) formData.append('source', data.source)
 
-    const { data: resp } = await apiClient.post(`/v1/attachments`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
+    // Don't set Content-Type manually - let axios set it with boundary
+    const { data: resp } = await apiClient.post(`/v1/attachments`, formData)
     return resp
   },
 

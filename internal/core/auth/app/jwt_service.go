@@ -56,6 +56,7 @@ type Claims struct {
 	Email            string                 `json:"email,omitempty"`
 	Name             string                 `json:"name,omitempty"`
 	OrganizationID   string                 `json:"organization_id,omitempty"`
+	OrganizationName string                 `json:"organization_name,omitempty"` // Organization display name
 	OrganizationType string                 `json:"organization_type,omitempty"` // manufacturer, hospital, etc.
 	Role             string                 `json:"role,omitempty"`
 	Permissions      []string               `json:"permissions,omitempty"`
@@ -97,6 +98,7 @@ func (s *JWTService) GenerateTokenPair(ctx context.Context, req *TokenRequest) (
 		Email:            req.Email,
 		Name:             req.Name,
 		OrganizationID:   req.OrganizationID,
+		OrganizationName: req.OrganizationName,
 		OrganizationType: req.OrganizationType,
 		Role:             req.Role,
 		Permissions:      req.Permissions,
@@ -286,6 +288,7 @@ type TokenRequest struct {
 	Email            string
 	Name             string
 	OrganizationID   string
+	OrganizationName string // Organization display name for filtering
 	OrganizationType string // manufacturer, hospital, distributor, dealer, etc.
 	Role             string
 	Permissions      []string

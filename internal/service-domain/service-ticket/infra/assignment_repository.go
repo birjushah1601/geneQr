@@ -57,13 +57,13 @@ func (r *AssignmentRepository) ListEngineers(ctx context.Context, organizationID
 	// Apply organization filter (CRITICAL for multi-tenancy)
 	// Engineers belong to organizations through engineer_org_memberships
 	if hasOrgID && !orgfilter.IsSystemAdmin(ctx) {
-		query += fmt.Sprintf(` AND eom.org_id = $%d AND eom.status = 'active'`, argPos)
+		query += fmt.Sprintf(` AND eom.org_id = $%d`, argPos)
 		args = append(args, orgID.String())
 		argPos++
 		fmt.Printf("[ORGFILTER] Engineer list filtered for org_id=%s\n", orgID)
 	} else if organizationID != nil && *organizationID != "" {
 		// Fallback to parameter-based filtering if provided
-		query += fmt.Sprintf(` AND eom.org_id = $%d AND eom.status = 'active'`, argPos)
+		query += fmt.Sprintf(` AND eom.org_id = $%d`, argPos)
 		args = append(args, *organizationID)
 		argPos++
 	}

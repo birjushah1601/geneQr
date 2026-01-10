@@ -68,6 +68,7 @@ interface PartsAssignmentModalProps {
   onAssign: (parts: SelectedPart[]) => void;
   equipmentId?: string;
   equipmentName?: string;
+  existingParts?: any[]; // Parts already assigned to the ticket
 }
 
 const CATEGORIES = [
@@ -84,7 +85,8 @@ export function PartsAssignmentModal({
   onClose,
   onAssign,
   equipmentId,
-  equipmentName
+  equipmentName,
+  existingParts = []
 }: PartsAssignmentModalProps) {
   const [parts, setParts] = useState<SparePart[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
@@ -96,6 +98,25 @@ export function PartsAssignmentModal({
   const [requiresEngineerFilter, setRequiresEngineerFilter] = useState<boolean | null>(null);
   const [activeTab, setActiveTab] = useState('browse');
 
+  // Populate existing parts when modal opens
+  useEffect(() => {
+    if (open && existingParts.length > 0) {
+      const existingMap = new Map<string, SelectedPart>();
+      existingParts.forEach(part => {
+        existingMap.set(part.spare_part_id, {
+          id: part.spare_part_id,
+          part_name: part.part_name,
+          part_number: part.part_number,
+          quantity: part.quantity_required || 1,
+          unit_price: part.unit_price || 0,
+          category: part.category,
+          requires_engineer: part.is_critical || false
+        });
+      });
+      setSelectedParts(existingMap);
+    }
+  }, [open, existingParts]);
+
   // Fetch parts from API
   useEffect(() => {
     if (open) {
@@ -106,13 +127,27 @@ export function PartsAssignmentModal({
   const fetchParts = async () => {
     setLoading(true);
     try {
+      // Get auth token from localStorage
+      const token = localStorage.getItem('access_token');
+      
+      if (!token) {
+        console.error('No access token found');
+        throw new Error('Not authenticated');
+      }
+      
       const response = await fetch('http://localhost:8081/api/v1/catalog/parts', {
         headers: {
           'X-Tenant-ID': 'default',
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       });
       
-      if (!response.ok) throw new Error('Failed to fetch parts');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Parts API error:', response.status, errorData);
+        throw new Error(`Failed to fetch parts: ${response.status}`);
+      }
       
       const data = await response.json();
       setParts(data.parts || []);

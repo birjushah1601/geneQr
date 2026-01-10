@@ -87,13 +87,23 @@ func (s *InputSanitizer) Middleware(config *SanitizeConfig) func(http.Handler) h
 			}
 			r.Body.Close()
 
+			// Always log body info at INFO level for debugging
+			s.logger.Info("📦 Input Sanitizer - Received request body",
+				slog.Int("size", len(body)),
+				slog.String("preview", string(body)[:min(len(body), 200)]),
+				slog.String("path", r.URL.Path))
+
 			// Parse JSON
 			var data map[string]interface{}
 			if err := json.Unmarshal(body, &data); err != nil {
-				s.logger.Error("Failed to parse JSON", slog.Any("error", err))
+				s.logger.Error("❌ Failed to parse JSON", 
+					slog.Any("error", err),
+					slog.String("body", string(body)[:min(len(body), 500)]))
 				http.Error(w, "Invalid JSON", http.StatusBadRequest)
 				return
 			}
+
+			s.logger.Info("✅ JSON parsed successfully", slog.Int("fields", len(data)))
 
 			// Sanitize the data
 			sanitized := s.sanitizeMap(data, config)
@@ -106,9 +116,15 @@ func (s *InputSanitizer) Middleware(config *SanitizeConfig) func(http.Handler) h
 				return
 			}
 
+			s.logger.Info("🔄 Creating new body reader",
+				slog.Int("sanitized_size", len(sanitizedBody)),
+				slog.String("sanitized_preview", string(sanitizedBody)[:min(len(sanitizedBody), 200)]))
+
 			// Create new request with sanitized body
 			r.Body = io.NopCloser(strings.NewReader(string(sanitizedBody)))
 			r.ContentLength = int64(len(sanitizedBody))
+
+			s.logger.Info("✅ Body reader created, calling next handler")
 
 			next.ServeHTTP(w, r)
 		})

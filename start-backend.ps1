@@ -14,7 +14,7 @@ $env:STORAGE_BASE_PATH = 'C:\Users\birju\aby-med\storage'
 $env:ENABLED_MODULES = '*'
 $env:ENABLE_ORG = 'true'
 $env:ENABLE_ORG_SEED = 'true'
-$env:PORT = '8082'
+$env:PORT = '8081'
 
 # AI Configuration (from .env file)
 $env:AI_PROVIDER = 'openai'

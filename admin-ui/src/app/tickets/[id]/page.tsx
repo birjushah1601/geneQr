@@ -69,11 +69,11 @@ export default function TicketDetailPage() {
     queryFn: () => attachmentsApi.list({ ticket_id: String(id), page_size: 50 }),
   });
 
-  // Fetch AI diagnosis history for this ticket
+  // Fetch AI diagnosis history for this ticket (disabled when AI is not configured)
   const { data: diagnosisHistory, isLoading: loadingDiagnosis, refetch: refetchDiagnosis } = useQuery({
     queryKey: ["ticket", id, "diagnosis"],
     queryFn: () => diagnosisApi.getHistoryByTicket(String(id)),
-    enabled: !!id,
+    enabled: false, // Disabled - AI diagnosis endpoint not implemented
   });
 
   const [uploading, setUploading] = useState(false);
@@ -302,7 +302,49 @@ export default function TicketDetailPage() {
               <div className="flex items-center gap-2"><Package className="h-4 w-4 text-gray-400" /><span className="text-gray-500">Equipment</span><span className="font-medium">{ticket.equipment_name}</span></div>
               <div className="flex items-center gap-2"><User className="h-4 w-4 text-gray-400" /><span className="text-gray-500">Customer</span><span className="font-medium">{ticket.customer_name}</span></div>
               <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-gray-400" /><span className="text-gray-500">Created</span><span className="font-medium">{new Date(ticket.created_at).toLocaleString()}</span></div>
-              <div><span className="text-gray-500">Priority</span><div className="mt-1"><span className="px-2 py-0.5 rounded text-xs font-medium bg-gray-100">{ticket.priority}</span></div></div>
+              <div>
+                <span className="text-gray-500">Priority</span>
+                <div className="mt-1">
+                  {(() => {
+                    // Get user info from localStorage to check permissions
+                    const userStr = localStorage.getItem('user');
+                    const user = userStr ? JSON.parse(userStr) : null;
+                    const orgType = user?.organization_type || '';
+                    const canEditPriority = orgType === 'system' || orgType === 'manufacturer';
+                    
+                    if (canEditPriority) {
+                      return (
+                        <select
+                          value={ticket.priority}
+                          onChange={async (e) => {
+                            const newPriority = e.target.value;
+                            if (confirm(`Change priority to ${newPriority}?`)) {
+                              try {
+                                await apiClient.patch(`/v1/tickets/${id}/priority`, { priority: newPriority });
+                                refetch();
+                              } catch (err) {
+                                alert('Failed to update priority. Make sure you are logged in as an admin.');
+                              }
+                            }
+                          }}
+                          className="px-2 py-1 rounded text-xs font-medium bg-gray-100 border border-gray-300 hover:bg-gray-50 cursor-pointer"
+                        >
+                          <option value="low">Low</option>
+                          <option value="medium">Medium</option>
+                          <option value="high">High</option>
+                          <option value="critical">Critical</option>
+                        </select>
+                      );
+                    } else {
+                      return (
+                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-gray-100">
+                          {ticket.priority}
+                        </span>
+                      );
+                    }
+                  })()}
+                </div>
+              </div>
             </div>
             <div className="mt-4">
               <p className="text-xs text-gray-500 mb-1">Issue</p>
@@ -694,8 +736,8 @@ export default function TicketDetailPage() {
               <>
                 <ul className="divide-y">
                   {parts.parts.map((p) => (
-                    <li key={p.spare_part_id} className="py-2 flex items-center justify-between text-sm">
-                      <div>
+                    <li key={p.id || p.spare_part_id} className="py-2 flex items-center justify-between text-sm gap-3">
+                      <div className="flex-1">
                         <div className="font-medium">{p.part_name}</div>
                         <div className="text-gray-500">{p.part_number}</div>
                       </div>
@@ -703,6 +745,22 @@ export default function TicketDetailPage() {
                         {p.quantity_required ? <div>Qty: {p.quantity_required}</div> : null}
                         {p.unit_price ? <div>â‚¹{p.unit_price}</div> : null}
                       </div>
+                      <button
+                        onClick={async () => {
+                          if (confirm(`Remove ${p.part_name} from this ticket?`)) {
+                            try {
+                              await apiClient.delete(`/v1/tickets/${id}/parts/${p.id}`);
+                              qc.invalidateQueries({ queryKey: ["ticket", id, "parts"] });
+                            } catch (err) {
+                              alert('Failed to remove part');
+                            }
+                          }
+                        }}
+                        className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors flex-shrink-0"
+                        title="Remove part"
+                      >
+                        <Trash className="h-4 w-4" />
+                      </button>
                     </li>
                   ))}
                 </ul>
@@ -771,6 +829,7 @@ export default function TicketDetailPage() {
         onAssign={handlePartsAssign}
         equipmentId={ticket.equipment_id || "unknown"}
         equipmentName={ticket.equipment_name || "Equipment"}
+        existingParts={parts?.parts || []}
       />
       
       {/* Smart Engineer Selection Modal */}

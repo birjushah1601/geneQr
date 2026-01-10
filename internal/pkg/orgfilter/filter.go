@@ -88,8 +88,7 @@ func EngineerFilter(orgCtx *OrgContext) (string, uuid.UUID) {
 	return `EXISTS (
 		SELECT 1 FROM engineer_org_memberships eom 
 		WHERE eom.engineer_id = engineers.id 
-		AND eom.org_id = $%d 
-		AND eom.status = 'active'
+		AND eom.org_id = $%d
 	)`, orgCtx.OrgID
 }
 

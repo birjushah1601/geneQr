@@ -222,6 +222,11 @@ func (r *EquipmentRepository) List(ctx context.Context, criteria domain.ListCrit
 	orgID, hasOrgID := middleware.GetOrganizationID(ctx)
 	orgType, _ := middleware.GetOrganizationType(ctx)
 	
+	// DEBUG: Log filtering context
+	isSystemAdmin := orgfilter.IsSystemAdmin(ctx)
+	fmt.Printf("[EQUIPMENT LIST DEBUG] hasOrgID=%v, orgID=%v, orgType=%s, isSystemAdmin=%v\n", 
+		hasOrgID, orgID, orgType, isSystemAdmin)
+	
 	// Build query with filters
 	queryBuilder := strings.Builder{}
 	queryBuilder.WriteString(`
@@ -238,6 +243,7 @@ func (r *EquipmentRepository) List(ctx context.Context, criteria domain.ListCrit
 		switch orgType {
 		case "manufacturer":
 			// Manufacturers see equipment they manufactured
+			fmt.Printf("[EQUIPMENT LIST DEBUG] Applying manufacturer filter: manufacturer_id = %s\n", orgID.String())
 			queryBuilder.WriteString(fmt.Sprintf(" AND manufacturer_id = $%d", argCount))
 			args = append(args, orgID.String())
 			argCount++

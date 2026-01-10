@@ -328,12 +328,13 @@ func (s *AuthService) LoginWithPassword(ctx context.Context, req *LoginPasswordR
 		fmt.Printf("[WARN] No organizations found for user %s\n", user.ID)
 	}
 
-	// Fetch organization details to get org_type
-	var orgType string
+	// Fetch organization details to get org_type and org_name
+	var orgType, orgName string
 	if primaryOrg != nil {
 		org, err := s.orgRepo.GetByID(ctx, primaryOrg.OrganizationID)
 		if err == nil {
 			orgType = org.Type
+			orgName = org.Name
 			fmt.Printf("[DEBUG] Fetched organization: name=%s, type=%s\n", org.Name, org.Type)
 		} else {
 			fmt.Printf("[ERROR] Failed to fetch organization: %v\n", err)
@@ -350,10 +351,13 @@ func (s *AuthService) LoginWithPassword(ctx context.Context, req *LoginPasswordR
 	}
 	if primaryOrg != nil {
 		tokenReq.OrganizationID = primaryOrg.OrganizationID.String()
+		tokenReq.OrganizationName = orgName
 		tokenReq.OrganizationType = orgType
 		tokenReq.Role = primaryOrg.Role
 		tokenReq.Permissions = primaryOrg.Permissions
-		fmt.Printf("[DEBUG] Token request includes: org_id=%s, org_type=%s, role=%s\n", tokenReq.OrganizationID, tokenReq.OrganizationType, tokenReq.Role)
+		fmt.Printf("[DEBUG JWT TOKEN] org_id=%s, org_name=%s, org_type=%s, role=%s\n", 
+			tokenReq.OrganizationID, tokenReq.OrganizationName, tokenReq.OrganizationType, tokenReq.Role)
+		fmt.Printf("[DEBUG JWT TOKEN] Full tokenReq: %+v\n", tokenReq)
 	} else {
 		fmt.Printf("[WARN] No primary org, token will not include organization data\n")
 	}

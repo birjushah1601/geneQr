@@ -161,12 +161,16 @@ func (m *Module) MountRoutes(r chi.Router) {
 	// QR code extractor for rate limiting
 	qrCodeExtractor := func(r *http.Request) string {
 		var body map[string]interface{}
+		var bodyBytes []byte
+		
 		// Read body for QR code
 		if r.Body != nil {
-			json.NewDecoder(r.Body).Decode(&body)
-			// Restore body for handler
-			r.Body = io.NopCloser(bytes.NewReader([]byte{}))
+			bodyBytes, _ = io.ReadAll(r.Body)
+			json.Unmarshal(bodyBytes, &body)
+			// Restore body with the actual content
+			r.Body = io.NopCloser(bytes.NewReader(bodyBytes))
 		}
+		
 		if qrCode, ok := body["QRCode"].(string); ok {
 			return qrCode
 		}
@@ -190,9 +194,10 @@ func (m *Module) MountRoutes(r chi.Router) {
 		r.Get("/", m.ticketHandler.ListTickets)                // List tickets
 		r.Get("/number/{number}", m.ticketHandler.GetTicketByNumber) // Get by ticket number
 		r.Get("/{id}", m.ticketHandler.GetTicket)              // Get by ID
-        r.Get("/{id}/parts", m.ticketHandler.GetTicketParts)   // Get parts for ticket
-		r.Post("/{id}/parts", m.ticketHandler.AddTicketPart)   // Add single part to ticket
-		r.Patch("/{id}/parts", m.ticketHandler.UpdateParts)    // Update parts for ticket
+        r.Get("/{id}/parts", m.ticketHandler.GetTicketParts)       // Get parts for ticket
+		r.Post("/{id}/parts", m.ticketHandler.AddTicketPart)       // Add single part to ticket
+		r.Delete("/{id}/parts/{partId}", m.ticketHandler.DeleteTicketPart) // Delete specific part
+		r.Patch("/{id}/parts", m.ticketHandler.UpdateParts)        // Update parts for ticket
 		
 		// Admin-only: Update ticket priority
 		// NOTE: In production, add proper JWT auth middleware to verify admin role

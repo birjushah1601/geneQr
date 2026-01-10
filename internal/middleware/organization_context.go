@@ -79,6 +79,12 @@ func OrganizationContextMiddleware(logger *slog.Logger) func(http.Handler) http.
 					"claims_keys", fmt.Sprintf("%v", getKeys(claims)))
 			}
 
+			// Extract organization_name
+			if orgName, ok := claims["organization_name"].(string); ok {
+				ctx = context.WithValue(ctx, "organization_name", orgName)
+				logger.Debug("Organization name set", "organization_name", orgName)
+			}
+
 			// Extract organization_type
 			if orgType, ok := claims["organization_type"].(string); ok {
 				ctx = context.WithValue(ctx, OrganizationTypeKey, orgType)

@@ -38,11 +38,22 @@ func (h *TicketHandler) CreateTicket(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	startTime := time.Now()
 
+	h.logger.Info("🎫 CreateTicket handler - Starting",
+		slog.Int64("content_length", r.ContentLength),
+		slog.String("content_type", r.Header.Get("Content-Type")))
+
 	var req app.CreateTicketRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.logger.Error("❌ Failed to decode request body",
+			slog.String("error", err.Error()),
+			slog.Int64("content_length", r.ContentLength))
 		h.respondError(w, http.StatusBadRequest, "Invalid request body: "+err.Error())
 		return
 	}
+
+	h.logger.Info("✅ Request decoded successfully",
+		slog.String("equipment_id", req.EquipmentID),
+		slog.String("qr_code", req.QRCode))
 
 	ticket, err := h.service.CreateTicket(ctx, req)
 	if err != nil {
@@ -619,7 +630,8 @@ func (h *TicketHandler) GetTicketParts(w http.ResponseWriter, r *http.Request) {
     defer rows.Close()
 
     type Part struct {
-        AssignmentID     string    `json:"assignment_id"`
+        ID               string    `json:"id"` // ticket_parts.id for deletion
+        AssignmentID     string    `json:"assignment_id"` // alias for backwards compatibility
         SparePartID      string    `json:"spare_part_id"`
         PartNumber       string    `json:"part_number"`
         PartName         string    `json:"part_name"`
@@ -655,7 +667,7 @@ func (h *TicketHandler) GetTicketParts(w http.ResponseWriter, r *http.Request) {
         )
         
         if err := rows.Scan(
-            &p.AssignmentID, &p.SparePartID, &p.PartNumber, &p.PartName,
+            &p.ID, &p.SparePartID, &p.PartNumber, &p.PartName,
             &p.QuantityRequired, &qtyUsed, &p.IsCritical, &p.Status,
             &unitPrice, &totalPrice, &p.Currency,
             &category, &stockStatus, &leadTime,
@@ -664,6 +676,9 @@ func (h *TicketHandler) GetTicketParts(w http.ResponseWriter, r *http.Request) {
             h.logger.Warn("Failed to scan ticket part", slog.String("error", err.Error()))
             continue
         }
+        
+        // Set AssignmentID for backwards compatibility
+        p.AssignmentID = p.ID
         
         if qtyUsed.Valid { v := int(qtyUsed.Int64); p.QuantityUsed = &v }
         if unitPrice.Valid { v := unitPrice.Float64; p.UnitPrice = &v }
@@ -774,6 +789,52 @@ func (h *TicketHandler) AddTicketPart(w http.ResponseWriter, r *http.Request) {
     })
 }
 
+// DeleteTicketPart handles DELETE /tickets/{ticket_id}/parts/{part_id}
+// Removes a specific part from the ticket
+func (h *TicketHandler) DeleteTicketPart(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	ticketID := chi.URLParam(r, "id")
+	partID := chi.URLParam(r, "partId")
+	
+	if ticketID == "" || partID == "" {
+		h.respondError(w, http.StatusBadRequest, "Ticket ID and Part ID are required")
+		return
+	}
+	
+	if h.pool == nil {
+		h.respondError(w, http.StatusInternalServerError, "DB pool not initialized")
+		return
+	}
+	
+	// Delete the part from ticket_parts table
+	const deleteQuery = `DELETE FROM ticket_parts WHERE id = $1 AND ticket_id = $2`
+	
+	result, err := h.pool.Exec(ctx, deleteQuery, partID, ticketID)
+	if err != nil {
+		h.logger.Error("Failed to delete ticket part", 
+			slog.String("ticket_id", ticketID),
+			slog.String("part_id", partID),
+			slog.String("error", err.Error()))
+		h.respondError(w, http.StatusInternalServerError, "Failed to delete part")
+		return
+	}
+	
+	rowsAffected := result.RowsAffected()
+	if rowsAffected == 0 {
+		h.respondError(w, http.StatusNotFound, "Part not found")
+		return
+	}
+	
+	h.logger.Info("Ticket part deleted successfully",
+		slog.String("ticket_id", ticketID),
+		slog.String("part_id", partID))
+	
+	h.respondJSON(w, http.StatusOK, map[string]interface{}{
+		"message": "Part deleted successfully",
+		"part_id": partID,
+	})
+}
+
 // UpdateParts handles PATCH /tickets/{id}/parts
 func (h *TicketHandler) UpdateParts(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -849,16 +910,26 @@ func (h *TicketHandler) UpdateTicketPriority(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	
-	// Extract user role from context (set by auth middleware)
-	// For now, we'll check a header - in production, use proper JWT middleware
-	userRole := r.Header.Get("X-User-Role")
-	userID := r.Header.Get("X-User-ID")
+	// Extract user info from JWT claims in context
+	claims, ok := ctx.Value("claims").(map[string]interface{})
+	if !ok {
+		h.respondError(w, http.StatusUnauthorized, "No authentication claims found")
+		return
+	}
 	
-	// Only admins can update priority
-	if userRole != "admin" && userRole != "super_admin" {
+	userRole, _ := claims["role"].(string)
+	userID, _ := claims["user_id"].(string)
+	orgType, _ := claims["organization_type"].(string)
+	
+	// Allow admins and system admins to update priority
+	isAdmin := userRole == "admin" || userRole == "super_admin" || userRole == "system_admin"
+	isSystemOrg := orgType == "system"
+	
+	if !isAdmin && !isSystemOrg {
 		h.logger.Warn("Unauthorized priority update attempt",
 			slog.String("ticket_id", ticketID),
-			slog.String("user_role", userRole))
+			slog.String("user_role", userRole),
+			slog.String("org_type", orgType))
 		h.respondError(w, http.StatusForbidden, "Only admins can update ticket priority")
 		return
 	}

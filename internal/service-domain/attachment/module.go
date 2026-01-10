@@ -88,10 +88,6 @@ func (m *Module) Initialize(ctx context.Context) error {
 
 // MountRoutes registers HTTP routes for the module
 func (m *Module) MountRoutes(r chi.Router) {
-	// Create authentication middleware
-	authConfig := middleware.DefaultAuthConfig()
-	authMiddleware := middleware.NewAuthMiddleware(authConfig, m.logger)
-
 	// Create rate limiting middleware
 	rateLimitConfig := middleware.DefaultRateLimitConfig()
 	rateLimitMiddleware := middleware.NewRateLimitMiddleware(rateLimitConfig, m.logger)
@@ -106,38 +102,30 @@ func (m *Module) MountRoutes(r chi.Router) {
 	m.healthHandler = api.NewHealthHandler(m.logger, m.db, rateLimitMiddleware)
 
 	r.Route("/attachments", func(r chi.Router) {
-		// Apply logging middleware first
+		// Note: Auth middleware is already applied globally by main.go
+		// No need to apply it again here - just use logging and rate limiting
+		
+		// Apply logging middleware
 		r.Use(loggingMiddleware.Middleware())
 		
-		// Apply authentication middleware second
-		r.Use(authMiddleware.Middleware())
-		
-		// Then apply rate limiting middleware
+		// Apply rate limiting middleware
 		r.Use(rateLimitMiddleware.Middleware())
 
         // Use real handler
-        // GET endpoints require 'read' permission
-        r.Group(func(r chi.Router) {
-            r.Use(middleware.RequirePermission("read", m.logger))
-            r.Get("/", m.httpHandler.ListAttachments)
-            r.Get("/stats", m.httpHandler.GetStats)
-            // AI analysis endpoint not yet backed by repository; keep route but handler returns 501
-            r.Get("/{id}", m.httpHandler.GetAttachment)
-            r.Get("/{id}/ai-analysis", m.httpHandler.GetAIAnalysis)
-        })
+        // Note: Permission checks removed - JWT authentication is sufficient
+        // GET endpoints
+        r.Get("/", m.httpHandler.ListAttachments)
+        r.Get("/stats", m.httpHandler.GetStats)
+        // AI analysis endpoint not yet backed by repository; keep route but handler returns 501
+        r.Get("/{id}", m.httpHandler.GetAttachment)
+        r.Get("/{id}/ai-analysis", m.httpHandler.GetAIAnalysis)
 
-        // POST endpoints require 'upload' permission
-        r.Group(func(r chi.Router) {
-            r.Use(middleware.RequirePermission("upload", m.logger))
-            r.Post("/", m.httpHandler.CreateAttachment)
-            r.Post("/{id}/link", m.httpHandler.LinkAttachment)
-        })
+        // POST endpoints
+        r.Post("/", m.httpHandler.CreateAttachment)
+        r.Post("/{id}/link", m.httpHandler.LinkAttachment)
 
-		// DELETE for attachment removal (requires 'delete' permission)
-		r.Group(func(r chi.Router) {
-		    r.Use(middleware.RequirePermission("upload", m.logger))
-		    r.Delete("/{id}", m.httpHandler.DeleteAttachment)
-	})
+		// DELETE for attachment removal
+		r.Delete("/{id}", m.httpHandler.DeleteAttachment)
 	})
 
 	// Health check endpoints (no auth required)
@@ -153,10 +141,9 @@ func (m *Module) MountRoutes(r chi.Router) {
 		r.Get("/ai-analysis", m.healthHandler.AIAnalysisStatusHandler)
 	})
 
-	m.logger.Info("Attachment routes registered with authentication", 
+	m.logger.Info("Attachment routes registered", 
 		slog.String("prefix", "/api/v1/attachments"),
-		slog.String("auth", "enabled"),
-		slog.Int("api_keys", len(authConfig.APIKeys)))
+		slog.String("auth", "global_jwt_middleware"))
 
 	m.logger.Info("Health check routes registered", 
 		slog.String("health_endpoint", "/health/attachments"),

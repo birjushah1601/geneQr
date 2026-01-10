@@ -653,9 +653,13 @@ func (h *AuthHandler) AuthMiddleware(next http.Handler) http.Handler {
 
 		claims, err := h.jwtService.ValidateToken(tokenString)
 		if err != nil {
+			fmt.Printf("❌ Token validation failed for path %s: %v\n", r.URL.Path, err)
 			respondError(w, http.StatusUnauthorized, "Invalid token")
 			return
 		}
+
+		fmt.Printf("✅ Token validated for path %s - user_id=%s, org_id=%s, org_type=%s\n", 
+			r.URL.Path, claims.UserID, claims.OrganizationID, claims.OrganizationType)
 
 		// Add claims to context for downstream middleware
 		// Convert Claims struct to map for OrganizationContextMiddleware
@@ -665,6 +669,7 @@ func (h *AuthHandler) AuthMiddleware(next http.Handler) http.Handler {
 			"email":             claims.Email,
 			"name":              claims.Name,
 			"organization_id":   claims.OrganizationID,
+			"organization_name": claims.OrganizationName,
 			"organization_type": claims.OrganizationType,
 			"role":              claims.Role,
 			"permissions":       claims.Permissions,
