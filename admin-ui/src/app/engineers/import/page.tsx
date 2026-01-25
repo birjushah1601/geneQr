@@ -55,44 +55,45 @@ export default function EngineersImportPage() {
 
     setUploading(true);
 
-    // Simulate upload and processing
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('csv_file', file);
 
-    // Simulate import results
-    const stats = {
-      total: Math.floor(Math.random() * 20) + 10,
-      success: 0,
-      failed: 0,
-    };
-    stats.success = stats.total - Math.floor(Math.random() * 3);
-    stats.failed = stats.total - stats.success;
-
-    setImportStats(stats);
-    setUploadComplete(true);
-    setUploading(false);
-
-    // Store in localStorage (in production, would call API)
-    const existingEngineers = localStorage.getItem('engineers');
-    let engineers = existingEngineers ? JSON.parse(existingEngineers) : [];
-    
-    // Add new engineers from import
-    for (let i = 0; i < stats.success; i++) {
-      engineers.push({
-        id: `ENG-${Date.now()}-${i}`,
-        name: `Engineer ${i + 1}`,
-        phone: `+91-98765432${String(i).padStart(2, '0')}`,
-        email: `engineer${i + 1}@company.com`,
-        location: ['Mumbai', 'Delhi', 'Bangalore', 'Pune'][i % 4],
-        specializations: ['MRI Scanner', 'CT Scanner', 'X-Ray', 'Ultrasound'][i % 4],
+      // Call the API
+      const response = await fetch('/api/v1/engineers/import', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        },
+        body: formData,
       });
+
+      if (!response.ok) {
+        throw new Error(`Upload failed: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+
+      // Set import stats from API response
+      setImportStats({
+        total: result.total_rows || 0,
+        success: result.success_count || 0,
+        failed: result.failure_count || 0,
+      });
+
+      setUploadComplete(true);
+
+      // Auto redirect after 3 seconds
+      setTimeout(() => {
+        router.push('/engineers');
+      }, 3000);
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert(`Failed to upload CSV: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setUploading(false);
     }
-
-    localStorage.setItem('engineers', JSON.stringify(engineers));
-
-    // Auto redirect after 2 seconds
-    setTimeout(() => {
-      router.push('/dashboard');
-    }, 2000);
   };
 
   const handleRemoveFile = () => {
@@ -134,28 +135,50 @@ export default function EngineersImportPage() {
                     <strong>Required columns:</strong>
                   </div>
                   <div className="text-gray-600">
-                    name, phone, email, location, specializations
+                    name, phone, email, location, engineer_level, equipment_types, experience_years
+                  </div>
+                  <div className="mt-4 text-gray-700">
+                    <strong>Field Descriptions:</strong>
+                  </div>
+                  <div className="text-gray-600 text-xs mt-2 space-y-1">
+                    <div>• <strong>engineer_level:</strong> 1 (Junior), 2 (Mid-Level), or 3 (Senior)</div>
+                    <div>• <strong>equipment_types:</strong> Pipe-separated list (e.g., "MRI Scanner|CT Scanner|X-Ray")</div>
+                    <div>• <strong>experience_years:</strong> Number of years (e.g., 5)</div>
                   </div>
                   <div className="mt-4 text-gray-700">
                     <strong>Example:</strong>
                   </div>
                   <div className="text-gray-600 text-xs mt-2">
-                    name,phone,email,location,specializations<br />
-                    Raj Kumar,+91-9876543210,raj@company.com,Mumbai,MRI Scanner | CT Scanner<br />
-                    Priya Shah,+91-9876543211,priya@company.com,Delhi,Ultrasound | ECG
+                    name,phone,email,location,engineer_level,equipment_types,experience_years<br />
+                    Raj Kumar,+91-9876543210,raj@company.com,Mumbai,2,"MRI Scanner|CT Scanner",5<br />
+                    Priya Shah,+91-9876543211,priya@company.com,Delhi,3,"Ultrasound|ECG Machine|X-Ray",8
                   </div>
                 </div>
                 <div className="mt-4">
-                  <a
-                    href="#"
+                  <button
                     className="text-blue-600 hover:underline text-sm"
                     onClick={(e) => {
                       e.preventDefault();
-                      alert('Sample CSV download coming soon!');
+                      // Generate sample CSV
+                      const csvContent = `name,phone,email,location,engineer_level,equipment_types,experience_years
+Raj Kumar,+91-9876543210,raj@company.com,Mumbai,2,"MRI Scanner|CT Scanner",5
+Priya Shah,+91-9876543211,priya@company.com,Delhi,3,"Ultrasound|ECG Machine|X-Ray",8
+Amit Patel,+91-9876543212,amit@company.com,Bangalore,1,"Dialysis Machine|Ventilator",2
+Sara Khan,+91-9876543213,sara@company.com,Pune,2,"CT Scanner|Patient Monitor",4`;
+                      
+                      const blob = new Blob([csvContent], { type: 'text/csv' });
+                      const url = window.URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = 'engineer-import-template.csv';
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      window.URL.revokeObjectURL(url);
                     }}
                   >
-                    Download sample template
-                  </a>
+                    📥 Download sample template
+                  </button>
                 </div>
               </CardContent>
             </Card>

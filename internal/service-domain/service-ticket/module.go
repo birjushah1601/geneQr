@@ -230,6 +230,7 @@ func (m *Module) MountRoutes(r chi.Router) {
 	// Engineer management routes
 	r.Route("/engineers", func(r chi.Router) {
 		r.Get("/", m.assignmentHandler.ListEngineers)           // List all engineers
+		r.Post("/import", m.assignmentHandler.ImportEngineersCSV) // CSV import
 		r.Get("/{id}", m.assignmentHandler.GetEngineer)         // Get engineer details
 		r.Put("/{id}/level", m.assignmentHandler.UpdateEngineerLevel) // Update engineer level
 		

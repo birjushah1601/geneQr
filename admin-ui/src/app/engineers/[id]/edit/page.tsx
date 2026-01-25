@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,13 +9,17 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import engineersApi from '@/lib/api/engineers';
 import { useToast } from '@/hooks/use-toast';
 
-export default function NewEngineerPage() {
+export default function EditEngineerPage() {
   const router = useRouter();
+  const params = useParams();
   const { toast } = useToast();
+  const engineerId = params.id as string;
+  
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -40,6 +44,48 @@ export default function NewEngineerPage() {
     equipment_types: [] as string[],
   });
 
+  // Fetch existing engineer data
+  useEffect(() => {
+    const fetchEngineer = async () => {
+      try {
+        const engineer = await engineersApi.getById(engineerId);
+        
+        setFormData({
+          full_name: (engineer as any).full_name || (engineer as any).name || '',
+          first_name: (engineer as any).first_name || '',
+          last_name: (engineer as any).last_name || '',
+          employee_id: (engineer as any).employee_id || '',
+          email: (engineer as any).email || '',
+          phone: (engineer as any).phone || '',
+          whatsapp_number: (engineer as any).whatsapp_number || (engineer as any).whatsapp || '',
+          engineer_level: String((engineer as any).engineer_level || 1),
+          experience_years: (engineer as any).experience_years || 0,
+          employment_type: (engineer as any).employment_type || 'full_time',
+          status: (engineer as any).status || 'available',
+          mobile_engineer: (engineer as any).mobile_engineer !== false,
+          on_call_24x7: (engineer as any).on_call_24x7 || false,
+          max_daily_tickets: (engineer as any).max_daily_tickets || 5,
+          preferred_contact_method: (engineer as any).preferred_contact_method || 'phone',
+          coverage_cities: (engineer as any).coverage_cities?.join(', ') || '',
+          coverage_states: (engineer as any).coverage_states?.join(', ') || '',
+          skills: (engineer as any).skills?.join(', ') || (engineer as any).specializations?.join(', ') || '',
+          equipment_types: (engineer as any).specializations || (engineer as any).equipment_types || [],
+        });
+      } catch (error) {
+        console.error('Failed to fetch engineer:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load engineer data',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEngineer();
+  }, [engineerId]);
+
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -56,15 +102,6 @@ export default function NewEngineerPage() {
       return;
     }
 
-    if (formData.equipment_types.length === 0) {
-      toast({
-        title: 'Validation Error',
-        description: 'Please select at least one equipment type',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     try {
       setSaving(true);
       
@@ -75,25 +112,21 @@ export default function NewEngineerPage() {
         coverage_states: formData.coverage_states ? formData.coverage_states.split(',').map(s => s.trim()) : [],
         skills: formData.skills ? formData.skills.split(',').map(s => s.trim()) : [],
         specializations: formData.equipment_types,
-        active_tickets: 0,
-        completed_tickets: 0,
-        rating: 0,
-        customer_satisfaction_score: 0,
       };
 
-      const response = await engineersApi.create(payload);
+      await engineersApi.update(engineerId, payload);
       
       toast({
         title: 'Success',
-        description: 'Engineer created successfully',
+        description: 'Engineer updated successfully',
       });
       
-      router.push(`/engineers/${response.id}`);
+      router.push(`/engineers/${engineerId}`);
     } catch (error: any) {
-      console.error('Failed to create engineer:', error);
+      console.error('Failed to update engineer:', error);
       toast({
         title: 'Error',
-        description: error.response?.data?.error || 'Failed to create engineer',
+        description: error.response?.data?.error || 'Failed to update engineer',
         variant: 'destructive',
       });
     } finally {
@@ -101,17 +134,25 @@ export default function NewEngineerPage() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" onClick={() => router.push('/engineers')}>
+        <Button variant="ghost" onClick={() => router.push(`/engineers/${engineerId}`)}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
         </Button>
         <div>
-          <h1 className="text-3xl font-bold">Add New Engineer</h1>
-          <p className="text-muted-foreground">Create a new field service engineer profile</p>
+          <h1 className="text-3xl font-bold">Edit Engineer</h1>
+          <p className="text-muted-foreground">Update engineer profile</p>
         </div>
       </div>
 
@@ -130,7 +171,6 @@ export default function NewEngineerPage() {
                   id="full_name"
                   value={formData.full_name}
                   onChange={(e) => handleInputChange('full_name', e.target.value)}
-                  placeholder="John Doe"
                   required
                 />
               </div>
@@ -140,28 +180,6 @@ export default function NewEngineerPage() {
                   id="employee_id"
                   value={formData.employee_id}
                   onChange={(e) => handleInputChange('employee_id', e.target.value)}
-                  placeholder="EMP-001"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="first_name">First Name</Label>
-                <Input
-                  id="first_name"
-                  value={formData.first_name}
-                  onChange={(e) => handleInputChange('first_name', e.target.value)}
-                  placeholder="John"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="last_name">Last Name</Label>
-                <Input
-                  id="last_name"
-                  value={formData.last_name}
-                  onChange={(e) => handleInputChange('last_name', e.target.value)}
-                  placeholder="Doe"
                 />
               </div>
             </div>
@@ -174,7 +192,6 @@ export default function NewEngineerPage() {
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  placeholder="engineer@example.com"
                   required
                 />
               </div>
@@ -185,7 +202,6 @@ export default function NewEngineerPage() {
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
-                  placeholder="+91-9876543210"
                 />
               </div>
               <div className="space-y-2">
@@ -195,7 +211,6 @@ export default function NewEngineerPage() {
                   type="tel"
                   value={formData.whatsapp_number}
                   onChange={(e) => handleInputChange('whatsapp_number', e.target.value)}
-                  placeholder="+91-9876543210"
                 />
               </div>
             </div>
@@ -206,7 +221,6 @@ export default function NewEngineerPage() {
         <Card>
           <CardHeader>
             <CardTitle>Employment Details</CardTitle>
-            <CardDescription>Work arrangement and capacity</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -220,14 +234,11 @@ export default function NewEngineerPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">Level 1 (Junior Technician)</SelectItem>
-                    <SelectItem value="2">Level 2 (Mid-Level Engineer)</SelectItem>
-                    <SelectItem value="3">Level 3 (Senior Expert)</SelectItem>
+                    <SelectItem value="1">Level 1 (Junior)</SelectItem>
+                    <SelectItem value="2">Level 2 (Mid-Level)</SelectItem>
+                    <SelectItem value="3">Level 3 (Senior)</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground">
-                  Required for ticket assignment priority
-                </p>
               </div>
 
               <div className="space-y-2">
@@ -238,32 +249,11 @@ export default function NewEngineerPage() {
                   min="0"
                   value={formData.experience_years}
                   onChange={(e) => handleInputChange('experience_years', parseInt(e.target.value) || 0)}
-                  placeholder="5"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="employment_type">Employment Type</Label>
-                <Select
-                  value={formData.employment_type}
-                  onValueChange={(value) => handleInputChange('employment_type', value)}
-                >
-                  <SelectTrigger id="employment_type">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="full_time">Full Time</SelectItem>
-                    <SelectItem value="part_time">Part Time</SelectItem>
-                    <SelectItem value="contract">Contract</SelectItem>
-                    <SelectItem value="freelance">Freelance</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="status">Current Status</Label>
+                <Label htmlFor="status">Status</Label>
                 <Select
                   value={formData.status}
                   onValueChange={(value) => handleInputChange('status', value)}
@@ -280,91 +270,10 @@ export default function NewEngineerPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="max_daily_tickets">Max Daily Tickets</Label>
-                <Input
-                  id="max_daily_tickets"
-                  type="number"
-                  value={formData.max_daily_tickets}
-                  onChange={(e) => handleInputChange('max_daily_tickets', parseInt(e.target.value))}
-                  min="1"
-                  max="20"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="preferred_contact_method">Preferred Contact Method</Label>
-                <Select
-                  value={formData.preferred_contact_method}
-                  onValueChange={(value) => handleInputChange('preferred_contact_method', value)}
-                >
-                  <SelectTrigger id="preferred_contact_method">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="phone">Phone</SelectItem>
-                    <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                    <SelectItem value="email">Email</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="mobile_engineer"
-                  checked={formData.mobile_engineer}
-                  onCheckedChange={(checked) => handleInputChange('mobile_engineer', checked)}
-                />
-                <Label htmlFor="mobile_engineer" className="cursor-pointer">
-                  Mobile Engineer (can travel to customer locations)
-                </Label>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="on_call_24x7"
-                  checked={formData.on_call_24x7}
-                  onCheckedChange={(checked) => handleInputChange('on_call_24x7', checked)}
-                />
-                <Label htmlFor="on_call_24x7" className="cursor-pointer">
-                  Available 24x7 for emergency calls
-                </Label>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Skills & Coverage */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Skills & Coverage Area</CardTitle>
-            <CardDescription>Technical expertise and service areas</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="skills">Skills (comma-separated)</Label>
-              <Textarea
-                id="skills"
-                value={formData.skills}
-                onChange={(e) => handleInputChange('skills', e.target.value)}
-                placeholder="CT Scanner, MRI, X-Ray, Ultrasound"
-                rows={3}
-              />
-              <p className="text-xs text-muted-foreground">
-                Enter equipment types or specializations, separated by commas
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Equipment Types Expertise *</Label>
-              <p className="text-xs text-muted-foreground mb-2">
-                Select all equipment types this engineer can service
-              </p>
+              <Label>Equipment Types Expertise</Label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {['MRI Scanner', 'CT Scanner', 'X-Ray Machine', 'Ultrasound', 'ECG Machine', 'Dialysis Machine', 'Ventilator', 'Anesthesia Machine', 'Patient Monitor', 'Defibrillator'].map((equipmentType) => (
+                {['MRI Scanner', 'CT Scanner', 'X-Ray Machine', 'Ultrasound', 'ECG Machine', 'Dialysis Machine', 'Ventilator', 'Anesthesia Machine'].map((equipmentType) => (
                   <div key={equipmentType} className="flex items-center space-x-2">
                     <Checkbox
                       id={`equipment-${equipmentType}`}
@@ -385,49 +294,62 @@ export default function NewEngineerPage() {
               </div>
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="skills">Skills (comma-separated)</Label>
+              <Textarea
+                id="skills"
+                value={formData.skills}
+                onChange={(e) => handleInputChange('skills', e.target.value)}
+                rows={3}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Coverage */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Coverage Area</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="coverage_cities">Coverage Cities (comma-separated)</Label>
-                <Textarea
+                <Label htmlFor="coverage_cities">Coverage Cities</Label>
+                <Input
                   id="coverage_cities"
                   value={formData.coverage_cities}
                   onChange={(e) => handleInputChange('coverage_cities', e.target.value)}
-                  placeholder="Delhi, Noida, Gurgaon, Faridabad"
-                  rows={3}
+                  placeholder="Mumbai, Delhi, Bangalore"
                 />
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="coverage_states">Coverage States (comma-separated)</Label>
-                <Textarea
+                <Label htmlFor="coverage_states">Coverage States</Label>
+                <Input
                   id="coverage_states"
                   value={formData.coverage_states}
                   onChange={(e) => handleInputChange('coverage_states', e.target.value)}
-                  placeholder="Delhi, Haryana, Uttar Pradesh"
-                  rows={3}
+                  placeholder="Maharashtra, Delhi, Karnataka"
                 />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Actions */}
-        <div className="flex justify-end gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.push('/engineers')}
-            disabled={saving}
-          >
+        {/* Submit Button */}
+        <div className="flex justify-end gap-4">
+          <Button type="button" variant="outline" onClick={() => router.push(`/engineers/${engineerId}`)}>
             Cancel
           </Button>
           <Button type="submit" disabled={saving}>
             {saving ? (
-              <>Saving...</>
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Saving...
+              </>
             ) : (
               <>
                 <Save className="h-4 w-4 mr-2" />
-                Create Engineer
+                Save Changes
               </>
             )}
           </Button>

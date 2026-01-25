@@ -8,18 +8,22 @@ import (
 
     "github.com/aby-med/medical-platform/internal/core/organizations/api"
     "github.com/aby-med/medical-platform/internal/core/organizations/infra"
+    "github.com/aby-med/medical-platform/internal/infrastructure/email"
     "github.com/aby-med/medical-platform/internal/shared/config"
     "github.com/go-chi/chi/v5"
     "github.com/jackc/pgx/v5/pgxpool"
+    "github.com/jmoiron/sqlx"
+    _ "github.com/jackc/pgx/v5/stdlib"
 )
 
 const ModuleName = "organizations"
 
 type Module struct {
-    cfg     *config.Config
-    logger  *slog.Logger
-    pool    *pgxpool.Pool
-    handler *api.Handler
+    cfg               *config.Config
+    logger            *slog.Logger
+    pool              *pgxpool.Pool
+    handler           *api.Handler
+    invitationHandler *api.InvitationHandler
 }
 
 func New(cfg *config.Config, logger *slog.Logger) *Module {
@@ -51,6 +55,25 @@ func (m *Module) Initialize(ctx context.Context) error {
 
     repo := infra.NewRepository(pool, m.logger)
     m.handler = api.NewHandler(repo, m.logger)
+
+    // Initialize invitation handler (requires email service)
+    sendgridKey := os.Getenv("SENDGRID_API_KEY")
+    fromEmail := os.Getenv("SENDGRID_FROM_EMAIL")
+    fromName := os.Getenv("SENDGRID_FROM_NAME")
+    if fromName == "" {
+        fromName = "ABY-MED Platform"
+    }
+    
+    emailService := email.NewNotificationService(sendgridKey, fromEmail, fromName)
+    
+    // Create sqlx.DB from pgxpool for invitation handler
+    dsn := m.cfg.GetDSN()
+    sqlxDB, err := sqlx.Connect("pgx", dsn)
+    if err != nil {
+        return fmt.Errorf("sqlx connect: %w", err)
+    }
+    
+    m.invitationHandler = api.NewInvitationHandler(sqlxDB, emailService, m.logger)
 
     // Optional demo seed
     if isEnabled(os.Getenv("ENABLE_ORG_SEED")) {
@@ -85,6 +108,19 @@ func (m *Module) MountRoutes(r chi.Router) {
         r.Get("/{id}", m.handler.GetOrg)
         r.Get("/{id}/facilities", m.handler.ListFacilities)
         r.Get("/{id}/relationships", m.handler.ListRelationships)
+        
+        // Invitation routes
+        if m.invitationHandler != nil {
+            r.Post("/{orgId}/invitations", m.invitationHandler.CreateInvitation)
+        }
+    })
+    
+    // Public invitation routes (no auth required)
+    r.Route("/invitations", func(r chi.Router) {
+        if m.invitationHandler != nil {
+            r.Get("/validate/{token}", m.invitationHandler.ValidateInvitation)
+            r.Post("/{token}/accept", m.invitationHandler.AcceptInvitation)
+        }
     })
 
     if isEnabled(os.Getenv("ENABLE_CHANNELS")) {

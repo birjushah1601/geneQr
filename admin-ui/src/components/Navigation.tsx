@@ -15,7 +15,8 @@ import {
   LogOut,
   Factory,
   Hospital,
-  Truck
+  Truck,
+  Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -33,6 +34,12 @@ const navigationConfig: NavItem[] = [
     href: '/dashboard',
     icon: LayoutDashboard,
     allowedOrgTypes: [], // All org types
+  },
+  {
+    label: 'AI Onboarding',
+    href: '/onboarding/ai-wizard',
+    icon: Sparkles,
+    allowedOrgTypes: ['system', 'manufacturer'], // System admins and manufacturer admins
   },
   {
     label: 'Equipment',
@@ -76,6 +83,14 @@ export default function Navigation() {
     // If no restrictions, show to all
     if (item.allowedOrgTypes.length === 0) {
       return true;
+    }
+
+    // Special handling for AI Onboarding - only for admins
+    if (item.href === '/onboarding/ai-wizard') {
+      const orgType = organizationContext?.organization_type;
+      const role = organizationContext?.role;
+      // System admins or manufacturer admins only
+      return orgType === 'system' || (orgType === 'manufacturer' && role === 'admin');
     }
 
     // Check if user's org type is in allowed list

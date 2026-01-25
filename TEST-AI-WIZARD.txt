@@ -1,0 +1,56 @@
+# AI Onboarding Wizard - Complete Test Guide
+
+## ?? QUICK START TEST
+
+1. **Login:** http://localhost:3000/login
+   - Email: manufacturer@geneqr.com  
+   - Password: Manu@1234
+
+2. **Navigate:** http://localhost:3000/onboarding/ai-wizard
+
+3. **Open Console:** Press F12
+
+4. **Test Each Step Below:**
+
+---
+
+## STEP 2 TEST - TEAM INVITATIONS (MOST CRITICAL)
+
+**Input:**
+```
+John Doe, john@test.com, admin
+```
+
+**Expected Console:**
+```
+[Invitations] Debug info: { hasToken: true, orgId: '11afdeec-...' }
+```
+
+**Expected AI Messages:**
+- ? Sending invitations now...
+- ? Success! Sent 1 invitation!
+- ?? Team members will receive emails shortly
+
+**Status:** ? PASS / ? FAIL
+
+---
+
+## ALL FIXES APPLIED
+
+? Token lookup: access_token from localStorage
+? Org ID lookup: user.organization_id from localStorage  
+? JWT fallback: Decodes token if needed
+? Navigation pane: Added to all pages
+? Continue button: Pre-routing check added
+? Proper JSX structure: All divs closed
+
+---
+
+## IF IT STILL FAILS
+
+Share the console output that shows:
+```
+[Invitations] Debug info: { ... }
+```
+
+This will show exactly what values are available!

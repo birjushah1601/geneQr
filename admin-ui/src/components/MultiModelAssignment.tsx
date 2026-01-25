@@ -177,8 +177,8 @@ export default function MultiModelAssignment({ ticketId, onAssignmentComplete, l
             </div>
           ) : layout === "horizontal" ? (
             <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-              {activeModel.engineers.map((engineer) => (
-                <div key={engineer.id} className="flex-none w-80 snap-start">
+              {activeModel.engineers.map((engineer, index) => (
+                <div key={`${engineer.id}-${index}`} className="flex-none w-80 snap-start">
                   <EngineerCard
                     engineer={engineer}
                     onAssign={() => handleAssignClick(engineer)}
@@ -189,9 +189,9 @@ export default function MultiModelAssignment({ ticketId, onAssignmentComplete, l
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {activeModel.engineers.map((engineer) => (
+              {activeModel.engineers.map((engineer, index) => (
                 <EngineerCard
-                  key={engineer.id}
+                  key={`${engineer.id}-${index}`}
                   engineer={engineer}
                   onAssign={() => handleAssignClick(engineer)}
                   isAssigning={assignMutation.isPending && selectedEngineer?.id === engineer.id}

@@ -1,0 +1,11 @@
+equipment_type,model_number,manufacturer,description,year_manufactured,installation_date,location,serial_number
+MRI Machine,MAGNETOM Vida,Siemens Healthineers,3 Tesla MRI Scanner with advanced imaging capabilities,2022,2023-01-15,Radiology Department - Room 201,SN-MRI-2023-001
+CT Scanner,SOMATOM Drive,Siemens Healthineers,High-speed CT scanner with low dose technology,2021,2022-06-10,Emergency Department - CT Suite,SN-CT-2022-045
+X-Ray Machine,Multix Fusion,Siemens Healthineers,Digital radiography system with ceiling suspension,2020,2021-03-20,X-Ray Room 1,SN-XR-2021-120
+Ultrasound System,ACUSON S2000,Siemens Healthineers,Premium ultrasound system with 3D/4D imaging,2022,2022-09-05,OB/GYN Department,SN-US-2022-078
+Ventilator,SERVO-U,Getinge,Advanced ICU ventilator with lung protective ventilation,2021,2021-08-15,ICU - Bed 5,SN-VENT-2021-234
+Patient Monitor,IntelliVue MX800,Philips Healthcare,Multi-parameter patient monitor with touchscreen,2023,2023-02-01,ICU - Bed 3,SN-MON-2023-012
+Anesthesia Machine,Aisys CS2,GE Healthcare,Advanced anesthesia delivery system,2020,2020-11-10,OR 2,SN-ANES-2020-089
+Defibrillator,LIFEPAK 15,Physio-Control,Monitor/defibrillator with 12-lead ECG,2022,2022-04-18,Emergency Department,SN-DEF-2022-056
+Infusion Pump,Alaris Plus,BD,Large volume infusion pump with dose error reduction,2021,2021-07-22,Ward 3 - Room 305,SN-INF-2021-167
+ECG Machine,MAC 2000,GE Healthcare,12-lead resting ECG system,2020,2020-05-30,Cardiology Department,SN-ECG-2020-145

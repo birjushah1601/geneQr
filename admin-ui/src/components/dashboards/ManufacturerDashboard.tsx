@@ -11,7 +11,9 @@ import {
   ArrowRight,
   Loader2,
   Factory,
-  AlertCircle
+  AlertCircle,
+  Sparkles,
+  Upload
 } from 'lucide-react';
 
 export default function ManufacturerDashboard() {
@@ -139,6 +141,44 @@ export default function ManufacturerDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* AI Onboarding CTA */}
+      {(!equipmentData?.total || equipmentData.total === 0) && (
+        <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  🚀 Get Started with AI Onboarding
+                </h3>
+                <p className="text-gray-700 mb-4">
+                  Import your equipment, parts catalog, hospitals, and engineers in minutes using our AI-powered assistant. 
+                  Simply upload CSV files and let AI handle the rest!
+                </p>
+                <div className="flex gap-3">
+                  <Button 
+                    onClick={() => router.push('/onboarding/ai-wizard')}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Start AI Onboarding
+                  </Button>
+                  <Button 
+                    onClick={() => router.push('/onboarding/wizard')}
+                    variant="outline"
+                  >
+                    <Upload className="mr-2 h-4 w-4" />
+                    Manual Import
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

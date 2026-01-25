@@ -24,6 +24,17 @@ func NewNotificationService(apiKey, fromEmail, fromName string) *NotificationSer
 	}
 }
 
+// InvitationData contains data for user invitation email
+type InvitationData struct {
+	InviteeName        string
+	InviteeEmail       string
+	InviterName        string
+	OrganizationName   string
+	Role               string
+	InviteURL          string
+	ExpiresAt          string
+}
+
 // TicketCreatedData contains data for ticket creation notification
 type TicketCreatedData struct {
 	TicketNumber    string
@@ -678,6 +689,131 @@ ABY-MED Admin System
 	response, err := client.Send(message)
 	if err != nil {
 		return fmt.Errorf("failed to send email: %w", err)
+	}
+
+	if response.StatusCode >= 400 {
+		return fmt.Errorf("sendgrid error: status %d, body: %s", response.StatusCode, response.Body)
+	}
+
+	return nil
+}
+
+// SendInvitationEmail sends invitation email to new team member
+func (s *NotificationService) SendInvitationEmail(ctx context.Context, data InvitationData) error {
+	from := mail.NewEmail(s.fromName, s.fromEmail)
+	subject := fmt.Sprintf("You've been invited to %s", data.OrganizationName)
+	to := mail.NewEmail(data.InviteeName, data.InviteeEmail)
+
+	// Capitalize role for display
+	roleDisplay := data.Role
+	if len(roleDisplay) > 0 {
+		roleDisplay = string(roleDisplay[0]-32) + roleDisplay[1:]
+	}
+
+	plainText := fmt.Sprintf(`
+Dear %s,
+
+%s has invited you to join %s as a %s.
+
+Click the link below to accept the invitation and create your account:
+
+%s
+
+This invitation expires on %s.
+
+What you'll be able to do:
+- Manage equipment and parts catalog
+- View and manage service tickets
+- Oversee operations and team
+- Generate reports and analytics
+
+If you didn't expect this invitation, you can safely ignore this email.
+
+Best regards,
+%s Team
+`, data.InviteeName, data.InviterName, data.OrganizationName, roleDisplay, data.InviteURL, data.ExpiresAt, data.OrganizationName)
+
+	htmlContent := fmt.Sprintf(`
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #2563eb; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
+        .content { background-color: #f9fafb; padding: 30px; border-radius: 0 0 5px 5px; }
+        .invite-box { background-color: #eff6ff; border-left: 4px solid #2563eb; padding: 20px; margin: 20px 0; }
+        .info-row { padding: 8px 0; }
+        .info-label { font-weight: bold; color: #6b7280; }
+        .cta-button { display: inline-block; background-color: #2563eb; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }
+        .cta-button:hover { background-color: #1d4ed8; }
+        .features { background-color: #fff; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .features ul { list-style-type: none; padding: 0; }
+        .features li { padding: 8px 0; padding-left: 25px; position: relative; }
+        .features li:before { content: "✓"; position: absolute; left: 0; color: #10b981; font-weight: bold; }
+        .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #6b7280; }
+        .expiry { color: #dc2626; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>👥 You're Invited!</h1>
+        </div>
+        <div class="content">
+            <p>Dear <strong>%s</strong>,</p>
+            <p><strong>%s</strong> has invited you to join <strong>%s</strong> as a <strong>%s</strong>.</p>
+            
+            <div class="invite-box">
+                <div class="info-row">
+                    <span class="info-label">Organization:</span>
+                    <span>%s</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Role:</span>
+                    <span>%s</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Invited by:</span>
+                    <span>%s</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Expires:</span>
+                    <span class="expiry">%s</span>
+                </div>
+            </div>
+
+            <div style="text-align: center;">
+                <a href="%s" class="cta-button">Accept Invitation & Create Account</a>
+            </div>
+
+            <div class="features">
+                <h3>What you'll be able to do:</h3>
+                <ul>
+                    <li>Manage equipment and parts catalog</li>
+                    <li>View and manage service tickets</li>
+                    <li>Oversee operations and team</li>
+                    <li>Generate reports and analytics</li>
+                </ul>
+            </div>
+
+            <p style="font-size: 12px; color: #6b7280;">If you didn't expect this invitation, you can safely ignore this email.</p>
+        </div>
+        <div class="footer">
+            <p>This is an automated message from ABY-MED Platform</p>
+            <p>&copy; 2026 ABY-MED. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
+`, data.InviteeName, data.InviterName, data.OrganizationName, roleDisplay, data.OrganizationName, roleDisplay, data.InviterName, data.ExpiresAt, data.InviteURL)
+
+	message := mail.NewSingleEmail(from, subject, to, plainText, htmlContent)
+	client := sendgrid.NewSendClient(s.apiKey)
+
+	response, err := client.Send(message)
+	if err != nil {
+		return fmt.Errorf("failed to send invitation email: %w", err)
 	}
 
 	if response.StatusCode >= 400 {

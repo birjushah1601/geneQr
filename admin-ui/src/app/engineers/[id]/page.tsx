@@ -269,20 +269,24 @@ export default function EngineerDetailPage() {
                   <p className="text-sm text-muted-foreground">Customer Rating</p>
                   <div className="flex items-center gap-2 mt-1">
                     <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
-                    <span className="text-2xl font-bold">{engineer.customer_rating.toFixed(1)}</span>
+                    <span className="text-2xl font-bold">
+                      {(engineer as any).rating ? (engineer as any).rating.toFixed(1) : 'N/A'}
+                    </span>
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">First Time Fix Rate</p>
+                  <p className="text-sm text-muted-foreground">Customer Satisfaction</p>
                   <p className="text-2xl font-bold text-green-600">
-                    {engineer.first_time_fix_rate.toFixed(1)}%
+                    {(engineer as any).customer_satisfaction_score ? (engineer as any).customer_satisfaction_score.toFixed(1) : 'N/A'}%
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Tickets Resolved</p>
+                  <p className="text-sm text-muted-foreground">Completed Tickets</p>
                   <div className="flex items-center gap-2 mt-1">
                     <CheckCircle2 className="h-5 w-5 text-green-600" />
-                    <span className="text-2xl font-bold">{engineer.total_tickets_resolved}</span>
+                    <span className="text-2xl font-bold">
+                      {(engineer as any).completed_tickets || 0}
+                    </span>
                   </div>
                 </div>
               </CardContent>
@@ -415,7 +419,7 @@ export default function EngineerDetailPage() {
                 <CardTitle className="text-sm font-medium">Total Resolved</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold">{engineer.total_tickets_resolved}</div>
+                <div className="text-3xl font-bold">{(engineer as any).completed_tickets || 0}</div>
                 <p className="text-xs text-muted-foreground">All-time tickets</p>
               </CardContent>
             </Card>
@@ -426,20 +430,22 @@ export default function EngineerDetailPage() {
               <CardContent>
                 <div className="flex items-center gap-2">
                   <Star className="h-6 w-6 text-yellow-500 fill-yellow-500" />
-                  <span className="text-3xl font-bold">{engineer.customer_rating.toFixed(1)}</span>
+                  <span className="text-3xl font-bold">
+                    {(engineer as any).rating ? (engineer as any).rating.toFixed(1) : 'N/A'}
+                  </span>
                 </div>
                 <p className="text-xs text-muted-foreground">Average rating</p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm font-medium">First Time Fix</CardTitle>
+                <CardTitle className="text-sm font-medium">Customer Satisfaction</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-green-600">
-                  {engineer.first_time_fix_rate.toFixed(1)}%
+                  {(engineer as any).customer_satisfaction_score ? (engineer as any).customer_satisfaction_score.toFixed(1) : 'N/A'}%
                 </div>
-                <p className="text-xs text-muted-foreground">Success rate</p>
+                <p className="text-xs text-muted-foreground">Satisfaction score</p>
               </CardContent>
             </Card>
           </div>

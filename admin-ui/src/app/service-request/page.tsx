@@ -38,6 +38,7 @@ function ServiceRequestPageInner() {
     requestedBy: '',
     contactName: '',
     contactPhone: '',
+    priority: 'medium' as 'low' | 'medium' | 'high' | 'critical',
   });
 
   useEffect(() => {
@@ -167,7 +168,7 @@ function ServiceRequestPageInner() {
         customer_phone: '9999999999',
         issue_category: 'breakdown',
         issue_description: formData.description,
-        priority: 'medium', // Default priority, admin can update later
+        priority: formData.priority,
         source: 'web',
         created_by: formData.requestedBy || 'web-user',
         notes: diagnosis?.summary ? `AI suggestion: ${diagnosis.summary}` : undefined,
@@ -281,9 +282,7 @@ function ServiceRequestPageInner() {
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">
-            Create Service Request
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-6">Create Service Request</h1>
 
           {/* Equipment Details */}
           <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
@@ -348,6 +347,27 @@ function ServiceRequestPageInner() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Describe the issue or service needed..."
               />
+            </div>
+
+            {/* Priority Selector */}
+            <div>
+              <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-2">
+                Priority *
+              </label>
+              <select
+                id="priority"
+                value={formData.priority}
+                onChange={(e) => setFormData({ ...formData, priority: e.target.value as any })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              >
+                <option value="low">Low - Can wait, minor issue</option>
+                <option value="medium">Medium - Should be addressed soon</option>
+                <option value="high">High - Affects operations</option>
+                <option value="critical">Critical - Equipment down, urgent</option>
+              </select>
+            </div>
+
             {/* File Attachments Section */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">

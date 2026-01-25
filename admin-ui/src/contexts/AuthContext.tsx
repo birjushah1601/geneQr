@@ -111,6 +111,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (response.ok) {
         const userData = await response.json();
         setUser(userData);
+        // Store user data in localStorage for components that need it
+        localStorage.setItem('user', JSON.stringify(userData));
       } else {
         throw new Error('Failed to fetch user info');
       }
@@ -165,6 +167,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setOrganizationContext(null);
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user'); // Clear user data too
   };
 
   // Refresh access token

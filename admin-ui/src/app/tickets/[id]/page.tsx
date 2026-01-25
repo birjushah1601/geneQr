@@ -206,7 +206,7 @@ export default function TicketDetailPage() {
   // Fetch engineers list for dropdown
   const { data: engineersData } = useQuery({
     queryKey: ["engineers"],
-    queryFn: () => apiClient.get("/engineers?limit=100"),
+    queryFn: () => apiClient.get("/v1/engineers?limit=100"),
     staleTime: 60_000,
   });
   const engineers = (engineersData as any)?.data?.items || [];
@@ -309,8 +309,11 @@ export default function TicketDetailPage() {
                     // Get user info from localStorage to check permissions
                     const userStr = localStorage.getItem('user');
                     const user = userStr ? JSON.parse(userStr) : null;
-                    const orgType = user?.organization_type || '';
+                    const orgType = user?.organization_type || user?.organizationType || '';
                     const canEditPriority = orgType === 'system' || orgType === 'manufacturer';
+                    
+                    // Debug: log to console
+                    console.log('Priority edit check:', { orgType, canEditPriority, user });
                     
                     if (canEditPriority) {
                       return (
