@@ -641,6 +641,18 @@ func (h *AuthHandler) AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 		
+		// Allow QR code lookups (for public service request creation)
+		if strings.HasPrefix(r.URL.Path, "/api/v1/equipment/qr/") {
+			next.ServeHTTP(w, r)
+			return
+		}
+		
+		// Allow public ticket creation (for QR-based service requests)
+		if r.URL.Path == "/api/v1/tickets" && r.Method == "POST" {
+			next.ServeHTTP(w, r)
+			return
+		}
+		
 		// Allow invitation routes (they use tokens, not JWT) - check prefix
 		if strings.HasPrefix(r.URL.Path, "/api/v1/invitations/validate/") || 
 		   (strings.HasPrefix(r.URL.Path, "/api/v1/invitations/") && strings.HasSuffix(r.URL.Path, "/accept")) {
