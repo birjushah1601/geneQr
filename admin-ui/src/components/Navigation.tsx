@@ -57,7 +57,7 @@ const navigationConfig: NavItem[] = [
     label: 'Engineers',
     href: '/engineers',
     icon: Users,
-    allowedOrgTypes: ['distributor', 'dealer', 'manufacturer'], // Service providers
+    allowedOrgTypes: [], // All org types - everyone can view engineers
   },
   {
     label: 'Organizations',

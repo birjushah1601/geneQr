@@ -52,6 +52,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const storedRefreshToken = localStorage.getItem('refresh_token');
 
         if (storedAccessToken && storedRefreshToken) {
+          // Validate token before using it
+          if (!isTokenValid(storedAccessToken)) {
+            console.log('[Auth] Stored token is invalid or expired');
+            clearTokens();
+            setIsLoading(false);
+            return;
+          }
+
           setAccessToken(storedAccessToken);
           setRefreshToken(storedRefreshToken);
 

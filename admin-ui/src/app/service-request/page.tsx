@@ -429,8 +429,6 @@ function ServiceRequestPageInner() {
               )}
             </div>
 
-</div>
-
             {/* AI Analysis with Attachments - Optional */}
             {formData.description && (
               <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg p-5">
@@ -552,16 +550,16 @@ function ServiceRequestPageInner() {
             />
           </div>
         )}
-      </div>
 
-      {/* Parts Assignment Modal */}
-      <PartsAssignmentModal
-        open={isPartsModalOpen}
-        onClose={() => setIsPartsModalOpen(false)}
-        onAssign={handlePartsAssign}
-        equipmentId={(equipment as any)?.id || 'unknown'}
-        equipmentName={(equipment as any)?.equipment_name || (equipment as any)?.name || 'Equipment'}
-      />
+        {/* Parts Assignment Modal */}
+        <PartsAssignmentModal
+          open={isPartsModalOpen}
+          onClose={() => setIsPartsModalOpen(false)}
+          onAssign={handlePartsAssign}
+          equipmentId={(equipment as any)?.id || 'unknown'}
+          equipmentName={(equipment as any)?.equipment_name || (equipment as any)?.name || 'Equipment'}
+        />
+      </div>
     </div>
   );
 }
