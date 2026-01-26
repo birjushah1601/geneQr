@@ -19,6 +19,7 @@ import (
     "github.com/aby-med/medical-platform/internal/shared/service"
 	sharedmiddleware "github.com/aby-med/medical-platform/internal/shared/middleware"
 	appmiddleware "github.com/aby-med/medical-platform/internal/middleware"
+	"github.com/aby-med/medical-platform/internal/api"
 	auth "github.com/aby-med/medical-platform/internal/core/auth"
     organizations "github.com/aby-med/medical-platform/internal/core/organizations"
 	// equipmentcore "github.com/aby-med/medical-platform/internal/core/equipment" // Disabled - using equipment-registry instead
@@ -38,6 +39,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/joho/godotenv"
@@ -51,7 +53,6 @@ import (
 	// "github.com/aby-med/medical-platform/internal/assignment"
 	// "github.com/aby-med/medical-platform/internal/parts"
 	// "github.com/aby-med/medical-platform/internal/feedback"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 const (
@@ -510,6 +511,17 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 		
 		// Add spare parts catalog endpoint
 		apiRouter.Get("/catalog/parts", createSparePartsHandler(cfg.GetDSN(), logger))
+		
+		// Add parts import endpoint
+		// Create database pool for imports
+		importPool, err := pgxpool.New(ctx, cfg.GetDSN())
+		if err != nil {
+			logger.Error("Failed to create pool for parts import", slog.String("error", err.Error()))
+		} else {
+			partsImportHandler := api.NewPartsImportHandler(importPool, logger)
+			apiRouter.Post("/parts/import", partsImportHandler.ImportParts)
+			logger.Info("Parts import endpoint registered")
+		}
 	})
 	
 	// WhatsApp integration disabled (depends on equipment-registry module which is disabled)
