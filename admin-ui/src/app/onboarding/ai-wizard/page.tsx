@@ -158,6 +158,102 @@ export default function AIOnboardingWizard() {
     setMessages(prev => [...prev, message]);
   };
 
+  // Show appropriate prompt when user navigates to a step
+  const showStepPrompt = (stepIndex: number) => {
+    const step = STEPS[stepIndex];
+    
+    switch (step.id) {
+      case 'manufacturer':
+        addAIMessage(
+          `🏢 **Manufacturer Information**\n\n` +
+          `Let's start with the basic company details.\n\n` +
+          `What's the manufacturer's registered company name?`,
+          [
+            { label: '📝 Switch to Manual Form', value: 'manual' },
+          ]
+        );
+        break;
+      
+      case 'team':
+        addAIMessage(
+          `👥 **Team Members**\n\n` +
+          `Would you like to invite team members to help manage the system?\n` +
+          `Example: CEO, Operations Manager, Service Manager`,
+          [
+            { label: '👥 Yes, invite team members', value: 'invite_team' },
+            { label: '⏭️ Skip, just me for now', value: 'skip_team' },
+          ]
+        );
+        break;
+      
+      case 'equipment':
+        addAIMessage(
+          `🔧 **Equipment Catalog**\n\n` +
+          `Let's add the equipment you manufacture.\n\n` +
+          `You can either upload a CSV file or enter equipment manually.`,
+          [
+            { label: '📤 Upload CSV Template', value: 'upload_equipment' },
+            { label: '📝 I have multiple equipment types', value: 'multiple_equipment' },
+          ]
+        );
+        break;
+      
+      case 'parts':
+        addAIMessage(
+          `📦 **Parts Catalog**\n\n` +
+          `Now let's add the spare parts for your equipment.\n\n` +
+          `You can upload a CSV file with your parts catalog.`,
+          [
+            { label: '📤 Upload Parts CSV', value: 'upload_parts' },
+            { label: '⏭️ Skip for now', value: 'skip_parts' },
+          ]
+        );
+        break;
+      
+      case 'engineers':
+        addAIMessage(
+          `👷 **Service Engineers**\n\n` +
+          `Let's add your service engineers who will handle equipment maintenance.\n\n` +
+          `You can upload a CSV file with engineer details.`,
+          [
+            { label: '📤 Upload Engineers CSV', value: 'upload_engineers' },
+            { label: '✍️ Add manually', value: 'manual_engineers' },
+            { label: '⏭️ Skip for now', value: 'skip_engineers' },
+          ]
+        );
+        break;
+      
+      case 'installations':
+        addAIMessage(
+          `📋 **Equipment Installations**\n\n` +
+          `Finally, let's record where your equipment is installed at customer sites.\n\n` +
+          `You can upload a CSV file with installation records.`,
+          [
+            { label: '📤 Upload Installations CSV', value: 'upload_installations' },
+            { label: '⏭️ Skip for now', value: 'skip_installations' },
+          ]
+        );
+        break;
+      
+      case 'review':
+        addAIMessage(
+          `✅ **Review & Complete**\n\n` +
+          `Great work! Let's review what we've set up:\n\n` +
+          `${onboardingData.company ? '✅ Manufacturer information\n' : ''}` +
+          `${onboardingData.equipmentTypes ? `✅ ${onboardingData.equipmentTypes.length} equipment types\n` : ''}` +
+          `${onboardingData.parts ? `✅ ${onboardingData.parts.length} parts\n` : ''}` +
+          `${onboardingData.engineers ? `✅ ${onboardingData.engineers.length} engineers\n` : ''}` +
+          `${onboardingData.installations ? `✅ ${onboardingData.installations.length} installations\n` : ''}` +
+          `\nReady to complete the setup?`,
+          [
+            { label: '✅ Complete Setup', value: 'complete' },
+            { label: '📝 Review Data', value: 'review' },
+          ]
+        );
+        break;
+    }
+  };
+
   const processUserInput = async (userInput: string) => {
     if (!userInput.trim()) return;
 
@@ -827,7 +923,10 @@ export default function AIOnboardingWizard() {
                     return (
                       <div
                         key={step.id}
-                        onClick={() => setCurrentStep(index)}
+                        onClick={() => {
+                          setCurrentStep(index);
+                          showStepPrompt(index);
+                        }}
                         className={`flex items-center gap-3 p-2 rounded-lg transition-colors cursor-pointer hover:bg-blue-100 ${
                           index === currentStep
                             ? 'bg-blue-50 border border-blue-200'
