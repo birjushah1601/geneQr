@@ -9,8 +9,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-
-	"github.com/google/uuid"
 )
 
 // EngineerCSVRow represents a row from engineer CSV import
@@ -165,20 +163,23 @@ func (h *AssignmentHandler) processEngineerCSV(ctx context.Context, file io.Read
 }
 
 func (h *AssignmentHandler) createEngineerFromCSV(ctx context.Context, row EngineerCSVRow) (string, error) {
-	// For now, just return a mock ID since we need database access through the service layer
-	// This should be implemented as a service method in AssignmentService
-	engineerID := uuid.New().String()
+	// Create engineer through service layer
+	// This will be implemented in the service when the method is added
+	// For now, return a helpful error message with instructions
 	
-	// TODO: Implement proper engineer creation through service layer
-	// This requires adding a CreateEngineer method to AssignmentService
-	// that handles:
-	// 1. Insert into organizations table
-	// 2. Insert into engineer_org_memberships
-	// 3. Create equipment type mappings
+	h.logger.Warn("Engineer CSV import - service method needed",
+		slog.String("name", row.Name),
+		slog.Int("engineer_level", row.EngineerLevel),
+		slog.Any("equipment_types", row.EquipmentTypes))
 	
-	h.logger.Warn("Engineer CSV import not fully implemented - needs service layer method",
-		"name", row.Name,
-		"engineer_level", row.EngineerLevel)
+	// TODO: Add CreateEngineer method to AssignmentService that:
+	// 1. Creates organization record with type='engineer'
+	// 2. Creates engineer_org_memberships entry
+	// 3. Handles equipment type mappings
+	// 4. Returns engineer ID
+	//
+	// Then call it here: 
+	// return h.service.CreateEngineer(ctx, row)
 	
-	return engineerID, fmt.Errorf("CSV import backend implementation pending - please create engineers individually for now")
+	return "", fmt.Errorf("engineer CSV import requires adding CreateEngineer method to service layer - please create engineers individually through the UI for now")
 }
