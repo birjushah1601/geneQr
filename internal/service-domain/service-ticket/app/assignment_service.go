@@ -6,12 +6,15 @@ import (
 	"log/slog"
 
 	"github.com/aby-med/medical-platform/internal/service-domain/service-ticket/domain"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // AssignmentService provides business logic for engineer assignment
 type AssignmentService struct {
 	assignRepo domain.EngineerSuggestionRepository
 	ticketRepo domain.TicketRepository
+	pool       *pgxpool.Pool
 	logger     *slog.Logger
 }
 
@@ -19,11 +22,13 @@ type AssignmentService struct {
 func NewAssignmentService(
 	assignRepo domain.EngineerSuggestionRepository,
 	ticketRepo domain.TicketRepository,
+	pool *pgxpool.Pool,
 	logger *slog.Logger,
 ) *AssignmentService {
 	return &AssignmentService{
 		assignRepo: assignRepo,
 		ticketRepo: ticketRepo,
+		pool:       pool,
 		logger:     logger.With(slog.String("component", "assignment_service")),
 	}
 }
@@ -37,6 +42,76 @@ func (s *AssignmentService) ListEngineers(ctx context.Context, organizationID *s
 // GetEngineer retrieves a single engineer by ID
 func (s *AssignmentService) GetEngineer(ctx context.Context, engineerID string) (*domain.Engineer, error) {
 	return s.assignRepo.GetEngineerByID(ctx, engineerID)
+}
+
+// CreateEngineer creates a new engineer record
+func (s *AssignmentService) CreateEngineer(ctx context.Context, name, phone, email, location string, engineerLevel int, equipmentTypes []string, experienceYears int, organizationID string) (string, error) {
+	engineerID := uuid.New().String()
+	
+	s.logger.Info("Creating engineer",
+		slog.String("name", name),
+		slog.String("email", email),
+		slog.Int("level", engineerLevel))
+	
+	// Start transaction
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return "", fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+	
+	// Insert into engineers table
+	engineerQuery := `
+		INSERT INTO engineers (
+			id, name, phone, email, skills, home_region, created_at, updated_at
+		) VALUES (
+			$1, $2, $3, $4, $5, $6, NOW(), NOW()
+		)
+	`
+	
+	_, err = tx.Exec(ctx, engineerQuery,
+		engineerID,
+		name,
+		phone,
+		email,
+		equipmentTypes, // skills as text array
+		location,       // home_region
+	)
+	
+	if err != nil {
+		return "", fmt.Errorf("failed to create engineer: %w", err)
+	}
+	
+	// Create engineer_org_memberships entry
+	membershipQuery := `
+		INSERT INTO engineer_org_memberships (
+			engineer_id, org_id, role, created_at
+		) VALUES (
+			$1, $2, $3, NOW()
+		)
+	`
+	
+	role := fmt.Sprintf("level_%d", engineerLevel)
+	_, err = tx.Exec(ctx, membershipQuery,
+		engineerID,
+		organizationID,
+		role,
+	)
+	
+	if err != nil {
+		return "", fmt.Errorf("failed to create engineer membership: %w", err)
+	}
+	
+	// Commit transaction
+	if err := tx.Commit(ctx); err != nil {
+		return "", fmt.Errorf("failed to commit transaction: %w", err)
+	}
+	
+	s.logger.Info("Engineer created successfully",
+		slog.String("engineer_id", engineerID),
+		slog.String("name", name))
+	
+	return engineerID, nil
 }
 
 // UpdateEngineerLevel updates an engineer's skill level

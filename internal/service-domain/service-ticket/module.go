@@ -99,7 +99,7 @@ func (m *Module) Initialize(ctx context.Context) error {
     ticketService := app.NewTicketService(ticketRepo, equipmentRepo, policyRepo, eventRepo, m.logger)
 
 	// Create assignment service
-	assignmentService := app.NewAssignmentService(assignmentRepo, ticketRepo, m.logger)
+	assignmentService := app.NewAssignmentService(assignmentRepo, ticketRepo, pool, m.logger)
 	
 	// Create multi-model assignment service
 	multiModelService := app.NewMultiModelAssignmentService(assignmentRepo, ticketRepo, equipmentRepo, pool, m.logger)

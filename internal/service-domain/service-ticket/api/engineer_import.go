@@ -163,23 +163,37 @@ func (h *AssignmentHandler) processEngineerCSV(ctx context.Context, file io.Read
 }
 
 func (h *AssignmentHandler) createEngineerFromCSV(ctx context.Context, row EngineerCSVRow) (string, error) {
-	// Create engineer through service layer
-	// This will be implemented in the service when the method is added
-	// For now, return a helpful error message with instructions
+	// Get organization ID from context
+	orgID, ok := ctx.Value("organization_id").(string)
+	if !ok || orgID == "" {
+		return "", fmt.Errorf("organization_id not found in context")
+	}
 	
-	h.logger.Warn("Engineer CSV import - service method needed",
+	h.logger.Info("Creating engineer from CSV",
 		slog.String("name", row.Name),
-		slog.Int("engineer_level", row.EngineerLevel),
-		slog.Any("equipment_types", row.EquipmentTypes))
+		slog.String("email", row.Email),
+		slog.Int("engineer_level", row.EngineerLevel))
 	
-	// TODO: Add CreateEngineer method to AssignmentService that:
-	// 1. Creates organization record with type='engineer'
-	// 2. Creates engineer_org_memberships entry
-	// 3. Handles equipment type mappings
-	// 4. Returns engineer ID
-	//
-	// Then call it here: 
-	// return h.service.CreateEngineer(ctx, row)
+	// Create engineer through service layer
+	engineerID, err := h.service.CreateEngineer(
+		ctx,
+		row.Name,
+		row.Phone,
+		row.Email,
+		row.Location,
+		row.EngineerLevel,
+		row.EquipmentTypes,
+		row.ExperienceYears,
+		orgID,
+	)
 	
-	return "", fmt.Errorf("engineer CSV import requires adding CreateEngineer method to service layer - please create engineers individually through the UI for now")
+	if err != nil {
+		return "", fmt.Errorf("failed to create engineer: %w", err)
+	}
+	
+	h.logger.Info("Engineer created successfully",
+		slog.String("engineer_id", engineerID),
+		slog.String("name", row.Name))
+	
+	return engineerID, nil
 }
