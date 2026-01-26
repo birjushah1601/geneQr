@@ -1,0 +1,11 @@
+serial_number,equipment_name,manufacturer_name,model_number,category,customer_name,customer_id,installation_location,installation_date,purchase_date,purchase_price,warranty_months,notes
+SN-MRI-2024-001,MRI Machine - MAGNETOM Vida,Siemens Healthineers,MAGNETOM Vida,Radiology,Apollo Hospital Delhi,CUST-APO-DEL-001,Radiology Department - Room 201,2024-01-15,2023-12-10,45000000,36,3 Tesla MRI Scanner with advanced imaging capabilities
+SN-CT-2024-002,CT Scanner - SOMATOM Drive,Siemens Healthineers,SOMATOM Drive,Radiology,Fortis Hospital Mumbai,CUST-FOR-MUM-001,Emergency Department - CT Suite,2024-02-20,2024-01-05,35000000,24,High-speed CT scanner with low dose technology
+SN-XR-2024-003,X-Ray Machine - Multix Fusion,Siemens Healthineers,Multix Fusion,Radiology,Max Hospital Bangalore,CUST-MAX-BLR-001,X-Ray Room 1,2024-03-10,2024-02-15,2500000,18,Digital radiography system with ceiling suspension
+SN-US-2024-004,Ultrasound System - ACUSON S2000,Siemens Healthineers,ACUSON S2000,Ultrasound,Manipal Hospital,CUST-MAN-BLR-001,OB/GYN Department,2024-04-05,2024-03-20,4500000,12,Premium ultrasound system with 3D/4D imaging
+SN-VENT-2024-005,Ventilator - SERVO-U,Getinge,SERVO-U,ICU,AIIMS Delhi,CUST-AII-DEL-001,ICU - Bed 5,2024-05-01,2024-04-10,1800000,24,Advanced ICU ventilator with lung protective ventilation
+SN-MON-2024-006,Patient Monitor - IntelliVue MX800,Philips Healthcare,IntelliVue MX800,ICU,Medanta Gurugram,CUST-MED-GUR-001,ICU - Bed 3,2024-06-15,2024-05-20,850000,12,Multi-parameter patient monitor with touchscreen
+SN-ANES-2024-007,Anesthesia Machine - Aisys CS2,GE Healthcare,Aisys CS2,Anesthesia,Lilavati Hospital Mumbai,CUST-LIL-MUM-001,OR 2,2024-07-10,2024-06-05,3200000,18,Advanced anesthesia delivery system
+SN-DEF-2024-008,Defibrillator - LIFEPAK 15,Physio-Control,LIFEPAK 15,Emergency,Kokilaben Hospital Mumbai,CUST-KOK-MUM-001,Emergency Department,2024-08-01,2024-07-15,450000,12,Monitor/defibrillator with 12-lead ECG
+SN-INF-2024-009,Infusion Pump - Alaris Plus,BD,Alaris Plus,General Ward,Narayana Health Bangalore,CUST-NAR-BLR-001,Ward 3 - Room 305,2024-09-05,2024-08-10,120000,12,Large volume infusion pump with dose error reduction
+SN-ECG-2024-010,ECG Machine - MAC 2000,GE Healthcare,MAC 2000,Cardiology,Fortis Escorts Delhi,CUST-FOR-ESC-DEL,Cardiology Department,2024-10-01,2024-09-15,180000,12,12-lead resting ECG system

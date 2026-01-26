@@ -1,0 +1,7 @@
+name,org_type,status,external_ref,gstin,pan,website,email,phone,address,city,state,country,pincode
+MedTech Industries,manufacturer,active,MFR-001,29AAAAA0000A1Z5,AAAAA0000A,https://medtech.com,contact@medtech.com,+91-80-12345678,"123 Industrial Area, Phase 2",Bangalore,Karnataka,India,560001
+Apollo Hospitals,hospital,active,HOSP-001,29BBBBB0000B1Z5,BBBBB0000B,https://apollohospitals.com,info@apollohospitals.com,+91-44-28293333,"21 Greams Lane",Chennai,Tamil Nadu,India,600006
+City Medical Center,hospital,active,HOSP-002,27CCCCC0000C1Z5,CCCCC0000C,https://citymedical.com,contact@citymedical.com,+91-22-12345678,"456 Medical Square",Mumbai,Maharashtra,India,400001
+HealthTech Solutions,service_provider,active,SP-001,07DDDDD0000D1Z5,DDDDD0000D,https://healthtech.com,service@healthtech.com,+91-11-12345678,"789 Service Road",New Delhi,Delhi,India,110001
+MediSupply Corp,distributor,active,DIST-001,36EEEEE0000E1Z5,EEEEE0000E,https://medisupply.com,sales@medisupply.com,+91-40-12345678,"321 Distribution Hub",Hyderabad,Telangana,India,500001
+BioMed Dealers,dealer,active,DLR-001,24FFFFF0000F1Z5,FFFFF0000F,https://biomeddealer.com,info@biomeddealer.com,+91-79-12345678,"654 Trade Center",Ahmedabad,Gujarat,India,380001

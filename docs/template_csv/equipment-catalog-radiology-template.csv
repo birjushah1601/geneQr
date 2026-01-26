@@ -1,0 +1,9 @@
+product_code,product_name,manufacturer_name,model_number,category,subcategory,description,base_price,currency,weight_kg,recommended_service_interval_days,estimated_lifespan_years,maintenance_complexity
+RAD-MRI-001,MAGNETOM Vida 3T MRI Scanner,Siemens Healthineers,MAGNETOM Vida,MRI,Whole Body,"Advanced 3T MRI system with high-performance gradients and wide bore design",2500000,USD,8500,180,15,high
+RAD-CT-001,Revolution CT Scanner,GE Healthcare,Revolution CT,CT,Multi-slice,"Premium CT system with 256-slice capability and low-dose imaging",1800000,USD,3200,90,12,medium
+RAD-XRAY-001,Digital Radiography System,Philips Healthcare,DigitalDiagnost C90,X-Ray,Digital Radiography,"Ceiling-mounted digital X-ray system with advanced image processing",450000,USD,850,180,10,medium
+RAD-FLUORO-001,Fluoroscopy System,Canon Medical,Alphenix Core,X-Ray,Fluoroscopy,"Multi-purpose fluoroscopy system with 3D imaging capabilities",750000,USD,1500,90,10,high
+RAD-MAMMO-001,Digital Mammography System,Hologic,Selenia Dimensions,X-Ray,Mammography,"3D mammography system with tomosynthesis capability",350000,USD,680,180,12,medium
+RAD-US-001,Premium Ultrasound System,Samsung Medison,HERA W10,Ultrasound,General Purpose,"High-end ultrasound with AI-powered imaging and 4D capabilities",85000,USD,95,365,8,low
+RAD-US-002,Portable Ultrasound System,GE Healthcare,Venue Go,Ultrasound,Point of Care,"Compact portable ultrasound for bedside imaging",45000,USD,7,365,6,low
+RAD-PACS-001,PACS Workstation,AGFA Healthcare,Enterprise Imaging,Other,PACS,"Complete picture archiving and communication system",120000,USD,25,730,10,low
