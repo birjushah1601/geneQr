@@ -144,7 +144,7 @@ export default function AdminDashboard() {
         <div className="mb-8">
           <h2 className="text-3xl font-bold mb-2">Admin Dashboard</h2>
           <p className="text-gray-600">
-            Manage manufacturers, suppliers, and monitor platform activity
+            Manage manufacturers, Channel Partners, and monitor platform activity
           </p>
         </div>
 
@@ -153,7 +153,7 @@ export default function AdminDashboard() {
           <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push('/organizations')}>
             <CardContent className="pt-6">
               <div className="flex flex-col">
-                <div className="flex items-center</p></div><div className="gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-2">
                   <Building2 className="h-5 w-5 text-blue-600" />
                   <p className="text-sm font-medium text-gray-500">Organizations</p>
                 </div>
