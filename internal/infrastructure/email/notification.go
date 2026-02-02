@@ -783,8 +783,16 @@ Best regards,
                 </div>
             </div>
 
-            <div style="text-align: center;">
-                <a href="%s" class="cta-button">Accept Invitation & Create Account</a>
+            <div style="margin: 30px 0; padding: 20px; background-color: #f8f9fa; border-radius: 8px;">
+                <p style="margin: 0 0 15px 0; font-size: 14px; color: #666;">
+                    Click the link below to validate your account and set up your password:
+                </p>
+                <div style="text-align: center; margin: 15px 0;">
+                    <a href="%s" style="color: #0066cc; font-size: 14px; word-break: break-all;">%s</a>
+                </div>
+                <p style="margin: 15px 0 0 0; font-size: 12px; color: #999;">
+                    This link will expire on %s. If you didn't request this invitation, you can safely ignore this email.
+                </p>
             </div>
 
             <div class="features">
@@ -806,7 +814,7 @@ Best regards,
     </div>
 </body>
 </html>
-`, data.InviteeName, data.InviterName, data.OrganizationName, roleDisplay, data.OrganizationName, roleDisplay, data.InviterName, data.ExpiresAt, data.InviteURL)
+`, data.InviteeName, data.InviterName, data.OrganizationName, roleDisplay, data.OrganizationName, roleDisplay, data.InviterName, data.ExpiresAt, data.InviteURL, data.InviteURL, data.ExpiresAt)
 
 	message := mail.NewSingleEmail(from, subject, to, plainText, htmlContent)
 	client := sendgrid.NewSendClient(s.apiKey)

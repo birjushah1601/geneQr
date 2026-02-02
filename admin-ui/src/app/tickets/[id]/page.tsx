@@ -7,7 +7,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ticketsApi } from "@/lib/api/tickets";
 import { apiClient } from "@/lib/api/client";
 import type { ServiceTicket, TicketPriority, TicketStatus } from "@/types";
-import { ArrowLeft, Loader2, Package, User, Calendar, Wrench, Pause, Play, CheckCircle, XCircle, AlertTriangle, FileText, MessageSquare, Paperclip, Upload, Brain, Sparkles, TrendingUp, Lightbulb, Shield, Trash, X } from "lucide-react";
+import { ArrowLeft, Loader2, Package, User, Calendar, Wrench, Pause, Play, CheckCircle, XCircle, AlertTriangle, FileText, MessageSquare, Paperclip, Upload, Brain, Sparkles, TrendingUp, Lightbulb, Shield, Trash, X, Mail } from "lucide-react";
 import { AIDiagnosisModal } from "@/components/AIDiagnosisModal";
 import { attachmentsApi } from "@/lib/api/attachments";
 import { PartsAssignmentModal } from "@/components/PartsAssignmentModal";
@@ -16,6 +16,7 @@ import MultiModelAssignment from "@/components/MultiModelAssignment";
 import EngineerSelectionModal from "@/components/EngineerSelectionModal";
 import AssignmentHistory from "@/components/AssignmentHistory";
 import DashboardLayout from "@/components/DashboardLayout";
+import { SendNotificationModal } from "@/components/SendNotificationModal";
 
 function StatusBadge({ status }: { status: TicketStatus }) {
   const color = {
@@ -35,6 +36,7 @@ export default function TicketDetailPage() {
   const [showDiagnosisModal, setShowDiagnosisModal] = useState(false);
   const [showReassignMultiModel, setShowReassignMultiModel] = useState(false);
   const [showEngineerSelection, setShowEngineerSelection] = useState(false);
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
   const router = useRouter();
   const qc = useQueryClient();
 

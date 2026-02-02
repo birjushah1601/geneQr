@@ -653,6 +653,12 @@ func (h *AuthHandler) AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 		
+		// Allow file uploads to tickets (for public service requests)
+		if strings.HasPrefix(r.URL.Path, "/api/v1/attachments") && r.Method == "POST" {
+			next.ServeHTTP(w, r)
+			return
+		}
+		
 		// Allow invitation routes (they use tokens, not JWT) - check prefix
 		if strings.HasPrefix(r.URL.Path, "/api/v1/invitations/validate/") || 
 		   (strings.HasPrefix(r.URL.Path, "/api/v1/invitations/") && strings.HasSuffix(r.URL.Path, "/accept")) {
