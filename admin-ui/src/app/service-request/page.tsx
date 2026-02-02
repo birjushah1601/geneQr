@@ -188,14 +188,12 @@ function ServiceRequestPageInner() {
         setUploadingFiles(true);
         try {
           for (const file of selectedFiles) {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('ticket_id', (created as any).id || (created as any).ticket_id);
-            formData.append('entity_type', 'ticket');
-            formData.append('description', 'Attachment for service request');
-            formData.append('uploaded_by', payload.created_by);
-            
-            await attachmentsApi.upload(formData);
+            await attachmentsApi.upload({
+              file: file,
+              ticketId: (created as any).id || (created as any).ticket_id,
+              category: 'issue_photo',
+              source: 'web_upload'
+            });
           }
           console.log(`Uploaded ${selectedFiles.length} attachment(s)`);
         } catch (uploadErr) {
