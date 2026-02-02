@@ -1,4 +1,4 @@
-package whatsapp
+﻿package whatsapp
 
 import (
 	"bytes"
@@ -246,7 +246,7 @@ func (h *WebhookHandler) handleImageMessage(ctx context.Context, msg Message, co
 	
 	// Send acknowledgment
 	response := fmt.Sprintf(
-		"✅ Service ticket created successfully!\n\n"+
+		"âœ… Service ticket created successfully!\n\n"+
 			"Ticket ID: %s\n"+
 			"Equipment: %s\n"+
 			"Serial: %s\n\n"+
@@ -442,7 +442,7 @@ func (h *WebhookHandler) sendMessage(to, message string) error {
 
 // sendWelcomeMessage sends a welcome/help message
 func (h *WebhookHandler) sendWelcomeMessage(to string) error {
-	message := "👋 Welcome to Equipment Service Support!\n\n" +
+	message := "ðŸ‘‹ Welcome to Equipment Service Support!\n\n" +
 		"To request service:\n" +
 		"1. Take a clear photo of the QR code on your equipment\n" +
 		"2. Send it to me\n" +

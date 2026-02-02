@@ -1,4 +1,4 @@
-﻿# 🚀 ABY-Med Platform - Quick Access Guide
+﻿# 🚀 ServQR Platform - Quick Access Guide
 **Generated:** 2025-12-13 11:58:56
 
 ## ✅ All Services Running
@@ -201,7 +201,7 @@ psql -U postgres -h localhost -p 5430 -d med_platform -f database/migrations/[fi
 ### API Documentation
 - **Assignment API:** docs/api/ASSIGNMENT-API.md
 - **Attachment API:** docs/api/ATTACHMENT-API.md
-- **Postman Collection:** docs/postman/ABY-MED-Postman-Collection.json
+- **Postman Collection:** docs/postman/ServQR-Postman-Collection.json
 
 ---
 

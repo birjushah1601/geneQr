@@ -1,4 +1,4 @@
-package equipment
+﻿package equipment
 
 import (
 	"context"

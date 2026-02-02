@@ -1,6 +1,6 @@
-# ABY-MED Onboarding System - Quick Reference Card
+﻿# ServQR Onboarding System - Quick Reference Card
 
-## 🚀 Quick Start (60 seconds)
+## ðŸš€ Quick Start (60 seconds)
 
 ```bash
 # 1. Start Database
@@ -18,14 +18,14 @@ psql -h localhost -p 5430 -U postgres -d med_platform -f database/migrations/030
 cd admin-ui && npm run dev
 ```
 
-## 📍 Key URLs
+## ðŸ“ Key URLs
 
 - **Frontend Wizard:** http://localhost:3000/onboarding/wizard
 - **Backend Health:** http://localhost:8081/health
 - **Organizations API:** http://localhost:8081/api/v1/organizations/import
 - **Equipment API:** http://localhost:8081/api/v1/equipment/catalog/import
 
-## 🔧 Environment Variables
+## ðŸ”§ Environment Variables
 
 ```bash
 # .env
@@ -36,7 +36,7 @@ DB_PORT=5430
 DB_NAME=med_platform
 ```
 
-## 📤 API Testing
+## ðŸ“¤ API Testing
 
 ### Organizations Import
 ```bash
@@ -52,7 +52,7 @@ curl -X POST http://localhost:8081/api/v1/equipment/catalog/import \
   -F "dry_run=false"
 ```
 
-## 📁 File Locations
+## ðŸ“ File Locations
 
 ### Backend
 - **APIs:** `internal/core/{organizations,equipment}/api/`
@@ -69,7 +69,7 @@ curl -X POST http://localhost:8081/api/v1/equipment/catalog/import \
 - **Deployment:** `docs/DEPLOYMENT-GUIDE.md`
 - **Executive:** `docs/EXECUTIVE-SUMMARY.md`
 
-## 🏭 Industry Templates
+## ðŸ­ Industry Templates
 
 | Industry | File | Items |
 |----------|------|-------|
@@ -79,7 +79,7 @@ curl -X POST http://localhost:8081/api/v1/equipment/catalog/import \
 | ICU | `equipment-catalog-icu-template.csv` | 8 |
 | Laboratory | `equipment-catalog-laboratory-template.csv` | 8 |
 
-## 🗄️ Database Queries
+## ðŸ—„ï¸ Database Queries
 
 ```sql
 -- Check organizations
@@ -95,7 +95,7 @@ SELECT * FROM qr_codes_unassigned LIMIT 10;
 SELECT * FROM qr_batches_summary;
 ```
 
-## 🐛 Troubleshooting
+## ðŸ› Troubleshooting
 
 | Issue | Solution |
 |-------|----------|
@@ -105,7 +105,7 @@ SELECT * FROM qr_batches_summary;
 | CSV upload fails | Verify file < 10MB, format is `.csv` |
 | Import errors | Run dry run first, check error messages |
 
-## 📊 Performance Benchmarks
+## ðŸ“Š Performance Benchmarks
 
 | Operation | Expected Time |
 |-----------|---------------|
@@ -114,7 +114,7 @@ SELECT * FROM qr_batches_summary;
 | Equipment import (40 items) | < 3 seconds |
 | Wizard completion | 5-10 minutes |
 
-## ✅ Pre-Launch Checklist
+## âœ… Pre-Launch Checklist
 
 - [ ] Migrations applied
 - [ ] Backend compiles
@@ -124,7 +124,7 @@ SELECT * FROM qr_batches_summary;
 - [ ] Health check returns 200
 - [ ] Documentation reviewed
 
-## 🎯 Common Tasks
+## ðŸŽ¯ Common Tasks
 
 ### Add New Industry Template
 1. Create CSV in `templates/csv/equipment-catalog-{industry}-template.csv`
@@ -150,7 +150,7 @@ docker logs med_platform_pg
 # Check console in browser DevTools
 ```
 
-## 📈 Metrics to Monitor
+## ðŸ“ˆ Metrics to Monitor
 
 - Import success rate
 - Import duration
@@ -158,7 +158,7 @@ docker logs med_platform_pg
 - User completion rate
 - Template download count
 
-## 🔐 Security Notes
+## ðŸ” Security Notes
 
 - File upload limit: 10MB
 - CSV validation: automatic
@@ -166,14 +166,14 @@ docker logs med_platform_pg
 - Transaction safety: enabled
 - Feature flags: production-ready
 
-## 🎨 Wizard Steps
+## ðŸŽ¨ Wizard Steps
 
 1. **Company Profile** - Organization details + validation
 2. **Organizations Upload** - CSV import (optional, can skip)
 3. **Equipment Catalog** - Industry templates (optional, can skip)
 4. **Completion** - Success + statistics + next steps
 
-## 💡 Tips
+## ðŸ’¡ Tips
 
 - Always run **dry run first** to validate
 - Use **industry templates** for fastest onboarding
@@ -181,7 +181,7 @@ docker logs med_platform_pg
 - **Skip steps** if not ready (flexibility)
 - Download **templates** for correct format
 
-## 📞 Quick Help
+## ðŸ“ž Quick Help
 
 - **Full Documentation:** `docs/ONBOARDING-SYSTEM-README.md`
 - **Deployment Guide:** `docs/DEPLOYMENT-GUIDE.md`
@@ -192,4 +192,4 @@ docker logs med_platform_pg
 
 **Version:** 1.0  
 **Last Updated:** December 23, 2025  
-**Status:** ✅ Production Ready
+**Status:** âœ… Production Ready

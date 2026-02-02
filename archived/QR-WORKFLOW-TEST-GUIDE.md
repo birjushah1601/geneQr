@@ -1,17 +1,17 @@
-# 🧪 QR Workflow Test Guide
+﻿# ðŸ§ª QR Workflow Test Guide
 
-## 📋 Overview
+## ðŸ“‹ Overview
 
-A complete web interface to test the **QR Code → Ticket Creation** workflow has been built. This simulates the WhatsApp integration flow that will be used in production.
+A complete web interface to test the **QR Code â†’ Ticket Creation** workflow has been built. This simulates the WhatsApp integration flow that will be used in production.
 
 ---
 
-## ✅ What's Been Built
+## âœ… What's Been Built
 
 ### 1. **QR Test Page** (`/test-qr`)
 - **Location**: `admin-ui/src/app/test-qr/page.tsx`
 - **Access**: http://localhost:3001/test-qr
-- **Dashboard Link**: Added to dashboard with 🧪 Testing Tools section
+- **Dashboard Link**: Added to dashboard with ðŸ§ª Testing Tools section
 
 ### 2. **Features Implemented**
 
@@ -25,10 +25,10 @@ A complete web interface to test the **QR Code → Ticket Creation** workflow ha
 - Customer phone number input
 - Issue description textarea
 - **Auto-priority detection** (same logic as WhatsApp handler):
-  - `critical` → urgent, emergency, critical, down, not working, stopped, patient
-  - `high` → error, alarm, warning, issue, problem, broken
-  - `medium` → maintenance, service, check, noise, slow
-  - `low` → default
+  - `critical` â†’ urgent, emergency, critical, down, not working, stopped, patient
+  - `high` â†’ error, alarm, warning, issue, problem, broken
+  - `medium` â†’ maintenance, service, check, noise, slow
+  - `low` â†’ default
 
 #### Step 3: Success Confirmation
 - Display created ticket number
@@ -47,7 +47,7 @@ A complete web interface to test the **QR Code → Ticket Creation** workflow ha
 
 ---
 
-## 🚀 How to Test
+## ðŸš€ How to Test
 
 ### Prerequisites
 1. Backend services running on `http://localhost:8081`
@@ -58,7 +58,7 @@ A complete web interface to test the **QR Code → Ticket Creation** workflow ha
 
 ```bash
 # Terminal 1: Start backend (if not running)
-cd C:\Users\birju\aby-med
+cd C:\Users\birju\ServQR
 make dev-up
 
 # Terminal 2: Start admin UI (if not running)
@@ -70,7 +70,7 @@ npm run dev
 
 #### Option 1: Via Dashboard
 1. Open http://localhost:3001/dashboard
-2. Find the **🧪 Development & Testing Tools** section
+2. Find the **ðŸ§ª Development & Testing Tools** section
 3. Click **"Test QR Workflow"** button
 4. Follow the 3-step process
 
@@ -81,7 +81,7 @@ npm run dev
 
 ---
 
-## 📝 Test Scenarios
+## ðŸ“ Test Scenarios
 
 ### Scenario 1: Critical Issue
 ```
@@ -115,7 +115,7 @@ Expected: Error message "Equipment not found"
 
 ---
 
-## 🔍 What Gets Created
+## ðŸ” What Gets Created
 
 When a ticket is created, the API receives:
 
@@ -143,7 +143,7 @@ When a ticket is created, the API receives:
 
 ---
 
-## 🎨 UI Components Used
+## ðŸŽ¨ UI Components Used
 
 - **lucide-react icons**: QrCode, Package, Phone, AlertCircle, CheckCircle2, Loader2, ArrowRight, TestTube
 - **Tailwind CSS**: Gradients, responsive grid, animations
@@ -152,7 +152,7 @@ When a ticket is created, the API receives:
 
 ---
 
-## 🔗 API Endpoints Used
+## ðŸ”— API Endpoints Used
 
 ### 1. Equipment Lookup
 ```
@@ -167,15 +167,15 @@ Body: CreateTicketRequest
 
 ---
 
-## 🆚 Comparison: Web vs WhatsApp
+## ðŸ†š Comparison: Web vs WhatsApp
 
 | Feature | Web Interface | WhatsApp (Future) |
 |---------|--------------|-------------------|
 | **QR Input** | Manual entry | Image scan or text |
-| **Equipment Lookup** | ✅ Same API | ✅ Same API |
+| **Equipment Lookup** | âœ… Same API | âœ… Same API |
 | **Issue Description** | Textarea | WhatsApp message |
-| **Priority Detection** | ✅ Same logic | ✅ Same logic |
-| **Ticket Creation** | ✅ Same API | ✅ Same API |
+| **Priority Detection** | âœ… Same logic | âœ… Same logic |
+| **Ticket Creation** | âœ… Same API | âœ… Same API |
 | **Confirmation** | Web page | WhatsApp message |
 | **Source** | `web` | `whatsapp` |
 
@@ -183,23 +183,23 @@ Body: CreateTicketRequest
 
 ---
 
-## 📊 Success Criteria
+## ðŸ“Š Success Criteria
 
-✅ User can enter QR code  
-✅ Equipment is looked up successfully  
-✅ Equipment details are displayed  
-✅ User can enter customer phone and issue  
-✅ Priority is auto-detected based on keywords  
-✅ Ticket is created in database  
-✅ Success screen shows all ticket details  
-✅ WhatsApp message preview is shown  
-✅ User can test another QR code  
-✅ Mobile-responsive design works  
-✅ Error handling works for invalid QR codes  
+âœ… User can enter QR code  
+âœ… Equipment is looked up successfully  
+âœ… Equipment details are displayed  
+âœ… User can enter customer phone and issue  
+âœ… Priority is auto-detected based on keywords  
+âœ… Ticket is created in database  
+âœ… Success screen shows all ticket details  
+âœ… WhatsApp message preview is shown  
+âœ… User can test another QR code  
+âœ… Mobile-responsive design works  
+âœ… Error handling works for invalid QR codes  
 
 ---
 
-## 🐛 Troubleshooting
+## ðŸ› Troubleshooting
 
 ### Issue: "Equipment not found"
 **Solution**: 
@@ -231,9 +231,9 @@ Body: CreateTicketRequest
 
 ---
 
-## 📈 Next Steps
+## ðŸ“ˆ Next Steps
 
-### Phase 1: Testing (Now) ✅
+### Phase 1: Testing (Now) âœ…
 - [x] Build web interface
 - [x] Add to dashboard
 - [ ] Test with real equipment data
@@ -255,7 +255,7 @@ Body: CreateTicketRequest
 
 ---
 
-## 💡 Tips for Testing
+## ðŸ’¡ Tips for Testing
 
 1. **Use realistic data**: Test with actual customer scenarios
 2. **Try edge cases**: Empty fields, special characters, very long descriptions
@@ -266,23 +266,23 @@ Body: CreateTicketRequest
 
 ---
 
-## 🎯 Key Features Summary
+## ðŸŽ¯ Key Features Summary
 
 | Feature | Status | Description |
 |---------|--------|-------------|
-| **QR Lookup** | ✅ | Real-time equipment search |
-| **Auto-Priority** | ✅ | Keyword-based detection |
-| **Form Validation** | ✅ | Required fields checked |
-| **Error Handling** | ✅ | Clear error messages |
-| **Loading States** | ✅ | Spinners during API calls |
-| **Success Screen** | ✅ | Complete ticket details |
-| **WhatsApp Preview** | ✅ | Simulated message |
-| **Mobile UI** | ✅ | Card-based responsive design |
-| **Dashboard Link** | ✅ | Easy access from main menu |
+| **QR Lookup** | âœ… | Real-time equipment search |
+| **Auto-Priority** | âœ… | Keyword-based detection |
+| **Form Validation** | âœ… | Required fields checked |
+| **Error Handling** | âœ… | Clear error messages |
+| **Loading States** | âœ… | Spinners during API calls |
+| **Success Screen** | âœ… | Complete ticket details |
+| **WhatsApp Preview** | âœ… | Simulated message |
+| **Mobile UI** | âœ… | Card-based responsive design |
+| **Dashboard Link** | âœ… | Easy access from main menu |
 
 ---
 
-## 🚀 Ready to Test!
+## ðŸš€ Ready to Test!
 
 **Access the interface:**
 1. Start services: `make dev-up` (backend) + `npm run dev` (frontend)
@@ -290,13 +290,13 @@ Body: CreateTicketRequest
 3. Click "Test QR Workflow" in the Testing Tools section
 4. Or directly: http://localhost:3001/test-qr
 
-**You're all set!** 🎉
+**You're all set!** ðŸŽ‰
 
 The interface is production-ready and fully functional. Once WhatsApp API keys are available, the same backend logic will work seamlessly with WhatsApp messages.
 
 ---
 
-## 📞 Support
+## ðŸ“ž Support
 
 If you encounter any issues:
 1. Check the troubleshooting section above
@@ -304,4 +304,4 @@ If you encounter any issues:
 3. Verify database has equipment records
 4. Ensure all services are running
 
-**Happy Testing!** 🧪✨
+**Happy Testing!** ðŸ§ªâœ¨

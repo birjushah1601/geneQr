@@ -1,4 +1,4 @@
-# 🏗️ Detailed Organizations Architecture - Complete Design
+﻿# ðŸ—ï¸ Detailed Organizations Architecture - Complete Design
 
 **Document Type:** Brainstorming & Detailed Design  
 **Date:** October 11, 2025, 10:30 PM IST  
@@ -6,7 +6,7 @@
 
 ---
 
-## 📋 Table of Contents
+## ðŸ“‹ Table of Contents
 
 1. [Entity Model - Detailed Design](#entity-model)
 2. [Real-World Scenarios](#real-world-scenarios)
@@ -79,8 +79,8 @@ interface Organization {
 
 enum OrgType {
   MANUFACTURER = 'manufacturer',
-  DISTRIBUTOR = 'distributor',
-  DEALER = 'dealer',
+  Channel Partner = 'Channel Partner',
+  Sub-sub_SUB_DEALER = 'Sub-sub_SUB_DEALER',
   SUPPLIER = 'supplier',
   HOSPITAL = 'hospital',
   LABORATORY = 'laboratory',
@@ -101,7 +101,7 @@ enum OrgType {
 **Real-World Scenario:** 
 - Siemens has manufacturing in Mumbai, Bangalore, Chennai
 - Apollo Hospitals has 70+ hospitals across India
-- Distributor has warehouses in 10 cities
+- Channel Partner has warehouses in 10 cities
 
 ```typescript
 interface OrganizationFacility {
@@ -166,9 +166,9 @@ enum FacilityType {
 ### 1.3 Organization Relationships (Complex Network)
 
 **Real-World Scenarios:**
-- Dealer works with 5 manufacturers
-- Manufacturer has 20 distributors across India
-- Distributor covers 100 dealers in their region
+- Sub-sub_SUB_DEALER works with 5 manufacturers
+- Manufacturer has 20 Channel Partners across India
+- Channel Partner covers 100 Sub-Sub-sub_sub_SUB_DEALERs in their region
 - Service provider partners with multiple manufacturers
 
 ```typescript
@@ -189,7 +189,7 @@ interface OrganizationRelationship {
   auto_renew: boolean;
   
   // Territory/Coverage
-  exclusive: boolean; // Exclusive distributor/dealer?
+  exclusive: boolean; // Exclusive Channel Partner/Sub-sub_SUB_DEALER?
   territory?: Territory;
   
   // Commercial Terms
@@ -208,7 +208,7 @@ interface OrganizationRelationship {
   performance_tier?: 'platinum' | 'gold' | 'silver' | 'bronze';
   
   // Operational
-  priority_level?: number; // For multi-manufacturer dealers
+  priority_level?: number; // For multi-manufacturer Sub-Sub-sub_sub_SUB_DEALERs
   default_supplier?: boolean;
   
   // Legal
@@ -224,15 +224,15 @@ interface OrganizationRelationship {
 
 enum RelationshipType {
   // Manufacturer relationships
-  AUTHORIZED_DISTRIBUTOR = 'authorized_distributor',
-  EXCLUSIVE_DISTRIBUTOR = 'exclusive_distributor',
-  REGIONAL_DISTRIBUTOR = 'regional_distributor',
-  AUTHORIZED_DEALER = 'authorized_dealer',
+  AUTHORIZED_channel_partner = 'authorized_channel_partner',
+  EXCLUSIVE_channel_partner = 'exclusive_channel_partner',
+  REGIONAL_channel_partner = 'regional_channel_partner',
+  AUTHORIZED_sub_Sub-sub_SUB_DEALER = 'authorized_sub_Sub-sub_SUB_DEALER',
   SERVICE_PARTNER = 'service_partner',
   
-  // Distributor relationships
-  DEALER_NETWORK = 'dealer_network',
-  SUB_DISTRIBUTOR = 'sub_distributor',
+  // Channel Partner relationships
+  sub_sub_Sub-sub_SUB_DEALER_NETWORK = 'sub_sub_Sub-sub_SUB_DEALER_network',
+  SUB_channel_partner = 'sub_channel_partner',
   
   // Service relationships
   AMC_PROVIDER = 'amc_provider',
@@ -302,139 +302,139 @@ interface Territory {
 
 ```
 Siemens Healthineers India Ltd. (MANUFACTURER)
-├── Facilities
-│   ├── Mumbai Manufacturing Plant (MANUFACTURING_PLANT)
-│   │   - Products: CT Scanners, X-Ray
-│   │   - Capacity: 100 units/month
-│   │   - Certifications: ISO 13485, CE Mark, FDA
-│   ├── Bangalore R&D Center (R&D_CENTER)
-│   ├── Chennai Service Hub (SERVICE_CENTER)
-│   │   - Coverage: Tamil Nadu, Kerala, Karnataka
-│   └── Delhi Sales Office (SALES_OFFICE)
-│
-├── Distribution Network
-│   ├── North Region
-│   │   └── MedEquip Distributors Pvt Ltd (EXCLUSIVE_DISTRIBUTOR)
-│   │       - Territory: Delhi, UP, Punjab, Haryana
-│   │       - Products: All Siemens products
-│   │       - Dealer Network: 25 dealers
-│   ├── South Region
-│   │   └── HealthTech Solutions (REGIONAL_DISTRIBUTOR)
-│   │       - Territory: TN, Kerala, Karnataka, AP
-│   │       - Dealer Network: 30 dealers
-│   └── West Region
-│       └── Western Medical Supplies (AUTHORIZED_DISTRIBUTOR)
-│           - Territory: Maharashtra, Gujarat, MP
-│           - Dealer Network: 20 dealers
-│
-├── Service Partners
-│   ├── QuickFix Medical Services (SERVICE_PARTNER)
-│   │   - Coverage: Pan-India
-│   │   - SLA: 24-hour response
-│   └── TechCare India (AMC_PROVIDER)
-│       - Coverage: Metro cities
-│
-└── Direct Institutional Customers
-    ├── Apollo Hospitals (DIRECT_BUYER)
-    ├── Fortis Healthcare (DIRECT_BUYER)
-    └── AIIMS Delhi (INSTITUTIONAL_BUYER)
+â”œâ”€â”€ Facilities
+â”‚   â”œâ”€â”€ Mumbai Manufacturing Plant (MANUFACTURING_PLANT)
+â”‚   â”‚   - Products: CT Scanners, X-Ray
+â”‚   â”‚   - Capacity: 100 units/month
+â”‚   â”‚   - Certifications: ISO 13485, CE Mark, FDA
+â”‚   â”œâ”€â”€ Bangalore R&D Center (R&D_CENTER)
+â”‚   â”œâ”€â”€ Chennai Service Hub (SERVICE_CENTER)
+â”‚   â”‚   - Coverage: Tamil Nadu, Kerala, Karnataka
+â”‚   â””â”€â”€ Delhi Sales Office (SALES_OFFICE)
+â”‚
+â”œâ”€â”€ Distribution Network
+â”‚   â”œâ”€â”€ North Region
+â”‚   â”‚   â””â”€â”€ MedEquip Channel Partners Pvt Ltd (EXCLUSIVE_channel_partner)
+â”‚   â”‚       - Territory: Delhi, UP, Punjab, Haryana
+â”‚   â”‚       - Products: All Siemens products
+â”‚   â”‚       - Sub-sub_SUB_DEALER Network: 25 Sub-Sub-sub_sub_SUB_DEALERs
+â”‚   â”œâ”€â”€ South Region
+â”‚   â”‚   â””â”€â”€ HealthTech Solutions (REGIONAL_channel_partner)
+â”‚   â”‚       - Territory: TN, Kerala, Karnataka, AP
+â”‚   â”‚       - Sub-sub_SUB_DEALER Network: 30 Sub-Sub-sub_sub_SUB_DEALERs
+â”‚   â””â”€â”€ West Region
+â”‚       â””â”€â”€ Western Medical Supplies (AUTHORIZED_channel_partner)
+â”‚           - Territory: Maharashtra, Gujarat, MP
+â”‚           - Sub-sub_SUB_DEALER Network: 20 Sub-Sub-sub_sub_SUB_DEALERs
+â”‚
+â”œâ”€â”€ Service Partners
+â”‚   â”œâ”€â”€ QuickFix Medical Services (SERVICE_PARTNER)
+â”‚   â”‚   - Coverage: Pan-India
+â”‚   â”‚   - SLA: 24-hour response
+â”‚   â””â”€â”€ TechCare India (AMC_PROVIDER)
+â”‚       - Coverage: Metro cities
+â”‚
+â””â”€â”€ Direct Institutional Customers
+    â”œâ”€â”€ Apollo Hospitals (DIRECT_BUYER)
+    â”œâ”€â”€ Fortis Healthcare (DIRECT_BUYER)
+    â””â”€â”€ AIIMS Delhi (INSTITUTIONAL_BUYER)
 ```
 
 ---
 
-### 2.2 Distributor Scenario: MedEquip Distributors
+### 2.2 Channel Partner Scenario: MedEquip Channel Partners
 
 **Organization Structure:**
 
 ```
-MedEquip Distributors Pvt Ltd (DISTRIBUTOR)
-├── Facilities
-│   ├── Delhi Warehouse (DISTRIBUTION_CENTER)
-│   │   - Inventory: ₹50 Cr
-│   │   - Coverage: Delhi NCR
-│   ├── Chandigarh Service Center (SERVICE_CENTER)
-│   ├── Lucknow Branch (SALES_OFFICE)
-│   └── Jaipur Showroom (SHOWROOM)
-│
-├── Manufacturer Partnerships (Multi-Brand)
-│   ├── Siemens Healthineers (EXCLUSIVE_DISTRIBUTOR)
-│   │   - Products: All imaging equipment
-│   │   - Territory: North India
-│   │   - Commission: 8-12%
-│   │   - Annual Target: ₹100 Cr
-│   ├── GE Healthcare (AUTHORIZED_DISTRIBUTOR)
-│   │   - Products: Patient monitoring
-│   │   - Territory: Delhi, UP
-│   │   - Commission: 6-10%
-│   ├── Philips Healthcare (REGIONAL_DISTRIBUTOR)
-│   │   - Products: Ultrasound systems
-│   │   - Territory: North India
-│   └── Local OEMs (AUTHORIZED_DISTRIBUTOR)
-│       - Products: Basic equipment
-│
-├── Dealer Network (75 dealers)
-│   ├── Premium Dealers (10)
-│   │   - Annual Purchase: >₹2 Cr
-│   │   - Credit Limit: ₹50 L
-│   │   - Priority: Platinum
-│   ├── Standard Dealers (40)
-│   │   - Annual Purchase: ₹50L - ₹2Cr
-│   │   - Credit Limit: ₹20 L
-│   └── Small Dealers (25)
-│       - Annual Purchase: <₹50L
-│       - Credit Limit: ₹5 L
-│
-└── Customer Segments
-    ├── Corporate Hospitals (Direct Sales)
-    ├── Private Clinics (Through Dealers)
-    └── Government Hospitals (Tender Sales)
+MedEquip Channel Partners Pvt Ltd (Channel Partner)
+â”œâ”€â”€ Facilities
+â”‚   â”œâ”€â”€ Delhi Warehouse (DISTRIBUTION_CENTER)
+â”‚   â”‚   - Inventory: â‚¹50 Cr
+â”‚   â”‚   - Coverage: Delhi NCR
+â”‚   â”œâ”€â”€ Chandigarh Service Center (SERVICE_CENTER)
+â”‚   â”œâ”€â”€ Lucknow Branch (SALES_OFFICE)
+â”‚   â””â”€â”€ Jaipur Showroom (SHOWROOM)
+â”‚
+â”œâ”€â”€ Manufacturer Partnerships (Multi-Brand)
+â”‚   â”œâ”€â”€ Siemens Healthineers (EXCLUSIVE_channel_partner)
+â”‚   â”‚   - Products: All imaging equipment
+â”‚   â”‚   - Territory: North India
+â”‚   â”‚   - Commission: 8-12%
+â”‚   â”‚   - Annual Target: â‚¹100 Cr
+â”‚   â”œâ”€â”€ GE Healthcare (AUTHORIZED_channel_partner)
+â”‚   â”‚   - Products: Patient monitoring
+â”‚   â”‚   - Territory: Delhi, UP
+â”‚   â”‚   - Commission: 6-10%
+â”‚   â”œâ”€â”€ Philips Healthcare (REGIONAL_channel_partner)
+â”‚   â”‚   - Products: Ultrasound systems
+â”‚   â”‚   - Territory: North India
+â”‚   â””â”€â”€ Local OEMs (AUTHORIZED_channel_partner)
+â”‚       - Products: Basic equipment
+â”‚
+â”œâ”€â”€ Sub-sub_SUB_DEALER Network (75 Sub-Sub-sub_sub_SUB_DEALERs)
+â”‚   â”œâ”€â”€ Premium Sub-Sub-sub_sub_SUB_DEALERs (10)
+â”‚   â”‚   - Annual Purchase: >â‚¹2 Cr
+â”‚   â”‚   - Credit Limit: â‚¹50 L
+â”‚   â”‚   - Priority: Platinum
+â”‚   â”œâ”€â”€ Standard Sub-Sub-sub_sub_SUB_DEALERs (40)
+â”‚   â”‚   - Annual Purchase: â‚¹50L - â‚¹2Cr
+â”‚   â”‚   - Credit Limit: â‚¹20 L
+â”‚   â””â”€â”€ Small Sub-Sub-sub_sub_SUB_DEALERs (25)
+â”‚       - Annual Purchase: <â‚¹50L
+â”‚       - Credit Limit: â‚¹5 L
+â”‚
+â””â”€â”€ Customer Segments
+    â”œâ”€â”€ Corporate Hospitals (Direct Sales)
+    â”œâ”€â”€ Private Clinics (Through Sub-Sub-sub_sub_SUB_DEALERs)
+    â””â”€â”€ Government Hospitals (Tender Sales)
 ```
 
 ---
 
-### 2.3 Dealer Scenario: City Medical Equipment Co.
+### 2.3 Sub-sub_SUB_DEALER Scenario: City Medical Equipment Co.
 
 **Organization Structure:**
 
 ```
-City Medical Equipment Co. (DEALER)
-├── Facilities
-│   ├── Main Showroom (SHOWROOM)
-│   │   - Location: Connaught Place, Delhi
-│   │   - Display: 50+ equipment
-│   ├── Service Center (SERVICE_CENTER)
-│   │   - 5 service engineers
-│   │   - Coverage: Delhi NCR
-│   └── Warehouse (WAREHOUSE)
-│       - Inventory: ₹2 Cr
-│
-├── Supplier Relationships (Multi-Manufacturer)
-│   ├── MedEquip Distributors (PRIMARY)
-│   │   - Brands: Siemens, GE, Philips
-│   │   - Credit Terms: 45 days
-│   │   - Discount: 15%
-│   ├── HealthTech Solutions (SECONDARY)
-│   │   - Brands: Medtronic, Abbott
-│   │   - Credit Terms: 30 days
-│   └── Direct from Manufacturers
-│       - Small orders, special items
-│
-├── Customer Base
-│   ├── Private Hospitals (60%)
-│   │   - 25 regular customers
-│   │   - AMC contracts: 100+ equipment
-│   ├── Polyclinics (25%)
-│   │   - 40 customers
-│   ├── Diagnostic Centers (10%)
-│   │   - 15 customers
-│   └── Individual Doctors (5%)
-│       - 50+ customers
-│
-└── Service Operations
-    ├── Installation Services
-    ├── AMC Contracts (150 active)
-    ├── Spare Parts Supply
-    └── Training Services
+City Medical Equipment Co. (Sub-sub_SUB_DEALER)
+â”œâ”€â”€ Facilities
+â”‚   â”œâ”€â”€ Main Showroom (SHOWROOM)
+â”‚   â”‚   - Location: Connaught Place, Delhi
+â”‚   â”‚   - Display: 50+ equipment
+â”‚   â”œâ”€â”€ Service Center (SERVICE_CENTER)
+â”‚   â”‚   - 5 service engineers
+â”‚   â”‚   - Coverage: Delhi NCR
+â”‚   â””â”€â”€ Warehouse (WAREHOUSE)
+â”‚       - Inventory: â‚¹2 Cr
+â”‚
+â”œâ”€â”€ Supplier Relationships (Multi-Manufacturer)
+â”‚   â”œâ”€â”€ MedEquip Channel Partners (PRIMARY)
+â”‚   â”‚   - Brands: Siemens, GE, Philips
+â”‚   â”‚   - Credit Terms: 45 days
+â”‚   â”‚   - Discount: 15%
+â”‚   â”œâ”€â”€ HealthTech Solutions (SECONDARY)
+â”‚   â”‚   - Brands: Medtronic, Abbott
+â”‚   â”‚   - Credit Terms: 30 days
+â”‚   â””â”€â”€ Direct from Manufacturers
+â”‚       - Small orders, special items
+â”‚
+â”œâ”€â”€ Customer Base
+â”‚   â”œâ”€â”€ Private Hospitals (60%)
+â”‚   â”‚   - 25 regular customers
+â”‚   â”‚   - AMC contracts: 100+ equipment
+â”‚   â”œâ”€â”€ Polyclinics (25%)
+â”‚   â”‚   - 40 customers
+â”‚   â”œâ”€â”€ Diagnostic Centers (10%)
+â”‚   â”‚   - 15 customers
+â”‚   â””â”€â”€ Individual Doctors (5%)
+â”‚       - 50+ customers
+â”‚
+â””â”€â”€ Service Operations
+    â”œâ”€â”€ Installation Services
+    â”œâ”€â”€ AMC Contracts (150 active)
+    â”œâ”€â”€ Spare Parts Supply
+    â””â”€â”€ Training Services
 ```
 
 ---
@@ -445,44 +445,44 @@ City Medical Equipment Co. (DEALER)
 
 ```
 Apollo Hospitals Enterprise Ltd (HOSPITAL)
-├── Hospital Network (70+ locations)
-│   ├── Apollo Hospital Delhi (HOSPITAL_UNIT)
-│   │   - Equipment: 500+ units
-│   │   - AMCs: 450 active
-│   │   - Annual Procurement: ₹20 Cr
-│   ├── Apollo Spectra Bangalore (HOSPITAL_UNIT)
-│   ├── Apollo Diagnostics Mumbai (DIAGNOSTIC_CENTER)
-│   └── [68 more locations...]
-│
-├── Procurement Structure
-│   ├── Centralized Procurement (70%)
-│   │   - High-value equipment
-│   │   - Direct from manufacturers
-│   │   - Annual contracts
-│   ├── Regional Procurement (20%)
-│   │   - Mid-value equipment
-│   │   - Through distributors
-│   └── Local Procurement (10%)
-│       - Consumables, small equipment
-│       - Through local dealers
-│
-├── Vendor Relationships
-│   ├── Direct from Manufacturers (Tier 1)
-│   │   - Siemens: CT, MRI (10-year contract)
-│   │   - GE: Patient monitors (5-year contract)
-│   │   - Philips: Ultrasound systems
-│   ├── Through Distributors (Tier 2)
-│   │   - MedEquip: General equipment
-│   │   - HealthTech: Lab equipment
-│   └── Local Dealers (Tier 3)
-│       - Quick replacements
-│       - Emergency supplies
-│
-└── Service Management
-    ├── In-House BME Team (50 engineers)
-    ├── OEM Service Contracts
-    ├── Third-Party AMCs
-    └── Parts Inventory (₹5 Cr)
+â”œâ”€â”€ Hospital Network (70+ locations)
+â”‚   â”œâ”€â”€ Apollo Hospital Delhi (HOSPITAL_UNIT)
+â”‚   â”‚   - Equipment: 500+ units
+â”‚   â”‚   - AMCs: 450 active
+â”‚   â”‚   - Annual Procurement: â‚¹20 Cr
+â”‚   â”œâ”€â”€ Apollo Spectra Bangalore (HOSPITAL_UNIT)
+â”‚   â”œâ”€â”€ Apollo Diagnostics Mumbai (DIAGNOSTIC_CENTER)
+â”‚   â””â”€â”€ [68 more locations...]
+â”‚
+â”œâ”€â”€ Procurement Structure
+â”‚   â”œâ”€â”€ Centralized Procurement (70%)
+â”‚   â”‚   - High-value equipment
+â”‚   â”‚   - Direct from manufacturers
+â”‚   â”‚   - Annual contracts
+â”‚   â”œâ”€â”€ Regional Procurement (20%)
+â”‚   â”‚   - Mid-value equipment
+â”‚   â”‚   - Through Channel Partners
+â”‚   â””â”€â”€ Local Procurement (10%)
+â”‚       - Consumables, small equipment
+â”‚       - Through local Sub-Sub-sub_sub_SUB_DEALERs
+â”‚
+â”œâ”€â”€ Vendor Relationships
+â”‚   â”œâ”€â”€ Direct from Manufacturers (Tier 1)
+â”‚   â”‚   - Siemens: CT, MRI (10-year contract)
+â”‚   â”‚   - GE: Patient monitors (5-year contract)
+â”‚   â”‚   - Philips: Ultrasound systems
+â”‚   â”œâ”€â”€ Through Channel Partners (Tier 2)
+â”‚   â”‚   - MedEquip: General equipment
+â”‚   â”‚   - HealthTech: Lab equipment
+â”‚   â””â”€â”€ Local Sub-Sub-sub_sub_SUB_DEALERs (Tier 3)
+â”‚       - Quick replacements
+â”‚       - Emergency supplies
+â”‚
+â””â”€â”€ Service Management
+    â”œâ”€â”€ In-House BME Team (50 engineers)
+    â”œâ”€â”€ OEM Service Contracts
+    â”œâ”€â”€ Third-Party AMCs
+    â””â”€â”€ Parts Inventory (â‚¹5 Cr)
 ```
 
 ---
@@ -491,32 +491,32 @@ Apollo Hospitals Enterprise Ltd (HOSPITAL)
 
 ### 3.1 Hierarchical Patterns
 
-#### Pattern 1: Manufacturer → Distributor → Dealer → Hospital
+#### Pattern 1: Manufacturer â†’ Channel Partner â†’ Sub-sub_SUB_DEALER â†’ Hospital
 
 ```
 Siemens (MANUFACTURER)
-  ↓ EXCLUSIVE_DISTRIBUTOR
-MedEquip (DISTRIBUTOR)
-  ↓ DEALER_NETWORK
-City Medical (DEALER)
-  ↓ DIRECT_BUYER
+  â†“ EXCLUSIVE_channel_partner
+MedEquip (Channel Partner)
+  â†“ sub_sub_Sub-sub_SUB_DEALER_NETWORK
+City Medical (Sub-sub_SUB_DEALER)
+  â†“ DIRECT_BUYER
 Apollo Hospital Delhi (HOSPITAL)
 ```
 
 **Key Attributes:**
-- **Siemens ↔ MedEquip:**
+- **Siemens â†” MedEquip:**
   - Exclusive territory: North India
   - All Siemens products
   - 8-12% commission
-  - ₹100 Cr annual target
+  - â‚¹100 Cr annual target
   
-- **MedEquip ↔ City Medical:**
+- **MedEquip â†” City Medical:**
   - Non-exclusive
-  - Credit limit: ₹50 L
+  - Credit limit: â‚¹50 L
   - 45-day payment terms
-  - 15% dealer discount
+  - 15% Sub-sub_SUB_DEALER discount
   
-- **City Medical ↔ Apollo:**
+- **City Medical â†” Apollo:**
   - Equipment sales
   - AMC contracts
   - Installation services
@@ -524,30 +524,30 @@ Apollo Hospital Delhi (HOSPITAL)
 
 ---
 
-#### Pattern 2: Multi-Brand Distributor
+#### Pattern 2: Multi-Brand Channel Partner
 
 ```
-MedEquip Distributors (DISTRIBUTOR)
-  ├── Siemens (EXCLUSIVE_DISTRIBUTOR)
-  ├── GE (AUTHORIZED_DISTRIBUTOR)
-  ├── Philips (REGIONAL_DISTRIBUTOR)
-  └── Medtronic (AUTHORIZED_DISTRIBUTOR)
+MedEquip Channel Partners (Channel Partner)
+  â”œâ”€â”€ Siemens (EXCLUSIVE_channel_partner)
+  â”œâ”€â”€ GE (AUTHORIZED_channel_partner)
+  â”œâ”€â”€ Philips (REGIONAL_channel_partner)
+  â””â”€â”€ Medtronic (AUTHORIZED_channel_partner)
 ```
 
 **Decision Logic:**
 - Exclusive: Only MedEquip can sell Siemens in North India
-- Non-Exclusive: Multiple distributors for GE
+- Non-Exclusive: Multiple Channel Partners for GE
 - Priority: Siemens gets first priority for resources
 
 ---
 
-#### Pattern 3: Multi-Manufacturer Dealer
+#### Pattern 3: Multi-Manufacturer Sub-sub_SUB_DEALER
 
 ```
-City Medical (DEALER)
-  ├── MedEquip → Siemens, GE, Philips (PRIMARY, 70%)
-  ├── HealthTech → Medtronic, Abbott (SECONDARY, 20%)
-  └── Direct → Small OEMs (10%)
+City Medical (Sub-sub_SUB_DEALER)
+  â”œâ”€â”€ MedEquip â†’ Siemens, GE, Philips (PRIMARY, 70%)
+  â”œâ”€â”€ HealthTech â†’ Medtronic, Abbott (SECONDARY, 20%)
+  â””â”€â”€ Direct â†’ Small OEMs (10%)
 ```
 
 **Selection Logic:**
@@ -561,13 +561,13 @@ City Medical (DEALER)
 
 ```
 Equipment Installation at Apollo Delhi
-  ↓ Needs Service
+  â†“ Needs Service
 Service Request Created
-  ↓ AI Routing
+  â†“ AI Routing
 Check Service Hierarchy:
   1. Manufacturer's Own Service Center (Siemens Chennai)
   2. Authorized Service Partner (QuickFix Delhi)
-  3. Dealer Service Team (City Medical)
+  3. Sub-sub_SUB_DEALER Service Team (City Medical)
   4. Third-Party Provider (TechCare)
 ```
 
@@ -575,23 +575,23 @@ Check Service Hierarchy:
 
 ### 3.3 Territory Management Patterns
 
-#### Scenario: New Dealer Registration
+#### Scenario: New Sub-sub_SUB_DEALER Registration
 
 ```
-Request: New dealer in Jaipur wants Siemens dealership
+Request: New Sub-sub_SUB_DEALER in Jaipur wants Siemens Sub-Sub-sub_sub_SUB_DEALERship
 
 Check:
 1. Jaipur in which territory?
-   → North India (covered by MedEquip exclusive)
+   â†’ North India (covered by MedEquip exclusive)
    
-2. Can dealer register?
-   → No: MedEquip is exclusive distributor
-   → Dealer must buy through MedEquip
-   → Dealer becomes MedEquip's sub-dealer
+2. Can Sub-sub_SUB_DEALER register?
+   â†’ No: MedEquip is exclusive Channel Partner
+   â†’ Sub-sub_SUB_DEALER must buy through MedEquip
+   â†’ Sub-sub_SUB_DEALER becomes MedEquip's sub-Sub-sub_SUB_DEALER
 
 3. If non-exclusive:
-   → Yes: Can become direct dealer
-   → Territory check: No overlap with exclusive dealers
+   â†’ Yes: Can become direct Sub-sub_SUB_DEALER
+   â†’ Territory check: No overlap with exclusive Sub-Sub-sub_sub_SUB_DEALERs
 ```
 
 ---
@@ -733,23 +733,23 @@ interface TimeRange {
 
 #### Top Stats Row
 ```
-┌─────────────────┬─────────────────┬─────────────────┬─────────────────┐
-│ Active          │ Monthly Sales   │ Pending Orders  │ Service         │
-│ Distributors    │ ₹45.2 Cr       │ 156 orders      │ Tickets         │
-│ 23 ↑2          │ ↑12% MoM       │ ₹15.8 Cr       │ 234 ↓12%       │
-└─────────────────┴─────────────────┴─────────────────┴─────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ Active          â”‚ Monthly Sales   â”‚ Pending Orders  â”‚ Service         â”‚
+â”‚ Channel Partners    â”‚ â‚¹45.2 Cr       â”‚ 156 orders      â”‚ Tickets         â”‚
+â”‚ 23 â†‘2          â”‚ â†‘12% MoM       â”‚ â‚¹15.8 Cr       â”‚ 234 â†“12%       â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 #### Section 1: Distribution Network (Map + List)
-- **Map View:** India map with distributor locations
+- **Map View:** India map with Channel Partner locations
 - **Filters:** Region, Performance Tier, Product Category
-- **Actions:** Add Distributor, View Details, Manage Territory
+- **Actions:** Add Channel Partner, View Details, Manage Territory
 
-**Distributor Table:**
-| Distributor | Territory | Products | Monthly Sales | Dealers | Performance | Actions |
+**Channel Partner Table:**
+| Channel Partner | Territory | Products | Monthly Sales | Sub-Sub-sub_sub_SUB_DEALERs | Performance | Actions |
 |-------------|-----------|----------|---------------|---------|-------------|---------|
-| MedEquip Distributors | North India | All Products | ₹8.2 Cr | 75 | 🥇 Platinum | View Details |
-| HealthTech Solutions | South India | Imaging Only | ₹6.5 Cr | 60 | 🥈 Gold | View Details |
+| MedEquip Channel Partners | North India | All Products | â‚¹8.2 Cr | 75 | ðŸ¥‡ Platinum | View Details |
+| HealthTech Solutions | South India | Imaging Only | â‚¹6.5 Cr | 60 | ðŸ¥ˆ Gold | View Details |
 
 #### Section 2: Sales Analytics
 - **Chart:** Regional sales breakdown (bar chart)
@@ -759,10 +759,10 @@ interface TimeRange {
 #### Section 3: Territory Management
 - **Map:** Territory coverage visualization
 - **Gaps:** Uncovered areas highlighted
-- **Opportunities:** Potential new distributor locations
+- **Opportunities:** Potential new Channel Partner locations
 
-#### Section 4: Dealer Performance (Top 20)
-| Dealer | Location | Monthly Sales | Growth | AMC Contracts | Service Rating |
+#### Section 4: Sub-sub_SUB_DEALER Performance (Top 20)
+| Sub-sub_SUB_DEALER | Location | Monthly Sales | Growth | AMC Contracts | Service Rating |
 |--------|----------|---------------|--------|---------------|----------------|
 
 #### Section 5: Service Network Status
@@ -772,7 +772,7 @@ interface TimeRange {
 - Parts inventory levels
 
 #### Section 6: Quick Actions
-- [ ] Add New Distributor
+- [ ] Add New Channel Partner
 - [ ] Create Territory
 - [ ] Bulk Product Upload
 - [ ] Generate Sales Report
@@ -780,38 +780,38 @@ interface TimeRange {
 
 ---
 
-### 5.2 Distributor Dashboard
+### 5.2 Channel Partner Dashboard
 
 **Primary User:** MedEquip Operations Manager
 
 #### Top Stats Row
 ```
-┌─────────────────┬─────────────────┬─────────────────┬─────────────────┐
-│ Active Dealers  │ Monthly Sales   │ Pending Orders  │ Inventory       │
-│ 75 ↑5          │ ₹8.2 Cr        │ 89 orders       │ ₹12.5 Cr       │
-│                 │ ↑15% MoM       │ ₹2.1 Cr        │ 850 SKUs       │
-└─────────────────┴─────────────────┴─────────────────┴─────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ Active Sub-Sub-sub_sub_SUB_DEALERs  â”‚ Monthly Sales   â”‚ Pending Orders  â”‚ Inventory       â”‚
+â”‚ 75 â†‘5          â”‚ â‚¹8.2 Cr        â”‚ 89 orders       â”‚ â‚¹12.5 Cr       â”‚
+â”‚                 â”‚ â†‘15% MoM       â”‚ â‚¹2.1 Cr        â”‚ 850 SKUs       â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 #### Section 1: Multi-Brand Overview
 **Manufacturer Performance:**
 | Manufacturer | Products | Monthly Sales | Commission | Target Progress | Actions |
 |--------------|----------|---------------|------------|-----------------|---------|
-| Siemens | All Imaging | ₹4.2 Cr | ₹0.42 Cr | 84% | View Contract |
-| GE Healthcare | Monitoring | ₹2.1 Cr | ₹0.15 Cr | 70% | View Products |
-| Philips | Ultrasound | ₹1.9 Cr | ₹0.14 Cr | 95% | View Territory |
+| Siemens | All Imaging | â‚¹4.2 Cr | â‚¹0.42 Cr | 84% | View Contract |
+| GE Healthcare | Monitoring | â‚¹2.1 Cr | â‚¹0.15 Cr | 70% | View Products |
+| Philips | Ultrasound | â‚¹1.9 Cr | â‚¹0.14 Cr | 95% | View Territory |
 
-#### Section 2: Dealer Network
-**Map View:** Dealers plotted on map with color coding
-- 🟢 Green: High performers (>₹2 Cr/year)
-- 🟡 Yellow: Standard (₹50L-₹2Cr/year)
-- 🔴 Red: Needs attention (<₹50L/year)
+#### Section 2: Sub-sub_SUB_DEALER Network
+**Map View:** Sub-Sub-sub_sub_SUB_DEALERs plotted on map with color coding
+- ðŸŸ¢ Green: High performers (>â‚¹2 Cr/year)
+- ðŸŸ¡ Yellow: Standard (â‚¹50L-â‚¹2Cr/year)
+- ðŸ”´ Red: Needs attention (<â‚¹50L/year)
 
-**Dealer Table:**
-| Dealer | Location | Brands | Monthly Sales | Outstanding | Credit Limit | Performance |
+**Sub-sub_SUB_DEALER Table:**
+| Sub-sub_SUB_DEALER | Location | Brands | Monthly Sales | Outstanding | Credit Limit | Performance |
 |--------|----------|--------|---------------|-------------|--------------|-------------|
-| City Medical | Delhi | Multi | ₹45 L | ₹12 L | ₹50 L | 🥇 Platinum |
-| Metro Healthcare | Gurgaon | Multi | ₹32 L | ₹8 L | ₹30 L | 🥈 Gold |
+| City Medical | Delhi | Multi | â‚¹45 L | â‚¹12 L | â‚¹50 L | ðŸ¥‡ Platinum |
+| Metro Healthcare | Gurgaon | Multi | â‚¹32 L | â‚¹8 L | â‚¹30 L | ðŸ¥ˆ Gold |
 
 #### Section 3: Inventory Management
 - **Stock Levels:** By product category
@@ -820,44 +820,44 @@ interface TimeRange {
 - **Alerts:** Low stock, expiring items
 
 #### Section 4: Orders & Logistics
-- **Pending Orders:** From dealers
+- **Pending Orders:** From Sub-Sub-sub_sub_SUB_DEALERs
 - **In-Transit:** Shipments tracking
 - **Delivery Schedule:** Next 7 days
 - **Backorders:** Items awaiting stock
 
 #### Section 5: Financial Dashboard
-- **Receivables:** Outstanding from dealers
+- **Receivables:** Outstanding from Sub-Sub-sub_sub_SUB_DEALERs
 - **Payables:** Due to manufacturers
-- **Credit Utilization:** By dealer
+- **Credit Utilization:** By Sub-sub_SUB_DEALER
 - **Commission Earned:** By manufacturer
 
 #### Section 6: Territory Insights
 - **Coverage Map:** Areas served
-- **Gaps:** Potential new dealer locations
+- **Gaps:** Potential new Sub-sub_SUB_DEALER locations
 - **Competition:** Competitor presence
 - **Market Size:** Potential by region
 
 ---
 
-### 5.3 Dealer Dashboard
+### 5.3 Sub-sub_SUB_DEALER Dashboard
 
 **Primary User:** City Medical Owner
 
 #### Top Stats Row
 ```
-┌─────────────────┬─────────────────┬─────────────────┬─────────────────┐
-│ Monthly Sales   │ Active AMCs     │ Pending Orders  │ Service Jobs    │
-│ ₹45 L          │ 150 contracts   │ 12 orders       │ 23 active       │
-│ ↑8% MoM        │ ₹18 L MRR      │ ₹8.5 L         │ 5 pending       │
-└─────────────────┴─────────────────┴─────────────────┴─────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ Monthly Sales   â”‚ Active AMCs     â”‚ Pending Orders  â”‚ Service Jobs    â”‚
+â”‚ â‚¹45 L          â”‚ 150 contracts   â”‚ 12 orders       â”‚ 23 active       â”‚
+â”‚ â†‘8% MoM        â”‚ â‚¹18 L MRR      â”‚ â‚¹8.5 L         â”‚ 5 pending       â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 #### Section 1: Supplier Hub (Multi-Manufacturer View)
 **Active Suppliers:**
 | Supplier | Brands Available | Credit Used | Credit Limit | Payment Due | Next Delivery |
 |----------|------------------|-------------|--------------|-------------|---------------|
-| MedEquip | Siemens, GE, Philips | ₹12 L | ₹50 L | ₹8 L (3 days) | Tomorrow |
-| HealthTech | Medtronic, Abbott | ₹5 L | ₹20 L | ₹3 L (5 days) | 3 days |
+| MedEquip | Siemens, GE, Philips | â‚¹12 L | â‚¹50 L | â‚¹8 L (3 days) | Tomorrow |
+| HealthTech | Medtronic, Abbott | â‚¹5 L | â‚¹20 L | â‚¹3 L (5 days) | 3 days |
 
 **Quick Actions:**
 - Place Order with MedEquip
@@ -870,25 +870,25 @@ interface TimeRange {
 - Search: "CT Scanner"
 - Results show products from all suppliers
 - Compare prices, delivery times, credit terms
-- "Add to Cart" → Auto-selects best supplier
+- "Add to Cart" â†’ Auto-selects best supplier
 
 | Product | Manufacturer | Supplier | Price | Delivery | Credit Terms | Stock |
 |---------|--------------|----------|-------|----------|--------------|-------|
-| CT Scanner Pro | Siemens | MedEquip | ₹1.2 Cr | 7 days | 45 days | ✓ Available |
-| CT Elite 500 | GE | MedEquip | ₹1.1 Cr | 10 days | 45 days | On Order |
+| CT Scanner Pro | Siemens | MedEquip | â‚¹1.2 Cr | 7 days | 45 days | âœ“ Available |
+| CT Elite 500 | GE | MedEquip | â‚¹1.1 Cr | 10 days | 45 days | On Order |
 
 #### Section 3: Customer Management
 **Hospital Accounts:**
 | Customer | Type | Monthly Avg | Outstanding | AMC Value | Next Service | Status |
 |----------|------|-------------|-------------|-----------|--------------|--------|
-| Apollo Delhi | Hospital | ₹12 L | ₹5 L | ₹8 L/yr | 5 days | 🟢 Active |
-| Max Hospital | Hospital | ₹8 L | ₹2 L | ₹6 L/yr | 15 days | 🟢 Active |
-| City Clinic | Clinic | ₹2 L | ₹50 K | ₹1 L/yr | 2 days | 🟡 Follow-up |
+| Apollo Delhi | Hospital | â‚¹12 L | â‚¹5 L | â‚¹8 L/yr | 5 days | ðŸŸ¢ Active |
+| Max Hospital | Hospital | â‚¹8 L | â‚¹2 L | â‚¹6 L/yr | 15 days | ðŸŸ¢ Active |
+| City Clinic | Clinic | â‚¹2 L | â‚¹50 K | â‚¹1 L/yr | 2 days | ðŸŸ¡ Follow-up |
 
 #### Section 4: AMC Management
 **Active Contracts:**
 - **Total AMCs:** 150
-- **Monthly Recurring Revenue:** ₹18 L
+- **Monthly Recurring Revenue:** â‚¹18 L
 - **Upcoming Renewals:** 15 (next 30 days)
 - **Expiring Soon:** 8 (action needed)
 
@@ -908,19 +908,19 @@ interface TimeRange {
 **Engineer Availability:**
 | Engineer | Skills | Today's Jobs | Location | Status |
 |----------|--------|--------------|----------|--------|
-| Ramesh K | CT, MRI | 2 jobs | Apollo Delhi | 🟢 Available |
-| Suresh M | X-Ray, Ultrasound | 3 jobs | Max Hospital | 🟡 Busy |
+| Ramesh K | CT, MRI | 2 jobs | Apollo Delhi | ðŸŸ¢ Available |
+| Suresh M | X-Ray, Ultrasound | 3 jobs | Max Hospital | ðŸŸ¡ Busy |
 
 #### Section 6: Financial Summary
-- **Sales This Month:** ₹45 L
-- **Collections:** ₹38 L
-- **Outstanding:** ₹28 L
-- **Expenses:** ₹12 L (salaries, rent, etc.)
-- **Net Profit:** ₹14 L
+- **Sales This Month:** â‚¹45 L
+- **Collections:** â‚¹38 L
+- **Outstanding:** â‚¹28 L
+- **Expenses:** â‚¹12 L (salaries, rent, etc.)
+- **Net Profit:** â‚¹14 L
 
 **Payment Alerts:**
-- ⚠️ MedEquip: ₹8 L due in 3 days
-- ⚠️ Customer: Apollo Hospital ₹5 L overdue
+- âš ï¸ MedEquip: â‚¹8 L due in 3 days
+- âš ï¸ Customer: Apollo Hospital â‚¹5 L overdue
 
 ---
 
@@ -930,11 +930,11 @@ interface TimeRange {
 
 #### Top Stats Row
 ```
-┌─────────────────┬─────────────────┬─────────────────┬─────────────────┐
-│ Total Equipment │ Active AMCs     │ Open Tickets    │ Monthly Spend   │
-│ 500 units       │ 450 contracts   │ 15 tickets      │ ₹12 L          │
-│ 485 operational │ ₹22 L/month    │ Avg: 4.2 hrs   │ Budget: 92%    │
-└─────────────────┴─────────────────┴─────────────────┴─────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ Total Equipment â”‚ Active AMCs     â”‚ Open Tickets    â”‚ Monthly Spend   â”‚
+â”‚ 500 units       â”‚ 450 contracts   â”‚ 15 tickets      â”‚ â‚¹12 L          â”‚
+â”‚ 485 operational â”‚ â‚¹22 L/month    â”‚ Avg: 4.2 hrs   â”‚ Budget: 92%    â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 #### Section 1: Equipment Inventory
@@ -954,42 +954,42 @@ interface TimeRange {
 - Auto-fills equipment details
 - Select issue type
 - Attach photos
-- Submit → Auto-routes to correct vendor
+- Submit â†’ Auto-routes to correct vendor
 
 **Open Tickets:**
 | Equipment | Issue | Vendor | Priority | Created | Status | SLA |
 |-----------|-------|--------|----------|---------|--------|-----|
-| CT Scanner | Calibration | Siemens | High | 2 hours | Engineer En Route | 🟢 On Time |
-| X-Ray | No Power | City Medical | Critical | 30 mins | Parts Ordered | 🟡 At Risk |
+| CT Scanner | Calibration | Siemens | High | 2 hours | Engineer En Route | ðŸŸ¢ On Time |
+| X-Ray | No Power | City Medical | Critical | 30 mins | Parts Ordered | ðŸŸ¡ At Risk |
 
 #### Section 3: AMC Management
 **Active Contracts:**
 | Vendor | Equipment Count | Monthly Cost | Next Service | Contract Expiry | Actions |
 |--------|-----------------|--------------|--------------|-----------------|---------|
-| Siemens Direct | 120 | ₹8 L | Tomorrow | 2 years | View Details |
-| City Medical | 150 | ₹10 L | Next Week | 6 months | Renew Soon |
-| QuickFix | 180 | ₹4 L | 15 days | 1 year | View Contract |
+| Siemens Direct | 120 | â‚¹8 L | Tomorrow | 2 years | View Details |
+| City Medical | 150 | â‚¹10 L | Next Week | 6 months | Renew Soon |
+| QuickFix | 180 | â‚¹4 L | 15 days | 1 year | View Contract |
 
 #### Section 4: Vendor Performance
 **Scorecard:**
 | Vendor | Active AMCs | Avg Response Time | Resolution Time | Uptime % | Rating | Trend |
 |--------|-------------|-------------------|-----------------|----------|--------|-------|
-| Siemens Direct | 120 | 2.1 hrs | 4.5 hrs | 99.2% | ⭐⭐⭐⭐⭐ | ↑ |
-| City Medical | 150 | 3.5 hrs | 6.2 hrs | 98.5% | ⭐⭐⭐⭐ | → |
-| QuickFix | 180 | 4.2 hrs | 8.1 hrs | 97.8% | ⭐⭐⭐ | ↓ |
+| Siemens Direct | 120 | 2.1 hrs | 4.5 hrs | 99.2% | â­â­â­â­â­ | â†‘ |
+| City Medical | 150 | 3.5 hrs | 6.2 hrs | 98.5% | â­â­â­â­ | â†’ |
+| QuickFix | 180 | 4.2 hrs | 8.1 hrs | 97.8% | â­â­â­ | â†“ |
 
 #### Section 5: Procurement Planning
 **Budget Tracker:**
-- Annual Budget: ₹144 L
-- Spent: ₹132 L (92%)
-- Remaining: ₹12 L
+- Annual Budget: â‚¹144 L
+- Spent: â‚¹132 L (92%)
+- Remaining: â‚¹12 L
 - Forecast: On track
 
 **Upcoming Purchases:**
 | Item | Department | Quantity | Estimated Cost | Approval Status | Procurement Route |
 |------|------------|----------|----------------|-----------------|-------------------|
-| New CT Scanner | Radiology | 1 | ₹1.5 Cr | Approved | Direct (Siemens) |
-| Patient Monitors | ICU | 20 | ₹40 L | Pending | RFQ (3 vendors) |
+| New CT Scanner | Radiology | 1 | â‚¹1.5 Cr | Approved | Direct (Siemens) |
+| Patient Monitors | ICU | 20 | â‚¹40 L | Pending | RFQ (3 vendors) |
 
 #### Section 6: Preventive Maintenance Calendar
 **This Month:**
@@ -1012,11 +1012,11 @@ interface TimeRange {
 
 #### Top Stats Row
 ```
-┌─────────────────┬─────────────────┬─────────────────┬─────────────────┐
-│ Active Tickets  │ Engineers       │ Monthly Revenue │ Customer        │
-│ 45 tickets      │ 25 engineers    │ ₹18 L          │ Satisfaction    │
-│ 12 high priority│ 22 available    │ ↑10% MoM       │ 4.5/5.0        │
-└─────────────────┴─────────────────┴─────────────────┴─────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ Active Tickets  â”‚ Engineers       â”‚ Monthly Revenue â”‚ Customer        â”‚
+â”‚ 45 tickets      â”‚ 25 engineers    â”‚ â‚¹18 L          â”‚ Satisfaction    â”‚
+â”‚ 12 high priorityâ”‚ 22 available    â”‚ â†‘10% MoM       â”‚ 4.5/5.0        â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 #### Section 1: Ticket Management
@@ -1034,8 +1034,8 @@ interface TimeRange {
 **Engineer Dashboard:**
 | Engineer | Location | Skills | Today's Jobs | Completed | Rating | Status |
 |----------|----------|--------|--------------|-----------|--------|--------|
-| Ramesh K | Delhi | CT, MRI, X-Ray | 3 | 1 | ⭐4.8 | 🚗 En Route |
-| Suresh M | Gurgaon | All Equipment | 4 | 2 | ⭐4.6 | 🔧 On Job |
+| Ramesh K | Delhi | CT, MRI, X-Ray | 3 | 1 | â­4.8 | ðŸš— En Route |
+| Suresh M | Gurgaon | All Equipment | 4 | 2 | â­4.6 | ðŸ”§ On Job |
 
 **Coverage Map:**
 - Engineers plotted on map
@@ -1052,21 +1052,21 @@ interface TimeRange {
 | General | 850 | 45 | 8 | 23 |
 
 **Alerts:**
-- ⚠️ CT Detector: Only 2 left (reorder now)
-- ⚠️ X-Ray Tube: Lead time 15 days
+- âš ï¸ CT Detector: Only 2 left (reorder now)
+- âš ï¸ X-Ray Tube: Lead time 15 days
 
 #### Section 4: Customer Accounts
 **Top Customers:**
 | Customer | AMC Value | Monthly Calls | Avg Resolution | Outstanding | Actions |
 |----------|-----------|---------------|----------------|-------------|---------|
-| Apollo Network | ₹8 L/month | 45 tickets | 4.2 hrs | ₹0 | View Details |
-| Max Healthcare | ₹6 L/month | 38 tickets | 5.1 hrs | ₹1.2 L | Follow Up |
+| Apollo Network | â‚¹8 L/month | 45 tickets | 4.2 hrs | â‚¹0 | View Details |
+| Max Healthcare | â‚¹6 L/month | 38 tickets | 5.1 hrs | â‚¹1.2 L | Follow Up |
 
 #### Section 5: Performance Analytics
 **This Month:**
 - Tickets Resolved: 145
-- Avg Response Time: 3.2 hrs (Target: 4 hrs) ✓
-- Avg Resolution Time: 6.8 hrs (Target: 8 hrs) ✓
+- Avg Response Time: 3.2 hrs (Target: 4 hrs) âœ“
+- Avg Resolution Time: 6.8 hrs (Target: 8 hrs) âœ“
 - First-Time Fix Rate: 78%
 - Customer Satisfaction: 4.5/5.0
 
@@ -1077,16 +1077,16 @@ interface TimeRange {
 
 #### Section 6: Financial Dashboard
 **Revenue Breakdown:**
-- AMC Contracts: ₹12 L (67%)
-- Break-Fix: ₹4 L (22%)
-- Parts Sales: ₹2 L (11%)
+- AMC Contracts: â‚¹12 L (67%)
+- Break-Fix: â‚¹4 L (22%)
+- Parts Sales: â‚¹2 L (11%)
 
 **Profitability:**
-- Revenue: ₹18 L
-- Engineer Costs: ₹8 L
-- Parts Cost: ₹3 L
-- Overheads: ₹2 L
-- Net Profit: ₹5 L (28%)
+- Revenue: â‚¹18 L
+- Engineer Costs: â‚¹8 L
+- Parts Cost: â‚¹3 L
+- Overheads: â‚¹2 L
+- Net Profit: â‚¹5 L (28%)
 
 ---
 
@@ -1096,11 +1096,11 @@ interface TimeRange {
 
 #### Top Stats Row
 ```
-┌─────────────────┬─────────────────┬─────────────────┬─────────────────┐
-│ Total Orgs      │ Active Users    │ Monthly GMV     │ Platform        │
-│ 1,245 orgs      │ 5,420 users     │ ₹245 Cr        │ Commission      │
-│ ↑45 this month  │ ↑234 this month │ ↑18% MoM       │ ₹9.8 Cr        │
-└─────────────────┴─────────────────┴─────────────────┴─────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ Total Orgs      â”‚ Active Users    â”‚ Monthly GMV     â”‚ Platform        â”‚
+â”‚ 1,245 orgs      â”‚ 5,420 users     â”‚ â‚¹245 Cr        â”‚ Commission      â”‚
+â”‚ â†‘45 this month  â”‚ â†‘234 this month â”‚ â†‘18% MoM       â”‚ â‚¹9.8 Cr        â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 #### Section 1: Organization Overview
@@ -1108,15 +1108,15 @@ interface TimeRange {
 | Org Type | Count | Active | Verified | Pending Approval | Actions |
 |----------|-------|--------|----------|------------------|---------|
 | Manufacturers | 45 | 42 | 40 | 3 | View All |
-| Distributors | 180 | 165 | 150 | 12 | View All |
-| Dealers | 650 | 580 | 520 | 45 | View All |
+| Channel Partners | 180 | 165 | 150 | 12 | View All |
+| Sub-Sub-sub_sub_SUB_DEALERs | 650 | 580 | 520 | 45 | View All |
 | Hospitals | 280 | 270 | 260 | 8 | View All |
 | Service Providers | 90 | 85 | 80 | 5 | View All |
 
 **Recent Registrations:**
 | Organization | Type | Registration Date | Status | Actions |
 |--------------|------|-------------------|--------|---------|
-| NewMed Distributors | Distributor | Today | Pending Verification | Review |
+| NewMed Channel Partners | Channel Partner | Today | Pending Verification | Review |
 | TechCare Services | Service Provider | Yesterday | Verified | View Profile |
 
 #### Section 2: Network Visualization
@@ -1136,15 +1136,15 @@ interface TimeRange {
 #### Section 3: Transaction Monitoring
 **Real-Time Activity:**
 - Orders Created: Live feed
-- Payments Processed: ₹X Cr today
+- Payments Processed: â‚¹X Cr today
 - Service Tickets: Active count
 - RFQs Submitted: Today's count
 
 **Top Transactions:**
 | Transaction | Type | Buyer | Seller | Value | Status | Time |
 |-------------|------|-------|--------|-------|--------|------|
-| #ORD-1234 | Purchase Order | Apollo Delhi | Siemens | ₹1.2 Cr | Confirmed | 5 mins ago |
-| #RFQ-5678 | RFQ | Max Hospital | Multiple | ₹80 L | 5 Quotes Received | 1 hr ago |
+| #ORD-1234 | Purchase Order | Apollo Delhi | Siemens | â‚¹1.2 Cr | Confirmed | 5 mins ago |
+| #RFQ-5678 | RFQ | Max Hospital | Multiple | â‚¹80 L | 5 Quotes Received | 1 hr ago |
 
 #### Section 4: Compliance & Verification
 **Pending Verifications:**
@@ -1169,16 +1169,16 @@ interface TimeRange {
 **Service Status:**
 | Service | Status | Uptime (30d) | Last Incident | Actions |
 |---------|--------|--------------|---------------|---------|
-| Equipment Registry | ✓ Healthy | 99.98% | None | Monitor |
-| Organizations | ✓ Healthy | 99.95% | None | Monitor |
-| RFQ Module | ⚠️ Slow | 99.80% | Yesterday | Investigate |
+| Equipment Registry | âœ“ Healthy | 99.98% | None | Monitor |
+| Organizations | âœ“ Healthy | 99.95% | None | Monitor |
+| RFQ Module | âš ï¸ Slow | 99.80% | Yesterday | Investigate |
 
 #### Section 6: Analytics & Insights
 **Growth Metrics:**
 - New Organizations: +45 this month
 - GMV Growth: +18% MoM
 - User Engagement: +24% MoM
-- Platform Commission: ₹9.8 Cr
+- Platform Commission: â‚¹9.8 Cr
 
 **Popular Categories:**
 - Imaging Equipment: 35% of GMV
@@ -1201,8 +1201,8 @@ Step 1: Create RFQ
   - System identifies potential vendors:
     * Siemens (Direct manufacturer)
     * GE Healthcare (Direct)
-    * MedEquip (Distributor - multi-brand)
-    * City Medical (Dealer - local)
+    * MedEquip (Channel Partner - multi-brand)
+    * City Medical (Sub-sub_SUB_DEALER - local)
 
 Step 2: AI Routing
   - Check Apollo's existing relationships
@@ -1211,9 +1211,9 @@ Step 2: AI Routing
   - Route to: Siemens, GE, Philips (through MedEquip)
 
 Step 3: Quote Submission
-  - Siemens: ₹1.5 Cr, 7 days delivery
-  - GE: ₹1.4 Cr, 10 days delivery
-  - Philips (via MedEquip): ₹1.35 Cr, 14 days delivery
+  - Siemens: â‚¹1.5 Cr, 7 days delivery
+  - GE: â‚¹1.4 Cr, 10 days delivery
+  - Philips (via MedEquip): â‚¹1.35 Cr, 14 days delivery
 
 Step 4: AI Advisory
   - Compare quotes
@@ -1243,9 +1243,9 @@ Step 7: Ongoing Service
 
 ---
 
-### 6.2 Use Case: Multi-Manufacturer Dealer Operations
+### 6.2 Use Case: Multi-Manufacturer Sub-sub_SUB_DEALER Operations
 
-**Scenario:** City Medical (Dealer) daily operations
+**Scenario:** City Medical (Sub-sub_SUB_DEALER) daily operations
 
 ```
 Morning: Stock Check
@@ -1259,39 +1259,39 @@ Morning: Stock Check
 Action: Reorder
   - Auto-suggests reorder quantities
   - Checks credit limits:
-    * MedEquip: ₹38 L used / ₹50 L limit → OK
-    * HealthTech: ₹18 L used / ₹20 L limit → Near limit
+    * MedEquip: â‚¹38 L used / â‚¹50 L limit â†’ OK
+    * HealthTech: â‚¹18 L used / â‚¹20 L limit â†’ Near limit
   - Creates orders:
-    * MedEquip: ₹5 L order (Siemens + GE parts)
-    * HealthTech: ₹1 L order (small items only)
+    * MedEquip: â‚¹5 L order (Siemens + GE parts)
+    * HealthTech: â‚¹1 L order (small items only)
 
 Mid-Day: Customer Inquiry
   - Hospital calls: "Need patient monitors, 20 units"
-  - Dealer checks:
-    * GE Monitor: Available via MedEquip, ₹2.2 L each
-    * Philips Monitor: Available via MedEquip, ₹2.4 L each
+  - Sub-sub_SUB_DEALER checks:
+    * GE Monitor: Available via MedEquip, â‚¹2.2 L each
+    * Philips Monitor: Available via MedEquip, â‚¹2.4 L each
     * Siemens Monitor: Out of stock
-  - Dealer quotes both options
+  - Sub-sub_SUB_DEALER quotes both options
   - Customer selects GE
-  - Dealer creates order to MedEquip
+  - Sub-sub_SUB_DEALER creates order to MedEquip
 
 Afternoon: Service Call
   - Apollo Hospital calls: CT Scanner issue
-  - Dealer checks:
+  - Sub-sub_SUB_DEALER checks:
     * Equipment: Siemens CT (sold 2 years ago)
-    * AMC: Active with dealer
+    * AMC: Active with Sub-sub_SUB_DEALER
     * Issue: Calibration error
-  - Dealer dispatches engineer
+  - Sub-sub_SUB_DEALER dispatches engineer
   - Engineer fixes issue using parts from inventory
   - Updates service record
-  - Customer charged ₹8,000 (covered under AMC)
+  - Customer charged â‚¹8,000 (covered under AMC)
 
 Evening: Financial Review
-  - Today's sales: ₹15 L
-  - Orders placed to suppliers: ₹6 L
-  - Collections: ₹10 L
-  - Outstanding: ₹28 L
-  - Payment due to MedEquip: ₹8 L (3 days)
+  - Today's sales: â‚¹15 L
+  - Orders placed to suppliers: â‚¹6 L
+  - Collections: â‚¹10 L
+  - Outstanding: â‚¹28 L
+  - Payment due to MedEquip: â‚¹8 L (3 days)
   - Action: Schedule payment
 
 Multi-Brand Intelligence:
@@ -1303,26 +1303,26 @@ Multi-Brand Intelligence:
 
 ---
 
-### 6.3 Use Case: Distributor Territory Expansion
+### 6.3 Use Case: Channel Partner Territory Expansion
 
 **Scenario:** MedEquip wants to expand to East India
 
 ```
 Step 1: Analysis
   - Current: North India (exclusive for Siemens)
-  - Opportunity: East India (no exclusive distributor)
-  - Market size: ₹200 Cr/year potential
-  - Competition: 3 distributors (non-exclusive)
+  - Opportunity: East India (no exclusive Channel Partner)
+  - Market size: â‚¹200 Cr/year potential
+  - Competition: 3 Channel Partners (non-exclusive)
 
 Step 2: Proposal to Siemens
-  - MedEquip proposes exclusive distributorship for East India
+  - MedEquip proposes exclusive Channel Partnership for East India
   - Shows track record in North India
-  - Commits: ₹50 Cr annual target
+  - Commits: â‚¹50 Cr annual target
 
 Step 3: Siemens Reviews
   - Dashboard shows MedEquip performance:
     * North India: 84% of target achieved
-    * 75 active dealers
+    * 75 active Sub-Sub-sub_sub_SUB_DEALERs
     * 4.5/5.0 rating
     * Growing steadily
   - Decision: Approve with conditions
@@ -1332,23 +1332,23 @@ Step 4: Territory Setup
   - States: West Bengal, Odisha, Bihar, Jharkhand
   - Assignment: MedEquip (exclusive for Siemens)
   - Relationship created:
-    * Type: EXCLUSIVE_DISTRIBUTOR
+    * Type: EXCLUSIVE_channel_partner
     * Territory: East India
     * Products: All Siemens
     * Commission: 10-14% (tiered)
-    * Target: ₹50 Cr/year
+    * Target: â‚¹50 Cr/year
     * Duration: 3 years
 
 Step 5: Execution
   - MedEquip opens warehouse in Kolkata
   - Registers facility on platform
-  - Starts recruiting dealers
-  - Platform shows available dealers in region
-  - MedEquip onboards 30 dealers in 6 months
+  - Starts recruiting Sub-Sub-sub_sub_SUB_DEALERs
+  - Platform shows available Sub-Sub-sub_sub_SUB_DEALERs in region
+  - MedEquip onboards 30 Sub-Sub-sub_sub_SUB_DEALERs in 6 months
 
 Step 6: Monitoring
   - Siemens dashboard shows East India performance
-  - MedEquip dashboard shows dealer network
+  - MedEquip dashboard shows Sub-sub_SUB_DEALER network
   - AI suggests: Focus on Odisha (untapped market)
   - Quarterly reviews automated
 ```
@@ -1396,7 +1396,7 @@ CREATE TABLE organizations (
   created_by TEXT,
   
   CONSTRAINT chk_org_type CHECK (org_type IN (
-    'manufacturer', 'distributor', 'dealer', 'supplier',
+    'manufacturer', 'Channel Partner', 'Sub-sub_SUB_DEALER', 'supplier',
     'hospital', 'laboratory', 'diagnostic_center', 'clinic',
     'service_provider', 'logistics_partner', 'insurance_provider',
     'government_body', 'other'
@@ -1480,8 +1480,8 @@ CREATE TABLE organization_relationships (
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   
   CONSTRAINT chk_rel_type CHECK (relationship_type IN (
-    'authorized_distributor', 'exclusive_distributor', 'regional_distributor',
-    'authorized_dealer', 'service_partner', 'dealer_network', 'sub_distributor',
+    'authorized_channel_partner', 'exclusive_channel_partner', 'regional_channel_partner',
+    'authorized_sub_Sub-sub_SUB_DEALER', 'service_partner', 'sub_sub_Sub-sub_SUB_DEALER_network', 'sub_channel_partner',
     'amc_provider', 'spare_parts_supplier', 'strategic_partner', 'oem_partner',
     'direct_buyer', 'institutional_buyer', 'logistics_partner', 'financing_partner'
   )),
@@ -1605,8 +1605,8 @@ PATCH  /api/v1/relationships/:id
 DELETE /api/v1/relationships/:id
 
 // Specific relationship queries
-GET    /api/v1/organizations/:id/distributors
-GET    /api/v1/organizations/:id/dealers
+GET    /api/v1/organizations/:id/Channel Partners
+GET    /api/v1/organizations/:id/Sub-Sub-sub_sub_SUB_DEALERs
 GET    /api/v1/organizations/:id/manufacturers
 GET    /api/v1/organizations/:id/service-providers
 
@@ -1631,8 +1631,8 @@ PATCH  /api/v1/certifications/:id
 
 // Dashboard Data
 GET    /api/v1/dashboard/manufacturer
-GET    /api/v1/dashboard/distributor
-GET    /api/v1/dashboard/dealer
+GET    /api/v1/dashboard/Channel Partner
+GET    /api/v1/dashboard/Sub-sub_SUB_DEALER
 GET    /api/v1/dashboard/hospital
 GET    /api/v1/dashboard/service-provider
 GET    /api/v1/dashboard/admin
@@ -1665,8 +1665,8 @@ GET    /api/v1/analytics/performance-metrics
 
 ### Phase 3: Dashboards (Week 3)
 1. Manufacturer dashboard
-2. Distributor dashboard
-3. Dealer dashboard
+2. Channel Partner dashboard
+3. Sub-sub_SUB_DEALER dashboard
 4. Hospital dashboard
 5. Service provider dashboard
 6. Admin dashboard
@@ -1680,7 +1680,7 @@ GET    /api/v1/analytics/performance-metrics
 
 ---
 
-**Status:** 📝 DETAILED DESIGN COMPLETE  
+**Status:** ðŸ“ DETAILED DESIGN COMPLETE  
 **Ready for:** Technical Review & Implementation Planning  
 **Next:** Get your feedback and approval to proceed
 

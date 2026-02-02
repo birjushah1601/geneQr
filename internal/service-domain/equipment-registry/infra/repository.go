@@ -1,4 +1,4 @@
-package infra
+﻿package infra
 
 import (
 	"context"
@@ -152,8 +152,8 @@ func (r *EquipmentRepository) GetByID(ctx context.Context, id string) (*domain.E
 			query += " AND manufacturer_id = $2"
 		case "hospital", "imaging_center":
 			query += " AND (customer_id = $2 OR organization_id = $2)"
-		case "distributor", "dealer":
-			query += " AND (distributor_org_id = $2 OR service_provider_org_id = $2)"
+		case "Channel Partner", "Sub-sub_SUB_DEALER":
+			query += " AND (channel_partner_org_id = $2 OR service_provider_org_id = $2)"
 		default:
 			query += " AND customer_id = $2"
 		}
@@ -252,9 +252,9 @@ func (r *EquipmentRepository) List(ctx context.Context, criteria domain.ListCrit
 			queryBuilder.WriteString(fmt.Sprintf(" AND (customer_id = $%d OR organization_id = $%d)", argCount, argCount))
 			args = append(args, orgID.String())
 			argCount++
-		case "distributor", "dealer":
-			// Distributors see equipment they sold/service
-			queryBuilder.WriteString(fmt.Sprintf(" AND (distributor_org_id = $%d OR service_provider_org_id = $%d)", argCount, argCount))
+		case "Channel Partner", "Sub-sub_SUB_DEALER":
+			// Channel Partners see equipment they sold/service
+			queryBuilder.WriteString(fmt.Sprintf(" AND (channel_partner_org_id = $%d OR service_provider_org_id = $%d)", argCount, argCount))
 			args = append(args, orgID.String())
 			argCount++
 		default:

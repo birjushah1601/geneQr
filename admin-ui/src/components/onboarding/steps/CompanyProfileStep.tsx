@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -148,8 +148,8 @@ export default function CompanyProfileStep({
               <SelectContent>
                 <SelectItem value="manufacturer">Manufacturer</SelectItem>
                 <SelectItem value="supplier">Supplier</SelectItem>
-                <SelectItem value="distributor">Distributor</SelectItem>
-                <SelectItem value="dealer">Dealer</SelectItem>
+                <SelectItem value="Channel Partner">Channel Partner</SelectItem>
+                <SelectItem value="Sub-sub_SUB_DEALER">Sub-sub_SUB_DEALER</SelectItem>
                 <SelectItem value="hospital">Hospital</SelectItem>
                 <SelectItem value="clinic">Clinic</SelectItem>
                 <SelectItem value="service_provider">Service Provider</SelectItem>

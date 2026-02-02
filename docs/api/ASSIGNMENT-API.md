@@ -1,17 +1,17 @@
-# 📋 Assignment API Documentation
+﻿# ðŸ“‹ Assignment API Documentation
 
 **Version:** 1.0  
 **Base URL:** `/api/v1`
 
 ---
 
-## 🎯 Overview
+## ðŸŽ¯ Overview
 
 The Assignment API manages engineer assignments for service tickets, including assignment creation, escalation, and tracking.
 
 ---
 
-## 📚 Endpoints
+## ðŸ“š Endpoints
 
 ### **Ticket Assignment**
 
@@ -61,7 +61,7 @@ Escalate a ticket to the next tier.
 {
   "reason": "Issue requires specialized expertise",
   "next_engineer_id": "ENG-002",
-  "next_tier_name": "Dealer Engineer",
+  "next_tier_name": "Sub-sub_SUB_DEALER Engineer",
   "escalated_by": "ENG-001"
 }
 ```
@@ -74,7 +74,7 @@ Escalate a ticket to the next tier.
   "engineer_id": "ENG-002",
   "assignment_sequence": 2,
   "assignment_tier": 2,
-  "assignment_tier_name": "Dealer Engineer",
+  "assignment_tier_name": "Sub-sub_SUB_DEALER Engineer",
   "assignment_reason": "Escalation from tier 1",
   "status": "assigned",
   "escalation_reason": "Issue requires specialized expertise",
@@ -298,7 +298,7 @@ Get workload statistics for an engineer.
 
 ---
 
-## 🔑 Data Models
+## ðŸ”‘ Data Models
 
 ### **Assignment Status**
 - `assigned` - Ticket assigned to engineer
@@ -323,7 +323,7 @@ Get workload statistics for an engineer.
 
 ---
 
-## ⚠️ Error Responses
+## âš ï¸ Error Responses
 
 ### **400 Bad Request**
 ```json
@@ -348,7 +348,7 @@ Get workload statistics for an engineer.
 
 ---
 
-## 🔄 Typical Workflow
+## ðŸ”„ Typical Workflow
 
 ### **Scenario: Ticket Assignment & Escalation**
 
@@ -394,7 +394,7 @@ Get workload statistics for an engineer.
 
 ---
 
-## 📊 Performance Considerations
+## ðŸ“Š Performance Considerations
 
 - Assignment history queries are optimized with indexes on `ticket_id` and `assignment_sequence`
 - Current assignment lookup uses a partial index for active assignments only
@@ -403,7 +403,7 @@ Get workload statistics for an engineer.
 
 ---
 
-## 🔒 Authentication
+## ðŸ”’ Authentication
 
 All endpoints require authentication. Include the bearer token in the Authorization header:
 
@@ -413,7 +413,7 @@ Authorization: Bearer <your-token>
 
 ---
 
-## 📝 Changelog
+## ðŸ“ Changelog
 
 ### Version 1.0 (2025-11-16)
 - Initial release

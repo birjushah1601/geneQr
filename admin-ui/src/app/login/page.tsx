@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -144,7 +144,7 @@ export default function LoginPage() {
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              ABY-MED Platform
+              ServQR Platform
             </h1>
             <p className="text-gray-600">
               {step === 'identifier' && 'Sign in to your account'}
@@ -240,7 +240,7 @@ export default function LoginPage() {
                   className="text-gray-600 hover:text-gray-900"
                   disabled={isLoading}
                 >
-                  ← Back
+                  â† Back
                 </button>
                 <button
                   type="button"
@@ -298,7 +298,7 @@ export default function LoginPage() {
                   className="text-gray-600 hover:text-gray-900"
                   disabled={isLoading}
                 >
-                  ← Back
+                  â† Back
                 </button>
                 <a href="/forgot-password" className="text-blue-600 hover:text-blue-700 font-medium">
                   Forgot password?
@@ -321,7 +321,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <p className="text-center text-sm text-gray-600 mt-8">
-          Secure authentication powered by ABY-MED
+          Secure authentication powered by ServQR
         </p>
       </div>
     </div>

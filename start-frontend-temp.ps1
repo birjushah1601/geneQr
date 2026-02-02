@@ -1,4 +1,4 @@
-﻿Set-Location 'C:\Users\birju\aby-med\admin-ui'
+﻿Set-Location 'C:\Users\birju\ServQR\admin-ui'
 
 Write-Host '🚀 Starting Frontend (Next.js)...' -ForegroundColor Green
 Write-Host '   URL: http://localhost:3000' -ForegroundColor Cyan

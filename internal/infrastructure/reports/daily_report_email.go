@@ -1,4 +1,4 @@
-package reports
+﻿package reports
 
 import (
 	"context"
@@ -56,7 +56,7 @@ func generateDailyReportPlainText(report *DailyReportData) string {
 	}
 
 	text := fmt.Sprintf(`
-ABY-MED Platform - %s Daily Report
+ServQR Platform - %s Daily Report
 Date: %s
 ========================================
 
@@ -125,7 +125,7 @@ Overdue Tickets: %d
 
 	// Tickets needing attention
 	if len(report.TicketsNeedingAttention) > 0 {
-		text += "⚠️  TICKETS NEEDING ATTENTION\n========================================\n"
+		text += "âš ï¸  TICKETS NEEDING ATTENTION\n========================================\n"
 		for i, alert := range report.TicketsNeedingAttention {
 			text += fmt.Sprintf("%d. %s - %s (%s) - %s [%d days open]\n",
 				i+1, alert.TicketNumber, alert.EquipmentName, alert.Priority, alert.Reason, alert.DaysOpen)
@@ -135,7 +135,7 @@ Overdue Tickets: %d
 
 	text += `
 ========================================
-ABY-MED Admin System
+ServQR Admin System
 `
 
 	return text
@@ -196,14 +196,14 @@ func generateDailyReportHTML(report *DailyReportData) string {
 <body>
     <div class="container">
         <div class="header">
-            <h1>📊 %s Daily Report</h1>
+            <h1>ðŸ“Š %s Daily Report</h1>
             <p>%s</p>
         </div>
         
         <div class="content">
             <!-- Ticket Summary -->
             <div class="section">
-                <div class="section-title">📋 Ticket Summary</div>
+                <div class="section-title">ðŸ“‹ Ticket Summary</div>
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-label">Total Tickets</div>
@@ -234,7 +234,7 @@ func generateDailyReportHTML(report *DailyReportData) string {
 
             <!-- Priority Breakdown -->
             <div class="section">
-                <div class="section-title">🔥 Priority Breakdown (Open Tickets)</div>
+                <div class="section-title">ðŸ”¥ Priority Breakdown (Open Tickets)</div>
                 <div class="priority-grid">
                     <div class="priority-card priority-critical">
                         <div class="priority-label" style="color: #dc2626;">Critical</div>
@@ -257,7 +257,7 @@ func generateDailyReportHTML(report *DailyReportData) string {
 
             <!-- Performance Metrics -->
             <div class="section">
-                <div class="section-title">⚡ Performance Metrics</div>
+                <div class="section-title">âš¡ Performance Metrics</div>
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-label">Avg Resolution Time</div>
@@ -279,7 +279,7 @@ func generateDailyReportHTML(report *DailyReportData) string {
 
             <!-- Engineer Statistics -->
             <div class="section">
-                <div class="section-title">👷 Engineer Statistics</div>
+                <div class="section-title">ðŸ‘· Engineer Statistics</div>
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-label">Total Engineers</div>
@@ -306,7 +306,7 @@ func generateDailyReportHTML(report *DailyReportData) string {
 	if len(report.TopEngineers) > 0 {
 		html += `
             <div class="section">
-                <div class="section-title">🏆 Top Performing Engineers</div>
+                <div class="section-title">ðŸ† Top Performing Engineers</div>
                 <table class="table">
                     <thead>
                         <tr>
@@ -340,7 +340,7 @@ func generateDailyReportHTML(report *DailyReportData) string {
 	if len(report.TopEquipment) > 0 {
 		html += `
             <div class="section">
-                <div class="section-title">🔧 Equipment with Most Issues</div>
+                <div class="section-title">ðŸ”§ Equipment with Most Issues</div>
                 <table class="table">
                     <thead>
                         <tr>
@@ -372,7 +372,7 @@ func generateDailyReportHTML(report *DailyReportData) string {
 	if len(report.TicketsNeedingAttention) > 0 {
 		html += `
             <div class="section">
-                <div class="section-title">⚠️ Tickets Needing Attention</div>`
+                <div class="section-title">âš ï¸ Tickets Needing Attention</div>`
 		
 		for _, alert := range report.TicketsNeedingAttention {
 			priorityClass := "badge-medium"
@@ -406,8 +406,8 @@ func generateDailyReportHTML(report *DailyReportData) string {
         </div>
         
         <div class="footer">
-            <p><strong>ABY-MED Admin Notification System</strong></p>
-            <p>This is an automated daily report | &copy; 2025 ABY-MED. All rights reserved.</p>
+            <p><strong>ServQR Admin Notification System</strong></p>
+            <p>This is an automated daily report | &copy; 2025 ServQR. All rights reserved.</p>
         </div>
     </div>
 </body>

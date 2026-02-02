@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- SIMPLIFIED ENGINEER ASSIGNMENT SYSTEM - MVP (FIXED VERSION)
 -- ============================================================================
 -- Purpose: Simplified, configuration-driven engineer assignment
@@ -62,8 +62,8 @@ CREATE TABLE equipment_service_config (
   -- Service hierarchy (ordered by priority)
   -- These are the organizations that should be tried in order
   primary_service_org_id UUID REFERENCES organizations(id),    -- Usually manufacturer (Tier 1)
-  secondary_service_org_id UUID REFERENCES organizations(id),  -- Usually dealer who sold it (Tier 2)
-  tertiary_service_org_id UUID REFERENCES organizations(id),   -- Usually distributor (Tier 3)
+  secondary_service_org_id UUID REFERENCES organizations(id),  -- Usually Sub-sub_SUB_DEALER who sold it (Tier 2)
+  tertiary_service_org_id UUID REFERENCES organizations(id),   -- Usually Channel Partner (Tier 3)
   fallback_service_org_id UUID REFERENCES organizations(id),   -- Hospital in-house BME team (Tier 4/5)
   
   -- Warranty/AMC status (affects who gets priority)
@@ -100,8 +100,8 @@ CREATE INDEX IF NOT EXISTS idx_equip_config_amc_active ON equipment_service_conf
 
 COMMENT ON TABLE equipment_service_config IS 'Configuration for service routing per equipment - who should service it and in what order';
 COMMENT ON COLUMN equipment_service_config.primary_service_org_id IS 'First choice for service (usually manufacturer)';
-COMMENT ON COLUMN equipment_service_config.secondary_service_org_id IS 'Second choice (usually dealer)';
-COMMENT ON COLUMN equipment_service_config.tertiary_service_org_id IS 'Third choice (usually distributor)';
+COMMENT ON COLUMN equipment_service_config.secondary_service_org_id IS 'Second choice (usually Sub-sub_SUB_DEALER)';
+COMMENT ON COLUMN equipment_service_config.tertiary_service_org_id IS 'Third choice (usually Channel Partner)';
 COMMENT ON COLUMN equipment_service_config.fallback_service_org_id IS 'Last resort (usually hospital in-house team)';
 COMMENT ON COLUMN equipment_service_config.min_engineer_level IS 'Minimum engineer level required: 1=Junior, 2=Senior, 3=Expert';
 
@@ -120,7 +120,7 @@ CREATE INDEX IF NOT EXISTS idx_ticket_assignment_tier ON service_tickets(assignm
 
 COMMENT ON COLUMN service_tickets.assigned_org_id IS 'Organization whose engineer was assigned';
 COMMENT ON COLUMN service_tickets.assignment_tier IS 'Which tier was used: 1=Primary, 2=Secondary, 3=Tertiary, 4=Fallback';
-COMMENT ON COLUMN service_tickets.assignment_tier_name IS 'Human-readable tier name: warranty, amc, manufacturer, dealer, distributor, in_house';
+COMMENT ON COLUMN service_tickets.assignment_tier_name IS 'Human-readable tier name: warranty, amc, manufacturer, Sub-sub_SUB_DEALER, Channel Partner, in_house';
 
 -- ============================================================================
 -- 5. HELPER FUNCTIONS
@@ -181,7 +181,7 @@ BEGIN
     o.org_type,
     2 as tier,
     'secondary' as tier_name,
-    'authorized_dealer' as reason
+    'authorized_sub_Sub-sub_SUB_DEALER' as reason
   FROM config c
   JOIN organizations o ON o.id = c.secondary_service_org_id
   WHERE c.secondary_service_org_id IS NOT NULL
@@ -194,7 +194,7 @@ BEGIN
     o.org_type,
     3 as tier,
     'tertiary' as tier_name,
-    'distributor' as reason
+    'Channel Partner' as reason
   FROM config c
   JOIN organizations o ON o.id = c.tertiary_service_org_id
   WHERE c.tertiary_service_org_id IS NOT NULL

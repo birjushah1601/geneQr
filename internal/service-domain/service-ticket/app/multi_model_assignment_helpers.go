@@ -1,4 +1,4 @@
-package app
+﻿package app
 
 import (
 	"context"
@@ -135,13 +135,13 @@ func (s *MultiModelAssignmentService) getTierInformation(ctx context.Context, en
 		},
 		{
 			Tier:            2,
-			Name:            "Distributor",
+			Name:            "Channel Partner",
 			OrganizationIDs: keysToSlice(tierMap[2]),
 			AvailableCount:  len(tierMap[2]),
 		},
 		{
 			Tier:            3,
-			Name:            "Dealer",
+			Name:            "Sub-sub_SUB_DEALER",
 			OrganizationIDs: keysToSlice(tierMap[3]),
 			AvailableCount:  len(tierMap[3]),
 		},
@@ -199,7 +199,7 @@ func (s *MultiModelAssignmentService) getBestMatchModel(
 		// Level match (20 points)
 		if level >= minLevel {
 			score += 20
-			sug.MatchReasons = append(sug.MatchReasons, fmt.Sprintf("✅ Level %d engineer (meets requirement)", level))
+			sug.MatchReasons = append(sug.MatchReasons, fmt.Sprintf("âœ… Level %d engineer (meets requirement)", level))
 		}
 		
 		// Certification match (40 points)
@@ -207,7 +207,7 @@ func (s *MultiModelAssignmentService) getBestMatchModel(
 		for _, cert := range certMap[eng.ID] {
 			if cert.Manufacturer == equipment.ManufacturerName && cert.Category == equipment.Category && cert.IsCertified {
 				score += 40
-				sug.MatchReasons = append(sug.MatchReasons, fmt.Sprintf("✅ Certified for %s %s equipment", equipment.ManufacturerName, equipment.Category))
+				sug.MatchReasons = append(sug.MatchReasons, fmt.Sprintf("âœ… Certified for %s %s equipment", equipment.ManufacturerName, equipment.Category))
 				hasCert = true
 				break
 			}
@@ -218,7 +218,7 @@ func (s *MultiModelAssignmentService) getBestMatchModel(
 			for _, cert := range certMap[eng.ID] {
 				if cert.Category == equipment.Category {
 					score += 10
-					sug.MatchReasons = append(sug.MatchReasons, fmt.Sprintf("⚠️ Familiar with %s equipment (not certified)", equipment.Category))
+					sug.MatchReasons = append(sug.MatchReasons, fmt.Sprintf("âš ï¸ Familiar with %s equipment (not certified)", equipment.Category))
 					break
 				}
 			}
@@ -229,12 +229,12 @@ func (s *MultiModelAssignmentService) getBestMatchModel(
 		if workload != nil {
 			if workload.ActiveTickets == 0 {
 				score += 20
-				sug.MatchReasons = append(sug.MatchReasons, "✅ No active tickets - fully available")
+				sug.MatchReasons = append(sug.MatchReasons, "âœ… No active tickets - fully available")
 			} else if workload.ActiveTickets <= 2 {
 				score += 10
-				sug.MatchReasons = append(sug.MatchReasons, fmt.Sprintf("✅ Low workload (%d active tickets)", workload.ActiveTickets))
+				sug.MatchReasons = append(sug.MatchReasons, fmt.Sprintf("âœ… Low workload (%d active tickets)", workload.ActiveTickets))
 			} else {
-				sug.MatchReasons = append(sug.MatchReasons, fmt.Sprintf("⚠️ Moderate workload (%d active tickets)", workload.ActiveTickets))
+				sug.MatchReasons = append(sug.MatchReasons, fmt.Sprintf("âš ï¸ Moderate workload (%d active tickets)", workload.ActiveTickets))
 			}
 		}
 		
@@ -243,13 +243,13 @@ func (s *MultiModelAssignmentService) getBestMatchModel(
 		   strings.Contains(strings.ToLower(eng.OrganizationName), "philips") ||
 		   strings.Contains(strings.ToLower(eng.OrganizationName), "ge") {
 			score += 10
-			sug.MatchReasons = append(sug.MatchReasons, "✅ Manufacturer organization")
+			sug.MatchReasons = append(sug.MatchReasons, "âœ… Manufacturer organization")
 		}
 		
 		// Senior engineer bonus (10 points)
 		if level == 3 {
 			score += 10
-			sug.MatchReasons = append(sug.MatchReasons, "✅ Senior engineer (Level 3)")
+			sug.MatchReasons = append(sug.MatchReasons, "âœ… Senior engineer (Level 3)")
 		}
 		
 		sug.MatchScore = score
@@ -315,8 +315,8 @@ func (s *MultiModelAssignmentService) getManufacturerCertifiedModel(
 			Certifications:   certMap[eng.ID],
 			MatchScore:       100,
 			MatchReasons: []string{
-				fmt.Sprintf("✅ Certified by %s for %s equipment", equipment.ManufacturerName, equipment.Category),
-				fmt.Sprintf("✅ Level %d engineer", level),
+				fmt.Sprintf("âœ… Certified by %s for %s equipment", equipment.ManufacturerName, equipment.Category),
+				fmt.Sprintf("âœ… Level %d engineer", level),
 			},
 		}
 		
@@ -385,8 +385,8 @@ func (s *MultiModelAssignmentService) getLowWorkloadModel(
 			Workload:         workload,
 			MatchScore:       100 - (workload.ActiveTickets * 10),
 			MatchReasons: []string{
-				fmt.Sprintf("✅ %d active tickets", workload.ActiveTickets),
-				fmt.Sprintf("✅ Level %d engineer", level),
+				fmt.Sprintf("âœ… %d active tickets", workload.ActiveTickets),
+				fmt.Sprintf("âœ… Level %d engineer", level),
 			},
 		}
 		
@@ -436,8 +436,8 @@ func (s *MultiModelAssignmentService) getHighSeniorityModel(
 			OrganizationName: eng.OrganizationName,
 			MatchScore:       100,
 			MatchReasons: []string{
-				"✅ Senior engineer (Level 3)",
-				"✅ Highest experience level available",
+				"âœ… Senior engineer (Level 3)",
+				"âœ… Highest experience level available",
 			},
 		}
 		

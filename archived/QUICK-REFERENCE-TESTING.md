@@ -1,8 +1,8 @@
-# Quick Reference - ABY-MED API Testing
+﻿# Quick Reference - ServQR API Testing
 
-## 🚀 Quick Start
+## ðŸš€ Quick Start
 
-### Test Equipment Registry (✅ Working)
+### Test Equipment Registry (âœ… Working)
 ```bash
 curl -H "X-Tenant-ID: city-hospital" http://localhost:8081/api/v1/equipment
 ```
@@ -14,7 +14,7 @@ curl http://localhost:8081/health
 
 ---
 
-## 📡 All API Endpoints
+## ðŸ“¡ All API Endpoints
 
 ### Base URL
 ```
@@ -30,30 +30,30 @@ Content-Type: application/json
 
 ---
 
-## 🎯 Service Endpoints Quick Reference
+## ðŸŽ¯ Service Endpoints Quick Reference
 
 | Service | Method | Endpoint | Status |
 |---------|--------|----------|--------|
-| **Health** | GET | `/health` | ✅ |
-| **Metrics** | GET | `/metrics` | ✅ |
-| **Equipment** | GET | `/equipment` | ✅ |
-| **Equipment** | POST | `/equipment` | ✅ |
-| **RFQ** | GET | `/rfq` | ⚠️ |
-| **RFQ** | POST | `/rfq` | ⚠️ |
-| **Catalog** | GET | `/catalog` | ⚠️ |
-| **Catalog** | POST | `/catalog` | ⚠️ |
-| **Suppliers** | GET | `/suppliers` | ⚠️ |
-| **Suppliers** | POST | `/suppliers` | ⚠️ |
-| **Quotes** | GET | `/quotes` | 🔄 |
-| **Quotes** | POST | `/quotes` | 🔄 |
-| **Tickets** | GET | `/tickets` | 🔄 |
-| **Tickets** | POST | `/tickets` | 🔄 |
+| **Health** | GET | `/health` | âœ… |
+| **Metrics** | GET | `/metrics` | âœ… |
+| **Equipment** | GET | `/equipment` | âœ… |
+| **Equipment** | POST | `/equipment` | âœ… |
+| **RFQ** | GET | `/rfq` | âš ï¸ |
+| **RFQ** | POST | `/rfq` | âš ï¸ |
+| **Catalog** | GET | `/catalog` | âš ï¸ |
+| **Catalog** | POST | `/catalog` | âš ï¸ |
+| **Suppliers** | GET | `/suppliers` | âš ï¸ |
+| **Suppliers** | POST | `/suppliers` | âš ï¸ |
+| **Quotes** | GET | `/quotes` | ðŸ”„ |
+| **Quotes** | POST | `/quotes` | ðŸ”„ |
+| **Tickets** | GET | `/tickets` | ðŸ”„ |
+| **Tickets** | POST | `/tickets` | ðŸ”„ |
 
-**Legend:** ✅ Working | ⚠️ Schema issue | 🔄 Not tested yet
+**Legend:** âœ… Working | âš ï¸ Schema issue | ðŸ”„ Not tested yet
 
 ---
 
-## 💻 PowerShell Testing Commands
+## ðŸ’» PowerShell Testing Commands
 
 ### Test All Services
 ```powershell
@@ -91,7 +91,7 @@ Invoke-RestMethod -Method POST `
 
 ---
 
-## 🌐 Web Dashboards
+## ðŸŒ Web Dashboards
 
 | Dashboard | URL | Credentials | Purpose |
 |-----------|-----|-------------|---------|
@@ -101,11 +101,11 @@ Invoke-RestMethod -Method POST `
 
 ---
 
-## 📦 Import Postman Collection
+## ðŸ“¦ Import Postman Collection
 
 1. Open Postman
 2. Click **Import**
-3. Select file: `ABY-MED-Postman-Collection.json`
+3. Select file: `ServQR-Postman-Collection.json`
 4. Collection variables already set:
    - `baseUrl`: http://localhost:8081
    - `tenantId`: city-hospital
@@ -113,7 +113,7 @@ Invoke-RestMethod -Method POST `
 
 ---
 
-## 🔍 Debugging Commands
+## ðŸ” Debugging Commands
 
 ### Check Platform Status
 ```powershell
@@ -146,9 +146,9 @@ docker exec -it med-platform-postgres psql -U postgres -d medplatform
 
 ---
 
-## 📝 Sample Test Scenarios
+## ðŸ“ Sample Test Scenarios
 
-### Scenario 1: List Equipment (✅ Working)
+### Scenario 1: List Equipment (âœ… Working)
 ```bash
 curl -H "X-Tenant-ID: city-hospital" \
      http://localhost:8081/api/v1/equipment
@@ -156,7 +156,7 @@ curl -H "X-Tenant-ID: city-hospital" \
 
 **Expected:** JSON with equipment list
 
-### Scenario 2: Create RFQ (⚠️ Schema issue)
+### Scenario 2: Create RFQ (âš ï¸ Schema issue)
 ```bash
 curl -X POST http://localhost:8081/api/v1/rfq \
   -H "X-Tenant-ID: city-hospital" \
@@ -170,7 +170,7 @@ curl -X POST http://localhost:8081/api/v1/rfq \
 
 **Current Status:** Schema mismatch error
 
-### Scenario 3: List Catalog Items (⚠️ Schema issue)
+### Scenario 3: List Catalog Items (âš ï¸ Schema issue)
 ```bash
 curl -H "X-Tenant-ID: city-hospital" \
      http://localhost:8081/api/v1/catalog
@@ -180,7 +180,7 @@ curl -H "X-Tenant-ID: city-hospital" \
 
 ---
 
-## 🛠️ Troubleshooting Guide
+## ðŸ› ï¸ Troubleshooting Guide
 
 ### Issue: "relation does not exist"
 **Solution:** Database schema mismatch. Check:
@@ -206,12 +206,12 @@ Get-Process *platform*
 
 ---
 
-## 📁 Files Created for You
+## ðŸ“ Files Created for You
 
 | File | Purpose |
 |------|---------|
 | `API-TESTING-GUIDE.md` | Complete API documentation |
-| `ABY-MED-Postman-Collection.json` | Postman collection |
+| `ServQR-Postman-Collection.json` | Postman collection |
 | `QUICK-START-TESTING.md` | Step-by-step guide |
 | `init-database-schema.sql` | Database schema (executed) |
 | `TESTING-STATUS-SUMMARY.md` | Current status report |
@@ -219,7 +219,7 @@ Get-Process *platform*
 
 ---
 
-## 🎯 Testing Priorities
+## ðŸŽ¯ Testing Priorities
 
 1. **First**: Test Equipment Registry (already working)
 2. **Second**: Fix schema issues for RFQ, Catalog, Supplier
@@ -229,7 +229,7 @@ Get-Process *platform*
 
 ---
 
-## ✨ Quick Wins
+## âœ¨ Quick Wins
 
 Things you can test RIGHT NOW:
 
@@ -252,7 +252,7 @@ start http://localhost:9090
 
 ---
 
-## 📞 Need Help?
+## ðŸ“ž Need Help?
 
 1. Check `TESTING-STATUS-SUMMARY.md` for detailed status
 2. Check `API-TESTING-GUIDE.md` for complete API docs
@@ -263,4 +263,4 @@ start http://localhost:9090
 
 **Last Updated:** October 1, 2025  
 **Platform Version:** 0.1.0  
-**Status:** 60% Services Tested ✅
+**Status:** 60% Services Tested âœ…

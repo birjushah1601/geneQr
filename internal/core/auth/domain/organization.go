@@ -1,4 +1,4 @@
-package domain
+﻿package domain
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 type Organization struct {
 	ID         uuid.UUID `json:"id" db:"id"`
 	Name       string    `json:"name" db:"name"`
-	Type       string    `json:"org_type" db:"org_type"` // manufacturer, hospital, distributor, dealer, supplier, imaging_center
+	Type       string    `json:"org_type" db:"org_type"` // manufacturer, hospital, Channel Partner, Sub-sub_SUB_DEALER, supplier, imaging_center
 	Status     string    `json:"status" db:"status"`
 	ExternalRef *string   `json:"external_ref" db:"external_ref"`
 	Metadata   JSONBMap  `json:"metadata" db:"metadata"`
@@ -30,12 +30,12 @@ type OrganizationRepository interface {
 
 // Organization types
 const (
-	OrgTypeManufacturer  = "manufacturer"
-	OrgTypeHospital      = "hospital"
-	OrgTypeDistributor   = "distributor"
-	OrgTypeDealer        = "dealer"
-	OrgTypeSupplier      = "supplier"
-	OrgTypeImagingCenter = "imaging_center"
+	OrgTypeManufacturer   = "manufacturer"
+	OrgTypeHospital       = "hospital"
+	OrgTypeChannelPartner = "channel_partner"
+	OrgTypeSubDealer      = "sub_dealer"
+	OrgTypeSupplier       = "supplier"
+	OrgTypeImagingCenter  = "imaging_center"
 )
 
 // Organization status

@@ -1,4 +1,4 @@
-package api
+﻿package api
 
 import (
 	"context"
@@ -606,7 +606,7 @@ func (h *AuthHandler) ResendSetupLink(w http.ResponseWriter, r *http.Request) {
 	setupLink := fmt.Sprintf("http://localhost:3000/set-password?token=%s", token)
 
 	// TODO: Send email here
-	fmt.Printf("📧 New setup link for %s: %s\n", req.Email, setupLink)
+	fmt.Printf("ðŸ“§ New setup link for %s: %s\n", req.Email, setupLink)
 
 	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"message":    "A new setup link has been sent to your email.",
@@ -680,12 +680,12 @@ func (h *AuthHandler) AuthMiddleware(next http.Handler) http.Handler {
 
 		claims, err := h.jwtService.ValidateToken(tokenString)
 		if err != nil {
-			fmt.Printf("❌ Token validation failed for path %s: %v\n", r.URL.Path, err)
+			fmt.Printf("âŒ Token validation failed for path %s: %v\n", r.URL.Path, err)
 			respondError(w, http.StatusUnauthorized, "Invalid token")
 			return
 		}
 
-		fmt.Printf("✅ Token validated for path %s - user_id=%s, org_id=%s, org_type=%s\n", 
+		fmt.Printf("âœ… Token validated for path %s - user_id=%s, org_id=%s, org_type=%s\n", 
 			r.URL.Path, claims.UserID, claims.OrganizationID, claims.OrganizationType)
 
 		// Add claims to context for downstream middleware

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
@@ -16,7 +16,7 @@ interface User {
 
 interface OrganizationContext {
   organization_id: string;
-  organization_type: string; // manufacturer, hospital, distributor, dealer, supplier, imaging_center
+  organization_type: string; // manufacturer, hospital, Channel Partner, Sub-sub_SUB_DEALER, supplier, imaging_center
   role: string;
 }
 

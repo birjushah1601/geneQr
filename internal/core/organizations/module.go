@@ -1,4 +1,4 @@
-package organizations
+﻿package organizations
 
 import (
     "context"
@@ -61,7 +61,7 @@ func (m *Module) Initialize(ctx context.Context) error {
     fromEmail := os.Getenv("SENDGRID_FROM_EMAIL")
     fromName := os.Getenv("SENDGRID_FROM_NAME")
     if fromName == "" {
-        fromName = "ABY-MED Platform"
+        fromName = "ServQR Platform"
     }
     
     emailService := email.NewNotificationService(sendgridKey, fromEmail, fromName)

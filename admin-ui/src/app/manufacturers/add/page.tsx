@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -10,8 +10,8 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8
 const ORG_TYPES = [
   { value: 'manufacturer', label: 'Manufacturer' },
   { value: 'supplier', label: 'Supplier' },
-  { value: 'distributor', label: 'Distributor' },
-  { value: 'dealer', label: 'Dealer' },
+  { value: 'Channel Partner', label: 'Channel Partner' },
+  { value: 'Sub-sub_SUB_DEALER', label: 'Sub-sub_SUB_DEALER' },
   { value: 'hospital', label: 'Hospital' },
   { value: 'clinic', label: 'Clinic' },
   { value: 'service_provider', label: 'Service Provider' },
@@ -84,7 +84,7 @@ export default function AddManufacturerPage() {
             onClick={() => router.back()}
             className="text-blue-600 hover:text-blue-700 font-medium mb-4 flex items-center"
           >
-            ← Back
+            â† Back
           </button>
           <h1 className="text-3xl font-bold text-gray-900">Add New Manufacturer</h1>
           <p className="mt-2 text-gray-600">Create a new manufacturer/organization in the system</p>

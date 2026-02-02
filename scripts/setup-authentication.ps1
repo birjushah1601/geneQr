@@ -1,32 +1,32 @@
-# Complete Authentication Setup Script
+﻿# Complete Authentication Setup Script
 
-Write-Host "`n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Green
-Write-Host "🚀 AUTHENTICATION SYSTEM SETUP" -ForegroundColor Green
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n" -ForegroundColor Green
+Write-Host "`nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”" -ForegroundColor Green
+Write-Host "ðŸš€ AUTHENTICATION SYSTEM SETUP" -ForegroundColor Green
+Write-Host "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”`n" -ForegroundColor Green
 
 $ErrorActionPreference = "Continue"
 $setupErrors = @()
 
 # Step 1: Generate JWT Keys
 Write-Host "Step 1/3: Generating JWT Keys..." -ForegroundColor Cyan
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n" -ForegroundColor Cyan
+Write-Host "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”`n" -ForegroundColor Cyan
 
 try {
     & ".\scripts\generate-jwt-keys.ps1"
     if ($LASTEXITCODE -eq 0) {
-        Write-Host "✅ JWT keys generated successfully`n" -ForegroundColor Green
+        Write-Host "âœ… JWT keys generated successfully`n" -ForegroundColor Green
     } else {
         $setupErrors += "Failed to generate JWT keys"
-        Write-Host "❌ JWT key generation failed`n" -ForegroundColor Red
+        Write-Host "âŒ JWT key generation failed`n" -ForegroundColor Red
     }
 } catch {
     $setupErrors += "Error running key generation script: $_"
-    Write-Host "❌ Error: $_`n" -ForegroundColor Red
+    Write-Host "âŒ Error: $_`n" -ForegroundColor Red
 }
 
 # Step 2: Apply Database Migrations
 Write-Host "`nStep 2/3: Applying Database Migrations..." -ForegroundColor Cyan
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n" -ForegroundColor Cyan
+Write-Host "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”`n" -ForegroundColor Cyan
 
 try {
     Write-Host "Running migration script..." -ForegroundColor Yellow
@@ -34,19 +34,19 @@ try {
     Write-Host $migrationOutput
     
     if ($LASTEXITCODE -eq 0) {
-        Write-Host "`n✅ Database migrations applied successfully`n" -ForegroundColor Green
+        Write-Host "`nâœ… Database migrations applied successfully`n" -ForegroundColor Green
     } else {
         $setupErrors += "Database migration failed"
-        Write-Host "`n❌ Database migration failed`n" -ForegroundColor Red
+        Write-Host "`nâŒ Database migration failed`n" -ForegroundColor Red
     }
 } catch {
     $setupErrors += "Error applying migrations: $_"
-    Write-Host "❌ Error: $_`n" -ForegroundColor Red
+    Write-Host "âŒ Error: $_`n" -ForegroundColor Red
 }
 
 # Step 3: Update .env file
 Write-Host "`nStep 3/3: Checking Environment Configuration..." -ForegroundColor Cyan
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n" -ForegroundColor Cyan
+Write-Host "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”`n" -ForegroundColor Cyan
 
 $envFile = ".env"
 $envLocalFile = ".env.local"
@@ -64,7 +64,7 @@ JWT_PRIVATE_KEY_PATH=./keys/jwt-private.pem
 JWT_PUBLIC_KEY_PATH=./keys/jwt-public.pem
 JWT_ACCESS_TOKEN_EXPIRY=15m
 JWT_REFRESH_TOKEN_EXPIRY=168h
-JWT_ISSUER=aby-med-platform
+JWT_ISSUER=servqr-platform
 
 # OTP Configuration
 OTP_LENGTH=6
@@ -90,34 +90,34 @@ ALLOW_REGISTRATION=true
 
 # SendGrid (Email) - Optional for development
 # SENDGRID_API_KEY=your_api_key
-# SENDGRID_FROM_EMAIL=noreply@aby-med.com
-# SENDGRID_FROM_NAME=ABY-MED Platform
+# SENDGRID_FROM_EMAIL=noreply@ServQR.com
+# SENDGRID_FROM_NAME=ServQR Platform
 
 # Server Configuration
 SERVER_PORT=8080
 "@
     
     $envContent | Out-File -FilePath $envLocalFile -Encoding UTF8
-    Write-Host "✅ Created .env.local with default configuration`n" -ForegroundColor Green
+    Write-Host "âœ… Created .env.local with default configuration`n" -ForegroundColor Green
 } else {
-    Write-Host "✅ Environment file exists ($envPath)`n" -ForegroundColor Green
-    Write-Host "⚠️  Make sure it includes JWT configuration:
+    Write-Host "âœ… Environment file exists ($envPath)`n" -ForegroundColor Green
+    Write-Host "âš ï¸  Make sure it includes JWT configuration:
    JWT_PRIVATE_KEY_PATH=./keys/jwt-private.pem
    JWT_PUBLIC_KEY_PATH=./keys/jwt-public.pem`n" -ForegroundColor Yellow
 }
 
 # Summary
-Write-Host "`n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Green
+Write-Host "`nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”" -ForegroundColor Green
 if ($setupErrors.Count -eq 0) {
-    Write-Host "✅ SETUP COMPLETE!" -ForegroundColor Green
-    Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n" -ForegroundColor Green
+    Write-Host "âœ… SETUP COMPLETE!" -ForegroundColor Green
+    Write-Host "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”`n" -ForegroundColor Green
     
-    Write-Host "🎉 Authentication system is ready!`n" -ForegroundColor Cyan
+    Write-Host "ðŸŽ‰ Authentication system is ready!`n" -ForegroundColor Cyan
     
-    Write-Host "📝 Next Steps:" -ForegroundColor Cyan
+    Write-Host "ðŸ“ Next Steps:" -ForegroundColor Cyan
     Write-Host "   1. Configure external services (optional):" -ForegroundColor White
-    Write-Host "      • Twilio (SMS/WhatsApp): Edit .env.local" -ForegroundColor Gray
-    Write-Host "      • SendGrid (Email): Edit .env.local`n" -ForegroundColor Gray
+    Write-Host "      â€¢ Twilio (SMS/WhatsApp): Edit .env.local" -ForegroundColor Gray
+    Write-Host "      â€¢ SendGrid (Email): Edit .env.local`n" -ForegroundColor Gray
     
     Write-Host "   2. Start the backend server:" -ForegroundColor White
     Write-Host "      go run cmd/platform/main.go`n" -ForegroundColor Gray
@@ -127,26 +127,26 @@ if ($setupErrors.Count -eq 0) {
     Write-Host "      npm run dev`n" -ForegroundColor Gray
     
     Write-Host "   4. Test authentication:" -ForegroundColor White
-    Write-Host "      • Open: http://localhost:3000/register" -ForegroundColor Gray
-    Write-Host "      • Open: http://localhost:3000/login`n" -ForegroundColor Gray
+    Write-Host "      â€¢ Open: http://localhost:3000/register" -ForegroundColor Gray
+    Write-Host "      â€¢ Open: http://localhost:3000/login`n" -ForegroundColor Gray
     
-    Write-Host "📚 Documentation:" -ForegroundColor Cyan
-    Write-Host "   • Complete Guide: docs/PHASE1-COMPLETE.md" -ForegroundColor White
-    Write-Host "   • API Reference: docs/specs/API-SPECIFICATION.md`n" -ForegroundColor White
+    Write-Host "ðŸ“š Documentation:" -ForegroundColor Cyan
+    Write-Host "   â€¢ Complete Guide: docs/PHASE1-COMPLETE.md" -ForegroundColor White
+    Write-Host "   â€¢ API Reference: docs/specs/API-SPECIFICATION.md`n" -ForegroundColor White
     
-    Write-Host "💡 Development Mode:" -ForegroundColor Yellow
-    Write-Host "   • OTP codes will be logged to console (mock services)" -ForegroundColor Yellow
-    Write-Host "   • Configure Twilio/SendGrid for real email/SMS`n" -ForegroundColor Yellow
+    Write-Host "ðŸ’¡ Development Mode:" -ForegroundColor Yellow
+    Write-Host "   â€¢ OTP codes will be logged to console (mock services)" -ForegroundColor Yellow
+    Write-Host "   â€¢ Configure Twilio/SendGrid for real email/SMS`n" -ForegroundColor Yellow
     
 } else {
-    Write-Host "⚠️  SETUP COMPLETED WITH WARNINGS" -ForegroundColor Yellow
-    Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n" -ForegroundColor Yellow
+    Write-Host "âš ï¸  SETUP COMPLETED WITH WARNINGS" -ForegroundColor Yellow
+    Write-Host "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”`n" -ForegroundColor Yellow
     
-    Write-Host "❌ Errors encountered:" -ForegroundColor Red
+    Write-Host "âŒ Errors encountered:" -ForegroundColor Red
     foreach ($error in $setupErrors) {
-        Write-Host "   • $error" -ForegroundColor Red
+        Write-Host "   â€¢ $error" -ForegroundColor Red
     }
-    Write-Host "`n📝 Please review and fix the errors above.`n" -ForegroundColor Yellow
+    Write-Host "`nðŸ“ Please review and fix the errors above.`n" -ForegroundColor Yellow
 }
 
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`n" -ForegroundColor Green
+Write-Host "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”`n" -ForegroundColor Green

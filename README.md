@@ -1,26 +1,26 @@
-# ABY Medical Equipment Platform
+﻿# ServQRical Equipment Platform
 
 > **Intelligent Medical Equipment Management & Service Platform**  
 > QR-based equipment tracking | Multi-entity engineer management | Tier-based service routing
 
 ---
 
-## 🎯 Overview
+## ðŸŽ¯ Overview
 
-ABY Medical Platform is a comprehensive B2B medical equipment lifecycle management system designed for the Indian healthcare ecosystem. It connects **manufacturers**, **distributors**, **dealers**, and **hospitals** with intelligent service routing and equipment tracking.
+ServQRical Platform is a comprehensive B2B medical equipment lifecycle management system designed for the Indian healthcare ecosystem. It connects **manufacturers**, **Channel Partners**, **Sub-Sub-sub_sub_SUB_DEALERs**, and **hospitals** with intelligent service routing and equipment tracking.
 
 ### Key Features
 
-✅ **QR Code Equipment Registry** - Generate, store, and scan QR codes for equipment tracking  
-✅ **Service Request Management** - Customer-initiated service requests via QR scan  
-✅ **Multi-Entity Organizations** - Manufacturers, Distributors, Dealers, Hospitals with complex relationships  
-✅ **Engineer Management** - 50+ service engineers with skills, certifications, and availability  
-✅ **Tier-Based Routing** - Intelligent engineer assignment with fallback to client in-house BME teams  
-✅ **Real-Time Dashboards** - Role-specific views for all stakeholders  
+âœ… **QR Code Equipment Registry** - Generate, store, and scan QR codes for equipment tracking  
+âœ… **Service Request Management** - Customer-initiated service requests via QR scan  
+âœ… **Multi-Entity Organizations** - Manufacturers, Channel Partners, Sub-Sub-sub_sub_SUB_DEALERs, Hospitals with complex relationships  
+âœ… **Engineer Management** - 50+ service engineers with skills, certifications, and availability  
+âœ… **Tier-Based Routing** - Intelligent engineer assignment with fallback to client in-house BME teams  
+âœ… **Real-Time Dashboards** - Role-specific views for all stakeholders  
 
 ---
 
-## 🏗️ Architecture
+## ðŸ—ï¸ Architecture
 
 ### Technology Stack
 
@@ -41,21 +41,21 @@ ABY Medical Platform is a comprehensive B2B medical equipment lifecycle manageme
 **Organizations Architecture:**
 - 10 core tables for multi-entity management
 - 4 engineer management tables
-- Complex relationship modeling (manufacturer → distributor → dealer)
+- Complex relationship modeling (manufacturer â†’ Channel Partner â†’ Sub-sub_SUB_DEALER)
 - Geographic territory management
 
 **Current Data:**
 - 10 real manufacturers (Siemens, GE, Philips, Medtronic, Abbott, etc.)
-- 20 distributors across India
-- 15 dealers in major cities
-- 38 manufacturer-distributor relationships
+- 20 Channel Partners across India
+- 15 Sub-Sub-sub_sub_SUB_DEALERs in major cities
+- 38 manufacturer-Channel Partner relationships
 - 50+ facilities (manufacturing plants, service centers, warehouses)
 
-[📖 Full Architecture Documentation](docs/architecture/organizations-architecture.md)
+[ðŸ“– Full Architecture Documentation](docs/architecture/organizations-architecture.md)
 
 ---
 
-## 🚀 Quick Start
+## ðŸš€ Quick Start
 
 ### Prerequisites
 
@@ -75,8 +75,8 @@ psql -U postgres -d medplatform -f database/migrations/002_organizations_simple.
 
 # Load seed data
 psql -U postgres -d medplatform -f database/seed/001_manufacturers.sql
-psql -U postgres -d medplatform -f database/seed/002_distributors.sql
-psql -U postgres -d medplatform -f database/seed/003_dealers.sql
+psql -U postgres -d medplatform -f database/seed/002_channel_partners.sql
+psql -U postgres -d medplatform -f database/seed/003_sub_Sub-Sub-sub_sub_SUB_DEALERs.sql
 ```
 
 ### 2. Backend Setup
@@ -108,19 +108,19 @@ Frontend will start on **http://localhost:3000**
 
 ---
 
-## 📊 Current Status
+## ðŸ“Š Current Status
 
-### ✅ Phase 1: Database Foundation (COMPLETE)
+### âœ… Phase 1: Database Foundation (COMPLETE)
 
 - [x] Organizations architecture (10 tables)
 - [x] Engineer management (4 tables)
 - [x] Equipment & service tickets enhancement
-- [x] Seed data: 10 manufacturers, 20 distributors, 15 dealers
+- [x] Seed data: 10 manufacturers, 20 Channel Partners, 15 Sub-Sub-sub_sub_SUB_DEALERs
 - [x] 38 B2B relationships with business terms
 
-[📖 Phase 1 Details](docs/database/phase1-complete.md)
+[ðŸ“– Phase 1 Details](docs/database/phase1-complete.md)
 
-### 🚧 Phase 2: Backend APIs (IN PROGRESS)
+### ðŸš§ Phase 2: Backend APIs (IN PROGRESS)
 
 - [x] Equipment Registry API (working)
 - [x] QR Generation & Storage (working)
@@ -128,7 +128,7 @@ Frontend will start on **http://localhost:3000**
 - [ ] Engineer Management API
 - [ ] Service Request Routing API
 
-### 🚧 Phase 3: Frontend Development (IN PROGRESS)
+### ðŸš§ Phase 3: Frontend Development (IN PROGRESS)
 
 - [x] Equipment Registry UI
 - [x] QR Code Generation & Display
@@ -136,45 +136,45 @@ Frontend will start on **http://localhost:3000**
 - [ ] Organizations Management UI
 - [ ] Engineer Management UI
 
-### ⏳ Phase 4: Dashboards (PENDING)
+### â³ Phase 4: Dashboards (PENDING)
 
 - [ ] Manufacturer Dashboard
-- [ ] Distributor Dashboard
-- [ ] Dealer Dashboard
+- [ ] Channel Partner Dashboard
+- [ ] Sub-sub_SUB_DEALER Dashboard
 - [ ] Hospital Dashboard
 - [ ] Service Provider Dashboard
 - [ ] Platform Admin Dashboard
 
-[📖 Implementation Roadmap](docs/architecture/implementation-roadmap.md)
+[ðŸ“– Implementation Roadmap](docs/architecture/implementation-roadmap.md)
 
 ---
 
-## 🎓 Key Concepts
+## ðŸŽ“ Key Concepts
 
 ### Multi-Entity Engineer Management
 
 Engineers can belong to different organizations:
 - **Manufacturer Engineers**: OEM-certified, Tier-1 routing
-- **Dealer Engineers**: Multi-brand trained, Tier-2 routing
-- **Distributor Engineers**: Regional coverage, Tier-3 routing
+- **Sub-sub_SUB_DEALER Engineers**: Multi-brand trained, Tier-2 routing
+- **Channel Partner Engineers**: Regional coverage, Tier-3 routing
 - **Service Provider Engineers**: Independent, Tier-4 routing
 - **Hospital BME Engineers**: In-house, Tier-5 fallback
 
-[📖 Engineer Management Design](docs/architecture/engineer-management.md)
+[ðŸ“– Engineer Management Design](docs/architecture/engineer-management.md)
 
 ### Tier-Based Service Routing
 
 ```
 Service Request
-    ↓
+    â†“
 1. OEM Engineer (if covered)
-    ↓
-2. Authorized Dealer Engineer
-    ↓
-3. Distributor Service Team
-    ↓
+    â†“
+2. Authorized Sub-sub_SUB_DEALER Engineer
+    â†“
+3. Channel Partner Service Team
+    â†“
 4. Third-Party Service Provider
-    ↓
+    â†“
 5. Hospital In-House BME (Fallback)
 ```
 
@@ -194,34 +194,34 @@ Scanning triggers service request with auto-filled equipment details.
 
 ---
 
-## 📁 Project Structure
+## ðŸ“ Project Structure
 
 ```
-aby-med/
-├── cmd/
-│   └── platform/           # Backend main entry point
-├── internal/
-│   └── core/              # Business logic modules
-│       ├── equipment-registry/
-│       ├── organizations/
-│       └── service-ticket/
-├── admin-ui/              # Next.js frontend
-│   ├── app/              # Next.js 13 app router
-│   ├── components/       # React components
-│   └── lib/             # Utilities & API clients
-├── database/
-│   ├── migrations/      # SQL schema migrations
-│   └── seed/           # Seed data SQL files
-├── docs/
-│   ├── architecture/   # Architecture docs
-│   └── database/      # Database docs
-└── dev/
-    └── compose/       # Docker compose files
+ServQR/
+â”œâ”€â”€ cmd/
+â”‚   â””â”€â”€ platform/           # Backend main entry point
+â”œâ”€â”€ internal/
+â”‚   â””â”€â”€ core/              # Business logic modules
+â”‚       â”œâ”€â”€ equipment-registry/
+â”‚       â”œâ”€â”€ organizations/
+â”‚       â””â”€â”€ service-ticket/
+â”œâ”€â”€ admin-ui/              # Next.js frontend
+â”‚   â”œâ”€â”€ app/              # Next.js 13 app router
+â”‚   â”œâ”€â”€ components/       # React components
+â”‚   â””â”€â”€ lib/             # Utilities & API clients
+â”œâ”€â”€ database/
+â”‚   â”œâ”€â”€ migrations/      # SQL schema migrations
+â”‚   â””â”€â”€ seed/           # Seed data SQL files
+â”œâ”€â”€ docs/
+â”‚   â”œâ”€â”€ architecture/   # Architecture docs
+â”‚   â””â”€â”€ database/      # Database docs
+â””â”€â”€ dev/
+    â””â”€â”€ compose/       # Docker compose files
 ```
 
 ---
 
-## 🧪 Testing
+## ðŸ§ª Testing
 
 ### Backend API Testing
 
@@ -253,7 +253,7 @@ FROM equipment;
 
 ---
 
-## 📖 Documentation
+## ðŸ“– Documentation
 
 - [Organizations Architecture](docs/architecture/organizations-architecture.md) - Complete multi-entity design
 - [Engineer Management](docs/architecture/engineer-management.md) - Tier-based routing system
@@ -262,20 +262,20 @@ FROM equipment;
 
 ---
 
-## 🤝 Contributing
+## ðŸ¤ Contributing
 
 This is a private project. For access or questions, contact the development team.
 
 ---
 
-## 📝 License
+## ðŸ“ License
 
-Proprietary - ABY Medical Platform  
-© 2024 All Rights Reserved
+Proprietary - ServQRical Platform  
+Â© 2024 All Rights Reserved
 
 ---
 
-## 🔗 Quick Links
+## ðŸ”— Quick Links
 
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8081/api/v1
@@ -283,4 +283,4 @@ Proprietary - ABY Medical Platform
 
 ---
 
-**Built with ❤️ for the Indian Healthcare Ecosystem**
+**Built with â¤ï¸ for the Indian Healthcare Ecosystem**

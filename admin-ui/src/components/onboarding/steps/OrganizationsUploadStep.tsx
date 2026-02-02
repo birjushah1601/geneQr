@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -68,7 +68,7 @@ export default function OrganizationsUploadStep({
           <li>Adding multiple manufacturers</li>
           <li>Importing your supplier network</li>
           <li>Setting up hospital and clinic partners</li>
-          <li>Bulk importing distributors and dealers</li>
+          <li>Bulk importing Channel Partners and Sub-Sub-sub_sub_SUB_DEALERs</li>
         </ul>
       </div>
 

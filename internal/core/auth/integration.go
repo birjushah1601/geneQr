@@ -1,4 +1,4 @@
-package auth
+﻿package auth
 
 import (
 	"context"
@@ -38,8 +38,8 @@ func integrateAuthModuleInternal(router chi.Router, db *sqlx.DB, logger *slog.Lo
 	twilioWhatsAppNumber := os.Getenv("TWILIO_WHATSAPP_NUMBER")
 	
 	sendgridAPIKey := os.Getenv("SENDGRID_API_KEY")
-	sendgridFromEmail := getEnvOrDefault("SENDGRID_FROM_EMAIL", "noreply@aby-med.com")
-	sendgridFromName := getEnvOrDefault("SENDGRID_FROM_NAME", "ABY-MED Platform")
+	sendgridFromEmail := getEnvOrDefault("SENDGRID_FROM_EMAIL", "noreply@ServQR.com")
+	sendgridFromName := getEnvOrDefault("SENDGRID_FROM_NAME", "ServQR Platform")
 
 	// Initialize external services
 	var emailSender EmailSender
@@ -66,7 +66,7 @@ func integrateAuthModuleInternal(router chi.Router, db *sqlx.DB, logger *slog.Lo
 		JWTPublicKeyPath:    jwtPublicKeyPath,
 		JWTAccessExpiry:     15 * time.Minute,
 		JWTRefreshExpiry:    7 * 24 * time.Hour,
-		JWTIssuer:           "aby-med-platform",
+		JWTIssuer:           "servqr-platform",
 		OTPLength:           6,
 		OTPExpiryMinutes:    5,
 		OTPMaxAttempts:      3,
@@ -103,7 +103,7 @@ func getEnvOrDefault(key, defaultValue string) string {
 type MockEmailSender struct{}
 
 func (m *MockEmailSender) SendOTP(ctx context.Context, to, otp string) error {
-	slog.Info("📧 MOCK EMAIL", 
+	slog.Info("ðŸ“§ MOCK EMAIL", 
 		slog.String("to", to), 
 		slog.String("otp", otp),
 		slog.String("message", "Would send OTP via email"))
@@ -113,7 +113,7 @@ func (m *MockEmailSender) SendOTP(ctx context.Context, to, otp string) error {
 type MockSMSSender struct{}
 
 func (m *MockSMSSender) SendOTP(ctx context.Context, to, otp string) error {
-	slog.Info("📱 MOCK SMS",
+	slog.Info("ðŸ“± MOCK SMS",
 		slog.String("to", to),
 		slog.String("otp", otp),
 		slog.String("message", "Would send OTP via SMS"))
@@ -121,7 +121,7 @@ func (m *MockSMSSender) SendOTP(ctx context.Context, to, otp string) error {
 }
 
 func (m *MockSMSSender) SendWhatsAppOTP(ctx context.Context, to, otp string) error {
-	slog.Info("💬 MOCK WHATSAPP",
+	slog.Info("ðŸ’¬ MOCK WHATSAPP",
 		slog.String("to", to),
 		slog.String("otp", otp),
 		slog.String("message", "Would send OTP via WhatsApp"))

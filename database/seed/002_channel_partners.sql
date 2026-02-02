@@ -1,20 +1,20 @@
+﻿-- ============================================================================
+-- SEED DATA: Channel Partners (20 Organizations)
 -- ============================================================================
--- SEED DATA: DISTRIBUTORS (20 Organizations)
--- ============================================================================
--- Medical equipment distributors across India with manufacturer relationships
+-- Medical equipment Channel Partners across India with manufacturer relationships
 
 -- ============================================================================
--- NORTH INDIA DISTRIBUTORS (Delhi, UP, Punjab, Haryana, Rajasthan)
+-- NORTH INDIA Channel Partners (Delhi, UP, Punjab, Haryana, Rajasthan)
 -- ============================================================================
 
--- 1. MedEquip Distributors (Multi-Brand, North India)
+-- 1. MedEquip Channel Partners (Multi-Brand, North India)
 INSERT INTO organizations (id, name, display_name, org_type, status, verified, 
   year_established, employee_count, website, metadata, created_at)
 VALUES (
   'dddd0001-0001-0001-0001-000000000001',
-  'MedEquip Distributors Private Limited',
-  'MedEquip Distributors',
-  'distributor',
+  'MedEquip Channel Partners Private Limited',
+  'MedEquip Channel Partners',
+  'Channel Partner',
   'active',
   true,
   2005,
@@ -65,17 +65,17 @@ VALUES
 INSERT INTO org_relationships (parent_org_id, child_org_id, rel_type, relationship_status,
   exclusive, commission_percentage, credit_limit, annual_target, priority_level, metadata)
 VALUES
--- Siemens → MedEquip
+-- Siemens â†’ MedEquip
 ('11111111-1111-1111-1111-111111111111', 'dddd0001-0001-0001-0001-000000000001',
- 'authorized_distributor', 'active', false, 12.5, 50000000, 200000000, 1,
+ 'authorized_channel_partner', 'active', false, 12.5, 50000000, 200000000, 1,
  '{"product_lines": ["CT Scanners", "X-Ray Systems", "Lab Diagnostics"]}'),
--- GE → MedEquip
+-- GE â†’ MedEquip
 ('22222222-2222-2222-2222-222222222222', 'dddd0001-0001-0001-0001-000000000001',
- 'authorized_distributor', 'active', false, 10.0, 40000000, 150000000, 2,
+ 'authorized_channel_partner', 'active', false, 10.0, 40000000, 150000000, 2,
  '{"product_lines": ["Ultrasound", "Patient Monitors"]}'),
--- Philips → MedEquip
+-- Philips â†’ MedEquip
 ('33333333-3333-3333-3333-333333333333', 'dddd0001-0001-0001-0001-000000000001',
- 'regional_distributor', 'active', false, 11.0, 30000000, 100000000, 2,
+ 'regional_channel_partner', 'active', false, 11.0, 30000000, 100000000, 2,
  '{"product_lines": ["Patient Monitoring", "Respiratory Care"]}');
 
 -- 2. HealthTech Solutions (Delhi/NCR specialist)
@@ -85,7 +85,7 @@ VALUES (
   'dddd0002-0002-0002-0002-000000000002',
   'HealthTech Solutions India',
   'HealthTech Solutions',
-  'distributor',
+  'Channel Partner',
   'active',
   true,
   2010,
@@ -118,12 +118,12 @@ INSERT INTO org_relationships (parent_org_id, child_org_id, rel_type, relationsh
   commission_percentage, credit_limit, annual_target)
 VALUES
 ('44444444-4444-4444-4444-444444444444', 'dddd0002-0002-0002-0002-000000000002',
- 'authorized_distributor', 'active', 15.0, 25000000, 80000000),
+ 'authorized_channel_partner', 'active', 15.0, 25000000, 80000000),
 ('55555555-5555-5555-5555-555555555555', 'dddd0002-0002-0002-0002-000000000002',
- 'authorized_distributor', 'active', 13.0, 20000000, 60000000);
+ 'authorized_channel_partner', 'active', 13.0, 20000000, 60000000);
 
 -- ============================================================================
--- SOUTH INDIA DISTRIBUTORS (Bangalore, Chennai, Hyderabad, Kerala)
+-- SOUTH INDIA Channel Partners (Bangalore, Chennai, Hyderabad, Kerala)
 -- ============================================================================
 
 -- 3. Southern Medical Supplies (Bangalore-based, Multi-state)
@@ -133,7 +133,7 @@ VALUES (
   'dddd0003-0003-0003-0003-000000000003',
   'Southern Medical Supplies',
   'SMS',
-  'distributor',
+  'Channel Partner',
   'active',
   true,
   2002,
@@ -176,40 +176,40 @@ INSERT INTO org_relationships (parent_org_id, child_org_id, rel_type, relationsh
   exclusive, commission_percentage, credit_limit, annual_target)
 VALUES
 ('11111111-1111-1111-1111-111111111111', 'dddd0003-0003-0003-0003-000000000003',
- 'regional_distributor', 'active', false, 13.0, 60000000, 250000000),
+ 'regional_channel_partner', 'active', false, 13.0, 60000000, 250000000),
 ('33333333-3333-3333-3333-333333333333', 'dddd0003-0003-0003-0003-000000000003',
- 'authorized_distributor', 'active', false, 12.0, 45000000, 180000000);
+ 'authorized_channel_partner', 'active', false, 12.0, 45000000, 180000000);
 
--- 4-20: Additional Distributors (Simplified)
+-- 4-20: Additional Channel Partners (Simplified)
 
 -- West India
 INSERT INTO organizations (id, name, display_name, org_type, status, verified, year_established, employee_count, metadata, created_at)
 VALUES 
-('dddd0004-0004-0004-0004-000000000004', 'Western Medical Supplies', 'WMS', 'distributor', 'active', true, 2008, 90, '{"regions": ["Maharashtra", "Gujarat"]}', NOW()),
-('dddd0005-0005-0005-0005-000000000005', 'Mumbai Healthcare Distributors', 'MHD', 'distributor', 'active', true, 2006, 110, '{"regions": ["Mumbai", "Pune"]}', NOW()),
+('dddd0004-0004-0004-0004-000000000004', 'Western Medical Supplies', 'WMS', 'Channel Partner', 'active', true, 2008, 90, '{"regions": ["Maharashtra", "Gujarat"]}', NOW()),
+('dddd0005-0005-0005-0005-000000000005', 'Mumbai Healthcare Channel Partners', 'MHD', 'Channel Partner', 'active', true, 2006, 110, '{"regions": ["Mumbai", "Pune"]}', NOW()),
 
 -- East India
-('dddd0006-0006-0006-0006-000000000006', 'Eastern Medical Equipment Co.', 'EMEC', 'distributor', 'active', true, 2007, 65, '{"regions": ["West Bengal", "Odisha", "Bihar"]}', NOW()),
-('dddd0007-0007-0007-0007-000000000007', 'Kolkata MedTech Distributors', 'KMD', 'distributor', 'active', true, 2011, 55, '{"regions": ["Kolkata"]}', NOW()),
+('dddd0006-0006-0006-0006-000000000006', 'Eastern Medical Equipment Co.', 'EMEC', 'Channel Partner', 'active', true, 2007, 65, '{"regions": ["West Bengal", "Odisha", "Bihar"]}', NOW()),
+('dddd0007-0007-0007-0007-000000000007', 'Kolkata MedTech Channel Partners', 'KMD', 'Channel Partner', 'active', true, 2011, 55, '{"regions": ["Kolkata"]}', NOW()),
 
 -- Central India
-('dddd0008-0008-0008-0008-000000000008', 'Central India MedEquip', 'CIME', 'distributor', 'active', true, 2009, 70, '{"regions": ["Madhya Pradesh", "Chhattisgarh"]}', NOW()),
+('dddd0008-0008-0008-0008-000000000008', 'Central India MedEquip', 'CIME', 'Channel Partner', 'active', true, 2009, 70, '{"regions": ["Madhya Pradesh", "Chhattisgarh"]}', NOW()),
 
 -- Regional specialists
-('dddd0009-0009-0009-0009-000000000009', 'Hyderabad Medical Systems', 'HMS', 'distributor', 'active', true, 2004, 85, '{"regions": ["Telangana", "Andhra Pradesh"]}', NOW()),
-('dddd0010-0010-0010-0010-000000000010', 'Pune Diagnostics Distribution', 'PDD', 'distributor', 'active', true, 2012, 60, '{"regions": ["Pune"]}', NOW()),
-('dddd0011-0011-0011-0011-000000000011', 'Ahmedabad Healthcare Solutions', 'AHS', 'distributor', 'active', true, 2010, 75, '{"regions": ["Gujarat"]}', NOW()),
-('dddd0012-0012-0012-0012-000000000012', 'Kerala Medical Distributors', 'KMD', 'distributor', 'active', true, 2008, 50, '{"regions": ["Kerala"]}', NOW()),
-('dddd0013-0013-0013-0013-000000000013', 'Jaipur Med Solutions', 'JMS', 'distributor', 'active', true, 2013, 45, '{"regions": ["Rajasthan"]}', NOW()),
-('dddd0014-0014-0014-0014-000000000014', 'Chandigarh Medical Equipment', 'CME', 'distributor', 'active', true, 2007, 55, '{"regions": ["Punjab", "Chandigarh"]}', NOW()),
-('dddd0015-0015-0015-0015-000000000015', 'Lucknow Health Systems', 'LHS', 'distributor', 'active', true, 2009, 48, '{"regions": ["Uttar Pradesh"]}', NOW()),
-('dddd0016-0016-0016-0016-000000000016', 'Coimbatore Medical Supplies', 'CMS', 'distributor', 'active', true, 2011, 40, '{"regions": ["Tamil Nadu"]}', NOW()),
-('dddd0017-0017-0017-0017-000000000017', 'Visakhapatnam MedTech', 'VMT', 'distributor', 'active', true, 2010, 42, '{"regions": ["Andhra Pradesh"]}', NOW()),
-('dddd0018-0018-0018-0018-000000000018', 'Indore Healthcare Distributors', 'IHD', 'distributor', 'active', true, 2012, 38, '{"regions": ["Madhya Pradesh"]}', NOW()),
-('dddd0019-0019-0019-0019-000000000019', 'Surat Medical Equipment', 'SME', 'distributor', 'active', true, 2014, 35, '{"regions": ["Gujarat"]}', NOW()),
-('dddd0020-0020-0020-0020-000000000020', 'Nagpur Diagnostics Distribution', 'NDD', 'distributor', 'active', true, 2013, 32, '{"regions": ["Maharashtra"]}', NOW());
+('dddd0009-0009-0009-0009-000000000009', 'Hyderabad Medical Systems', 'HMS', 'Channel Partner', 'active', true, 2004, 85, '{"regions": ["Telangana", "Andhra Pradesh"]}', NOW()),
+('dddd0010-0010-0010-0010-000000000010', 'Pune Diagnostics Distribution', 'PDD', 'Channel Partner', 'active', true, 2012, 60, '{"regions": ["Pune"]}', NOW()),
+('dddd0011-0011-0011-0011-000000000011', 'Ahmedabad Healthcare Solutions', 'AHS', 'Channel Partner', 'active', true, 2010, 75, '{"regions": ["Gujarat"]}', NOW()),
+('dddd0012-0012-0012-0012-000000000012', 'Kerala Medical Channel Partners', 'KMD', 'Channel Partner', 'active', true, 2008, 50, '{"regions": ["Kerala"]}', NOW()),
+('dddd0013-0013-0013-0013-000000000013', 'Jaipur Med Solutions', 'JMS', 'Channel Partner', 'active', true, 2013, 45, '{"regions": ["Rajasthan"]}', NOW()),
+('dddd0014-0014-0014-0014-000000000014', 'Chandigarh Medical Equipment', 'CME', 'Channel Partner', 'active', true, 2007, 55, '{"regions": ["Punjab", "Chandigarh"]}', NOW()),
+('dddd0015-0015-0015-0015-000000000015', 'Lucknow Health Systems', 'LHS', 'Channel Partner', 'active', true, 2009, 48, '{"regions": ["Uttar Pradesh"]}', NOW()),
+('dddd0016-0016-0016-0016-000000000016', 'Coimbatore Medical Supplies', 'CMS', 'Channel Partner', 'active', true, 2011, 40, '{"regions": ["Tamil Nadu"]}', NOW()),
+('dddd0017-0017-0017-0017-000000000017', 'Visakhapatnam MedTech', 'VMT', 'Channel Partner', 'active', true, 2010, 42, '{"regions": ["Andhra Pradesh"]}', NOW()),
+('dddd0018-0018-0018-0018-000000000018', 'Indore Healthcare Channel Partners', 'IHD', 'Channel Partner', 'active', true, 2012, 38, '{"regions": ["Madhya Pradesh"]}', NOW()),
+('dddd0019-0019-0019-0019-000000000019', 'Surat Medical Equipment', 'SME', 'Channel Partner', 'active', true, 2014, 35, '{"regions": ["Gujarat"]}', NOW()),
+('dddd0020-0020-0020-0020-000000000020', 'Nagpur Diagnostics Distribution', 'NDD', 'Channel Partner', 'active', true, 2013, 32, '{"regions": ["Maharashtra"]}', NOW());
 
--- Facilities for distributors 4-20 (1 facility each)
+-- Facilities for Channel Partners 4-20 (1 facility each)
 INSERT INTO organization_facilities (id, org_id, facility_name, facility_code, facility_type, address, services_offered, status, operational_since)
 VALUES 
 ('dddd0004-0004-0004-0004-000000000401', 'dddd0004-0004-0004-0004-000000000004', 'WMS Mumbai Warehouse', 'WMS-MUM-WH', 'warehouse', '{"city": "Mumbai", "state": "Maharashtra"}', ARRAY['Distribution'], 'active', '2008-01-01'),
@@ -230,29 +230,29 @@ VALUES
 ('dddd0019-0019-0019-0019-000000001901', 'dddd0019-0019-0019-0019-000000000019', 'SME Surat Hub', 'SME-SUR-HUB', 'warehouse', '{"city": "Surat", "state": "Gujarat"}', ARRAY['Distribution'], 'active', '2014-01-01'),
 ('dddd0020-0020-0020-0020-000000002001', 'dddd0020-0020-0020-0020-000000000020', 'NDD Nagpur Center', 'NDD-NAG-CTR', 'distribution_center', '{"city": "Nagpur", "state": "Maharashtra"}', ARRAY['Distribution'], 'active', '2013-01-01');
 
--- Additional distributor-manufacturer relationships
+-- Additional Channel Partner-manufacturer relationships
 INSERT INTO org_relationships (parent_org_id, child_org_id, rel_type, relationship_status, commission_percentage, credit_limit, annual_target)
 VALUES
 -- GE relationships
-('22222222-2222-2222-2222-222222222222', 'dddd0004-0004-0004-0004-000000000004', 'authorized_distributor', 'active', 11.0, 35000000, 120000000),
-('22222222-2222-2222-2222-222222222222', 'dddd0006-0006-0006-0006-000000000006', 'regional_distributor', 'active', 10.5, 28000000, 90000000),
-('22222222-2222-2222-2222-222222222222', 'dddd0009-0009-0009-0009-000000000009', 'authorized_distributor', 'active', 11.5, 32000000, 110000000),
+('22222222-2222-2222-2222-222222222222', 'dddd0004-0004-0004-0004-000000000004', 'authorized_channel_partner', 'active', 11.0, 35000000, 120000000),
+('22222222-2222-2222-2222-222222222222', 'dddd0006-0006-0006-0006-000000000006', 'regional_channel_partner', 'active', 10.5, 28000000, 90000000),
+('22222222-2222-2222-2222-222222222222', 'dddd0009-0009-0009-0009-000000000009', 'authorized_channel_partner', 'active', 11.5, 32000000, 110000000),
 
 -- Philips relationships
-('33333333-3333-3333-3333-333333333333', 'dddd0005-0005-0005-0005-000000000005', 'authorized_distributor', 'active', 12.0, 30000000, 100000000),
-('33333333-3333-3333-3333-333333333333', 'dddd0008-0008-0008-0008-000000000008', 'regional_distributor', 'active', 11.0, 25000000, 80000000),
+('33333333-3333-3333-3333-333333333333', 'dddd0005-0005-0005-0005-000000000005', 'authorized_channel_partner', 'active', 12.0, 30000000, 100000000),
+('33333333-3333-3333-3333-333333333333', 'dddd0008-0008-0008-0008-000000000008', 'regional_channel_partner', 'active', 11.0, 25000000, 80000000),
 
 -- Medtronic relationships
-('44444444-4444-4444-4444-444444444444', 'dddd0009-0009-0009-0009-000000000009', 'authorized_distributor', 'active', 14.0, 22000000, 70000000),
-('44444444-4444-4444-4444-444444444444', 'dddd0011-0011-0011-0011-000000000011', 'regional_distributor', 'active', 13.5, 18000000, 55000000),
+('44444444-4444-4444-4444-444444444444', 'dddd0009-0009-0009-0009-000000000009', 'authorized_channel_partner', 'active', 14.0, 22000000, 70000000),
+('44444444-4444-4444-4444-444444444444', 'dddd0011-0011-0011-0011-000000000011', 'regional_channel_partner', 'active', 13.5, 18000000, 55000000),
 
--- Smaller manufacturers with regional distributors
-('66666666-6666-6666-6666-666666666666', 'dddd0010-0010-0010-0010-000000000010', 'authorized_distributor', 'active', 15.0, 15000000, 45000000),
-('77777777-7777-7777-7777-777777777777', 'dddd0012-0012-0012-0012-000000000012', 'authorized_distributor', 'active', 16.0, 12000000, 35000000),
-('88888888-8888-8888-8888-888888888888', 'dddd0014-0014-0014-0014-000000000014', 'regional_distributor', 'active', 14.5, 20000000, 60000000),
-('99999999-9999-9999-9999-999999999999', 'dddd0016-0016-0016-0016-000000000016', 'authorized_distributor', 'active', 17.0, 18000000, 50000000),
-('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'dddd0018-0018-0018-0018-000000000018', 'regional_distributor', 'active', 15.5, 10000000, 30000000);
+-- Smaller manufacturers with regional Channel Partners
+('66666666-6666-6666-6666-666666666666', 'dddd0010-0010-0010-0010-000000000010', 'authorized_channel_partner', 'active', 15.0, 15000000, 45000000),
+('77777777-7777-7777-7777-777777777777', 'dddd0012-0012-0012-0012-000000000012', 'authorized_channel_partner', 'active', 16.0, 12000000, 35000000),
+('88888888-8888-8888-8888-888888888888', 'dddd0014-0014-0014-0014-000000000014', 'regional_channel_partner', 'active', 14.5, 20000000, 60000000),
+('99999999-9999-9999-9999-999999999999', 'dddd0016-0016-0016-0016-000000000016', 'authorized_channel_partner', 'active', 17.0, 18000000, 50000000),
+('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'dddd0018-0018-0018-0018-000000000018', 'regional_channel_partner', 'active', 15.5, 10000000, 30000000);
 
 -- ============================================================================
--- SEED DATA COMPLETE: 20 Distributors with 21 Facilities and 35+ Relationships
+-- SEED DATA COMPLETE: 20 Channel Partners with 21 Facilities and 35+ Relationships
 -- ============================================================================

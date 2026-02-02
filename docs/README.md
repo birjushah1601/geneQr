@@ -1,21 +1,21 @@
-# ABY-MED Medical Platform - Documentation
+﻿# ServQR Medical Platform - Documentation
 
-## 📚 Documentation Structure
+## ðŸ“š Documentation Structure
 
 This documentation is organized by purpose and audience for easy navigation.
 
 ---
 
-## 🗂️ Directory Structure
+## ðŸ—‚ï¸ Directory Structure
 
 ```
 docs/
-├── README.md (this file)
-├── 01-06 Master Documentation (6 files)
-├── Core Guides (9 files)
-├── guides/ (Implementation guides - 6 files)
-├── design/ (Design & planning docs - 5 files)
-└── archives/ (Historical logs - 103 files)
+â”œâ”€â”€ README.md (this file)
+â”œâ”€â”€ 01-06 Master Documentation (6 files)
+â”œâ”€â”€ Core Guides (9 files)
+â”œâ”€â”€ guides/ (Implementation guides - 6 files)
+â”œâ”€â”€ design/ (Design & planning docs - 5 files)
+â””â”€â”€ archives/ (Historical logs - 103 files)
 ```
 
 ### Root Directory
@@ -32,7 +32,7 @@ docs/
 
 ---
 
-## 📖 Quick Navigation
+## ðŸ“– Quick Navigation
 
 ### For New Developers
 **Start Here:** [`01-GETTING-STARTED.md`](./01-GETTING-STARTED.md)
@@ -79,7 +79,7 @@ docs/
 
 ---
 
-## 🎯 Key Documents
+## ðŸŽ¯ Key Documents
 
 | Document | Purpose | Audience |
 |----------|---------|----------|
@@ -92,9 +92,9 @@ docs/
 
 ---
 
-## 🏗️ System Overview
+## ðŸ—ï¸ System Overview
 
-### What is ABY-MED?
+### What is ServQR?
 Intelligent Medical Equipment Service Management Platform with:
 - **Multi-tenant architecture** for manufacturers, hospitals, and service providers
 - **AI-powered diagnostics** for equipment troubleshooting
@@ -111,7 +111,7 @@ Intelligent Medical Equipment Service Management Platform with:
 
 ---
 
-## 📊 Platform Metrics
+## ðŸ“Š Platform Metrics
 
 - **Modules:** 8 core modules (Tickets, Equipment, Organizations, Engineers, etc.)
 - **APIs:** 50+ REST endpoints
@@ -121,12 +121,12 @@ Intelligent Medical Equipment Service Management Platform with:
 
 ---
 
-## 🚀 Quick Start
+## ðŸš€ Quick Start
 
 ```bash
 # 1. Clone repository
 git clone <repo-url>
-cd aby-med
+cd ServQR
 
 # 2. Setup environment
 cp .env.example .env
@@ -152,13 +152,13 @@ Access application at: http://localhost:3000
 
 ---
 
-## 📂 Archives
+## ðŸ“‚ Archives
 
 Historical progress logs, session summaries, and old documentation have been moved to [`archives/`](./archives/) to keep the main docs clean. These are useful for understanding project evolution but not required for current development.
 
 ---
 
-## 🔄 Documentation Updates
+## ðŸ”„ Documentation Updates
 
 **Last Updated:** December 23, 2025  
 **Version:** 2.0  
@@ -172,7 +172,7 @@ Historical progress logs, session summaries, and old documentation have been mov
 
 ---
 
-## 🤝 Contributing to Docs
+## ðŸ¤ Contributing to Docs
 
 When adding documentation:
 1. Determine the appropriate main document (01-06)
@@ -183,7 +183,7 @@ When adding documentation:
 
 ---
 
-## 📞 Support
+## ðŸ“ž Support
 
 - **Technical Issues:** Check troubleshooting sections in respective documents
 - **API Questions:** See [API Reference](./04-API-REFERENCE.md)
@@ -191,4 +191,4 @@ When adding documentation:
 
 ---
 
-**Happy Coding! 🚀**
+**Happy Coding! ðŸš€**

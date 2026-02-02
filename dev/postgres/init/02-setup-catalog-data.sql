@@ -1,5 +1,5 @@
--- ============================================================================
--- ABY-Med Platform Catalog Module - Database Initialization Script
+﻿-- ============================================================================
+-- ServQR Platform Catalog Module - Database Initialization Script
 -- ============================================================================
 -- This script sets up the catalog database schema, loads sample data,
 -- creates indexes, and configures row-level security for multi-tenancy.

@@ -1,12 +1,12 @@
-# 🎉 CUSTOMER DEMO - READY STATUS
+﻿# ðŸŽ‰ CUSTOMER DEMO - READY STATUS
 
 **Date:** October 10, 2025  
-**Status:** ✅ **FULLY READY FOR CUSTOMER DEMO**  
+**Status:** âœ… **FULLY READY FOR CUSTOMER DEMO**  
 **Confidence Level:** **HIGH** (all critical features work)
 
 ---
 
-## ✅ DEMO CHECKLIST
+## âœ… DEMO CHECKLIST
 
 ### **Services Status**
 - [x] Frontend (Next.js) running on http://localhost:3000
@@ -19,14 +19,14 @@
 - [x] Manufacturers page shows 5 manufacturers with details
 - [x] Equipment page shows 4 equipment items with full details
 - [x] Search and filtering work across all pages
-- [x] Manufacturer filtering from URL works (click manufacturer → see their equipment)
+- [x] Manufacturer filtering from URL works (click manufacturer â†’ see their equipment)
 - [x] Status filtering (Active/Maintenance/Inactive)
 - [x] Responsive UI with clean design
 - [x] No error messages visible to user
 
 ---
 
-## 🎯 WHAT THE CUSTOMER WILL SEE
+## ðŸŽ¯ WHAT THE CUSTOMER WILL SEE
 
 ### **1. Dashboard (http://localhost:3000/dashboard)**
 - Overview cards with key metrics
@@ -43,7 +43,7 @@
 
 **Features:**
 - View manufacturer details
-- Click "View Equipment" → filters equipment page
+- Click "View Equipment" â†’ filters equipment page
 - Search by name/location
 - Filter by status
 - Certified badges shown
@@ -66,9 +66,9 @@
 
 ---
 
-## 🔄 USER FLOWS TO DEMONSTRATE
+## ðŸ”„ USER FLOWS TO DEMONSTRATE
 
-### **Flow 1: Browse Manufacturers → View Their Equipment**
+### **Flow 1: Browse Manufacturers â†’ View Their Equipment**
 1. Go to **Manufacturers** page
 2. Click "View Equipment" on **BPL Medical Technologies**
 3. Equipment page opens filtered to show only BPL equipment
@@ -77,26 +77,26 @@
 
 ### **Flow 2: Search and Filter Equipment**
 1. Go to **Equipment** page
-2. Type "MRI" in search box → shows MRI Scanner
+2. Type "MRI" in search box â†’ shows MRI Scanner
 3. Clear search
-4. Select "Active" from status dropdown → shows only active equipment
+4. Select "Active" from status dropdown â†’ shows only active equipment
 5. Try different filters to show responsiveness
 
 ### **Flow 3: QR Code Generation (FULLY WORKING)**
 1. Go to **Equipment** page
 2. Notice **Ultrasound System** doesn't have a QR code yet
-3. Click **"Generate"** button on that equipment → Watch loading animation (1.5 seconds)
-4. See success message: "✅ QR Code generated successfully!" (Demo mode note)
+3. Click **"Generate"** button on that equipment â†’ Watch loading animation (1.5 seconds)
+4. See success message: "âœ… QR Code generated successfully!" (Demo mode note)
 5. Equipment row now shows QR code image instead of Generate button
-6. Try **"Generate All QR Codes"** button → Bulk generates QR codes for equipment without them
-7. Or select multiple equipment → Click **"Generate Selected"** to batch generate
-8. Click on any QR code image → See preview modal with download options
+6. Try **"Generate All QR Codes"** button â†’ Bulk generates QR codes for equipment without them
+7. Or select multiple equipment â†’ Click **"Generate Selected"** to batch generate
+8. Click on any QR code image â†’ See preview modal with download options
 
 ---
 
-## ⚠️ IMPORTANT NOTES FOR DEMO
+## âš ï¸ IMPORTANT NOTES FOR DEMO
 
-### **✅ What Works Perfectly:**
+### **âœ… What Works Perfectly:**
 - All UI interactions
 - Search and filtering
 - Navigation between pages
@@ -104,13 +104,13 @@
 - Responsive design
 - No visible errors
 
-### **ℹ️ Technical Details (Backend):**
+### **â„¹ï¸ Technical Details (Backend):**
 - Frontend uses **mock data fallback** for reliability
 - Backend API has a scanning issue but **doesn't affect demo**
 - If backend is fixed, frontend automatically switches to real data
 - Current setup ensures demo never fails due to API issues
 
-### **🎨 Visual Polish:**
+### **ðŸŽ¨ Visual Polish:**
 - Professional color scheme
 - Intuitive icons and badges
 - Responsive tables
@@ -120,12 +120,12 @@
 
 ---
 
-## 🚀 HOW TO START FOR DEMO
+## ðŸš€ HOW TO START FOR DEMO
 
 ### **Quick Start (All Services)**
 ```powershell
 # 1. Start PostgreSQL (if not running)
-cd C:\Users\birju\aby-med
+cd C:\Users\birju\ServQR
 docker-compose up -d
 
 # 2. Start Backend
@@ -154,7 +154,7 @@ netstat -ano | Select-String ":3000"
 
 ---
 
-## 📊 DEMO SCRIPT SUGGESTION
+## ðŸ“Š DEMO SCRIPT SUGGESTION
 
 ### **Introduction (1 min)**
 "Welcome! This is the Medical Equipment Management Platform. It helps hospitals and healthcare facilities manage their medical equipment inventory, track manufacturers, and handle service requests."
@@ -189,7 +189,7 @@ The platform also tracks equipment status, service history, and QR codes. Some e
 
 ---
 
-## 🔧 POST-DEMO: Optional Backend Fix
+## ðŸ”§ POST-DEMO: Optional Backend Fix
 
 After the demo, if you want to fix the backend API to use real data:
 
@@ -203,12 +203,12 @@ After the demo, if you want to fix the backend API to use real data:
 
 ---
 
-## 📞 SUPPORT
+## ðŸ“ž SUPPORT
 
 If anything breaks during demo:
 1. Refresh the browser (Ctrl+R)
 2. Frontend automatically falls back to mock data
 3. All core features will still work
 
-**This demo setup is ROBUST and RELIABLE!** ✅
+**This demo setup is ROBUST and RELIABLE!** âœ…
 

@@ -1,12 +1,12 @@
-# Multi-Tenant Data Isolation - Implementation Plan
+﻿# Multi-Tenant Data Isolation - Implementation Plan
 
-## 📋 Overview
+## ðŸ“‹ Overview
 
-This document outlines the step-by-step plan to implement complete multi-tenant data isolation in the ABY-MED platform. Each task is designed to be implemented incrementally and tested independently.
+This document outlines the step-by-step plan to implement complete multi-tenant data isolation in the ServQR Platform. Each task is designed to be implemented incrementally and tested independently.
 
 ---
 
-## 🎯 Goals
+## ðŸŽ¯ Goals
 
 1. **Data Isolation**: Ensure users only see data belonging to their organization
 2. **Security**: Prevent unauthorized cross-organization access
@@ -15,16 +15,16 @@ This document outlines the step-by-step plan to implement complete multi-tenant 
 
 ---
 
-## 📊 Current Status
+## ðŸ“Š Current Status
 
-### ✅ What's Already Done
+### âœ… What's Already Done
 - [x] Multi-tenant database structure (organizations, user_organizations)
 - [x] Authentication system with JWT tokens
 - [x] JWT tokens include organization_id, role, permissions
 - [x] Test users created for all organization types
 - [x] User-organization relationships established
 
-### 🚧 What Needs Implementation
+### ðŸš§ What Needs Implementation
 - [ ] Backend: Organization context middleware
 - [ ] Backend: Repository query filters
 - [ ] Backend: API endpoint updates
@@ -35,7 +35,7 @@ This document outlines the step-by-step plan to implement complete multi-tenant 
 
 ---
 
-## 🗺️ Implementation Phases
+## ðŸ—ºï¸ Implementation Phases
 
 ### **Phase 1: Backend Foundation** (Priority: HIGH)
 Set up the infrastructure to enforce organization-based data filtering.
@@ -56,7 +56,7 @@ Comprehensive testing to ensure data isolation works correctly.
 
 # Phase 1: Backend Foundation
 
-## Task 1.1: Create Organization Context Middleware ⭐
+## Task 1.1: Create Organization Context Middleware â­
 
 **Objective**: Extract organization information from JWT and inject into request context.
 
@@ -171,7 +171,7 @@ func GetUserPermissions(ctx context.Context) ([]string, bool) {
 // cmd/platform/main.go
 
 import (
-    "github.com/aby-med/medical-platform/internal/middleware"
+    "github.com/ServQR/medical-platform/internal/middleware"
 )
 
 // In the main() function, after auth middleware:
@@ -185,13 +185,13 @@ router.Use(middleware.OrganizationContextMiddleware(logger))
 - [ ] Middleware logs organization context
 
 **Acceptance Criteria:**
-- ✅ Middleware successfully extracts org_id from JWT claims
-- ✅ Organization context is available in all downstream handlers
-- ✅ System logs show organization_id for each request
+- âœ… Middleware successfully extracts org_id from JWT claims
+- âœ… Organization context is available in all downstream handlers
+- âœ… System logs show organization_id for each request
 
 ---
 
-## Task 1.2: Add OrganizationType to JWT Claims ⭐
+## Task 1.2: Add OrganizationType to JWT Claims â­
 
 **Objective**: Include organization type in JWT so frontend knows what UI to show.
 
@@ -270,9 +270,9 @@ tokenReq := &TokenRequest{
 - [ ] Frontend can read org_type from token
 
 **Acceptance Criteria:**
-- ✅ JWT payload contains organization_type
-- ✅ organization_type matches the user's organization
-- ✅ Different users have different org_types
+- âœ… JWT payload contains organization_type
+- âœ… organization_type matches the user's organization
+- âœ… Different users have different org_types
 
 ---
 
@@ -326,7 +326,7 @@ func (r *organizationRepository) GetByID(ctx context.Context, id uuid.UUID) (*do
 
 # Phase 2: API Data Filtering
 
-## Task 2.1: Update Equipment Registry Repository ⭐⭐
+## Task 2.1: Update Equipment Registry Repository â­â­
 
 **Objective**: Filter equipment by organization - users only see equipment they own or manufactured.
 
@@ -336,7 +336,7 @@ func (r *organizationRepository) GetByID(ctx context.Context, id uuid.UUID) (*do
 **Business Rules:**
 - **Manufacturers**: See ALL equipment they manufactured (across all organizations)
 - **Hospitals**: See ONLY equipment they own
-- **Distributors/Dealers**: See equipment they sold/service
+- **Channel Partners/Sub-Sub-sub_sub_SUB_DEALERs**: See equipment they sold/service
 
 **Implementation:**
 
@@ -369,11 +369,11 @@ func (r *EquipmentRepository) GetAll(ctx context.Context) ([]*domain.Equipment, 
             OR owner_org_id = $1
             ORDER BY created_at DESC
         `
-    case "distributor", "dealer":
-        // Distributors see equipment they sold/service
+    case "Channel Partner", "Sub-sub_SUB_DEALER":
+        // Channel Partners see equipment they sold/service
         query = `
             SELECT * FROM equipment_registry 
-            WHERE distributor_org_id = $1
+            WHERE channel_partner_org_id = $1
             OR service_provider_org_id = $1
             ORDER BY created_at DESC
         `
@@ -393,13 +393,13 @@ func (r *EquipmentRepository) GetAll(ctx context.Context) ([]*domain.Equipment, 
 ```
 
 **Testing:**
-- [ ] Manufacturer login → sees only their manufactured equipment
-- [ ] Hospital login → sees only their owned equipment
+- [ ] Manufacturer login â†’ sees only their manufactured equipment
+- [ ] Hospital login â†’ sees only their owned equipment
 - [ ] No cross-organization equipment visible
 
 ---
 
-## Task 2.2: Update Service Tickets Repository ⭐⭐
+## Task 2.2: Update Service Tickets Repository â­â­
 
 **Objective**: Filter tickets by organization.
 
@@ -440,7 +440,7 @@ func (r *TicketRepository) GetAll(ctx context.Context) ([]*domain.Ticket, error)
             WHERE requester_org_id = $1
             ORDER BY created_at DESC
         `
-    case "distributor", "dealer":
+    case "Channel Partner", "Sub-sub_SUB_DEALER":
         // Service providers see tickets assigned to them
         query = `
             SELECT * FROM service_tickets
@@ -463,7 +463,7 @@ func (r *TicketRepository) GetAll(ctx context.Context) ([]*domain.Ticket, error)
 
 ---
 
-## Task 2.3: Update Engineers Repository ⭐
+## Task 2.3: Update Engineers Repository â­
 
 **Objective**: Filter engineers by organization.
 
@@ -496,7 +496,7 @@ func (r *EngineerRepository) GetAll(ctx context.Context) ([]*domain.Engineer, er
 
 ---
 
-## Task 2.4: Create Organization Filter Helper ⭐
+## Task 2.4: Create Organization Filter Helper â­
 
 **Objective**: Reusable helper to build organization-filtered queries.
 
@@ -512,7 +512,7 @@ import (
     "context"
     "fmt"
     
-    "github.com/aby-med/medical-platform/internal/middleware"
+    "github.com/ServQR/medical-platform/internal/middleware"
     "github.com/google/uuid"
 )
 
@@ -543,8 +543,8 @@ func BuildEquipmentFilter(orgType string) string {
         return "manufacturer_id = $1"
     case "hospital", "imaging_center":
         return "(organization_id = $1 OR owner_org_id = $1)"
-    case "distributor", "dealer":
-        return "(distributor_org_id = $1 OR service_provider_org_id = $1)"
+    case "Channel Partner", "Sub-sub_SUB_DEALER":
+        return "(channel_partner_org_id = $1 OR service_provider_org_id = $1)"
     default:
         return "organization_id = $1"
     }
@@ -555,7 +555,7 @@ func BuildTicketFilter(orgType string) string {
     switch orgType {
     case "hospital", "imaging_center":
         return "requester_org_id = $1"
-    case "distributor", "dealer":
+    case "Channel Partner", "Sub-sub_SUB_DEALER":
         return "assigned_org_id = $1"
     default:
         return "requester_org_id = $1"
@@ -567,7 +567,7 @@ func BuildTicketFilter(orgType string) string {
 
 # Phase 3: Frontend Context
 
-## Task 3.1: Decode JWT and Store Organization Context ⭐
+## Task 3.1: Decode JWT and Store Organization Context â­
 
 **Objective**: Extract organization information from JWT token in frontend.
 
@@ -584,7 +584,7 @@ export interface JWTPayload {
   email: string;
   name: string;
   organization_id: string;
-  organization_type: 'manufacturer' | 'hospital' | 'distributor' | 'dealer' | 'supplier' | 'imaging_center';
+  organization_type: 'manufacturer' | 'hospital' | 'Channel Partner' | 'Sub-sub_SUB_DEALER' | 'supplier' | 'imaging_center';
   role: string;
   permissions: string[];
   exp: number;
@@ -677,7 +677,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 ---
 
-## Task 3.2: Add Organization Info to API Client ⭐
+## Task 3.2: Add Organization Info to API Client â­
 
 **Objective**: Include organization context in API headers.
 
@@ -714,14 +714,14 @@ apiClient.interceptors.request.use(
 
 # Phase 4: Organization-Specific UI
 
-## Task 4.1: Create Organization-Specific Dashboards ⭐⭐
+## Task 4.1: Create Organization-Specific Dashboards â­â­
 
 **Objective**: Different dashboard layouts for each organization type.
 
 **Files to Create:**
 - `admin-ui/src/components/dashboards/ManufacturerDashboard.tsx`
 - `admin-ui/src/components/dashboards/HospitalDashboard.tsx`
-- `admin-ui/src/components/dashboards/DistributorDashboard.tsx`
+- `admin-ui/src/components/dashboards/ChannelPartnerDashboard.tsx`
 - `admin-ui/src/app/dashboard/page.tsx` (MODIFY)
 
 **Implementation:**
@@ -733,7 +733,7 @@ apiClient.interceptors.request.use(
 import { useAuth } from '@/contexts/AuthContext';
 import ManufacturerDashboard from '@/components/dashboards/ManufacturerDashboard';
 import HospitalDashboard from '@/components/dashboards/HospitalDashboard';
-import DistributorDashboard from '@/components/dashboards/DistributorDashboard';
+import ChannelPartnerDashboard from '@/components/dashboards/ChannelPartnerDashboard';
 
 export default function DashboardPage() {
   const { organization } = useAuth();
@@ -748,9 +748,9 @@ export default function DashboardPage() {
     case 'hospital':
     case 'imaging_center':
       return <HospitalDashboard />;
-    case 'distributor':
-    case 'dealer':
-      return <DistributorDashboard />;
+    case 'Channel Partner':
+    case 'Sub-sub_SUB_DEALER':
+      return <ChannelPartnerDashboard />;
     default:
       return <DefaultDashboard />;
   }
@@ -799,7 +799,7 @@ export default function HospitalDashboard() {
 
 ---
 
-## Task 4.2: Implement Conditional Navigation ⭐
+## Task 4.2: Implement Conditional Navigation â­
 
 **Objective**: Show/hide menu items based on organization type.
 
@@ -833,8 +833,8 @@ export default function Navigation() {
         </>
       )}
       
-      {/* Distributor-specific */}
-      {['distributor', 'dealer'].includes(organization?.type) && (
+      {/* Channel Partner-specific */}
+      {['Channel Partner', 'Sub-sub_SUB_DEALER'].includes(organization?.type) && (
         <>
           <NavItem href="/sales">Sales</NavItem>
           <NavItem href="/installations">Installations</NavItem>
@@ -868,21 +868,21 @@ export default function OrganizationBadge() {
   const orgTypeColors = {
     manufacturer: 'bg-blue-100 text-blue-800',
     hospital: 'bg-green-100 text-green-800',
-    distributor: 'bg-purple-100 text-purple-800',
-    dealer: 'bg-orange-100 text-orange-800',
+    Channel Partner: 'bg-purple-100 text-purple-800',
+    Sub-sub_SUB_DEALER: 'bg-orange-100 text-orange-800',
   };
   
   const orgTypeIcons = {
-    manufacturer: '🏭',
-    hospital: '🏥',
-    distributor: '🚚',
-    dealer: '🏪',
+    manufacturer: 'ðŸ­',
+    hospital: 'ðŸ¥',
+    Channel Partner: 'ðŸšš',
+    Sub-sub_SUB_DEALER: 'ðŸª',
   };
   
   return (
     <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg">
       <span className="text-2xl">
-        {orgTypeIcons[organization?.type] || '🏢'}
+        {orgTypeIcons[organization?.type] || 'ðŸ¢'}
       </span>
       <div>
         <div className="text-xs text-gray-500">Logged in as</div>
@@ -900,7 +900,7 @@ export default function OrganizationBadge() {
 
 # Phase 5: Testing & Validation
 
-## Task 5.1: Backend Integration Tests ⭐⭐
+## Task 5.1: Backend Integration Tests â­â­
 
 **Objective**: Verify data isolation at API level.
 
@@ -947,7 +947,7 @@ func TestCrossOrganizationAccess(t *testing.T) {
 
 ---
 
-## Task 5.2: Frontend Manual Testing ⭐
+## Task 5.2: Frontend Manual Testing â­
 
 **Test Script:**
 
@@ -986,7 +986,7 @@ func TestCrossOrganizationAccess(t *testing.T) {
 
 ---
 
-## Task 5.3: Security Testing ⭐⭐
+## Task 5.3: Security Testing â­â­
 
 **Objective**: Ensure no data leakage through various attack vectors.
 
@@ -1049,17 +1049,17 @@ func TestCrossOrganizationAccess(t *testing.T) {
 # Success Criteria
 
 ## Must Have (P0)
-- ✅ Users can only see data belonging to their organization
-- ✅ JWT tokens include organization context
-- ✅ All repository queries filter by organization
-- ✅ Different dashboards for different org types
-- ✅ Security testing passes
+- âœ… Users can only see data belonging to their organization
+- âœ… JWT tokens include organization context
+- âœ… All repository queries filter by organization
+- âœ… Different dashboards for different org types
+- âœ… Security testing passes
 
 ## Should Have (P1)
-- ✅ Organization badge showing current org
-- ✅ Conditional navigation based on org type
-- ✅ Proper error handling for missing org context
-- ✅ Logging of organization access patterns
+- âœ… Organization badge showing current org
+- âœ… Conditional navigation based on org type
+- âœ… Proper error handling for missing org context
+- âœ… Logging of organization access patterns
 
 ## Nice to Have (P2)
 - Organization switcher for multi-org users
@@ -1140,4 +1140,4 @@ func TestCrossOrganizationAccess(t *testing.T) {
 
 **Let's start with Task 1.1: Organization Context Middleware!**
 
-Ready to begin? 🚀
+Ready to begin? ðŸš€

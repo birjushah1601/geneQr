@@ -1,4 +1,4 @@
-package main
+﻿package main
 
 import (
 	"context"
@@ -122,7 +122,7 @@ func main() {
 			logger.Warn("Failed to initialize auth module", slog.String("error", err.Error()))
 			authModule = nil
 		} else if authModule != nil {
-			logger.Info("✅ Auth module initialized")
+			logger.Info("âœ… Auth module initialized")
 		}
 	}
 
@@ -132,7 +132,7 @@ func main() {
 	// NOW register auth routes (after middleware is set up)
 	if authModule != nil {
 		authModule.RegisterRoutes(router)
-		logger.Info("✅ Auth routes registered")
+		logger.Info("âœ… Auth routes registered")
 	}
 
 	// Initialize modules (non-blocking) with auth middleware
@@ -267,13 +267,13 @@ func setupRouter(cfg *config.Config, logger *slog.Logger, tracer observability.T
 	// This validates JWT and sets claims in context
 	if authModule != nil {
 		r.Use(authModule.Handler.AuthMiddleware)
-		logger.Info("✅ Auth middleware applied GLOBALLY (runs before org middleware)")
+		logger.Info("âœ… Auth middleware applied GLOBALLY (runs before org middleware)")
 	}
 
 	// CRITICAL: Organization context middleware for multi-tenant data isolation
 	// Extracts org info from JWT claims (set by auth middleware above)
 	r.Use(appmiddleware.OrganizationContextMiddleware(logger))
-	logger.Info("✅ Organization context middleware registered")
+	logger.Info("âœ… Organization context middleware registered")
 
 	// Health check endpoint
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -569,7 +569,7 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 						logger,
 					)
 					whatsappModule.MountRoutes(apiRouter)
-					logger.Info("✅ WhatsApp integration initialized and routes mounted")
+					logger.Info("âœ… WhatsApp integration initialized and routes mounted")
 				} else {
 					logger.Warn("WhatsApp enabled but required services not available yet - webhook endpoint created for verification only")
 					// Create a simple verification endpoint

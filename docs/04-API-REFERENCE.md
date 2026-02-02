@@ -1,13 +1,13 @@
-# ABY-MED API Reference
+﻿# ServQR API Reference
 
 Quick reference for all REST API endpoints.
 
-## 🌐 Base URL
+## ðŸŒ Base URL
 
 - **Development:** `http://localhost:8081`
-- **Production:** `https://api.aby-med.com` (when deployed)
+- **Production:** `https://api.ServQR.com` (when deployed)
 
-## 🔑 Authentication
+## ðŸ”‘ Authentication
 
 Most endpoints require authentication via JWT token in cookies or Authorization header.
 
@@ -19,7 +19,7 @@ X-User-ID: user-uuid
 
 ---
 
-## 📋 API Modules
+## ðŸ“‹ API Modules
 
 ### 1. Tickets API
 
@@ -104,7 +104,7 @@ X-User-ID: user-uuid
 
 ---
 
-## 📝 Example Requests
+## ðŸ“ Example Requests
 
 ### Create Ticket
 ```http
@@ -142,7 +142,7 @@ dry_run: false
 
 ---
 
-## 📚 Full Documentation
+## ðŸ“š Full Documentation
 
 See subdirectories:
 - `/docs/api/` - Detailed API specs

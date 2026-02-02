@@ -1,4 +1,4 @@
-package whatsapp
+﻿package whatsapp
 
 import (
 	"bytes"
@@ -278,7 +278,7 @@ func (h *WhatsAppHandler) createTicketFromWhatsApp(
 // sendTicketConfirmation sends ticket confirmation to customer
 func (h *WhatsAppHandler) sendTicketConfirmation(ctx context.Context, to string, ticket *ticketDomain.ServiceTicket) {
 	message := fmt.Sprintf(
-		"✅ *Service Request Confirmed*\n\n"+
+		"âœ… *Service Request Confirmed*\n\n"+
 			"Ticket Number: *%s*\n"+
 			"Equipment: %s\n"+
 			"Serial: %s\n"+
@@ -301,7 +301,7 @@ func (h *WhatsAppHandler) sendTicketConfirmation(ctx context.Context, to string,
 
 // sendErrorMessage sends error message to customer
 func (h *WhatsAppHandler) sendErrorMessage(ctx context.Context, to, errorMsg string) {
-	message := fmt.Sprintf("❌ %s", errorMsg)
+	message := fmt.Sprintf("âŒ %s", errorMsg)
 	
 	if err := h.whatsappService.SendMessage(ctx, to, message); err != nil {
 		h.logger.Error("Failed to send error message",
@@ -313,10 +313,10 @@ func (h *WhatsAppHandler) sendErrorMessage(ctx context.Context, to, errorMsg str
 
 // sendHelpMessage sends help message when no QR code is found
 func (h *WhatsAppHandler) sendHelpMessage(ctx context.Context, to string) {
-	message := "🤖 *ABY-MED Service Bot*\n\n" +
+	message := "ðŸ¤– *ServQR Service Bot*\n\n" +
 		"To report an equipment issue:\n\n" +
-		"1️⃣ Scan the QR code on your equipment\n" +
-		"2️⃣ Send the QR code along with issue description\n\n" +
+		"1ï¸âƒ£ Scan the QR code on your equipment\n" +
+		"2ï¸âƒ£ Send the QR code along with issue description\n\n" +
 		"Example:\n" +
 		"QR-20251001-832300\n" +
 		"MRI machine not starting, showing error code E-503\n\n" +

@@ -1,21 +1,21 @@
-# ABY-MED User Personas & Use Cases
+﻿# ServQR User Personas & Use Cases
 
 Documentation organized by user perspective and real-world scenarios.
 
 ---
 
-## 👥 User Personas
+## ðŸ‘¥ User Personas
 
 ### 1. Hospital Administrator (Customer)
 **Profile:** Manages hospital equipment, tracks service requests  
 **Goals:** Quick ticket creation, track repair status, manage equipment inventory
 
 **Key Features:**
-- ✅ Equipment registry with QR codes
-- ✅ Create tickets via web or WhatsApp
-- ✅ Track ticket status in real-time
-- ✅ View equipment maintenance history
-- ✅ Receive email notifications
+- âœ… Equipment registry with QR codes
+- âœ… Create tickets via web or WhatsApp
+- âœ… Track ticket status in real-time
+- âœ… View equipment maintenance history
+- âœ… Receive email notifications
 
 **User Journey:**
 ```
@@ -35,21 +35,21 @@ Documentation organized by user perspective and real-world scenarios.
 **Goals:** View assigned tickets, update status, request parts, close tickets
 
 **Key Features:**
-- ✅ View assigned tickets dashboard
-- ✅ Update ticket status
-- ✅ Add comments/photos
-- ✅ Request spare parts
-- ✅ Mark tickets resolved
+- âœ… View assigned tickets dashboard
+- âœ… Update ticket status
+- âœ… Add comments/photos
+- âœ… Request spare parts
+- âœ… Mark tickets resolved
 
 **User Journey:**
 ```
 1. Login to dashboard
 2. View assigned tickets (filtered list)
-3. Click ticket → See equipment details
+3. Click ticket â†’ See equipment details
 4. Update status: "In Progress"
 5. Add diagnostic comments
 6. Request parts if needed
-7. Complete repair → Mark "Resolved"
+7. Complete repair â†’ Mark "Resolved"
 8. Upload completion photos
 ```
 
@@ -60,22 +60,22 @@ Documentation organized by user perspective and real-world scenarios.
 **Goals:** Efficient ticket assignment, team management, analytics
 
 **Key Features:**
-- ✅ Dashboard with all tickets
-- ✅ Manual engineer assignment
-- ✅ AI-powered assignment suggestions
-- ✅ Update ticket priority (admin-only)
-- ✅ Daily reports (email)
-- ✅ Organization management
-- ✅ Equipment catalog management
-- ✅ Onboarding system (bulk import)
+- âœ… Dashboard with all tickets
+- âœ… Manual engineer assignment
+- âœ… AI-powered assignment suggestions
+- âœ… Update ticket priority (admin-only)
+- âœ… Daily reports (email)
+- âœ… Organization management
+- âœ… Equipment catalog management
+- âœ… Onboarding system (bulk import)
 
 **User Journey:**
 ```
-1. Login → Dashboard overview
+1. Login â†’ Dashboard overview
 2. See new tickets requiring assignment
-3. Click ticket → View details
+3. Click ticket â†’ View details
 4. Use AI suggestions for engineer
-5. Assign engineer → Notification sent
+5. Assign engineer â†’ Notification sent
 6. Update priority if critical
 7. Monitor progress
 8. Review daily reports (morning/evening)
@@ -88,11 +88,11 @@ Documentation organized by user perspective and real-world scenarios.
 **Goals:** Monitor SLAs, team performance, customer satisfaction
 
 **Key Features:**
-- ✅ Analytics dashboard (coming soon)
-- ✅ SLA tracking and alerts
-- ✅ Daily email reports
-- ✅ Ticket history and trends
-- ✅ Engineer performance metrics
+- âœ… Analytics dashboard (coming soon)
+- âœ… SLA tracking and alerts
+- âœ… Daily email reports
+- âœ… Ticket history and trends
+- âœ… Engineer performance metrics
 
 **User Journey:**
 ```
@@ -111,14 +111,14 @@ Documentation organized by user perspective and real-world scenarios.
 **Goals:** Manage products, fulfill orders, track sales
 
 **Key Features:**
-- 🚧 Product management dashboard
-- 🚧 Inventory tracking
-- 🚧 Order fulfillment
-- 🚧 Sales analytics
+- ðŸš§ Product management dashboard
+- ðŸš§ Inventory tracking
+- ðŸš§ Order fulfillment
+- ðŸš§ Sales analytics
 
 **User Journey (Planned):**
 ```
-1. Login → Seller dashboard
+1. Login â†’ Seller dashboard
 2. Add/update products
 3. Receive order notification
 4. Process order
@@ -128,7 +128,7 @@ Documentation organized by user perspective and real-world scenarios.
 
 ---
 
-## 🎯 Use Cases by Scenario
+## ðŸŽ¯ Use Cases by Scenario
 
 ### Scenario 1: Emergency Equipment Failure (Hospital)
 **Persona:** Hospital Administrator  
@@ -203,7 +203,7 @@ Documentation organized by user perspective and real-world scenarios.
 - Bulk CSV import
 - Industry templates
 - QR batch generation
-- 97% time reduction (5h → 5-10 min)
+- 97% time reduction (5h â†’ 5-10 min)
 
 ---
 
@@ -225,7 +225,7 @@ Documentation organized by user perspective and real-world scenarios.
 8. Part shipped, arrives next day
 9. Engineer replaces module
 10. Marks ticket resolved
-11. Feedback: "Diagnosis accurate" → Improves AI model
+11. Feedback: "Diagnosis accurate" â†’ Improves AI model
 
 **Features Used:**
 - AI diagnosis (GPT-4)
@@ -236,41 +236,41 @@ Documentation organized by user perspective and real-world scenarios.
 
 ---
 
-## 🔄 Cross-Persona Workflows
+## ðŸ”„ Cross-Persona Workflows
 
 ### Workflow 1: Ticket Lifecycle (All Personas)
 ```
 Hospital Staff (Create)
-    ↓
+    â†“
 Manufacturer Admin (Assign)
-    ↓
+    â†“
 Field Engineer (Work)
-    ↓
+    â†“
 Parts Supplier (Provide parts - future)
-    ↓
+    â†“
 Field Engineer (Complete)
-    ↓
+    â†“
 Hospital Staff (Close)
 ```
 
 ### Workflow 2: Equipment Lifecycle
 ```
 Manufacturer (Produce equipment)
-    ↓
-Distributor (Ship to hospital)
-    ↓
+    â†“
+Channel Partner (Ship to hospital)
+    â†“
 Hospital (Install, register in system)
-    ↓
+    â†“
 Service Provider (Maintain)
-    ↓
+    â†“
 Engineer (Repair when needed)
-    ↓
+    â†“
 Parts Supplier (Provide spare parts)
 ```
 
 ---
 
-## 📚 Persona-Specific Documentation
+## ðŸ“š Persona-Specific Documentation
 
 ### For Hospital Admins
 - [01-GETTING-STARTED.md](./01-GETTING-STARTED.md) - Section: "Access Application"
@@ -292,18 +292,18 @@ Parts Supplier (Provide spare parts)
 
 ---
 
-## 🎭 Persona Comparison Matrix
+## ðŸŽ­ Persona Comparison Matrix
 
 | Feature | Hospital Admin | Engineer | Mfr Admin | Service Mgr |
 |---------|----------------|----------|-----------|-------------|
-| Create Ticket | ✅ Primary | ❌ | ✅ | ❌ |
-| Assign Engineer | ❌ | ❌ | ✅ Primary | ✅ |
-| Update Status | ❌ | ✅ Primary | ✅ | ✅ |
-| Update Priority | ❌ | ❌ | ✅ Admin only | ✅ Admin |
-| View Analytics | ⚠️ Limited | ⚠️ Own | ✅ All | ✅ Primary |
-| Manage Equipment | ✅ Own | ❌ | ✅ All | ⚠️ View |
-| Request Parts | ⚠️ Indirect | ✅ Primary | ✅ | ❌ |
-| Onboard Orgs | ❌ | ❌ | ✅ Admin only | ❌ |
+| Create Ticket | âœ… Primary | âŒ | âœ… | âŒ |
+| Assign Engineer | âŒ | âŒ | âœ… Primary | âœ… |
+| Update Status | âŒ | âœ… Primary | âœ… | âœ… |
+| Update Priority | âŒ | âŒ | âœ… Admin only | âœ… Admin |
+| View Analytics | âš ï¸ Limited | âš ï¸ Own | âœ… All | âœ… Primary |
+| Manage Equipment | âœ… Own | âŒ | âœ… All | âš ï¸ View |
+| Request Parts | âš ï¸ Indirect | âœ… Primary | âœ… | âŒ |
+| Onboard Orgs | âŒ | âŒ | âœ… Admin only | âŒ |
 
 ---
 

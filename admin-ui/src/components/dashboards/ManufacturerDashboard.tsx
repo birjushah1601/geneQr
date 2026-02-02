@@ -74,7 +74,7 @@ export default function ManufacturerDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center</p></div><div className="gap-2 mb-2">
                 <Factory className="h-5 w-5 text-blue-600" />
                 <p className="text-sm font-medium text-gray-500">Equipment Manufactured</p>
               </div>
@@ -91,7 +91,7 @@ export default function ManufacturerDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center</p></div><div className="gap-2 mb-2">
                 <Wrench className="h-5 w-5 text-orange-600" />
                 <p className="text-sm font-medium text-gray-500">Active Service Tickets</p>
               </div>
@@ -108,7 +108,7 @@ export default function ManufacturerDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center</p></div><div className="gap-2 mb-2">
                 <AlertCircle className="h-5 w-5 text-red-600" />
                 <p className="text-sm font-medium text-gray-500">Pending Tickets</p>
               </div>
@@ -125,7 +125,7 @@ export default function ManufacturerDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center</p></div><div className="gap-2 mb-2">
                 <TrendingUp className="h-5 w-5 text-green-600" />
                 <p className="text-sm font-medium text-gray-500">Resolution Rate</p>
               </div>
@@ -152,7 +152,7 @@ export default function ManufacturerDashboard() {
               </div>
               <div className="flex-1">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  🚀 Get Started with AI Onboarding
+                  ðŸš€ Get Started with AI Onboarding
                 </h3>
                 <p className="text-gray-700 mb-4">
                   Import your equipment, parts catalog, hospitals, and engineers in minutes using our AI-powered assistant. 

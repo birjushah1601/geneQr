@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -105,7 +105,7 @@ export default function ManufacturerOnboarding() {
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold mb-2">Welcome to ABY-MED</h2>
+          <h2 className="text-2xl font-bold mb-2">Welcome to ServQR</h2>
           <p className="text-gray-600">
             Let's start by setting up your manufacturer profile
           </p>

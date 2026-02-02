@@ -1,4 +1,4 @@
--- Migration: Create customers table and normalize customer data
+﻿-- Migration: Create customers table and normalize customer data
 -- Ticket: T1.2
 -- Purpose: Create proper customer entity and eliminate data duplication
 
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS customers (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     created_by VARCHAR(255),
     
-    CONSTRAINT customer_type_check CHECK (customer_type IN ('individual', 'hospital', 'clinic', 'lab', 'manufacturer', 'dealer', 'other')),
+    CONSTRAINT customer_type_check CHECK (customer_type IN ('individual', 'hospital', 'clinic', 'lab', 'manufacturer', 'Sub-sub_SUB_DEALER', 'other')),
     CONSTRAINT customer_status_check CHECK (status IN ('active', 'inactive', 'blocked'))
 );
 
@@ -195,7 +195,7 @@ BEGIN
     IF v_orphaned_count > 0 THEN
         RAISE WARNING 'Found % orphaned customer references in service_tickets', v_orphaned_count;
     ELSE
-        RAISE NOTICE '✓ No orphaned customer references found';
+        RAISE NOTICE 'âœ“ No orphaned customer references found';
     END IF;
 END $$;
 
@@ -216,7 +216,7 @@ BEGIN
     IF v_duplicate_count > 0 THEN
         RAISE WARNING 'Found % duplicate customer phone numbers', v_duplicate_count;
     ELSE
-        RAISE NOTICE '✓ No duplicate customers found';
+        RAISE NOTICE 'âœ“ No duplicate customers found';
     END IF;
 END $$;
 

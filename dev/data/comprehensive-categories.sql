@@ -1,5 +1,5 @@
--- =============================================================================
--- ABY-Med Platform - Comprehensive Medical Equipment Categories
+﻿-- =============================================================================
+-- ServQR Platform - Comprehensive Medical Equipment Categories
 -- =============================================================================
 -- This file contains an expanded taxonomy of medical equipment categories
 -- covering all aspects of healthcare including dental, laboratory, hospital

@@ -4,7 +4,7 @@
 **Version:** 1.0  
 **Date:** December 20, 2025  
 **Status:** Draft - For Review  
-**Project:** ABY-MED Medical Equipment Service Platform  
+**Project:** ServQR Medical Equipment Service Platform  
 **Document Owner:** Technical Architecture Team  
 
 ---
@@ -38,7 +38,7 @@
 
 ### 1.1 Overview
 
-ABY-MED is implementing a comprehensive authentication and multi-tenancy system to support secure access for various stakeholders including manufacturers, hospitals, laboratories, distributors, dealers, engineers, and administrators. The system will feature OTP-first authentication with password fallback, WhatsApp-based ticket creation and notifications, and organization-specific dashboards.
+ServQR is implementing a comprehensive authentication and multi-tenancy system to support secure access for various stakeholders including manufacturers, hospitals, laboratories, Channel Partners, Sub-Sub-sub_sub_SUB_DEALERs, engineers, and administrators. The system will feature OTP-first authentication with password fallback, WhatsApp-based ticket creation and notifications, and organization-specific dashboards.
 
 ### 1.2 Key Features
 
@@ -76,7 +76,7 @@ ABY-MED is implementing a comprehensive authentication and multi-tenancy system 
 
 ### 2.1 Background
 
-The current ABY-MED platform has basic API key authentication suitable for development but lacks user management, organization-specific access control, and modern authentication methods required for production deployment.
+The current ServQR Platform has basic API key authentication suitable for development but lacks user management, organization-specific access control, and modern authentication methods required for production deployment.
 
 ### 2.2 Problem Statement
 
@@ -285,7 +285,7 @@ Implement a comprehensive authentication and multi-tenancy system that:
 
 **Name:** Alex Kumar  
 **Role:** System Administrator  
-**Organization:** ABY-MED (Internal)  
+**Organization:** ServQR (Internal)  
 **Tech Savviness:** Expert  
 
 **Needs:**
@@ -757,8 +757,8 @@ POST /api/v1/auth/reset-password
 - Manufacturers
 - Hospitals
 - Laboratories  
-- Distributors
-- Dealers
+- Channel Partners
+- Sub-Sub-sub_sub_SUB_DEALERs
 
 ### 7.2 Role-Based Access Control (RBAC)
 - Admin, Manager, Engineer, Viewer roles
@@ -1284,5 +1284,5 @@ See: WHATSAPP-INTEGRATION.md
 **Word Count:** ~20,000+  
 **Estimated Reading Time:** 90 minutes
 
-For questions or clarifications, contact: technical-team@aby-med.com
+For questions or clarifications, contact: technical-team@ServQR.com
 

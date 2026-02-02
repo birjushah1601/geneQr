@@ -1,4 +1,4 @@
-# Multi-Tenant Authentication - Complete Summary
+﻿# Multi-Tenant Authentication - Complete Summary
 
 See complete documentation in:
 - docs/MULTI-TENANT-AUTH-SETUP.md
@@ -8,8 +8,8 @@ See complete documentation in:
 ### Test Credentials (Password: 'password' for all)
 1. manufacturer@geneqr.com - Siemens Healthineers India
 2. hospital@geneqr.com - AIIMS New Delhi
-3. distributor@geneqr.com - Regional Distributor X
-4. dealer@geneqr.com - Local Dealer Z
+3. Channel Partner@geneqr.com - Regional Channel Partner X
+4. Sub-sub_SUB_DEALER@geneqr.com - Local Sub-sub_SUB_DEALER Z
 5. admin@geneqr.com - System Admin
 
 ### What's Working

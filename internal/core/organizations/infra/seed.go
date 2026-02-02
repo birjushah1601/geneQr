@@ -1,4 +1,4 @@
-package infra
+﻿package infra
 
 import (
     "context"
@@ -20,9 +20,9 @@ func SeedOrgDemoData(ctx context.Context, db PgxIface, logger *slog.Logger) erro
             ('Siemens Healthineers India','manufacturer','active', '{"country":"IN","city":"Gurugram"}'),
             ('Philips Healthcare India','manufacturer','active', '{"country":"IN","city":"Pune"}'),
 
-            -- Suppliers / Distributors (India)
-            ('SouthCare Distributors','distributor','active', '{"country":"IN","city":"Chennai"}'),
-            ('MedSupply Mumbai','distributor','active', '{"country":"IN","city":"Mumbai"}'),
+            -- Suppliers / Channel Partners (India)
+            ('SouthCare Channel Partners','Channel Partner','active', '{"country":"IN","city":"Chennai"}'),
+            ('MedSupply Mumbai','Channel Partner','active', '{"country":"IN","city":"Mumbai"}'),
             ('Aknamed Medical Supplies','supplier','active', '{"country":"IN","city":"Bengaluru"}'),
 
             -- Hospitals (India)
@@ -38,18 +38,18 @@ func SeedOrgDemoData(ctx context.Context, db PgxIface, logger *slog.Logger) erro
             ('SRL Diagnostics Imaging - Mumbai','imaging_center','active', '{"country":"IN","city":"Mumbai"}')`)
         if err != nil { return err }
 
-        // Sample supply chain relationships (manufacturer -> distributor) and (distributor -> hospital)
+        // Sample supply chain relationships (manufacturer -> Channel Partner) and (Channel Partner -> hospital)
         _, err = db.Exec(ctx, `
           WITH m1 AS (SELECT id FROM organizations WHERE name='Wipro GE Healthcare'),
                m2 AS (SELECT id FROM organizations WHERE name='Siemens Healthineers India'),
-               d1 AS (SELECT id FROM organizations WHERE name='SouthCare Distributors'),
+               d1 AS (SELECT id FROM organizations WHERE name='SouthCare Channel Partners'),
                d2 AS (SELECT id FROM organizations WHERE name='MedSupply Mumbai'),
                h1 AS (SELECT id FROM organizations WHERE name='Apollo Hospitals Chennai'),
                h2 AS (SELECT id FROM organizations WHERE name='Fortis Hospital Mumbai')
           INSERT INTO org_relationships (parent_org_id, child_org_id, rel_type)
-          SELECT m1.id, d1.id, 'distributor_of' FROM m1, d1
+          SELECT m1.id, d1.id, 'channel_partner_of' FROM m1, d1
           UNION ALL
-          SELECT m2.id, d2.id, 'distributor_of' FROM m2, d2
+          SELECT m2.id, d2.id, 'channel_partner_of' FROM m2, d2
           UNION ALL
           SELECT d1.id, h1.id, 'supplier_of' FROM d1, h1
           UNION ALL
@@ -68,8 +68,8 @@ func SeedOrgDemoData(ctx context.Context, db PgxIface, logger *slog.Logger) erro
         ensureStmt("Wipro GE Healthcare", "manufacturer", "Bengaluru"),
         ensureStmt("Siemens Healthineers India", "manufacturer", "Gurugram"),
         ensureStmt("Philips Healthcare India", "manufacturer", "Pune"),
-        ensureStmt("SouthCare Distributors", "distributor", "Chennai"),
-        ensureStmt("MedSupply Mumbai", "distributor", "Mumbai"),
+        ensureStmt("SouthCare Channel Partners", "Channel Partner", "Chennai"),
+        ensureStmt("MedSupply Mumbai", "Channel Partner", "Mumbai"),
         ensureStmt("Aknamed Medical Supplies", "supplier", "Bengaluru"),
         ensureStmt("AIIMS New Delhi", "hospital", "New Delhi"),
         ensureStmt("Apollo Hospitals Chennai", "hospital", "Chennai"),

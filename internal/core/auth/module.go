@@ -1,4 +1,4 @@
-package auth
+﻿package auth
 
 import (
 	"context"
@@ -74,7 +74,7 @@ func NewModule(db *sqlx.DB, config *Config) (*Module, error) {
 		config.JWTRefreshExpiry = 7 * 24 * time.Hour
 	}
 	if config.JWTIssuer == "" {
-		config.JWTIssuer = "aby-med-platform"
+		config.JWTIssuer = "servqr-platform"
 	}
 	if config.OTPLength == 0 {
 		config.OTPLength = 6

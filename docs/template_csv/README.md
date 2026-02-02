@@ -1,8 +1,8 @@
-# CSV Import Templates
+﻿# CSV Import Templates
 
-This folder contains sample CSV templates for bulk importing data into the ABY-MED platform.
+This folder contains sample CSV templates for bulk importing data into the ServQR Platform.
 
-## 📋 Available Templates
+## ðŸ“‹ Available Templates
 
 ### 1. Equipment Import
 **File:** `equipment-catalog-template.csv`
@@ -113,7 +113,7 @@ For importing multiple hospitals/customers at once.
 
 ---
 
-## 🔧 Specialized Equipment Templates
+## ðŸ”§ Specialized Equipment Templates
 
 Category-specific templates with pre-filled equipment types:
 
@@ -125,7 +125,7 @@ Category-specific templates with pre-filled equipment types:
 
 ---
 
-## 📝 Usage Instructions
+## ðŸ“ Usage Instructions
 
 ### Step 1: Download Template
 Download the appropriate template from this folder.
@@ -144,7 +144,7 @@ Download the appropriate template from this folder.
 - **Numeric fields** use numbers only (no currency symbols)
 
 ### Step 4: Import
-1. Log into ABY-MED platform
+1. Log into ServQR Platform
 2. Navigate to appropriate section (Equipment, Engineers, etc.)
 3. Click "Import CSV" or "Bulk Upload"
 4. Select your filled CSV file
@@ -152,7 +152,7 @@ Download the appropriate template from this folder.
 
 ---
 
-## ⚠️ Common Issues & Solutions
+## âš ï¸ Common Issues & Solutions
 
 ### Issue: Import Fails
 **Solution:** Check that:
@@ -175,7 +175,7 @@ Download the appropriate template from this folder.
 
 ---
 
-## 🔗 Related Documentation
+## ðŸ”— Related Documentation
 
 - **Full Template Review:** See `../CSV-TEMPLATE-REVIEW.md` for complete analysis
 - **Backend API:** Equipment import endpoint: `POST /api/v1/equipment/import`
@@ -184,7 +184,7 @@ Download the appropriate template from this folder.
 
 ---
 
-## 📞 Support
+## ðŸ“ž Support
 
 For issues with CSV imports:
 1. Check error messages carefully
@@ -197,7 +197,7 @@ For issues with CSV imports:
 
 ---
 
-## 📅 Template Version
+## ðŸ“… Template Version
 
 **Last Updated:** January 26, 2026  
 **Version:** 2.0  
@@ -205,7 +205,7 @@ For issues with CSV imports:
 
 ---
 
-## 🎯 Quick Start
+## ðŸŽ¯ Quick Start
 
 **New to CSV imports?**
 

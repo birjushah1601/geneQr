@@ -1,4 +1,4 @@
-/**
+﻿/**
  * JWT Decoder Utility
  * Decodes JWT tokens to extract claims without verification
  * (verification happens on backend)
@@ -9,7 +9,7 @@ export interface JWTClaims {
   email?: string;
   name?: string;
   organization_id: string;
-  organization_type: string; // manufacturer, hospital, distributor, etc.
+  organization_type: string; // manufacturer, hospital, Channel Partner, etc.
   role: string;
   permissions?: string[];
   exp?: number;

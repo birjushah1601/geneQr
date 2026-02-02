@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Create Test Users for Different Organization Types
 -- ============================================================================
 -- Password for all users: password
@@ -19,7 +19,7 @@ BEGIN
     LIMIT 1;
     
     IF manufacturer_org_id IS NULL THEN
-        RAISE NOTICE '❌ No manufacturer organization found!';
+        RAISE NOTICE 'âŒ No manufacturer organization found!';
         RETURN;
     END IF;
     
@@ -48,7 +48,7 @@ BEGIN
         'active'
     );
     
-    RAISE NOTICE '✅ Manufacturer user created: % for org: %', manufacturer_user_id, manufacturer_org_name;
+    RAISE NOTICE 'âœ… Manufacturer user created: % for org: %', manufacturer_user_id, manufacturer_org_name;
 END $$;
 
 -- 2. HOSPITAL USER
@@ -65,7 +65,7 @@ BEGIN
     LIMIT 1;
     
     IF hospital_org_id IS NULL THEN
-        RAISE NOTICE '❌ No hospital organization found!';
+        RAISE NOTICE 'âŒ No hospital organization found!';
         RETURN;
     END IF;
     
@@ -91,100 +91,100 @@ BEGIN
         'active'
     );
     
-    RAISE NOTICE '✅ Hospital user created: % for org: %', hospital_user_id, hospital_org_name;
+    RAISE NOTICE 'âœ… Hospital user created: % for org: %', hospital_user_id, hospital_org_name;
 END $$;
 
--- 3. DISTRIBUTOR USER
+-- 3. Channel Partner USER
 DO $$
 DECLARE
-    distributor_org_id UUID;
-    distributor_user_id UUID;
-    distributor_org_name TEXT;
+    channel_partner_org_id UUID;
+    channel_partner_user_id UUID;
+    channel_partner_org_name TEXT;
 BEGIN
-    SELECT id, name INTO distributor_org_id, distributor_org_name
+    SELECT id, name INTO channel_partner_org_id, channel_partner_org_name
     FROM organizations 
-    WHERE org_type = 'distributor' 
+    WHERE org_type = 'Channel Partner' 
     AND status = 'active'
     LIMIT 1;
     
-    IF distributor_org_id IS NULL THEN
-        RAISE NOTICE '❌ No distributor organization found!';
+    IF channel_partner_org_id IS NULL THEN
+        RAISE NOTICE 'âŒ No Channel Partner organization found!';
         RETURN;
     END IF;
     
-    DELETE FROM users WHERE email = 'distributor@geneqr.com';
+    DELETE FROM users WHERE email = 'Channel Partner@geneqr.com';
     
     INSERT INTO users (email, password_hash, preferred_auth_method, email_verified, full_name, status)
     VALUES (
-        'distributor@geneqr.com',
+        'Channel Partner@geneqr.com',
         '$2a$12$7LrnRmZTJ.4qXs1Qdmr4w.zpAzY0OoFN2elf1H8UApwZASfKr4yNG',
         'password',
         TRUE,
-        'Distributor Admin',
+        'Channel Partner Admin',
         'active'
     )
-    RETURNING id INTO distributor_user_id;
+    RETURNING id INTO channel_partner_user_id;
     
     INSERT INTO user_organizations (user_id, organization_id, role, is_primary, status)
     VALUES (
-        distributor_user_id,
-        distributor_org_id,
+        channel_partner_user_id,
+        channel_partner_org_id,
         'admin',
         TRUE,
         'active'
     );
     
-    RAISE NOTICE '✅ Distributor user created: % for org: %', distributor_user_id, distributor_org_name;
+    RAISE NOTICE 'âœ… Channel Partner user created: % for org: %', channel_partner_user_id, channel_partner_org_name;
 END $$;
 
--- 4. DEALER USER
+-- 4. Sub-sub_SUB_DEALER USER
 DO $$
 DECLARE
-    dealer_org_id UUID;
-    dealer_user_id UUID;
-    dealer_org_name TEXT;
+    sub_sub_Sub-sub_SUB_DEALER_org_id UUID;
+    sub_sub_Sub-sub_SUB_DEALER_user_id UUID;
+    sub_sub_Sub-sub_SUB_DEALER_org_name TEXT;
 BEGIN
-    SELECT id, name INTO dealer_org_id, dealer_org_name
+    SELECT id, name INTO sub_sub_Sub-sub_SUB_DEALER_org_id, sub_sub_Sub-sub_SUB_DEALER_org_name
     FROM organizations 
-    WHERE org_type = 'dealer' 
+    WHERE org_type = 'Sub-sub_SUB_DEALER' 
     AND status = 'active'
     LIMIT 1;
     
-    IF dealer_org_id IS NULL THEN
-        RAISE NOTICE '❌ No dealer organization found!';
+    IF sub_sub_Sub-sub_SUB_DEALER_org_id IS NULL THEN
+        RAISE NOTICE 'âŒ No Sub-sub_SUB_DEALER organization found!';
         RETURN;
     END IF;
     
-    DELETE FROM users WHERE email = 'dealer@geneqr.com';
+    DELETE FROM users WHERE email = 'Sub-sub_SUB_DEALER@geneqr.com';
     
     INSERT INTO users (email, password_hash, preferred_auth_method, email_verified, full_name, status)
     VALUES (
-        'dealer@geneqr.com',
+        'Sub-sub_SUB_DEALER@geneqr.com',
         '$2a$12$7LrnRmZTJ.4qXs1Qdmr4w.zpAzY0OoFN2elf1H8UApwZASfKr4yNG',
         'password',
         TRUE,
-        'Dealer Admin',
+        'Sub-sub_SUB_DEALER Admin',
         'active'
     )
-    RETURNING id INTO dealer_user_id;
+    RETURNING id INTO sub_sub_Sub-sub_SUB_DEALER_user_id;
     
     INSERT INTO user_organizations (user_id, organization_id, role, is_primary, status)
     VALUES (
-        dealer_user_id,
-        dealer_org_id,
+        sub_sub_Sub-sub_SUB_DEALER_user_id,
+        sub_sub_Sub-sub_SUB_DEALER_org_id,
         'admin',
         TRUE,
         'active'
     );
     
-    RAISE NOTICE '✅ Dealer user created: % for org: %', dealer_user_id, dealer_org_name;
+    RAISE NOTICE 'âœ… Sub-sub_SUB_DEALER user created: % for org: %', sub_sub_Sub-sub_SUB_DEALER_user_id, sub_sub_Sub-sub_SUB_DEALER_org_name;
 END $$;
 
 -- Display summary
 SELECT 
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━' as "════════════════════════════════════════════════════════";
-SELECT '✅ TEST USERS CREATED SUCCESSFULLY!' as "Status";
-SELECT '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━' as "════════════════════════════════════════════════════════";
+    'â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”' as "â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•";
+SELECT 'âœ… TEST USERS CREATED SUCCESSFULLY!' as "Status";
+SELECT 'â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”' as "â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•";
 
 -- Display all created test users
 SELECT 
@@ -193,14 +193,14 @@ SELECT
     o.name as "Organization",
     o.org_type as "Org Type",
     uo.role as "Role",
-    CASE WHEN uo.is_primary THEN '✅' ELSE '❌' END as "Primary"
+    CASE WHEN uo.is_primary THEN 'âœ…' ELSE 'âŒ' END as "Primary"
 FROM users u
 JOIN user_organizations uo ON u.id = uo.user_id
 JOIN organizations o ON uo.organization_id = o.id
 WHERE u.email LIKE '%@geneqr.com'
 ORDER BY o.org_type;
 
-SELECT '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━' as "════════════════════════════════════════════════════════";
+SELECT 'â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”' as "â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•";
 SELECT 'Password for all users: password' as "Credentials";
 SELECT 'Login at: http://localhost:3000/login' as "URL";
-SELECT '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━' as "════════════════════════════════════════════════════════";
+SELECT 'â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”' as "â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•";

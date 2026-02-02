@@ -3,7 +3,7 @@ import { apiClient } from './client';
 export interface Organization {
   id: string;
   name: string;
-  org_type: 'manufacturer' | 'distributor' | 'dealer' | 'hospital' | 'service_provider' | 'other';
+  org_type: 'manufacturer' | 'channel_partner' | 'sub_dealer' | 'hospital' | 'service_provider' | 'other';
   status: 'active' | 'inactive';
   metadata: any;
 }
@@ -71,8 +71,8 @@ export const organizationsApi = {
     return {
       total: orgs.length,
       manufacturers: orgs.filter(o => o.org_type === 'manufacturer').length,
-      distributors: orgs.filter(o => o.org_type === 'distributor').length,
-      dealers: orgs.filter(o => o.org_type === 'dealer').length,
+      channelPartners: orgs.filter(o => o.org_type === 'channel_partner').length,
+      subDealers: orgs.filter(o => o.org_type === 'sub_dealer').length,
       hospitals: orgs.filter(o => o.org_type === 'hospital').length,
       active: orgs.filter(o => o.status === 'active').length,
     };

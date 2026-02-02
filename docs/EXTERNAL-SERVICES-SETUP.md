@@ -1,4 +1,4 @@
-# External Services Configuration Guide
+﻿# External Services Configuration Guide
 
 **Date:** December 21, 2025  
 **Purpose:** Configure Twilio (SMS/WhatsApp) and SendGrid (Email) for production  
@@ -6,7 +6,7 @@
 
 ---
 
-## 📋 **OVERVIEW**
+## ðŸ“‹ **OVERVIEW**
 
 The authentication system currently uses **mock services** for development. This guide walks you through configuring **real external services** for production.
 
@@ -15,14 +15,14 @@ The authentication system currently uses **mock services** for development. This
 2. **SendGrid** - Email OTP delivery
 
 ### **Current Status:**
-- ✅ Mock services work in development (no configuration needed)
-- ✅ Code supports both mock and real services
-- ✅ Automatic fallback to mock if credentials missing
-- ⏳ Real services need API keys for production
+- âœ… Mock services work in development (no configuration needed)
+- âœ… Code supports both mock and real services
+- âœ… Automatic fallback to mock if credentials missing
+- â³ Real services need API keys for production
 
 ---
 
-## 🔧 **TWILIO SETUP (SMS & WHATSAPP)**
+## ðŸ”§ **TWILIO SETUP (SMS & WHATSAPP)**
 
 ### **Step 1: Create Twilio Account**
 
@@ -41,14 +41,14 @@ The authentication system currently uses **mock services** for development. This
 ### **Step 3: Get Phone Number**
 
 **For SMS:**
-1. Go to: **Phone Numbers → Manage → Buy a number**
+1. Go to: **Phone Numbers â†’ Manage â†’ Buy a number**
 2. Select your country
 3. Check "SMS" capability
 4. Click "Buy" (uses trial credit)
 5. Copy the number: `+1234567890`
 
 **For WhatsApp:**
-1. Go to: **Messaging → Try it out → Try WhatsApp**
+1. Go to: **Messaging â†’ Try it out â†’ Try WhatsApp**
 2. Follow setup wizard
 3. Get WhatsApp-enabled number (different from SMS)
 4. Copy WhatsApp number: `whatsapp:+1234567890`
@@ -71,10 +71,10 @@ TWILIO_WHATSAPP_NUMBER=whatsapp:+1234567890
 
 ```
 # If credentials found:
-✅ Twilio SMS service initialized
+âœ… Twilio SMS service initialized
 
 # If credentials missing:
-⚠️ Twilio not configured, using mock SMS service
+âš ï¸ Twilio not configured, using mock SMS service
 ```
 
 ### **Step 6: Test Real SMS**
@@ -88,7 +88,7 @@ curl -X POST http://localhost:8081/api/v1/auth/register \
   }'
 ```
 
-**Check your phone - you should receive real SMS!** 📱
+**Check your phone - you should receive real SMS!** ðŸ“±
 
 ### **Step 7: Test WhatsApp**
 
@@ -101,11 +101,11 @@ curl -X POST http://localhost:8081/api/v1/auth/send-otp \
   }'
 ```
 
-**Check WhatsApp - you should receive OTP!** 💬
+**Check WhatsApp - you should receive OTP!** ðŸ’¬
 
 ---
 
-## 📧 **SENDGRID SETUP (EMAIL)**
+## ðŸ“§ **SENDGRID SETUP (EMAIL)**
 
 ### **Step 1: Create SendGrid Account**
 
@@ -115,9 +115,9 @@ curl -X POST http://localhost:8081/api/v1/auth/send-otp \
 
 ### **Step 2: Create API Key**
 
-1. **Go to:** Settings → API Keys
+1. **Go to:** Settings â†’ API Keys
 2. **Click:** "Create API Key"
-3. **Name:** "ABY-MED Platform Production"
+3. **Name:** "ServQR Platform Production"
 4. **Access:** "Full Access" (or "Mail Send" only)
 5. **Create & Copy:** `SG.xxxxxxxxxxxxxxxxxxxxxxx`
 6. **Save immediately** - shown only once!
@@ -125,17 +125,17 @@ curl -X POST http://localhost:8081/api/v1/auth/send-otp \
 ### **Step 3: Verify Sender**
 
 **Single Sender Verification (Quick):**
-1. Go to: **Settings → Sender Authentication**
+1. Go to: **Settings â†’ Sender Authentication**
 2. Click: **"Verify a Single Sender"**
 3. Fill in:
-   - From Name: `ABY-MED Platform`
+   - From Name: `ServQR Platform`
    - From Email: `noreply@yourdomain.com`
-   - Company: `ABY-MED`
+   - Company: `ServQR`
    - Address: Your company address
 4. **Verify** - check email and click verification link
 
 **Domain Authentication (Production):**
-1. Go to: **Settings → Sender Authentication**
+1. Go to: **Settings â†’ Sender Authentication**
 2. Click: **"Authenticate Your Domain"**
 3. Choose DNS host
 4. Add DNS records (CNAME, TXT)
@@ -149,7 +149,7 @@ Update `.env` file:
 # SendGrid Configuration
 SENDGRID_API_KEY=SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 SENDGRID_FROM_EMAIL=noreply@yourdomain.com
-SENDGRID_FROM_NAME=ABY-MED Platform
+SENDGRID_FROM_NAME=ServQR Platform
 ```
 
 ### **Step 5: Verify Setup**
@@ -158,10 +158,10 @@ SENDGRID_FROM_NAME=ABY-MED Platform
 
 ```
 # If API key found:
-✅ SendGrid email service initialized
+âœ… SendGrid email service initialized
 
 # If API key missing:
-⚠️ SendGrid not configured, using mock email service
+âš ï¸ SendGrid not configured, using mock email service
 ```
 
 ### **Step 6: Test Real Email**
@@ -175,11 +175,11 @@ curl -X POST http://localhost:8081/api/v1/auth/register \
   }'
 ```
 
-**Check your inbox - you should receive real email!** 📧
+**Check your inbox - you should receive real email!** ðŸ“§
 
 ---
 
-## 🔐 **ENVIRONMENT CONFIGURATION**
+## ðŸ” **ENVIRONMENT CONFIGURATION**
 
 ### **Development (.env)**
 
@@ -207,7 +207,7 @@ JWT_PUBLIC_KEY_PATH=./keys/jwt-public.pem
 
 # SENDGRID_API_KEY=SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 # SENDGRID_FROM_EMAIL=noreply@yourdomain.com
-# SENDGRID_FROM_NAME=ABY-MED Platform
+# SENDGRID_FROM_NAME=ServQR Platform
 
 # Authentication
 ENABLE_AUTH=true
@@ -244,7 +244,7 @@ TWILIO_WHATSAPP_NUMBER=whatsapp:+1234567890
 
 SENDGRID_API_KEY=SG.production_key_here
 SENDGRID_FROM_EMAIL=noreply@yourcompany.com
-SENDGRID_FROM_NAME=ABY-MED Platform
+SENDGRID_FROM_NAME=ServQR Platform
 
 # Authentication (Production values)
 ENABLE_AUTH=true
@@ -262,7 +262,7 @@ RATE_LIMIT_PER_MINUTE=100
 
 ---
 
-## 📊 **COST ESTIMATION**
+## ðŸ“Š **COST ESTIMATION**
 
 ### **Twilio Costs:**
 
@@ -296,7 +296,7 @@ RATE_LIMIT_PER_MINUTE=100
 
 ---
 
-## 🧪 **TESTING CHECKLIST**
+## ðŸ§ª **TESTING CHECKLIST**
 
 ### **Development Testing (Mock Services):**
 - [ ] Backend starts without external credentials
@@ -343,7 +343,7 @@ RATE_LIMIT_PER_MINUTE=100
 
 ---
 
-## 🚨 **TROUBLESHOOTING**
+## ðŸš¨ **TROUBLESHOOTING**
 
 ### **Twilio: SMS Not Received**
 
@@ -351,7 +351,7 @@ RATE_LIMIT_PER_MINUTE=100
 **Solutions:**
 1. Check phone number format: `+1234567890` (include country code)
 2. Verify phone is verified in Twilio console (trial accounts)
-3. Check Twilio logs: Console → Monitor → Logs
+3. Check Twilio logs: Console â†’ Monitor â†’ Logs
 4. Check backend logs for errors
 5. Verify TWILIO_PHONE_NUMBER is correct
 6. Check trial credit balance
@@ -390,39 +390,39 @@ RATE_LIMIT_PER_MINUTE=100
 
 ---
 
-## 🔒 **SECURITY BEST PRACTICES**
+## ðŸ”’ **SECURITY BEST PRACTICES**
 
 ### **1. API Key Management:**
-- ✅ **Never commit API keys to git**
-- ✅ Use `.env` files (add to `.gitignore`)
-- ✅ Use environment variables in production
-- ✅ Rotate keys periodically (every 90 days)
-- ✅ Use separate keys for dev/staging/prod
+- âœ… **Never commit API keys to git**
+- âœ… Use `.env` files (add to `.gitignore`)
+- âœ… Use environment variables in production
+- âœ… Rotate keys periodically (every 90 days)
+- âœ… Use separate keys for dev/staging/prod
 
 ### **2. Phone Number Protection:**
-- ✅ Validate phone format before sending
-- ✅ Rate limit OTP requests (3 per hour)
-- ✅ Implement cooldown (60 seconds between requests)
-- ✅ Log all OTP attempts
-- ✅ Block suspicious patterns
+- âœ… Validate phone format before sending
+- âœ… Rate limit OTP requests (3 per hour)
+- âœ… Implement cooldown (60 seconds between requests)
+- âœ… Log all OTP attempts
+- âœ… Block suspicious patterns
 
 ### **3. Email Protection:**
-- ✅ Validate email format
-- ✅ Check disposable email domains
-- ✅ Rate limit email sending
-- ✅ Use SPF/DKIM/DMARC
-- ✅ Monitor bounce rates
+- âœ… Validate email format
+- âœ… Check disposable email domains
+- âœ… Rate limit email sending
+- âœ… Use SPF/DKIM/DMARC
+- âœ… Monitor bounce rates
 
 ### **4. OTP Security:**
-- ✅ 6-digit codes (100,000 combinations)
-- ✅ 5-minute expiry
-- ✅ Single-use only
-- ✅ SHA-256 hashing in database
-- ✅ Account lockout after 5 failed attempts
+- âœ… 6-digit codes (100,000 combinations)
+- âœ… 5-minute expiry
+- âœ… Single-use only
+- âœ… SHA-256 hashing in database
+- âœ… Account lockout after 5 failed attempts
 
 ---
 
-## 📈 **MONITORING & ALERTS**
+## ðŸ“ˆ **MONITORING & ALERTS**
 
 ### **Key Metrics to Track:**
 
@@ -460,7 +460,7 @@ RATE_LIMIT_PER_MINUTE=100
 
 ---
 
-## ✅ **COMPLETION CHECKLIST**
+## âœ… **COMPLETION CHECKLIST**
 
 ### **Development Setup:**
 - [ ] Backend runs with mock services
@@ -496,7 +496,7 @@ RATE_LIMIT_PER_MINUTE=100
 
 ---
 
-## 🎯 **NEXT STEPS**
+## ðŸŽ¯ **NEXT STEPS**
 
 1. **Now:** Keep using mock services for development
 2. **Before user testing:** Configure Twilio SMS

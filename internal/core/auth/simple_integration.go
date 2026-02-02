@@ -1,4 +1,4 @@
-package auth
+﻿package auth
 
 import (
 	"log/slog"
@@ -47,8 +47,8 @@ func SimpleIntegration(router chi.Router, dbPool *pgxpool.Pool, logger *slog.Log
 	} else {
 		emailSender = email.NewSendGridSender(
 			sendgridKey,
-			getEnvOrDefault("SENDGRID_FROM_EMAIL", "noreply@aby-med.com"),
-			getEnvOrDefault("SENDGRID_FROM_NAME", "ABY-MED Platform"),
+			getEnvOrDefault("SENDGRID_FROM_EMAIL", "noreply@ServQR.com"),
+			getEnvOrDefault("SENDGRID_FROM_NAME", "ServQR Platform"),
 		)
 	}
 

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -1025,7 +1025,7 @@ export default function AIOnboardingWizard() {
                       }`}
                     >
                       {message.role === 'ai' && (
-                        <div className="flex items-center gap-2 mb-2">
+                        <div className="flex items-center</p></div><div className="gap-2 mb-2">
                           <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold">
                             AI
                           </div>

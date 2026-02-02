@@ -1,4 +1,4 @@
-package domain
+﻿package domain
 
 import (
 	"context"
@@ -72,7 +72,7 @@ type EngineerAssignment struct {
 
 	// Sequence tracking
 	AssignmentSequence int    `json:"assignment_sequence"` // 1, 2, 3... for escalations
-	AssignmentTier     int    `json:"assignment_tier"`     // 1=OEM, 2=Dealer, etc.
+	AssignmentTier     int    `json:"assignment_tier"`     // 1=OEM, 2=Sub-sub_SUB_DEALER, etc.
 	AssignmentTierName string `json:"assignment_tier_name"`
 	AssignmentReason   string `json:"assignment_reason"` // "Initial", "Escalation", etc.
 

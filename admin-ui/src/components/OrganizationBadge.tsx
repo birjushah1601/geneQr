@@ -42,19 +42,19 @@ const orgTypeConfig = {
     iconColor: 'text-pink-600',
     description: 'Diagnostic imaging facility',
   },
-  distributor: {
-    label: 'Distributor',
+  'channel_partner': {
+    label: 'Channel Partner',
     icon: Truck,
     color: 'bg-purple-100 text-purple-700 border-purple-200',
     iconColor: 'text-purple-600',
-    description: 'Equipment distributor and service provider',
+    description: 'Equipment Channel Partner and service provider',
   },
-  dealer: {
-    label: 'Dealer',
+  'sub_dealer': {
+    label: 'Sub-sub_SUB_DEALER',
     icon: ShoppingBag,
     color: 'bg-green-100 text-green-700 border-green-200',
     iconColor: 'text-green-600',
-    description: 'Authorized equipment dealer',
+    description: 'Authorized equipment Sub-sub_SUB_DEALER',
   },
   supplier: {
     label: 'Supplier',

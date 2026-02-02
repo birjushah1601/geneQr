@@ -1,8 +1,8 @@
-# ABY-MED Onboarding System
+﻿# ServQR Onboarding System
 
 Complete manufacturer onboarding system with industry-specific templates and bulk CSV import.
 
-## 🎯 Overview
+## ðŸŽ¯ Overview
 
 The onboarding system reduces manufacturer setup time from **5+ hours to 5-10 minutes** (97% time reduction) through:
 - Pre-configured industry templates
@@ -10,7 +10,7 @@ The onboarding system reduces manufacturer setup time from **5+ hours to 5-10 mi
 - Visual guided wizard
 - Automated validation
 
-## 📋 Features
+## ðŸ“‹ Features
 
 ### 1. Multi-Step Wizard
 - **Step 1:** Company Profile (organization details)
@@ -64,7 +64,7 @@ The onboarding system reduces manufacturer setup time from **5+ hours to 5-10 mi
 - Numeric field parsing (price, weight, intervals)
 - Email/phone format validation
 
-## 🚀 Quick Start
+## ðŸš€ Quick Start
 
 ### Backend Setup
 
@@ -101,47 +101,47 @@ http://localhost:3000/onboarding/wizard
    - Select industry & upload equipment CSV (optional)
    - Celebrate completion!
 
-## 📁 File Structure
+## ðŸ“ File Structure
 
 ```
 .
-├── backend/
-│   ├── internal/core/
-│   │   ├── organizations/
-│   │   │   ├── api/
-│   │   │   │   └── bulk_import.go (450 lines)
-│   │   │   └── module.go
-│   │   └── equipment/
-│   │       ├── api/
-│   │       │   └── catalog_bulk_import.go (430 lines)
-│   │       └── module.go (90 lines)
-│   └── database/migrations/
-│       ├── 028_create_qr_tables.sql
-│       ├── 029_extend_equipment_registry.sql
-│       └── 030_migrate_existing_qr_codes.sql
-│
-├── frontend/
-│   ├── src/components/onboarding/
-│   │   ├── OnboardingWizard.tsx (180 lines)
-│   │   ├── CSVUploader.tsx (240 lines)
-│   │   └── steps/
-│   │       ├── CompanyProfileStep.tsx (280 lines)
-│   │       ├── OrganizationsUploadStep.tsx (90 lines)
-│   │       ├── EquipmentUploadStep.tsx (180 lines)
-│   │       └── CompletionStep.tsx (160 lines)
-│   └── app/onboarding/wizard/
-│       └── page.tsx
-│
-└── templates/csv/
-    ├── organizations-import-template.csv (6 orgs)
-    ├── equipment-catalog-radiology-template.csv
-    ├── equipment-catalog-cardiology-template.csv
-    ├── equipment-catalog-surgical-template.csv
-    ├── equipment-catalog-icu-template.csv
-    └── equipment-catalog-laboratory-template.csv
+â”œâ”€â”€ backend/
+â”‚   â”œâ”€â”€ internal/core/
+â”‚   â”‚   â”œâ”€â”€ organizations/
+â”‚   â”‚   â”‚   â”œâ”€â”€ api/
+â”‚   â”‚   â”‚   â”‚   â””â”€â”€ bulk_import.go (450 lines)
+â”‚   â”‚   â”‚   â””â”€â”€ module.go
+â”‚   â”‚   â””â”€â”€ equipment/
+â”‚   â”‚       â”œâ”€â”€ api/
+â”‚   â”‚       â”‚   â””â”€â”€ catalog_bulk_import.go (430 lines)
+â”‚   â”‚       â””â”€â”€ module.go (90 lines)
+â”‚   â””â”€â”€ database/migrations/
+â”‚       â”œâ”€â”€ 028_create_qr_tables.sql
+â”‚       â”œâ”€â”€ 029_extend_equipment_registry.sql
+â”‚       â””â”€â”€ 030_migrate_existing_qr_codes.sql
+â”‚
+â”œâ”€â”€ frontend/
+â”‚   â”œâ”€â”€ src/components/onboarding/
+â”‚   â”‚   â”œâ”€â”€ OnboardingWizard.tsx (180 lines)
+â”‚   â”‚   â”œâ”€â”€ CSVUploader.tsx (240 lines)
+â”‚   â”‚   â””â”€â”€ steps/
+â”‚   â”‚       â”œâ”€â”€ CompanyProfileStep.tsx (280 lines)
+â”‚   â”‚       â”œâ”€â”€ OrganizationsUploadStep.tsx (90 lines)
+â”‚   â”‚       â”œâ”€â”€ EquipmentUploadStep.tsx (180 lines)
+â”‚   â”‚       â””â”€â”€ CompletionStep.tsx (160 lines)
+â”‚   â””â”€â”€ app/onboarding/wizard/
+â”‚       â””â”€â”€ page.tsx
+â”‚
+â””â”€â”€ templates/csv/
+    â”œâ”€â”€ organizations-import-template.csv (6 orgs)
+    â”œâ”€â”€ equipment-catalog-radiology-template.csv
+    â”œâ”€â”€ equipment-catalog-cardiology-template.csv
+    â”œâ”€â”€ equipment-catalog-surgical-template.csv
+    â”œâ”€â”€ equipment-catalog-icu-template.csv
+    â””â”€â”€ equipment-catalog-laboratory-template.csv
 ```
 
-## 🔌 API Endpoints
+## ðŸ”Œ API Endpoints
 
 ### Organizations Import
 ```http
@@ -187,7 +187,7 @@ Response:
 }
 ```
 
-## 📝 CSV Format
+## ðŸ“ CSV Format
 
 ### Organizations CSV
 ```csv
@@ -197,7 +197,7 @@ MedTech Industries,manufacturer,active,29AAAAA0000A1Z5,AAAAA0000A,https://medtec
 
 **Required Fields:**
 - name
-- org_type (manufacturer|supplier|distributor|dealer|hospital|clinic|service_provider|other)
+- org_type (manufacturer|supplier|Channel Partner|Sub-sub_SUB_DEALER|hospital|clinic|service_provider|other)
 
 **Optional Fields:**
 - status, gstin, pan, website, email, phone, address, city, state, country, pincode
@@ -218,7 +218,7 @@ RAD-MRI-001,MAGNETOM Vida 3T MRI Scanner,Siemens Healthineers,MAGNETOM Vida,MRI,
 **Optional Fields:**
 - subcategory, description, base_price, currency, weight_kg, service_interval, lifespan, complexity
 
-## ✨ Key Features
+## âœ¨ Key Features
 
 ### Smart Column Detection
 - Flexible header matching (case-insensitive)
@@ -247,7 +247,7 @@ RAD-MRI-001,MAGNETOM Vida 3T MRI Scanner,Siemens Healthineers,MAGNETOM Vida,MRI,
 - Skip options for flexibility
 - Success celebration with stats
 
-## 🧪 Testing
+## ðŸ§ª Testing
 
 ### Test Organizations Import
 ```bash
@@ -275,7 +275,7 @@ curl -X POST http://localhost:8081/api/v1/equipment/catalog/import \
   -F "dry_run=false"
 ```
 
-## 📊 Performance
+## ðŸ“Š Performance
 
 - **Traditional Onboarding**: 5+ hours of manual data entry
 - **With Onboarding System**: 5-10 minutes with templates
@@ -283,7 +283,7 @@ curl -X POST http://localhost:8081/api/v1/equipment/catalog/import \
 - **Error Rate**: Reduced by ~90% (automated validation)
 - **Data Quality**: Consistent, pre-validated templates
 
-## 🔒 Security
+## ðŸ”’ Security
 
 - Transaction safety (all-or-nothing imports)
 - Input validation and sanitization
@@ -292,7 +292,7 @@ curl -X POST http://localhost:8081/api/v1/equipment/catalog/import \
 - SQL injection prevention (prepared statements)
 - Feature flags for gradual rollout
 
-## 🛠️ Troubleshooting
+## ðŸ› ï¸ Troubleshooting
 
 ### CSV Upload Fails
 - Check file size (max 10MB)
@@ -312,7 +312,7 @@ curl -X POST http://localhost:8081/api/v1/equipment/catalog/import \
 - Check database connection
 - Review backend logs
 
-## 📈 Future Enhancements
+## ðŸ“ˆ Future Enhancements
 
 - [ ] Parts bulk import API
 - [ ] QR code bulk generation
@@ -322,7 +322,7 @@ curl -X POST http://localhost:8081/api/v1/equipment/catalog/import \
 - [ ] Real-time collaboration
 - [ ] Template marketplace
 
-## 📚 Documentation
+## ðŸ“š Documentation
 
 - [System Brainstorming](./ONBOARDING-SYSTEM-BRAINSTORM.md)
 - [QR Table Design](./QR-CODE-TABLE-DESIGN-ANALYSIS.md)
@@ -330,7 +330,7 @@ curl -X POST http://localhost:8081/api/v1/equipment/catalog/import \
 - [Implementation Roadmap](./ONBOARDING-IMPLEMENTATION-ROADMAP.md)
 - [Week 1 Progress](./WEEK-1-PROGRESS.md)
 
-## 🎉 Success Metrics
+## ðŸŽ‰ Success Metrics
 
 - **Week 1**: 100% Complete (Database + Backend + Frontend)
 - **Week 2**: 70% Complete (Industry Templates + Equipment System)
@@ -340,15 +340,15 @@ curl -X POST http://localhost:8081/api/v1/equipment/catalog/import \
 - **APIs**: 2 (Organizations + Equipment)
 - **Components**: 8 (React/TypeScript)
 
-## 👏 Credits
+## ðŸ‘ Credits
 
-Built with ❤️ using:
+Built with â¤ï¸ using:
 - **Backend**: Go, PostgreSQL, pgx, chi router
 - **Frontend**: Next.js 14, React, Tailwind CSS, shadcn/ui
 - **Architecture**: Modular, feature-flagged, scalable
 
 ---
 
-**Status**: ✅ Production Ready | Fully Tested | Documented
+**Status**: âœ… Production Ready | Fully Tested | Documented
 
 For questions or issues, please refer to the documentation or create an issue in the repository.

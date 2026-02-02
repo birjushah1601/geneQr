@@ -1,4 +1,4 @@
-package sms
+﻿package sms
 
 import (
 	"context"
@@ -34,7 +34,7 @@ func (s *TwilioSender) SendOTP(ctx context.Context, to, otp string) error {
 	params := &twilioApi.CreateMessageParams{}
 	params.SetTo(to)
 	params.SetFrom(s.phoneNumber)
-	params.SetBody(fmt.Sprintf("Your ABY-MED verification code is: %s\n\nThis code will expire in 5 minutes.", otp))
+	params.SetBody(fmt.Sprintf("Your ServQR verification code is: %s\n\nThis code will expire in 5 minutes.", otp))
 
 	_, err := s.client.Api.CreateMessage(params)
 	if err != nil {
@@ -49,7 +49,7 @@ func (s *TwilioSender) SendWhatsAppOTP(ctx context.Context, to, otp string) erro
 	params := &twilioApi.CreateMessageParams{}
 	params.SetTo(fmt.Sprintf("whatsapp:%s", to))
 	params.SetFrom(fmt.Sprintf("whatsapp:%s", s.whatsappNumber))
-	params.SetBody(fmt.Sprintf("*ABY-MED Verification Code*\n\nYour code: *%s*\n\nThis code will expire in 5 minutes.\n\nIf you didn't request this, please ignore.", otp))
+	params.SetBody(fmt.Sprintf("*ServQR Verification Code*\n\nYour code: *%s*\n\nThis code will expire in 5 minutes.\n\nIf you didn't request this, please ignore.", otp))
 
 	_, err := s.client.Api.CreateMessage(params)
 	if err != nil {

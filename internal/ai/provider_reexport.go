@@ -1,4 +1,4 @@
-// Package ai re-exports types from internal/ai/types for backward compatibility
+﻿// Package ai re-exports types from internal/ai/types for backward compatibility
 package ai
 
 import (

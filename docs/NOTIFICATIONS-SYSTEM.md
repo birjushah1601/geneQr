@@ -1,10 +1,10 @@
-# Notifications System - Complete Guide
+﻿# Notifications System - Complete Guide
 
 Comprehensive guide for all notification features: Email notifications and Daily reports.
 
 ---
 
-## 📧 Email Notifications
+## ðŸ“§ Email Notifications
 
 ### Overview
 Real-time email notifications for ticket lifecycle events using SendGrid.
@@ -31,8 +31,8 @@ Real-time email notifications for ticket lifecycle events using SendGrid.
 ```bash
 # .env
 SENDGRID_API_KEY=SG.xxx
-SENDGRID_FROM_EMAIL=noreply@aby-med.com
-SENDGRID_FROM_NAME="ABY-MED Platform"
+SENDGRID_FROM_EMAIL=noreply@ServQR.com
+SENDGRID_FROM_NAME="ServQR Platform"
 
 # Feature flags
 FEATURE_EMAIL_NOTIFICATIONS=true
@@ -68,7 +68,7 @@ err := notificationService.SendStatusChangedNotifications(ctx, ticket, oldStatus
 
 ---
 
-## 📊 Daily Reports
+## ðŸ“Š Daily Reports
 
 ### Overview
 Automated daily email reports sent twice daily with platform metrics and summaries.
@@ -137,7 +137,7 @@ Reports include 8 key data categories:
 ```bash
 # .env
 FEATURE_DAILY_REPORTS=true
-DAILY_REPORT_RECIPIENT_EMAIL=admin@aby-med.com
+DAILY_REPORT_RECIPIENT_EMAIL=admin@ServQR.com
 REPORT_SCHEDULE_MORNING="0 8 * * *"   # 8 AM daily
 REPORT_SCHEDULE_EVENING="0 18 * * *"  # 6 PM daily
 SENDGRID_API_KEY=SG.xxx
@@ -171,7 +171,7 @@ err := reportService.SendDailyReport(ctx, "admin@example.com")
 
 ---
 
-## 🎚️ Feature Flags
+## ðŸŽšï¸ Feature Flags
 
 Control notifications at granular level:
 
@@ -209,7 +209,7 @@ FEATURE_DAILY_REPORTS=false
 
 ---
 
-## 🧪 Testing
+## ðŸ§ª Testing
 
 ### Test Email Notifications
 
@@ -237,7 +237,7 @@ err := reportService.SendDailyReport(context.Background(), "your-email@example.c
 
 ---
 
-## 📈 Monitoring
+## ðŸ“ˆ Monitoring
 
 ### Email Delivery Tracking
 
@@ -260,13 +260,13 @@ ERROR: Failed to send email notification, type=engineer_assigned, error=invalid 
 
 **Daily Report Logs:**
 ```bash
-INFO: Daily report sent successfully, time=08:00, recipient=admin@aby-med.com, metrics_count=8
+INFO: Daily report sent successfully, time=08:00, recipient=admin@ServQR.com, metrics_count=8
 ERROR: Failed to send daily report, error=database timeout
 ```
 
 ---
 
-## 🔧 Troubleshooting
+## ðŸ”§ Troubleshooting
 
 ### Email Not Sending
 
@@ -281,7 +281,7 @@ ERROR: Failed to send daily report, error=database timeout
    ```
 
 3. **Check SendGrid sender verification:**
-   - Visit SendGrid → Settings → Sender Authentication
+   - Visit SendGrid â†’ Settings â†’ Sender Authentication
    - Verify domain or single sender email
 
 4. **Review logs:**
@@ -314,7 +314,7 @@ ERROR: Failed to send daily report, error=database timeout
 
 ---
 
-## 🚀 Future Enhancements
+## ðŸš€ Future Enhancements
 
 ### Email Notifications
 - [ ] SMS notifications (Twilio)
@@ -337,7 +337,7 @@ ERROR: Failed to send daily report, error=database timeout
 
 ---
 
-## 📚 Related Documentation
+## ðŸ“š Related Documentation
 
 - **Feature Flags:** [FEATURE-FLAGS-NOTIFICATIONS.md](./FEATURE-FLAGS-NOTIFICATIONS.md)
 - **Email Setup:** [EXTERNAL-SERVICES-SETUP.md](./EXTERNAL-SERVICES-SETUP.md)

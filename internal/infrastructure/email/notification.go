@@ -1,4 +1,4 @@
-package email
+﻿package email
 
 import (
 	"context"
@@ -159,7 +159,7 @@ What Happens Next:
 Thank you for contacting us.
 
 Best regards,
-ABY-MED Service Team
+ServQR Service Team
 `, data.CustomerName, data.TicketNumber, data.EquipmentName, data.Priority, data.Description, data.CustomerPhone, data.CustomerEmail)
 
 	htmlContent := fmt.Sprintf(`
@@ -185,7 +185,7 @@ ABY-MED Service Team
 <body>
     <div class="container">
         <div class="header">
-            <h1>✅ Service Ticket Created</h1>
+            <h1>âœ… Service Ticket Created</h1>
         </div>
         <div class="content">
             <p>Dear <strong>%s</strong>,</p>
@@ -211,7 +211,7 @@ ABY-MED Service Team
             </div>
 
             <div class="steps">
-                <h3>📋 What Happens Next:</h3>
+                <h3>ðŸ“‹ What Happens Next:</h3>
                 <ol>
                     <li>Our team will review your request</li>
                     <li>An engineer will be assigned shortly</li>
@@ -219,11 +219,11 @@ ABY-MED Service Team
                 </ol>
             </div>
 
-            <p>Thank you for contacting ABY-MED Service Team.</p>
+            <p>Thank you for contacting ServQR Service Team.</p>
         </div>
         <div class="footer">
-            <p>This is an automated message from ABY-MED Platform</p>
-            <p>&copy; 2025 ABY-MED. All rights reserved.</p>
+            <p>This is an automated message from ServQR Platform</p>
+            <p>&copy; 2025 ServQR. All rights reserved.</p>
         </div>
     </div>
 </body>
@@ -267,7 +267,7 @@ Description: %s
 Action Required:
 Please review and assign an engineer.
 
-ABY-MED Admin System
+ServQR Admin System
 `, data.TicketNumber, data.CustomerName, data.CustomerPhone, data.CustomerEmail, data.EquipmentName, data.Priority, data.Description)
 
 	htmlContent := fmt.Sprintf(`
@@ -289,7 +289,7 @@ ABY-MED Admin System
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔔 New Service Ticket</h1>
+            <h1>ðŸ”” New Service Ticket</h1>
         </div>
         <div class="content">
             <p><strong>A new service ticket requires your attention.</strong></p>
@@ -326,12 +326,12 @@ ABY-MED Admin System
             </div>
 
             <div class="action-required">
-                <h3>⚠️ Action Required</h3>
+                <h3>âš ï¸ Action Required</h3>
                 <p>Please review and assign an engineer to this ticket.</p>
             </div>
         </div>
         <div class="footer">
-            <p>ABY-MED Admin Notification System</p>
+            <p>ServQR Admin Notification System</p>
         </div>
     </div>
 </body>
@@ -376,7 +376,7 @@ Email: %s
 The engineer will contact you shortly to schedule the service visit.
 
 Best regards,
-ABY-MED Service Team
+ServQR Service Team
 `, data.CustomerName, data.TicketNumber, data.EquipmentName, data.EngineerName, data.EngineerPhone, data.EngineerEmail)
 
 	htmlContent := fmt.Sprintf(`
@@ -396,7 +396,7 @@ ABY-MED Service Team
 <body>
     <div class="container">
         <div class="header">
-            <h1>👷 Engineer Assigned</h1>
+            <h1>ðŸ‘· Engineer Assigned</h1>
         </div>
         <div class="content">
             <p>Dear <strong>%s</strong>,</p>
@@ -419,8 +419,8 @@ ABY-MED Service Team
             <p>Thank you for your patience.</p>
         </div>
         <div class="footer">
-            <p>This is an automated message from ABY-MED Platform</p>
-            <p>&copy; 2025 ABY-MED. All rights reserved.</p>
+            <p>This is an automated message from ServQR Platform</p>
+            <p>&copy; 2025 ServQR. All rights reserved.</p>
         </div>
     </div>
 </body>
@@ -466,7 +466,7 @@ Description: %s
 Action Required:
 Please contact the customer to schedule a service visit.
 
-ABY-MED Service System
+ServQR Service System
 `, data.EngineerName, data.TicketNumber, data.CustomerName, data.CustomerEmail, data.CustomerEmail, data.EquipmentName, data.Priority, data.Description)
 
 	htmlContent := fmt.Sprintf(`
@@ -487,7 +487,7 @@ ABY-MED Service System
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔧 New Ticket Assigned</h1>
+            <h1>ðŸ”§ New Ticket Assigned</h1>
         </div>
         <div class="content">
             <p>Dear <strong>%s</strong>,</p>
@@ -518,12 +518,12 @@ ABY-MED Service System
             </div>
 
             <div class="action-box">
-                <h3>📞 Action Required</h3>
+                <h3>ðŸ“ž Action Required</h3>
                 <p>Please contact the customer to schedule a service visit.</p>
             </div>
         </div>
         <div class="footer">
-            <p>ABY-MED Service Notification System</p>
+            <p>ServQR Service Notification System</p>
         </div>
     </div>
 </body>
@@ -560,14 +560,14 @@ Ticket: %s
 Equipment: %s
 
 Status Change:
-%s → %s
+%s â†’ %s
 
 Updated by: %s
 
 Thank you for your patience.
 
 Best regards,
-ABY-MED Service Team
+ServQR Service Team
 `, data.CustomerName, data.TicketNumber, data.EquipmentName, data.OldStatus, data.NewStatus, data.UpdatedBy)
 
 	htmlContent := fmt.Sprintf(`
@@ -589,7 +589,7 @@ ABY-MED Service Team
 <body>
     <div class="container">
         <div class="header">
-            <h1>📊 Status Updated</h1>
+            <h1>ðŸ“Š Status Updated</h1>
         </div>
         <div class="content">
             <p>Dear <strong>%s</strong>,</p>
@@ -597,7 +597,7 @@ ABY-MED Service Team
             
             <div class="status-box">
                 <div class="old-status">%s</div>
-                <div class="status-arrow">⬇️</div>
+                <div class="status-arrow">â¬‡ï¸</div>
                 <div class="new-status">%s</div>
             </div>
 
@@ -607,8 +607,8 @@ ABY-MED Service Team
             <p>Thank you for your patience.</p>
         </div>
         <div class="footer">
-            <p>This is an automated message from ABY-MED Platform</p>
-            <p>&copy; 2025 ABY-MED. All rights reserved.</p>
+            <p>This is an automated message from ServQR Platform</p>
+            <p>&copy; 2025 ServQR. All rights reserved.</p>
         </div>
     </div>
 </body>
@@ -642,10 +642,10 @@ Ticket Status Updated
 Ticket: %s
 Customer: %s
 Equipment: %s
-Status: %s → %s
+Status: %s â†’ %s
 Updated by: %s
 
-ABY-MED Admin System
+ServQR Admin System
 `, data.TicketNumber, data.CustomerName, data.EquipmentName, data.OldStatus, data.NewStatus, data.UpdatedBy)
 
 	htmlContent := fmt.Sprintf(`
@@ -671,12 +671,12 @@ ABY-MED Admin System
                 <p><strong>Ticket:</strong> %s</p>
                 <p><strong>Customer:</strong> %s</p>
                 <p><strong>Equipment:</strong> %s</p>
-                <p><strong>Status Change:</strong> %s → <strong>%s</strong></p>
+                <p><strong>Status Change:</strong> %s â†’ <strong>%s</strong></p>
                 <p><strong>Updated by:</strong> %s</p>
             </div>
         </div>
         <div class="footer">
-            <p>ABY-MED Admin Notification System</p>
+            <p>ServQR Admin Notification System</p>
         </div>
     </div>
 </body>
@@ -750,7 +750,7 @@ Best regards,
         .features { background-color: #fff; padding: 15px; border-radius: 5px; margin: 20px 0; }
         .features ul { list-style-type: none; padding: 0; }
         .features li { padding: 8px 0; padding-left: 25px; position: relative; }
-        .features li:before { content: "✓"; position: absolute; left: 0; color: #10b981; font-weight: bold; }
+        .features li:before { content: "âœ“"; position: absolute; left: 0; color: #10b981; font-weight: bold; }
         .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #6b7280; }
         .expiry { color: #dc2626; font-weight: bold; }
     </style>
@@ -758,7 +758,7 @@ Best regards,
 <body>
     <div class="container">
         <div class="header">
-            <h1>👥 You're Invited!</h1>
+            <h1>ðŸ‘¥ You're Invited!</h1>
         </div>
         <div class="content">
             <p>Dear <strong>%s</strong>,</p>
@@ -808,8 +808,8 @@ Best regards,
             <p style="font-size: 12px; color: #6b7280;">If you didn't expect this invitation, you can safely ignore this email.</p>
         </div>
         <div class="footer">
-            <p>This is an automated message from ABY-MED Platform</p>
-            <p>&copy; 2026 ABY-MED. All rights reserved.</p>
+            <p>This is an automated message from ServQR Platform</p>
+            <p>&copy; 2026 ServQR. All rights reserved.</p>
         </div>
     </div>
 </body>

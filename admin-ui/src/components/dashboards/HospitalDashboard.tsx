@@ -79,7 +79,7 @@ export default function HospitalDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center</p></div><div className="gap-2 mb-2">
                 <Package className="h-5 w-5 text-blue-600" />
                 <p className="text-sm font-medium text-gray-500">Total Equipment</p>
               </div>
@@ -96,7 +96,7 @@ export default function HospitalDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center</p></div><div className="gap-2 mb-2">
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
                 <p className="text-sm font-medium text-gray-500">Operational</p>
               </div>
@@ -113,7 +113,7 @@ export default function HospitalDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center</p></div><div className="gap-2 mb-2">
                 <AlertTriangle className="h-5 w-5 text-orange-600" />
                 <p className="text-sm font-medium text-gray-500">Service Requests</p>
               </div>
@@ -130,7 +130,7 @@ export default function HospitalDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center</p></div><div className="gap-2 mb-2">
                 <Clock className="h-5 w-5 text-purple-600" />
                 <p className="text-sm font-medium text-gray-500">Under Warranty</p>
               </div>

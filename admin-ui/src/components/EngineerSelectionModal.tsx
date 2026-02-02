@@ -188,7 +188,7 @@ export default function EngineerSelectionModal({
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <p className="text-sm text-blue-800">
                 <strong>{engineers.length}</strong> engineer{engineers.length !== 1 ? 's' : ''} available
-                {' '}• Sorted by level and match score
+                {' '}â€¢ Sorted by level and match score
               </p>
             </div>
 
@@ -204,7 +204,7 @@ export default function EngineerSelectionModal({
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     {/* Header */}
-                    <div className="flex items-center gap-3 mb-3">
+                    <div className="flex items-center</p></div><div className="gap-3 mb-3">
                       <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-lg">
                         {engineer.engineer_name.charAt(0)}
                       </div>

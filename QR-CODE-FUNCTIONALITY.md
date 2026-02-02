@@ -1,6 +1,6 @@
-# QR Code Functionality - Complete Guide
+﻿# QR Code Functionality - Complete Guide
 
-## ✅ BACKEND IMPLEMENTATION (Verified Working)
+## âœ… BACKEND IMPLEMENTATION (Verified Working)
 
 ### 1. Database Storage
 **Location:** `database/migrations/002_store_qr_in_database.sql`
@@ -58,7 +58,7 @@ GET /api/v1/equipment/{id}/qr/pdf
 
 ---
 
-## 🎨 FRONTEND IMPLEMENTATION
+## ðŸŽ¨ FRONTEND IMPLEMENTATION
 
 ### Current Flow:
 1. **Display:** Shows QR code if `hasQRCode` is true
@@ -68,12 +68,12 @@ GET /api/v1/equipment/{id}/qr/pdf
 
 ### What We Need to Fix:
 
-#### ✅ Already Working:
+#### âœ… Already Working:
 - Backend generates and stores QR in database
 - API endpoint serves QR image from database
 - Generate button calls correct API
 
-#### ❌ Issues to Fix:
+#### âŒ Issues to Fix:
 1. **hasQRCode Logic:** Frontend checks `qr_code_generated_at` field
 2. **Placeholder:** No placeholder shown while loading
 3. **Error Handling:** No fallback if image fails to load
@@ -81,11 +81,11 @@ GET /api/v1/equipment/{id}/qr/pdf
 
 ---
 
-## 🔧 HOW IT SHOULD WORK
+## ðŸ”§ HOW IT SHOULD WORK
 
 ### Scenario 1: Equipment WITHOUT QR Code
 **Display:** "Generate" button (16x16px box)
-**Action:** Click → POST to backend → QR generated → Reload page → Show QR image
+**Action:** Click â†’ POST to backend â†’ QR generated â†’ Reload page â†’ Show QR image
 
 ### Scenario 2: Equipment WITH QR Code
 **Display:** QR code thumbnail (20x20px)
@@ -97,7 +97,7 @@ GET /api/v1/equipment/{id}/qr/pdf
 
 ---
 
-## 📝 TESTING CHECKLIST
+## ðŸ“ TESTING CHECKLIST
 
 ### Backend Tests:
 - [ ] Generate QR for equipment: `POST /api/v1/equipment/{id}/qr`
@@ -116,7 +116,7 @@ GET /api/v1/equipment/{id}/qr/pdf
 
 ---
 
-## 🐛 COMMON ISSUES & FIXES
+## ðŸ› COMMON ISSUES & FIXES
 
 ### Issue 1: QR Image Not Loading
 **Symptom:** Broken image icon
@@ -148,7 +148,7 @@ GET /api/v1/equipment/{id}/qr/pdf
 
 ---
 
-## 💡 IMPROVEMENTS NEEDED
+## ðŸ’¡ IMPROVEMENTS NEEDED
 
 1. **Real-time Update:** Instead of page reload, update component state
 2. **Loading State:** Show spinner while generating
@@ -158,11 +158,11 @@ GET /api/v1/equipment/{id}/qr/pdf
 
 ---
 
-## 🚀 QUICK START FOR TESTING
+## ðŸš€ QUICK START FOR TESTING
 
 ### 1. Start Backend
 ```bash
-cd C:\Users\birju\aby-med
+cd C:\Users\birju\ServQR
 .\backend.exe
 ```
 
@@ -195,19 +195,19 @@ WHERE qr_code_image IS NOT NULL;
 
 ---
 
-## ✅ SUMMARY
+## âœ… SUMMARY
 
 **What's Working:**
-✅ QR generation logic (backend)
-✅ Database storage (binary data)
-✅ Image serving endpoint
-✅ PDF label generation
+âœ… QR generation logic (backend)
+âœ… Database storage (binary data)
+âœ… Image serving endpoint
+âœ… PDF label generation
 
 **What Needs Fixing:**
-❌ Frontend refresh logic
-❌ Better error handling
-❌ Loading states
-❌ Placeholder images
+âŒ Frontend refresh logic
+âŒ Better error handling
+âŒ Loading states
+âŒ Placeholder images
 
 **Next Steps:**
 1. Test QR generation for one equipment

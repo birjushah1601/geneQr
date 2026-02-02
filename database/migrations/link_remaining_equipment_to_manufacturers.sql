@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Link Remaining Equipment to Manufacturers
 -- ============================================================================
 -- Associate equipment catalog items that don't have manufacturer_id yet
@@ -54,11 +54,11 @@ VALUES (
 )
 ON CONFLICT (id) DO NOTHING;
 
--- Dräger Medical (German manufacturer - ventilators, anesthesia)
+-- DrÃ¤ger Medical (German manufacturer - ventilators, anesthesia)
 INSERT INTO organizations (id, name, org_type, status, metadata)
 VALUES (
     'd9e4a5b6-7890-4bcd-ef01-234567890bcd',
-    'Dräger Medical India',
+    'DrÃ¤ger Medical India',
     'manufacturer',
     'active',
     jsonb_build_object(
@@ -67,7 +67,7 @@ VALUES (
         'phone', '+91-22-6112-2000',
         'website', 'https://www.draeger.com/en-in',
         'address', jsonb_build_object(
-            'street', 'Dräger India, 5th Floor, Tower A, Unitech Business Park',
+            'street', 'DrÃ¤ger India, 5th Floor, Tower A, Unitech Business Park',
             'city', 'Navi Mumbai',
             'state', 'Maharashtra',
             'postal_code', '400614',
@@ -172,11 +172,11 @@ SET manufacturer_id = 'c8d3f4e5-6789-4abc-def0-123456789abc',
     manufacturer_name = 'Canon Medical Systems India'
 WHERE manufacturer_name = 'Canon Medical';
 
--- Dräger Medical equipment
+-- DrÃ¤ger Medical equipment
 UPDATE equipment_catalog 
 SET manufacturer_id = 'd9e4a5b6-7890-4bcd-ef01-234567890bcd',
-    manufacturer_name = 'Dräger Medical India'
-WHERE manufacturer_name ILIKE '%Dräger%' OR manufacturer_name ILIKE '%Drager%';
+    manufacturer_name = 'DrÃ¤ger Medical India'
+WHERE manufacturer_name ILIKE '%DrÃ¤ger%' OR manufacturer_name ILIKE '%Drager%';
 
 -- Fresenius Medical Care equipment
 UPDATE equipment_catalog 
@@ -190,9 +190,9 @@ SET manufacturer_id = 'f1a6b7c8-9012-4def-0123-456789012def',
     manufacturer_name = 'Medtronic India'
 WHERE manufacturer_name = 'Medtronic India';
 
--- For distributor/dealer equipment, keep them as is (no manufacturer_id)
+-- For Channel Partner/Sub-sub_SUB_DEALER equipment, keep them as is (no manufacturer_id)
 -- These are resellers, not manufacturers:
--- - SouthCare Distributors (distributor)
+-- - SouthCare Channel Partners (Channel Partner)
 -- - Test Corp (test data)
 -- - Test Medical Systems (test data)
 
@@ -219,7 +219,7 @@ WHERE o.org_type = 'manufacturer'
 GROUP BY o.id, o.name, o.org_type
 ORDER BY equipment_count DESC, o.name;
 
--- Show equipment without manufacturer_id (should be distributors/test data)
+-- Show equipment without manufacturer_id (should be Channel Partners/test data)
 SELECT 
     id,
     product_name,
@@ -233,4 +233,4 @@ ORDER BY product_name;
 -- MIGRATION COMPLETE
 -- ============================================================================
 
-SELECT '✅ Equipment-Manufacturer linking complete!' as result;
+SELECT 'âœ… Equipment-Manufacturer linking complete!' as result;

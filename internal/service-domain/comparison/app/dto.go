@@ -1,4 +1,4 @@
-package app
+﻿package app
 
 import "github.com/aby-med/medical-platform/internal/service-domain/comparison/domain"
 

@@ -231,7 +231,7 @@ export function DiagnosisCard({ diagnosis, onAccept, onReject, loading = false }
       {showFeedbackModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center</p></div><div className="gap-2 mb-4">
               <MessageCircle className="h-5 w-5 text-blue-600" />
               <h3 className="text-lg font-semibold">Why are you rejecting this diagnosis?</h3>
             </div>

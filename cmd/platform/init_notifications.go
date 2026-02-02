@@ -1,4 +1,4 @@
-package main
+﻿package main
 
 import (
 	"context"
@@ -29,10 +29,10 @@ func initNotificationsAndReports(ctx context.Context, db *sqlx.DB, logger *slog.
 	sendgridFromName := os.Getenv("SENDGRID_FROM_NAME")
 
 	if sendgridFromEmail == "" {
-		sendgridFromEmail = "noreply@aby-med.com"
+		sendgridFromEmail = "noreply@ServQR.com"
 	}
 	if sendgridFromName == "" {
-		sendgridFromName = "ABY-MED Platform"
+		sendgridFromName = "ServQR Platform"
 	}
 
 	var notificationManager *notification.Manager
@@ -52,14 +52,14 @@ func initNotificationsAndReports(ctx context.Context, db *sqlx.DB, logger *slog.
 		// Get admin email
 		adminEmail := os.Getenv("ADMIN_EMAIL")
 		if adminEmail == "" {
-			adminEmail = "admin@aby-med.com"
+			adminEmail = "admin@ServQR.com"
 			logger.Warn("ADMIN_EMAIL not set, using default", slog.String("admin_email", adminEmail))
 		}
 
 		// Initialize notification manager
 		notificationManager = notification.NewManager(emailService, featureFlags, logger, adminEmail)
 
-		logger.Info("✅ Email Notification Service initialized",
+		logger.Info("âœ… Email Notification Service initialized",
 			slog.String("from_email", sendgridFromEmail),
 			slog.String("admin_email", adminEmail),
 			slog.Bool("email_enabled", featureFlags.EmailNotificationsEnabled),
@@ -135,7 +135,7 @@ func initNotificationsAndReports(ctx context.Context, db *sqlx.DB, logger *slog.
 			} else {
 				reportScheduler = scheduler
 
-				logger.Info("✅ Daily Reports System initialized",
+				logger.Info("âœ… Daily Reports System initialized",
 					slog.String("morning_time", morningTime),
 					slog.String("evening_time", eveningTime),
 					slog.String("timezone", timezone),
@@ -157,7 +157,7 @@ func initNotificationsAndReports(ctx context.Context, db *sqlx.DB, logger *slog.
 			// Don't return error - continue without reports
 			reportScheduler = nil
 		} else {
-			logger.Info("✅ Report scheduler started successfully")
+			logger.Info("âœ… Report scheduler started successfully")
 		}
 	}
 
