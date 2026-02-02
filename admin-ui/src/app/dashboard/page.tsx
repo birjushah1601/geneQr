@@ -47,7 +47,9 @@ export default function AdminDashboard() {
         case 'channel_partner':
         case 'sub_dealer':
           return <ChannelPartnerDashboard />;
-        // If no specific dashboard, fall through to admin dashboard
+        default:
+          // If no specific dashboard, fall through to admin dashboard
+          break;
       }
     }
 
