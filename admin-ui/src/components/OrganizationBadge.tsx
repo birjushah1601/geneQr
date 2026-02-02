@@ -50,11 +50,11 @@ const orgTypeConfig = {
     description: 'Equipment Channel Partner and service provider',
   },
   'sub_dealer': {
-    label: 'Sub-sub_SUB_DEALER',
+    label: 'Sub-Dealer',
     icon: ShoppingBag,
     color: 'bg-green-100 text-green-700 border-green-200',
     iconColor: 'text-green-600',
-    description: 'Authorized equipment Sub-sub_SUB_DEALER',
+    description: 'Authorized equipment Sub-Dealer',
   },
   supplier: {
     label: 'Supplier',

@@ -125,8 +125,8 @@ export default function AdminDashboard() {
   const platformStats = {
     totalOrganizations: orgsArray.length,
     manufacturers: orgsByType.manufacturer,
-    channelPartners: orgsByType.channel_partner,
-    subDealers: orgsByType.sub_dealer,
+    channelPartners: orgsByType['channel_partner'],
+    subDealers: orgsByType['sub_dealer'],
     hospitals: orgsByType.hospital,
     totalEquipment: equipmentData?.total || 0,
     totalEngineers: engineersData?.total || 0,
@@ -292,7 +292,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className="flex-1">
                   <CardTitle className="text-lg text-purple-900 flex items-center gap-2">
-                    ÃƒÂ°Ã…Â¸Ã‚Â¤Ã¢â‚¬â€œ AI-Assisted Diagnosis
+                    ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€šÃ‚Â¤ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“ AI-Assisted Diagnosis
                     <Sparkles className="w-4 h-4 text-purple-600" />
                   </CardTitle>
                   <CardDescription className="text-purple-700">
@@ -325,7 +325,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className="flex-1">
                   <CardTitle className="text-lg text-green-900 flex items-center gap-2">
-                    ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â¸ Attachments & AI Analysis
+                    ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â¸ Attachments & AI Analysis
                     <Brain className="w-4 h-4 text-green-600" />
                   </CardTitle>
                   <CardDescription className="text-green-700">
