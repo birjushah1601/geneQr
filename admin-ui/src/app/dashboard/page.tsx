@@ -61,7 +61,7 @@ export default function AdminDashboard() {
   
   // If we have org-specific dashboard, wrap it with layout and return
   if (dashboardContent) {
-    return <DashboardLayout>{dashboardContent}</DashboardLayout>;
+    return (<DashboardLayout>{dashboardContent}</DashboardLayout>);
   }
 
   // Default: Show admin/system dashboard (for system_admin or unrecognized org types)
