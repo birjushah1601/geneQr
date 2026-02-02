@@ -38,7 +38,6 @@ function ServiceRequestPageInner() {
     requestedBy: '',
     contactName: '',
     contactPhone: '',
-    priority: 'medium' as 'low' | 'medium' | 'high' | 'critical',
   });
 
   useEffect(() => {
@@ -168,7 +167,7 @@ function ServiceRequestPageInner() {
         customer_phone: '9999999999',
         issue_category: 'breakdown',
         issue_description: formData.description,
-        priority: formData.priority,
+        priority: 'medium', // Default priority for public requests (admin can change later)
         source: 'web',
         created_by: formData.requestedBy || 'web-user',
         notes: diagnosis?.summary ? `AI suggestion: ${diagnosis.summary}` : undefined,
@@ -347,24 +346,7 @@ function ServiceRequestPageInner() {
               />
             </div>
 
-            {/* Priority Selector */}
-            <div>
-              <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-2">
-                Priority *
-              </label>
-              <select
-                id="priority"
-                value={formData.priority}
-                onChange={(e) => setFormData({ ...formData, priority: e.target.value as any })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              >
-                <option value="low">Low - Can wait, minor issue</option>
-                <option value="medium">Medium - Should be addressed soon</option>
-                <option value="high">High - Affects operations</option>
-                <option value="critical">Critical - Equipment down, urgent</option>
-              </select>
-            </div>
+            {/* Priority field hidden - only admins/manufacturers can set priority */}
 
             {/* File Attachments Section */}
             <div>
