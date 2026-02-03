@@ -110,7 +110,7 @@ export default function Navigation() {
     <div className="w-64 bg-white border-r min-h-screen flex flex-col fixed left-0 top-0 bottom-0 shadow-sm">
       {/* Logo/Header */}
       <div className="p-4 border-b">
-        <div className="flex items-center</p></div><div className="gap-2 mb-3">
+        <div className="flex items-center gap-2 mb-3">
           <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold">
             GM
           </div>

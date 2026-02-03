@@ -62,7 +62,7 @@ export default function AIDiagnosisDemoPage() {
       feedback_text: 'Diagnosis accepted by technician'
     }));
     
-    setFeedback('âœ… Diagnosis accepted! AI learning improved.');
+    setFeedback('Ã¢Å“â€¦ Diagnosis accepted! AI learning improved.');
   };
 
   const handleDiagnosisReject = async (diagnosisId: string, feedbackText?: string) => {
@@ -76,7 +76,7 @@ export default function AIDiagnosisDemoPage() {
       feedback_text: feedbackText || 'Diagnosis rejected by technician'
     }));
     
-    setFeedback('âŒ Diagnosis rejected. Thank you for the feedback to improve our AI!');
+    setFeedback('Ã¢ÂÅ’ Diagnosis rejected. Thank you for the feedback to improve our AI!');
   };
 
   const resetDemo = () => {
@@ -89,12 +89,12 @@ export default function AIDiagnosisDemoPage() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg shadow-lg p-6 mb-8">
-          <div className="flex items-center</p></div><div className="gap-4 mb-4">
+          <div className="flex items-center gap-4 mb-4">
             <div className="p-3 bg-white/20 rounded-lg">
               <Brain className="h-8 w-8" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold">ðŸ¤– AI-Assisted Diagnosis Demo</h1>
+              <h1 className="text-3xl font-bold">Ã°Å¸Â¤â€“ AI-Assisted Diagnosis Demo</h1>
               <p className="text-purple-100">Experience intelligent medical equipment diagnostics with confidence scoring</p>
             </div>
           </div>
@@ -117,7 +117,7 @@ export default function AIDiagnosisDemoPage() {
 
         {/* Equipment Info */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-4">ðŸ¥ Demo Equipment</h2>
+          <h2 className="text-xl font-semibold mb-4">Ã°Å¸ÂÂ¥ Demo Equipment</h2>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <span className="font-medium text-gray-600">Equipment:</span>
@@ -140,7 +140,7 @@ export default function AIDiagnosisDemoPage() {
 
         {/* Scenario Selector */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-4">âš¡ Select Issue Scenario</h2>
+          <h2 className="text-xl font-semibold mb-4">Ã¢Å¡Â¡ Select Issue Scenario</h2>
           <div className="grid grid-cols-2 gap-4">
             {Object.entries(scenarios).map(([key, scenario]) => (
               <button
@@ -165,7 +165,7 @@ export default function AIDiagnosisDemoPage() {
         {/* AI Diagnosis Section */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold">ðŸ”¬ AI Diagnosis</h2>
+            <h2 className="text-xl font-semibold">Ã°Å¸â€Â¬ AI Diagnosis</h2>
             {diagnosis && (
               <button
                 onClick={resetDemo}
@@ -196,7 +196,7 @@ export default function AIDiagnosisDemoPage() {
           {/* Feedback Message */}
           {feedback && (
             <div className={`p-3 rounded-lg mb-6 text-center ${
-              feedback.includes('âœ…') ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+              feedback.includes('Ã¢Å“â€¦') ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
             }`}>
               {feedback}
             </div>
@@ -216,7 +216,7 @@ export default function AIDiagnosisDemoPage() {
 
         {/* Demo Instructions */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h3 className="font-semibold text-blue-900 mb-3">ðŸŽ¯ How to Test the Demo</h3>
+          <h3 className="font-semibold text-blue-900 mb-3">Ã°Å¸Å½Â¯ How to Test the Demo</h3>
           <ol className="list-decimal list-inside space-y-2 text-blue-800 text-sm">
             <li>Choose an issue scenario from the cards above</li>
             <li>Click the "Get AI Diagnosis" button to run analysis</li>

@@ -172,7 +172,7 @@ export default function AdminDashboard() {
           <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push('/organizations?type=manufacturer')}>
             <CardContent className="pt-6">
               <div className="flex flex-col">
-                <div className="flex items-center</p></div><div className="gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-2">
                   <Factory className="h-5 w-5 text-indigo-600" />
                   <p className="text-sm font-medium text-gray-500">Manufacturers</p>
                 </div>
@@ -191,7 +191,7 @@ export default function AdminDashboard() {
           <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push('/organizations?type=channel_partner')}>
             <CardContent className="pt-6">
               <div className="flex flex-col">
-                <div className="flex items-center</p></div><div className="gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-2">
                   <Truck className="h-5 w-5 text-purple-600" />
                   <p className="text-sm font-medium text-gray-500">Channel Partners</p>
                 </div>
@@ -210,13 +210,13 @@ export default function AdminDashboard() {
           <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push('/organizations?type=sub_dealer')}>
             <CardContent className="pt-6">
               <div className="flex flex-col">
-                <div className="flex items-center</p></div><div className="gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-2">
                   <ShoppingBag className="h-5 w-5 text-green-600" />
                   <p className="text-sm font-medium text-gray-500">subDealers: (
                   <p className="text-3xl font-bold mt-2 text-green-600">{platformStats.subDealers:shadow-md transition-shadow cursor-pointer" onClick={() => router.push('/organizations?type=hospital')}>
             <CardContent className="pt-6">
               <div className="flex flex-col">
-                <div className="flex items-center</p></div><div className="gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-2">
                   <Hospital className="h-5 w-5 text-red-600" />
                   <p className="text-sm font-medium text-gray-500">Hospitals</p>
                 </div>
@@ -235,7 +235,7 @@ export default function AdminDashboard() {
           <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push('/equipment')}>
             <CardContent className="pt-6">
               <div className="flex flex-col">
-                <div className="flex items-center</p></div><div className="gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-2">
                   <Package className="h-5 w-5 text-blue-600" />
                   <p className="text-sm font-medium text-gray-500">Equipment</p>
                 </div>
@@ -294,7 +294,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className="flex-1">
                   <CardTitle className="text-lg text-purple-900 flex items-center gap-2">
-                    ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€šÃ‚Â¤ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“ AI-Assisted Diagnosis
+                    ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¤ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ AI-Assisted Diagnosis
                     <Sparkles className="w-4 h-4 text-purple-600" />
                   </CardTitle>
                   <CardDescription className="text-purple-700">
@@ -327,7 +327,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className="flex-1">
                   <CardTitle className="text-lg text-green-900 flex items-center gap-2">
-                    ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â¸ Attachments & AI Analysis
+                    ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ Attachments & AI Analysis
                     <Brain className="w-4 h-4 text-green-600" />
                   </CardTitle>
                   <CardDescription className="text-green-700">

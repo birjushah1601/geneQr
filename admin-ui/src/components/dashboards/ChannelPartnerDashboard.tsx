@@ -91,7 +91,7 @@ export default function ChannelPartnerDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col">
-              <div className="flex items-center</p></div><div className="gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-2">
                 <Truck className="h-5 w-5 text-purple-600" />
                 <p className="text-sm font-medium text-gray-500">Equipment Serviced</p>
               </div>
@@ -108,7 +108,7 @@ export default function ChannelPartnerDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col">
-              <div className="flex items-center</p></div><div className="gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-2">
                 <Wrench className="h-5 w-5 text-orange-600" />
                 <p className="text-sm font-medium text-gray-500">Active Service Jobs</p>
               </div>
@@ -125,7 +125,7 @@ export default function ChannelPartnerDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col">
-              <div className="flex items-center</p></div><div className="gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-2">
                 <Users className="h-5 w-5 text-blue-600" />
                 <p className="text-sm font-medium text-gray-500">Service Engineers</p>
               </div>
@@ -142,7 +142,7 @@ export default function ChannelPartnerDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col">
-              <div className="flex items-center</p></div><div className="gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-2">
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
                 <p className="text-sm font-medium text-gray-500">Completed</p>
               </div>

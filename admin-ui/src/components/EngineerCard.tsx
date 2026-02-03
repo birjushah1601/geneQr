@@ -29,7 +29,7 @@ export default function EngineerCard({ engineer, onAssign, isAssigning }: Engine
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg hover:border-blue-300 transition-all">
       {/* Header with Avatar and Name */}
-      <div className="flex items-center</p></div><div className="gap-3 mb-3">
+      <div className="flex items-center gap-3 mb-3">
         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-base shadow-md">
           {engineer.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
         </div>
@@ -65,7 +65,7 @@ export default function EngineerCard({ engineer, onAssign, isAssigning }: Engine
       {/* Top Match Reason */}
       {engineer.match_reasons && engineer.match_reasons.length > 0 && (
         <div className="mb-3 text-sm text-gray-700 bg-blue-50 rounded-md p-2 border border-blue-100">
-          <span className="font-medium text-blue-900">âœ“</span> {engineer.match_reasons[0]}
+          <span className="font-medium text-blue-900">Ã¢Å“â€œ</span> {engineer.match_reasons[0]}
         </div>
       )}
 
