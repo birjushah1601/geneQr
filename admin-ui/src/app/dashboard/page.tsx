@@ -138,8 +138,7 @@ export default function AdminDashboard() {
   };
 
   const isLoading = loadingOrganizations || loadingEquipment || loadingTickets || loadingEngineers;
-
-  return (
+ return (
     <DashboardLayout>
       <div>
         {/* Welcome Message */}
@@ -202,37 +201,39 @@ export default function AdminDashboard() {
                     <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
                   </div>
                 ) : (
-                  <p className="text-3xl font-bold mt-2 text-purple-600">{platformstats.channelPartners}</p>
+                  <p className="text-3xl font-bold mt-2 text-purple-600">{platformStats.channelPartners}</p>
                 )}
                 <p className="text-xs text-gray-400 mt-1">Partners</p>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push('/organizations?type=sub_dealer')}>
-            <CardContent className="pt-6">
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2 mb-2">
-                  <ShoppingBag className="h-5 w-5 text-green-600" />
-                  <p className="text-sm font-medium text-gray-500">subDealers: (
-                  <p className="text-3xl font-bold mt-2 text-green-600">{platformStats.subDealers:shadow-md transition-shadow cursor-pointer" onClick={() => router.push('/organizations?type=hospital')}>
-            <CardContent className="pt-6">
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2 mb-2">
-                  <Hospital className="h-5 w-5 text-red-600" />
-                  <p className="text-sm font-medium text-gray-500">Hospitals</p>
-                </div>
-                {isLoading ? (
-                  <div className="flex items-center gap-2 mt-2">
-                    <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-                  </div>
-                ) : (
-                  <p className="text-3xl font-bold mt-2 text-red-600">{platformStats.hospitals}</p>
-                )}
-                <p className="text-xs text-gray-400 mt-1">Clients</p>
-              </div>
-            </CardContent>
-          </Card>
+         <Card
+  className="hover:shadow-md transition-shadow cursor-pointer"
+  onClick={() => router.push('/organizations?type=sub_dealer')}
+>
+  <CardContent className="pt-6">
+    <div className="flex flex-col">
+      <div className="flex items-center gap-2 mb-2">
+        <ShoppingBag className="h-5 w-5 text-green-600" />
+        <p className="text-sm font-medium text-gray-500">Sub-dealers</p>
+      </div>
+
+      {isLoading ? (
+        <div className="flex items-center gap-2 mt-2">
+          <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+        </div>
+      ) : (
+        <p className="text-3xl font-bold mt-2 text-green-600">
+          {platformStats.subDealers}
+        </p>
+      )}
+
+      <p className="text-xs text-gray-400 mt-1">Sub network</p>
+    </div>
+  </CardContent>
+</Card>
+
 
           <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push('/equipment')}>
             <CardContent className="pt-6">
@@ -296,7 +297,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className="flex-1">
                   <CardTitle className="text-lg text-purple-900 flex items-center gap-2">
-                    ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¤ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ AI-Assisted Diagnosis
+                   AI-Assisted Diagnosis
                     <Sparkles className="w-4 h-4 text-purple-600" />
                   </CardTitle>
                   <CardDescription className="text-purple-700">
@@ -329,7 +330,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className="flex-1">
                   <CardTitle className="text-lg text-green-900 flex items-center gap-2">
-                    ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ Attachments & AI Analysis
+                   Attachments & AI Analysis
                     <Brain className="w-4 h-4 text-green-600" />
                   </CardTitle>
                   <CardDescription className="text-green-700">
@@ -352,7 +353,7 @@ export default function AdminDashboard() {
               </Button>
             </CardContent>
           </Card>
-        </div>
+        </div></div>
 
         {/* Quick Links Section */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -435,4 +436,4 @@ export default function AdminDashboard() {
     </DashboardLayout>
   );
 }
-}
+ 
