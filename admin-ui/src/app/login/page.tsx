@@ -22,9 +22,20 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [otpSentTo, setOtpSentTo] = useState('');
   const [expiresIn, setExpiresIn] = useState(0);
+  const [showTimeoutMessage, setShowTimeoutMessage] = useState(false);
 
   // Timer for OTP expiry
   const [timeRemaining, setTimeRemaining] = useState(0);
+
+  // Check for session timeout on mount
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('timeout') === 'true') {
+      setShowTimeoutMessage(true);
+      // Hide message after 10 seconds
+      setTimeout(() => setShowTimeoutMessage(false), 10000);
+    }
+  }, []);
 
   React.useEffect(() => {
     if (timeRemaining > 0) {
