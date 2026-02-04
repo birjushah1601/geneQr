@@ -10,9 +10,14 @@
 BEGIN;
 
 -- Step 1: Add equipment_id column (nullable)
+-- Note: equipment.id is VARCHAR, not UUID
 ALTER TABLE org_relationships
-ADD COLUMN equipment_id UUID NULL
-REFERENCES equipment(id) ON DELETE CASCADE;
+ADD COLUMN equipment_id VARCHAR NULL;
+
+-- Step 1b: Add foreign key constraint
+ALTER TABLE org_relationships
+ADD CONSTRAINT org_relationships_equipment_id_fkey
+FOREIGN KEY (equipment_id) REFERENCES equipment(id) ON DELETE CASCADE;
 
 -- Step 2: Create index for equipment-based queries (partial index for performance)
 CREATE INDEX idx_org_rel_equipment 
@@ -36,13 +41,12 @@ ALTER TABLE org_relationships
 DROP CONSTRAINT IF EXISTS org_relationships_unique;
 
 -- Add new unique constraint with equipment_id
--- Using COALESCE to treat NULL as a specific value for uniqueness
+-- Using unique index with COALESCE to treat NULL as a specific value
 -- This allows:
 --   - One general association (equipment_id = NULL) per manufacturer-partner pair
 --   - Multiple equipment-specific associations for same manufacturer-partner pair
-ALTER TABLE org_relationships
-ADD CONSTRAINT org_relationships_unique_with_equipment 
-UNIQUE (parent_org_id, child_org_id, rel_type, COALESCE(equipment_id, '00000000-0000-0000-0000-000000000000'::uuid));
+CREATE UNIQUE INDEX org_relationships_unique_with_equipment 
+ON org_relationships (parent_org_id, child_org_id, rel_type, COALESCE(equipment_id, ''));
 
 -- Step 6: Add column comment for documentation
 COMMENT ON COLUMN org_relationships.equipment_id IS 
