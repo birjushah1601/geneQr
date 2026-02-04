@@ -56,10 +56,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Check if session has timed out
   const checkSessionTimeout = () => {
     const lastActivity = localStorage.getItem('last_activity');
-    if (!lastActivity) return false;
+    if (!lastActivity) {
+      // No activity timestamp yet, assume session is valid
+      // This happens on first login or when tokens exist but no activity tracked yet
+      return false;
+    }
 
     const timeSinceActivity = Date.now() - parseInt(lastActivity);
-    return timeSinceActivity > SESSION_TIMEOUT;
+    if (timeSinceActivity > SESSION_TIMEOUT) {
+      console.log('[Auth] Session timeout detected:', Math.round(timeSinceActivity / 1000 / 60), 'minutes since last activity');
+      return true;
+    }
+    
+    return false;
   };
 
   // Handle session timeout
@@ -110,20 +119,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const storedRefreshToken = localStorage.getItem('refresh_token');
 
         if (storedAccessToken && storedRefreshToken) {
-          // Check if session has timed out
-          if (checkSessionTimeout()) {
-            console.log('[Auth] Session timed out, clearing tokens');
-            clearTokens();
-            setIsLoading(false);
-            router.push('/login?timeout=true');
-            return;
-          }
-
           // Validate token before using it
           if (!isTokenValid(storedAccessToken)) {
             console.log('[Auth] Stored token is invalid or expired');
             clearTokens();
             setIsLoading(false);
+            return;
+          }
+
+          // Check if session has timed out (only if activity timestamp exists)
+          if (checkSessionTimeout()) {
+            console.log('[Auth] Session timed out, clearing tokens');
+            clearTokens();
+            setIsLoading(false);
+            router.push('/login?timeout=true');
             return;
           }
 
