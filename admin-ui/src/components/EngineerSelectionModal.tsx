@@ -14,9 +14,13 @@ import {
   CheckCircle2,
   Loader2,
   AlertCircle,
-  Star
+  Star,
+  Truck,
+  Users as UsersIcon
 } from 'lucide-react';
 import apiClient from '@/lib/api/client';
+import { partnersApi } from '@/lib/api/partners';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Engineer {
   engineer_id: string;
@@ -31,6 +35,8 @@ interface Engineer {
   phone?: string;
   email?: string;
   availability?: string;
+  organization_type?: string; // NEW: for badge display
+  category?: string; // NEW: 'Manufacturer', 'Channel Partner - [Name]', etc.
 }
 
 interface EngineerSelectionModalProps {
@@ -48,11 +54,13 @@ export default function EngineerSelectionModal({
   equipmentName,
   onAssignmentSuccess
 }: EngineerSelectionModalProps) {
+  const { organizationContext } = useAuth();
   const [engineers, setEngineers] = useState<Engineer[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isAssigning, setIsAssigning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedEngineer, setSelectedEngineer] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string>('all');
 
   // Fetch suggested engineers when modal opens
   useEffect(() => {
@@ -66,8 +74,69 @@ export default function EngineerSelectionModal({
     setError(null);
     
     try {
-      const response = await apiClient.get(`/v1/engineers/suggestions?ticket_id=${ticketId}`);
-      setEngineers(response.data.suggestions || []);
+      // Get ticket details first to extract manufacturer and equipment info
+      const ticketResponse = await apiClient.get(`/v1/tickets/${ticketId}`);
+      const ticket = ticketResponse.data;
+      
+      // Fetch AI suggestions
+      const aiResponse = await apiClient.get(`/v1/engineers/suggestions?ticket_id=${ticketId}`);
+      const aiSuggestions = aiResponse.data.suggestions || [];
+      
+      // Fetch network engineers (from manufacturer + partners)
+      let networkEngineers: any[] = [];
+      const manufacturerId = organizationContext?.organization_id || ticket.manufacturer_id;
+      
+      if (manufacturerId) {
+        try {
+          const networkData = await partnersApi.getNetworkEngineers(
+            manufacturerId,
+            ticket.equipment_id
+          );
+          
+          // Transform network engineers to match Engineer interface
+          networkEngineers = (networkData.engineers || []).map((eng: any) => ({
+            engineer_id: eng.id,
+            engineer_name: eng.name,
+            organization_id: eng.organization.id,
+            organization_name: eng.organization.name,
+            organization_type: eng.organization.org_type,
+            engineer_level: eng.level || 'L2',
+            phone: eng.phone,
+            email: eng.email,
+            category: eng.category || 'Manufacturer',
+            manufacturer_certified: eng.category !== 'Manufacturer',
+          }));
+        } catch (netErr) {
+          console.warn('Failed to fetch network engineers, falling back to AI only:', netErr);
+        }
+      }
+      
+      // Merge AI suggestions with network engineers
+      const mergedEngineers = networkEngineers.map(netEng => {
+        const aiMatch = aiSuggestions.find((ai: any) => ai.engineer_id === netEng.engineer_id);
+        return {
+          ...netEng,
+          match_score: aiMatch?.match_score || null,
+          equipment_types: aiMatch?.equipment_types || [],
+          location: aiMatch?.location || netEng.location,
+        };
+      });
+      
+      // Add any AI suggestions not in network (shouldn't happen normally)
+      aiSuggestions.forEach((ai: any) => {
+        if (!mergedEngineers.find(e => e.engineer_id === ai.engineer_id)) {
+          mergedEngineers.push({
+            ...ai,
+            category: 'Manufacturer',
+            organization_type: 'manufacturer',
+          });
+        }
+      });
+      
+      // Sort by match score
+      mergedEngineers.sort((a, b) => (b.match_score || 0) - (a.match_score || 0));
+      
+      setEngineers(mergedEngineers);
     } catch (err: any) {
       console.error('Failed to fetch engineer suggestions:', err);
       setError(err.response?.data?.error || 'Failed to load engineer suggestions');
@@ -133,6 +202,55 @@ export default function EngineerSelectionModal({
     return 'text-gray-600';
   };
 
+  const getOrgTypeBadge = (category?: string, orgType?: string) => {
+    if (!category) return null;
+    
+    if (category === 'Manufacturer' || orgType === 'manufacturer') {
+      return (
+        <Badge className="bg-blue-100 text-blue-800 border-blue-300">
+          <Building2 className="h-3 w-3 mr-1" />
+          Manufacturer
+        </Badge>
+      );
+    }
+    
+    if (category.includes('Channel Partner') || orgType === 'channel_partner') {
+      return (
+        <Badge className="bg-orange-100 text-orange-800 border-orange-300">
+          <Truck className="h-3 w-3 mr-1" />
+          {category.replace('Channel Partner - ', 'Partner: ')}
+        </Badge>
+      );
+    }
+    
+    if (category.includes('Sub-Dealer') || orgType === 'sub_dealer') {
+      return (
+        <Badge className="bg-purple-100 text-purple-800 border-purple-300">
+          <UsersIcon className="h-3 w-3 mr-1" />
+          {category.replace('Sub-Dealer - ', 'Dealer: ')}
+        </Badge>
+      );
+    }
+    
+    return null;
+  };
+
+  // Filter engineers by category
+  const filteredEngineers = engineers.filter(eng => {
+    if (activeCategory === 'all') return true;
+    if (activeCategory === 'senior') return eng.engineer_level === 'L3';
+    if (activeCategory === 'certified') return eng.manufacturer_certified;
+    if (activeCategory === 'high-match') return (eng.match_score || 0) >= 80;
+    return true;
+  });
+
+  const categories = [
+    { id: 'all', label: 'Best Overall Match', count: engineers.length },
+    { id: 'senior', label: 'Sr. Engineers Only', count: engineers.filter(e => e.engineer_level === 'L3').length },
+    { id: 'certified', label: 'Manufacturer Certified', count: engineers.filter(e => e.manufacturer_certified).length },
+    { id: 'high-match', label: 'Skills Match (80%+)', count: engineers.filter(e => (e.match_score || 0) >= 80).length },
+  ];
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -185,14 +303,32 @@ export default function EngineerSelectionModal({
           </div>
         ) : (
           <div className="space-y-4">
+            {/* Category Filters */}
+            <div className="flex gap-2 flex-wrap">
+              {categories.map(cat => (
+                <Button
+                  key={cat.id}
+                  variant={activeCategory === cat.id ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setActiveCategory(cat.id)}
+                  className={activeCategory === cat.id ? 'bg-blue-600' : ''}
+                >
+                  {cat.label}
+                  <Badge variant="secondary" className="ml-2">
+                    {cat.count}
+                  </Badge>
+                </Button>
+              ))}
+            </div>
+
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <p className="text-sm text-blue-800">
-                <strong>{engineers.length}</strong> engineer{engineers.length !== 1 ? 's' : ''} available
-                {' '}Ã¢â‚¬Â¢ Sorted by level and match score
+                <strong>{filteredEngineers.length}</strong> engineer{filteredEngineers.length !== 1 ? 's' : ''} available
+                {' '}• Sorted by match score
               </p>
             </div>
 
-            {engineers.map((engineer, index) => (
+            {filteredEngineers.map((engineer, index) => (
               <div
                 key={engineer.engineer_id}
                 className={`border rounded-lg p-4 transition-all ${
@@ -209,14 +345,15 @@ export default function EngineerSelectionModal({
                         {engineer.engineer_name.charAt(0)}
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2 flex-wrap">
                           {engineer.engineer_name}
-                          {index === 0 && (
+                          {index === 0 && activeCategory === 'all' && (
                             <Badge className="bg-amber-100 text-amber-800 border-amber-300">
                               <Star className="h-3 w-3 mr-1" />
                               Recommended
                             </Badge>
                           )}
+                          {getOrgTypeBadge(engineer.category, engineer.organization_type)}
                           {engineer.manufacturer_certified && (
                             <Badge className="bg-green-100 text-green-800 border-green-300">
                               <Award className="h-3 w-3 mr-1" />
