@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -14,13 +14,13 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8
 
 // Onboarding steps - Logical business flow
 const STEPS = [
-  { id: 'manufacturer', label: 'Manufacturer Info', icon: '•' },
-  { id: 'team', label: 'Team Members', icon: '•' },
-  { id: 'equipment', label: 'Equipment Catalog', icon: '•' },
-  { id: 'parts', label: 'Parts Catalog', icon: '•' },
-  { id: 'engineers', label: 'Service Engineers', icon: '•' },
-  { id: 'installations', label: 'Equipment Installations', icon: '•' },
-  { id: 'review', label: 'Review & Complete', icon: '•' },
+  { id: 'manufacturer', label: 'Manufacturer Info', icon: '' },
+  { id: 'team', label: 'Team Members', icon: '' },
+  { id: 'equipment', label: 'Equipment Catalog', icon: '' },
+  { id: 'parts', label: 'Parts Catalog', icon: '' },
+  { id: 'engineers', label: 'Service Engineers', icon: '' },
+  { id: 'installations', label: 'Equipment Installations', icon: '' },
+  { id: 'review', label: 'Review Data', icon: '' },
 ];
 
 interface Message {
@@ -96,35 +96,35 @@ export default function AIOnboardingWizard() {
       if (isManufacturerAdmin) {
         // Greeting for manufacturer admins (skip manufacturer info)
         addAIMessage(
-          `Hi! ðŸ‘‹ I'm your AI assistant. I'll help you set up your complete system.\n\n` +
+          `Hi!  I'm your AI assistant. I'll help you set up your complete system.\n\n` +
           `Here's what we'll configure:\n` +
-          `1. ðŸ‘¥ Team members (admins, managers)\n` +
-          `2. ðŸ”§ Equipment you manufacture\n` +
-          `3. ðŸ“¦ Parts catalog for service tickets\n` +
-          `4. ðŸ‘· Service engineers and their skills\n` +
-          `5. ðŸ“‹ Equipment installations at customer sites\n\n` +
+          `1.  Team members (admins, managers)\n` +
+          `2.  Equipment you manufacture\n` +
+          `3.  Parts catalog for service tickets\n` +
+          `4.  Service engineers and their skills\n` +
+          `5.  Equipment installations at customer sites\n\n` +
           `Let's start! Would you like to invite team members to help manage the system?\n` +
           `Example: CEO, Operations Manager, Service Manager`,
           [
-            { label: 'ðŸ‘¥ Yes, invite team members', value: 'invite_team' },
-            { label: 'â­ï¸ Skip, just me for now', value: 'skip_team' },
-            { label: 'ðŸ“ Switch to Manual Form', value: 'manual' },
+            { label: 'Yes, invite team members', value: 'invite_team' },
+            { label: 'Skip for now', value: 'skip_team' },
+            { label: 'Switch to Manual Form', value: 'manual' },
           ]
         );
       } else {
         // Greeting for system admins (full flow)
         addAIMessage(
-          `Hi! ðŸ‘‹ I'm your AI onboarding assistant for setting up a new manufacturer.\n\n` +
+          `Hi!  I'm your AI onboarding assistant for setting up a new manufacturer.\n\n` +
           `Here's the complete setup flow:\n` +
-          `1. ðŸ¢ Manufacturer company information\n` +
-          `2. ðŸ‘¥ Team members (multiple admins/managers)\n` +
-          `3. ðŸ”§ Equipment they manufacture\n` +
-          `4. ðŸ“¦ Parts catalog for service tickets\n` +
-          `5. ðŸ‘· Service engineers and their skills\n` +
-          `6. ðŸ“‹ Equipment installations at customer sites\n\n` +
+          `1.  Manufacturer company information\n` +
+          `2.  Team members (multiple admins/managers)\n` +
+          `3.  Equipment they manufacture\n` +
+          `4.  Parts catalog for service tickets\n` +
+          `5.  Service engineers and their skills\n` +
+          `6.  Equipment installations at customer sites\n\n` +
           `Let's begin! What's the manufacturer's registered company name?`,
           [
-            { label: 'ðŸ“ Switch to Manual Form', value: 'manual' },
+            { label: 'Switch to Manual Form', value: 'manual' },
           ]
         );
       }
@@ -165,89 +165,89 @@ export default function AIOnboardingWizard() {
     switch (step.id) {
       case 'manufacturer':
         addAIMessage(
-          `ðŸ¢ **Manufacturer Information**\n\n` +
+          ` **Manufacturer Information**\n\n` +
           `Let's start with the basic company details.\n\n` +
           `What's the manufacturer's registered company name?`,
           [
-            { label: 'ðŸ“ Switch to Manual Form', value: 'manual' },
+            { label: 'Switch to Manual Form', value: 'manual' },
           ]
         );
         break;
       
       case 'team':
         addAIMessage(
-          `ðŸ‘¥ **Team Members**\n\n` +
+          ` **Team Members**\n\n` +
           `Would you like to invite team members to help manage the system?\n` +
           `Example: CEO, Operations Manager, Service Manager`,
           [
-            { label: 'ðŸ‘¥ Yes, invite team members', value: 'invite_team' },
-            { label: 'â­ï¸ Skip, just me for now', value: 'skip_team' },
+            { label: 'Yes, invite team members', value: 'invite_team' },
+            { label: 'Skip for now', value: 'skip_team' },
           ]
         );
         break;
       
       case 'equipment':
         addAIMessage(
-          `ðŸ”§ **Equipment Catalog**\n\n` +
+          ` **Equipment Catalog**\n\n` +
           `Let's add the equipment you manufacture.\n\n` +
           `You can either upload a CSV file or enter equipment manually.`,
           [
-            { label: 'ðŸ“¤ Upload CSV Template', value: 'upload_equipment' },
-            { label: 'ðŸ“ I have multiple equipment types', value: 'multiple_equipment' },
+            { label: 'Upload file', value: 'upload_equipment' },
+            { label: 'I have multiple items', value: 'multiple_equipment' },
           ]
         );
         break;
       
       case 'parts':
         addAIMessage(
-          `ðŸ“¦ **Parts Catalog**\n\n` +
+          ` **Parts Catalog**\n\n` +
           `Now let's add the spare parts for your equipment.\n\n` +
           `You can upload a CSV file with your parts catalog.`,
           [
-            { label: 'ðŸ“¤ Upload Parts CSV', value: 'upload_parts' },
-            { label: 'â­ï¸ Skip for now', value: 'skip_parts' },
+            { label: 'Upload file', value: 'upload_parts' },
+            { label: 'Skip for now', value: 'skip_parts' },
           ]
         );
         break;
       
       case 'engineers':
         addAIMessage(
-          `ðŸ‘· **Service Engineers**\n\n` +
+          ` **Service Engineers**\n\n` +
           `Let's add your service engineers who will handle equipment maintenance.\n\n` +
           `You can upload a CSV file with engineer details.`,
           [
-            { label: 'ðŸ“¤ Upload Engineers CSV', value: 'upload_engineers' },
-            { label: 'âœï¸ Add manually', value: 'manual_engineers' },
-            { label: 'â­ï¸ Skip for now', value: 'skip_engineers' },
+            { label: 'Upload file', value: 'upload_engineers' },
+            { label: 'Add manually', value: 'manual_engineers' },
+            { label: 'Skip for now', value: 'skip_engineers' },
           ]
         );
         break;
       
       case 'installations':
         addAIMessage(
-          `ðŸ“‹ **Equipment Installations**\n\n` +
+          ` **Equipment Installations**\n\n` +
           `Finally, let's record where your equipment is installed at customer sites.\n\n` +
           `You can upload a CSV file with installation records.`,
           [
-            { label: 'ðŸ“¤ Upload Installations CSV', value: 'upload_installations' },
-            { label: 'â­ï¸ Skip for now', value: 'skip_installations' },
+            { label: 'Upload file', value: 'upload_installations' },
+            { label: 'Skip for now', value: 'skip_installations' },
           ]
         );
         break;
       
       case 'review':
         addAIMessage(
-          `âœ… **Review & Complete**\n\n` +
+          ` **Review & Complete**\n\n` +
           `Great work! Let's review what we've set up:\n\n` +
-          `${onboardingData.company ? 'âœ… Manufacturer information\n' : ''}` +
-          `${onboardingData.equipmentTypes ? `âœ… ${onboardingData.equipmentTypes.length} equipment types\n` : ''}` +
-          `${onboardingData.parts ? `âœ… ${onboardingData.parts.length} parts\n` : ''}` +
-          `${onboardingData.engineers ? `âœ… ${onboardingData.engineers.length} engineers\n` : ''}` +
-          `${onboardingData.installations ? `âœ… ${onboardingData.installations.length} installations\n` : ''}` +
+          `${onboardingData.company ? ' Manufacturer information\n' : ''}` +
+          `${onboardingData.equipmentTypes ? ` ${onboardingData.equipmentTypes.length} equipment types\n` : ''}` +
+          `${onboardingData.parts ? ` ${onboardingData.parts.length} parts\n` : ''}` +
+          `${onboardingData.engineers ? ` ${onboardingData.engineers.length} engineers\n` : ''}` +
+          `${onboardingData.installations ? ` ${onboardingData.installations.length} installations\n` : ''}` +
           `\nReady to complete the setup?`,
           [
-            { label: 'âœ… Complete Setup', value: 'complete' },
-            { label: 'ðŸ“ Review Data', value: 'review' },
+            { label: 'Complete Setup', value: 'complete' },
+            { label: 'Review Data', value: 'review' },
           ]
         );
         break;
@@ -320,17 +320,17 @@ export default function AIOnboardingWizard() {
 
     addAIMessage(
       `Perfect! I've registered "${input}" as the manufacturer.\n\n` +
-      `Step 1 complete! âœ… Now let's set up the **Team**.\n\n` +
+      `Step 1 complete!  Now let's set up the **Team**.\n\n` +
       `Would you like to invite other team members (admins, managers) to help manage the system?\n` +
       `This allows multiple people to:\n` +
-      `â€¢ Manage equipment and parts\n` +
-      `â€¢ View service tickets\n` +
-      `â€¢ Oversee operations\n\n` +
+      ` Manage equipment and parts\n` +
+      ` View service tickets\n` +
+      ` Oversee operations\n\n` +
       `You can invite: CEO, CTO, Operations Manager, Service Manager, etc.`,
       [
-        { label: 'ðŸ‘¥ Yes, invite team members', value: 'invite_team' },
-        { label: 'ðŸ“§ I have a list (upload CSV)', value: 'upload_team' },
-        { label: 'â­ï¸ Skip for now, just me', value: 'skip_team' },
+        { label: 'Yes, invite team members', value: 'invite_team' },
+        { label: 'I have multiple items', value: 'upload_team' },
+        { label: 'Skip for now', value: 'skip_team' },
       ]
     );
     setCurrentStep(1); // Move to team step
@@ -347,9 +347,9 @@ export default function AIOnboardingWizard() {
         `Priya Sharma, ops@company.com, manager\n` +
         `Amit Verma, service@company.com, manager`,
         [
-          { label: 'âœï¸ I\'ll type the details', value: 'type_team' },
-          { label: 'ðŸ“§ Upload CSV file', value: 'upload_team' },
-          { label: 'â­ï¸ Skip for now', value: 'skip_team' },
+          { label: ' I\'ll type the details', value: 'type_team' },
+          { label: 'Upload file', value: 'upload_team' },
+          { label: 'Skip for now', value: 'skip_team' },
         ]
       );
       return;
@@ -364,8 +364,8 @@ export default function AIOnboardingWizard() {
         `Priya Sharma,ops@company.com,manager\n\n` +
         `Roles: admin (full access), manager (operations), viewer (read-only)`,
         [
-          { label: 'ðŸ“¤ Upload CSV', value: 'do_upload_team' },
-          { label: 'â­ï¸ Skip for now', value: 'skip_team' },
+          { label: 'Upload file', value: 'do_upload_team' },
+          { label: 'Skip for now', value: 'skip_team' },
         ]
       );
       
@@ -378,11 +378,11 @@ export default function AIOnboardingWizard() {
     if (input === 'skip_team') {
       addAIMessage(
         `No problem! You can invite team members later from the dashboard.\n\n` +
-        `Step 2 complete! âœ… Now let's add **Equipment Catalog**.\n\n` +
+        `Step 2 complete!  Now let's add **Equipment Catalog**.\n\n` +
         `What type of medical equipment do you manufacture?\n` +
         `Example: "Ventilators", "MRI Machines", "CT Scanners", "Ultrasound Systems"`,
         [
-          { label: 'ðŸ“ I have multiple equipment types', value: 'multiple_equipment' },
+          { label: 'I have multiple items', value: 'multiple_equipment' },
         ]
       );
       setCurrentStep(2); // Move to equipment step
@@ -399,8 +399,8 @@ export default function AIOnboardingWizard() {
       // Send invitations immediately
       addAIMessage(
         `Excellent! I've noted ${teamMembers.length} team member(s):\n` +
-        teamMembers.map(m => `â€¢ ${m.name} (${m.email}) - ${m.role}`).join('\n') + 
-        `\n\nâ³ Sending invitations now...`,
+        teamMembers.map(m => ` ${m.name} (${m.email}) - ${m.role}`).join('\n') + 
+        `\n\n Sending invitations now...`,
         []
       );
       
@@ -424,11 +424,11 @@ export default function AIOnboardingWizard() {
       if (!token) {
         console.error('[Invitations] No token found in cookies or localStorage');
         addAIMessage(
-          `âš ï¸ You need to be logged in to send invitations.\n\n` +
+          ` You need to be logged in to send invitations.\n\n` +
           `Team member details have been saved. You can send invitations later from the dashboard.\n\n` +
-          `Step 2 complete! âœ… Now let's add **Equipment Catalog**.`,
+          `Step 2 complete!  Now let's add **Equipment Catalog**.`,
           [
-            { label: 'âž¡ï¸ Continue to equipment', value: 'continue_equipment' },
+            { label: 'Continue', value: 'continue_equipment' },
           ]
         );
         return;
@@ -465,10 +465,10 @@ export default function AIOnboardingWizard() {
       if (!orgId) {
         console.error('[Invitations] No organization ID found anywhere!');
         addAIMessage(
-          `âš ï¸ No organization found. Team members will be invited after organization setup.\n\n` +
-          `Step 2 complete! âœ… Now let's add **Equipment Catalog**.`,
+          ` No organization found. Team members will be invited after organization setup.\n\n` +
+          `Step 2 complete!  Now let's add **Equipment Catalog**.`,
           [
-            { label: 'âž¡ï¸ Continue to equipment', value: 'continue_equipment' },
+            { label: 'Continue', value: 'continue_equipment' },
           ]
         );
         return;
@@ -507,37 +507,37 @@ export default function AIOnboardingWizard() {
       // Show results
       if (successCount === teamMembers.length) {
         addAIMessage(
-          `âœ… Success! Sent ${successCount} invitation(s)!\n\n` +
-          `ðŸ“§ Your team members will receive invitation emails shortly.\n\n` +
-          `Step 2 complete! âœ… Now let's add **Equipment Catalog**.\n\n` +
+          ` Success! Sent ${successCount} invitation(s)!\n\n` +
+          ` Your team members will receive invitation emails shortly.\n\n` +
+          `Step 2 complete!  Now let's add **Equipment Catalog**.\n\n` +
           `What type of medical equipment do you manufacture?\n` +
           `Example: "Ventilators", "MRI Machines", "CT Scanners"`,
           [
-            { label: 'ðŸ“ I have multiple equipment types', value: 'multiple_equipment' },
+            { label: 'I have multiple items', value: 'multiple_equipment' },
           ]
         );
         setCurrentStep(2); // Move to equipment
       } else if (successCount > 0) {
         addAIMessage(
-          `âš ï¸ Partially successful:\n` +
-          `âœ… Sent ${successCount} invitation(s)\n` +
-          `âŒ Failed: ${failedEmails.join(', ')}\n\n` +
+          ` Partially successful:\n` +
+          ` Sent ${successCount} invitation(s)\n` +
+          ` Failed: ${failedEmails.join(', ')}\n\n` +
           `You can retry failed invitations from the dashboard later.\n\n` +
-          `Step 2 complete! âœ… Continue to equipment?`,
+          `Step 2 complete!  Continue to equipment?`,
           [
-            { label: 'âž• Retry failed invitations', value: 'invite_team' },
-            { label: 'âž¡ï¸ Continue to equipment', value: 'continue_equipment' },
+            { label: ' Retry failed invitations', value: 'invite_team' },
+            { label: 'Continue', value: 'continue_equipment' },
           ]
         );
       } else {
         addAIMessage(
-          `âŒ Failed to send invitations:\n` +
+          ` Failed to send invitations:\n` +
           failedEmails.join('\n') + 
           `\n\nTeam member details saved. You can send invitations later from the dashboard.\n\n` +
           `Continue to equipment?`,
           [
-            { label: 'ðŸ”„ Try again', value: 'invite_team' },
-            { label: 'âž¡ï¸ Continue to equipment', value: 'continue_equipment' },
+            { label: 'Try again', value: 'invite_team' },
+            { label: 'Continue', value: 'continue_equipment' },
           ]
         );
       }
@@ -545,11 +545,11 @@ export default function AIOnboardingWizard() {
     } catch (error) {
       console.error('Failed to send invitations:', error);
       addAIMessage(
-        `âŒ Error sending invitations. Team member details have been saved.\n\n` +
+        ` Error sending invitations. Team member details have been saved.\n\n` +
         `You can send invitations later from the dashboard.\n\n` +
-        `Step 2 complete! âœ… Continue to equipment?`,
+        `Step 2 complete!  Continue to equipment?`,
         [
-          { label: 'âž¡ï¸ Continue to equipment', value: 'continue_equipment' },
+          { label: 'Continue', value: 'continue_equipment' },
         ]
       );
     }
@@ -580,12 +580,12 @@ export default function AIOnboardingWizard() {
       addAIMessage(
         `Now let's add your **Equipment Catalog**.\n\n` +
         `Do you have an equipment list in Excel or CSV format?\n\n` +
-        `ðŸ“¥ **Need a template?** [Download Equipment Catalog Template](/templates/equipment-catalog-template.csv)`,
+        ` **Need a template?** [Download Equipment Catalog Template](/templates/equipment-catalog-template.csv)`,
         [
-          { label: 'ðŸ“¤ Yes, upload file', value: 'upload_equipment' },
-          { label: 'ðŸ“¥ Download template first', value: 'download_equipment_template' },
-          { label: 'âœï¸ I\'ll add manually', value: 'manual_equipment' },
-          { label: 'â­ï¸ Skip for now', value: 'skip_equipment' },
+          { label: ' Yes, upload file', value: 'upload_equipment' },
+          { label: 'Download template', value: 'download_equipment_template' },
+          { label: ' I\'ll add manually', value: 'manual_equipment' },
+          { label: 'Skip for now', value: 'skip_equipment' },
         ]
       );
       setCurrentStep(2); // Move to equipment
@@ -596,13 +596,13 @@ export default function AIOnboardingWizard() {
       addAIMessage(
         `Great! I've provided the template download link above.\n\n` +
         `The template includes:\n` +
-        `âœ… Equipment type, model, manufacturer\n` +
-        `âœ… Serial number and installation details\n` +
-        `âœ… Sample data for common medical equipment\n\n` +
+        ` Equipment type, model, manufacturer\n` +
+        ` Serial number and installation details\n` +
+        ` Sample data for common medical equipment\n\n` +
         `Once downloaded, you can fill it out and upload it here.`,
         [
-          { label: 'ðŸ“¤ Upload completed template', value: 'upload_equipment' },
-          { label: 'â­ï¸ Skip for now', value: 'skip_equipment' },
+          { label: 'Upload file', value: 'upload_equipment' },
+          { label: 'Skip for now', value: 'skip_equipment' },
         ]
       );
       return;
@@ -613,8 +613,8 @@ export default function AIOnboardingWizard() {
         `Please upload your equipment catalog CSV file.\n\n` +
         `File should contain: equipment type, model, serial numbers, etc.`,
         [
-          { label: 'ðŸ“¤ Upload CSV', value: 'do_upload_equipment' },
-          { label: 'â­ï¸ Skip for now', value: 'skip_equipment' },
+          { label: 'Upload file', value: 'do_upload_equipment' },
+          { label: 'Skip for now', value: 'skip_equipment' },
         ]
       );
       
@@ -627,18 +627,18 @@ export default function AIOnboardingWizard() {
     if (input === 'skip_equipment') {
       addAIMessage(
         `No problem! You can add equipment later from the dashboard.\n\n` +
-        `Step 3 complete! âœ… Now let's set up your **Parts Catalog**.\n\n` +
+        `Step 3 complete!  Now let's set up your **Parts Catalog**.\n\n` +
         `Parts are essential for:\n` +
-        `â€¢ Service ticket management\n` +
-        `â€¢ Inventory tracking\n` +
-        `â€¢ Cost estimation\n\n` +
+        ` Service ticket management\n` +
+        ` Inventory tracking\n` +
+        ` Cost estimation\n\n` +
         `Do you have a parts list in Excel or CSV format?\n\n` +
-        `ðŸ“¥ **Need a template?** [Download Parts Catalog Template](/templates/parts-catalog-template.csv)`,
+        ` **Need a template?** [Download Parts Catalog Template](/templates/parts-catalog-template.csv)`,
         [
-          { label: 'ðŸ“¤ Yes, upload file', value: 'upload_parts' },
-          { label: 'ðŸ“¥ Download template first', value: 'download_template' },
-          { label: 'âœï¸ I\'ll add manually', value: 'manual_parts' },
-          { label: 'â­ï¸ Skip for now', value: 'skip_parts' },
+          { label: ' Yes, upload file', value: 'upload_parts' },
+          { label: 'Download template', value: 'download_template' },
+          { label: ' I\'ll add manually', value: 'manual_parts' },
+          { label: 'Skip for now', value: 'skip_parts' },
         ]
       );
       setCurrentStep(3); // Move to parts
@@ -650,20 +650,20 @@ export default function AIOnboardingWizard() {
     setOnboardingData(prev => ({ ...prev, equipment: equipmentData }));
 
     addAIMessage(
-      `Excellent! ${input} equipment registered. âœ…\n\n` +
+      `Excellent! ${input} equipment registered. \n\n` +
       `Step 3 complete! Now let's set up the **Parts Catalog**.\n\n` +
       `Parts are essential for:\n` +
-      `â€¢ Service ticket management\n` +
-      `â€¢ Inventory tracking\n` +
-      `â€¢ Cost estimation\n` +
-      `â€¢ Engineer assignment (skill matching)\n\n` +
+      ` Service ticket management\n` +
+      ` Inventory tracking\n` +
+      ` Cost estimation\n` +
+      ` Engineer assignment (skill matching)\n\n` +
       `Do you have a parts list in Excel or CSV format?\n\n` +
-      `ðŸ“¥ **Need a template?** [Download Parts Catalog Template](/templates/parts-catalog-template.csv)`,
+      ` **Need a template?** [Download Parts Catalog Template](/templates/parts-catalog-template.csv)`,
       [
-        { label: 'ðŸ“¤ Yes, upload file', value: 'upload_parts' },
-        { label: 'ðŸ“¥ Download template first', value: 'download_template' },
-        { label: 'âœï¸ I\'ll add manually', value: 'manual_parts' },
-        { label: 'â­ï¸ Skip for now', value: 'skip_parts' },
+        { label: ' Yes, upload file', value: 'upload_parts' },
+        { label: 'Download template', value: 'download_template' },
+        { label: ' I\'ll add manually', value: 'manual_parts' },
+        { label: 'Skip for now', value: 'skip_parts' },
       ]
     );
     setCurrentStep(2); // Move to parts step
@@ -674,14 +674,14 @@ export default function AIOnboardingWizard() {
       addAIMessage(
         `Great! I've provided the template download link above.\n\n` +
         `The template includes:\n` +
-        `âœ… All required fields (part_number, part_name, category, part_type)\n` +
-        `âœ… Sample data for Ventilator parts (15+ examples)\n` +
-        `âœ… Field descriptions and validation rules\n` +
-        `âœ… JSON format for technical specifications\n\n` +
+        ` All required fields (part_number, part_name, category, part_type)\n` +
+        ` Sample data for Ventilator parts (15+ examples)\n` +
+        ` Field descriptions and validation rules\n` +
+        ` JSON format for technical specifications\n\n` +
         `Fill it out and come back when ready!`,
         [
-          { label: 'ðŸ“¤ Ready to upload', value: 'upload_parts' },
-          { label: 'â­ï¸ Skip for now', value: 'skip_parts' },
+          { label: ' Ready to upload', value: 'upload_parts' },
+          { label: 'Skip for now', value: 'skip_parts' },
         ]
       );
       return;
@@ -696,16 +696,16 @@ export default function AIOnboardingWizard() {
     if (input === 'skip_parts') {
       addAIMessage(
         `No problem! You can add parts later from the dashboard.\n\n` +
-        `Step 3 complete! âœ… Now let's set up your **Service Engineers**.\n\n` +
+        `Step 3 complete!  Now let's set up your **Service Engineers**.\n\n` +
         `Service engineers are crucial for:\n` +
-        `â€¢ Responding to service tickets\n` +
-        `â€¢ Equipment maintenance\n` +
-        `â€¢ Installation and commissioning\n\n` +
+        ` Responding to service tickets\n` +
+        ` Equipment maintenance\n` +
+        ` Installation and commissioning\n\n` +
         `Do you have a list of your service engineers?`,
         [
-          { label: 'ðŸ“¤ Yes, upload engineer list', value: 'upload_engineers' },
-          { label: 'âœï¸ I\'ll add manually', value: 'manual_engineers' },
-          { label: 'â­ï¸ Skip for now', value: 'skip_engineers' },
+          { label: ' Yes, upload engineer list', value: 'upload_engineers' },
+          { label: ' I\'ll add manually', value: 'manual_engineers' },
+          { label: 'Skip for now', value: 'skip_engineers' },
         ]
       );
       setCurrentStep(3); // Move to engineers
@@ -725,16 +725,16 @@ export default function AIOnboardingWizard() {
     if (input === 'skip_engineers') {
       addAIMessage(
         `Understood! You can add engineers later.\n\n` +
-        `Step 4 complete! âœ… Final step: **Equipment Installations**.\n\n` +
+        `Step 4 complete!  Final step: **Equipment Installations**.\n\n` +
         `Let's register where your equipment is installed:\n` +
-        `â€¢ Customer/Hospital locations\n` +
-        `â€¢ Equipment serial numbers\n` +
-        `â€¢ Installation dates\n` +
-        `â€¢ Equipment models\n\n` +
+        ` Customer/Hospital locations\n` +
+        ` Equipment serial numbers\n` +
+        ` Installation dates\n` +
+        ` Equipment models\n\n` +
         `Do you have an installations list?`,
         [
-          { label: 'ðŸ“¤ Yes, upload file', value: 'upload_installations' },
-          { label: 'â­ï¸ Skip for now', value: 'skip_installations' },
+          { label: ' Yes, upload file', value: 'upload_installations' },
+          { label: 'Skip for now', value: 'skip_installations' },
         ]
       );
       setCurrentStep(4); // Move to installations
@@ -753,17 +753,17 @@ export default function AIOnboardingWizard() {
 
     if (input === 'skip_installations') {
       addAIMessage(
-        `All set! ðŸŽ‰\n\n` +
+        `All set! \n\n` +
         `You've completed the onboarding wizard. Here's what we set up:\n` +
-        `âœ… Manufacturer information\n` +
-        `âœ… Equipment catalog\n` +
-        `âœ… Parts catalog\n` +
-        `âœ… Service engineers\n` +
-        `âœ… Equipment installations\n\n` +
+        ` Manufacturer information\n` +
+        ` Equipment catalog\n` +
+        ` Parts catalog\n` +
+        ` Service engineers\n` +
+        ` Equipment installations\n\n` +
         `You can now manage everything from your dashboard!`,
         [
-          { label: 'ðŸ  Go to Dashboard', value: 'go_dashboard' },
-          { label: 'ðŸ“ Review Data', value: 'review' },
+          { label: 'Go to Dashboard', value: 'go_dashboard' },
+          { label: 'Review Data', value: 'review' },
         ]
       );
       setCurrentStep(5); // Move to review
@@ -772,12 +772,12 @@ export default function AIOnboardingWizard() {
 
     addAIMessage(
       `Perfect! Now let's finalize everything.\n\n` +
-      `â€¢ Engineer levels (1/2/3)\n` +
-      `â€¢ Equipment expertise\n` +
-      `â€¢ Coverage areas`,
+      ` Engineer levels (1/2/3)\n` +
+      ` Equipment expertise\n` +
+      ` Coverage areas`,
       [
-        { label: 'ðŸ“¤ Upload engineers file', value: 'upload_engineers' },
-        { label: 'âœï¸ Add manually', value: 'manual_engineers' },
+        { label: 'Upload file', value: 'upload_engineers' },
+        { label: 'Add manually', value: 'manual_engineers' },
       ]
     );
     setCurrentStep(5); // Move to complete
@@ -798,24 +798,24 @@ export default function AIOnboardingWizard() {
       const fileType = file.name.split('.').pop();
       
       addAIMessage(
-        `âœ… File "${file.name}" uploaded successfully!\n\n` +
+        ` File "${file.name}" uploaded successfully!\n\n` +
         `I'm analyzing your data...\n\n` +
         `Found:\n` +
-        `â€¢ 50 rows detected\n` +
-        `â€¢ All required columns present\n` +
-        `â€¢ No critical errors\n\n` +
+        ` 50 rows detected\n` +
+        ` All required columns present\n` +
+        ` No critical errors\n\n` +
         `Should I proceed with import?`,
         [
-          { label: 'âœ… Yes, import', value: 'confirm_import' },
-          { label: 'ðŸ‘ï¸ Show preview first', value: 'preview' },
-          { label: 'âŒ Cancel', value: 'cancel_import' },
+          { label: 'Yes, import', value: 'confirm_import' },
+          { label: ' Show preview first', value: 'preview' },
+          { label: 'Cancel', value: 'cancel_import' },
         ]
       );
     } catch (error) {
       addAIMessage(
-        `âŒ Failed to process file. Please check the format and try again.`,
+        ` Failed to process file. Please check the format and try again.`,
         [
-          { label: 'Upload different file', value: 'reupload' },
+          { label: 'Upload file', value: 'reupload' },
           { label: 'Switch to manual entry', value: 'manual' },
         ]
       );
@@ -1000,7 +1000,7 @@ export default function AIOnboardingWizard() {
                   </Button>
                   
                   <div className="text-xs text-gray-500 text-center">
-                    ðŸ’¡ Click any step above to jump to it
+                     Click any step above to jump to it
                   </div>
                 </div>
               </CardContent>
@@ -1116,7 +1116,7 @@ export default function AIOnboardingWizard() {
                   </Button>
                 </div>
                 <p className="text-xs text-gray-500 mt-2">
-                  ðŸ’¡ Tip: You can type your answer or upload files when asked
+                   Tip: You can type your answer or upload files when asked
                 </p>
               </div>
             </Card>
