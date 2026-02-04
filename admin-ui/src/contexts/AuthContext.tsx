@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { setRefreshTokenFunction } from '@/lib/api/client';
-import { decodeJWT, type JWTClaims } from '@/lib/jwt';
+import { decodeJWT, isTokenExpired, type JWTClaims } from '@/lib/jwt';
 
 interface User {
   user_id: string;
@@ -120,8 +120,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (storedAccessToken && storedRefreshToken) {
           // Validate token before using it
-          if (!isTokenValid(storedAccessToken)) {
-            console.log('[Auth] Stored token is invalid or expired');
+          if (isTokenExpired(storedAccessToken)) {
+            console.log('[Auth] Stored token is expired');
             clearTokens();
             setIsLoading(false);
             return;
