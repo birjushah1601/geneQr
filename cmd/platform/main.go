@@ -152,8 +152,8 @@ func main() {
 		// Create a gorilla mux router for partner routes
 		partnerRouter := mux.NewRouter()
 		partnerHandler.RegisterRoutes(partnerRouter)
-		// Mount the partner router into the main chi router
-		router.Mount("/", partnerRouter)
+		// Mount the partner router into the main chi router at /api/v1
+		router.Mount("/api/v1", partnerRouter)
 		logger.Info("✅ Partner association endpoints registered")
 	} else {
 		logger.Warn("Partner association endpoints not registered - database not available")

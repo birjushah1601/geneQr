@@ -25,14 +25,14 @@ func NewPartnerHandler(db *sql.DB) *PartnerHandler {
 
 // RegisterRoutes registers partner routes
 func (h *PartnerHandler) RegisterRoutes(r *mux.Router) {
-	// Partner management routes
-	r.HandleFunc("/api/v1/organizations/{manufacturerId}/partners", h.ListPartners).Methods("GET")
-	r.HandleFunc("/api/v1/organizations/{manufacturerId}/available-partners", h.GetAvailablePartners).Methods("GET")
-	r.HandleFunc("/api/v1/organizations/{manufacturerId}/partners", h.AssociatePartner).Methods("POST")
-	r.HandleFunc("/api/v1/organizations/{manufacturerId}/partners/{partnerId}", h.RemovePartner).Methods("DELETE")
+	// Partner management routes (without /api/v1 prefix since it's already in the mount path)
+	r.HandleFunc("/organizations/{manufacturerId}/partners", h.ListPartners).Methods("GET")
+	r.HandleFunc("/organizations/{manufacturerId}/available-partners", h.GetAvailablePartners).Methods("GET")
+	r.HandleFunc("/organizations/{manufacturerId}/partners", h.AssociatePartner).Methods("POST")
+	r.HandleFunc("/organizations/{manufacturerId}/partners/{partnerId}", h.RemovePartner).Methods("DELETE")
 	
 	// Network engineers route
-	r.HandleFunc("/api/v1/engineers/network/{manufacturerId}", h.GetNetworkEngineers).Methods("GET")
+	r.HandleFunc("/engineers/network/{manufacturerId}", h.GetNetworkEngineers).Methods("GET")
 }
 
 // ListPartners handles GET /api/v1/organizations/:manufacturerId/partners
