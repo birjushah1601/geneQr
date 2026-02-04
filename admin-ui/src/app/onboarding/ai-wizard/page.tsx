@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -14,13 +14,13 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8
 
 // Onboarding steps - Logical business flow
 const STEPS = [
-  { id: 'manufacturer', label: 'Manufacturer Info', icon: 'ðŸ¢' },
-  { id: 'team', label: 'Team Members', icon: 'ðŸ‘¥' },
-  { id: 'equipment', label: 'Equipment Catalog', icon: 'ðŸ”§' },
-  { id: 'parts', label: 'Parts Catalog', icon: 'ðŸ“¦' },
-  { id: 'engineers', label: 'Service Engineers', icon: 'ðŸ‘·' },
-  { id: 'installations', label: 'Equipment Installations', icon: 'ðŸ“‹' },
-  { id: 'review', label: 'Review & Complete', icon: 'âœ…' },
+  { id: 'manufacturer', label: 'Manufacturer Info', icon: '•' },
+  { id: 'team', label: 'Team Members', icon: '•' },
+  { id: 'equipment', label: 'Equipment Catalog', icon: '•' },
+  { id: 'parts', label: 'Parts Catalog', icon: '•' },
+  { id: 'engineers', label: 'Service Engineers', icon: '•' },
+  { id: 'installations', label: 'Equipment Installations', icon: '•' },
+  { id: 'review', label: 'Review & Complete', icon: '•' },
 ];
 
 interface Message {
