@@ -241,6 +241,11 @@ export default function EngineerSelectionModal({
     if (activeCategory === 'senior') return eng.engineer_level === 'L3';
     if (activeCategory === 'certified') return eng.manufacturer_certified;
     if (activeCategory === 'high-match') return (eng.match_score || 0) >= 80;
+    if (activeCategory === 'partner-network') {
+      return eng.category !== 'Manufacturer' || 
+             eng.organization_type === 'channel_partner' || 
+             eng.organization_type === 'sub_dealer';
+    }
     return true;
   });
 
@@ -249,6 +254,15 @@ export default function EngineerSelectionModal({
     { id: 'senior', label: 'Sr. Engineers Only', count: engineers.filter(e => e.engineer_level === 'L3').length },
     { id: 'certified', label: 'Manufacturer Certified', count: engineers.filter(e => e.manufacturer_certified).length },
     { id: 'high-match', label: 'Skills Match (80%+)', count: engineers.filter(e => (e.match_score || 0) >= 80).length },
+    { 
+      id: 'partner-network', 
+      label: 'Partner Network', 
+      count: engineers.filter(e => 
+        e.category !== 'Manufacturer' || 
+        e.organization_type === 'channel_partner' || 
+        e.organization_type === 'sub_dealer'
+      ).length 
+    },
   ];
 
   return (
