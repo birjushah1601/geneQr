@@ -157,9 +157,9 @@ func (s *PartnerService) GetAvailablePartners(ctx context.Context, manufacturerI
 			o.id,
 			o.name,
 			o.org_type,
-			COALESCE(o.address->>'city', '') as location,
+			COALESCE(o.metadata->>'city', '') as location,
 			COUNT(DISTINCT eom.engineer_id) as engineers_count,
-			COALESCE(o.contact_email, '') as contact_email
+			COALESCE(o.metadata->>'contact_email', '') as contact_email
 		FROM organizations o
 		LEFT JOIN engineer_org_memberships eom ON eom.org_id = o.id
 		WHERE o.org_type IN ('channel_partner', 'sub_dealer')
@@ -175,11 +175,11 @@ func (s *PartnerService) GetAvailablePartners(ctx context.Context, manufacturerI
 	args := []interface{}{manufacturerID}
 
 	if search != "" {
-		query += " AND (o.name ILIKE $2 OR o.address->>'city' ILIKE $2)"
+		query += " AND (o.name ILIKE $2 OR o.metadata->>'city' ILIKE $2)"
 		args = append(args, "%"+search+"%")
 	}
 
-	query += " GROUP BY o.id, o.name, o.org_type, o.address, o.contact_email"
+	query += " GROUP BY o.id, o.name, o.org_type, o.metadata"
 	query += " ORDER BY o.name LIMIT 50"
 
 	rows, err := s.db.QueryContext(ctx, query, args...)
