@@ -90,7 +90,7 @@ export default function PartnersPage() {
     return orgType === 'channel_partner' ? 'Channel Partner' : 'Sub-Dealer';
   };
 
-  if (organizationContext?.organization_type !== 'manufacturer') {
+  if (organizationContext?.organization_type !== 'manufacturer' && organizationContext?.organization_type !== 'system') {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center min-h-[400px]">
@@ -98,7 +98,7 @@ export default function PartnersPage() {
             <AlertCircle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
             <h2 className="text-xl font-semibold mb-2">Access Restricted</h2>
             <p className="text-gray-600">
-              Partner management is only available for manufacturers.
+              Partner management is only available for system administrators and manufacturers.
             </p>
           </div>
         </div>
