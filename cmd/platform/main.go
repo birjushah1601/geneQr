@@ -38,6 +38,7 @@ import (
 	// "github.com/aby-med/medical-platform/internal/service-domain/whatsapp" // Disabled - depends on equipment-registry
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/gorilla/mux"
 	"github.com/go-chi/cors"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jmoiron/sqlx"
@@ -140,6 +141,22 @@ func main() {
 	if err != nil {
 		logger.Error("Failed to initialize modules", slog.String("error", err.Error()))
 		os.Exit(1)
+	}
+
+	// ========================================================================
+	// REGISTER PARTNER ASSOCIATION ROUTES
+	// ========================================================================
+	if authDB != nil {
+		// Convert *sqlx.DB to *sql.DB for the handler
+		partnerHandler := api.NewPartnerHandler(authDB.DB)
+		// Create a gorilla mux router for partner routes
+		partnerRouter := mux.NewRouter()
+		partnerHandler.RegisterRoutes(partnerRouter)
+		// Mount the partner router into the main chi router
+		router.Mount("/", partnerRouter)
+		logger.Info("✅ Partner association endpoints registered")
+	} else {
+		logger.Warn("Partner association endpoints not registered - database not available")
 	}
 
 	// ========================================================================
@@ -521,15 +538,6 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 			partsImportHandler := api.NewPartsImportHandler(importPool, logger)
 			apiRouter.Post("/parts/import", partsImportHandler.ImportParts)
 			logger.Info("Parts import endpoint registered")
-		}
-		
-		// Add partner association endpoints
-		if authDB != nil {
-			partnerHandler := api.NewPartnerHandler(authDB.DB)
-			partnerHandler.RegisterRoutes(apiRouter.(*chi.Mux))
-			logger.Info("✅ Partner association endpoints registered")
-		} else {
-			logger.Warn("Partner association endpoints not registered - database not available")
 		}
 	})
 	
