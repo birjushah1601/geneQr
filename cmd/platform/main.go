@@ -522,6 +522,15 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 			apiRouter.Post("/parts/import", partsImportHandler.ImportParts)
 			logger.Info("Parts import endpoint registered")
 		}
+		
+		// Add partner association endpoints
+		if authDB != nil {
+			partnerHandler := api.NewPartnerHandler(authDB.DB)
+			partnerHandler.RegisterRoutes(apiRouter.(*chi.Mux))
+			logger.Info("✅ Partner association endpoints registered")
+		} else {
+			logger.Warn("Partner association endpoints not registered - database not available")
+		}
 	})
 	
 	// WhatsApp integration disabled (depends on equipment-registry module which is disabled)
