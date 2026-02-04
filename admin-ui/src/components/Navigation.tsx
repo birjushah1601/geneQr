@@ -63,7 +63,7 @@ const navigationConfig: NavItem[] = [
     label: 'Service Partners',
     href: '/partners',
     icon: Truck,
-    allowedOrgTypes: ['manufacturer'], // Manufacturers only
+    allowedOrgTypes: ['system', 'manufacturer'], // System admins and manufacturers
   },
   {
     label: 'Organizations',
