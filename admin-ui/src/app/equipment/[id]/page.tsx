@@ -54,7 +54,7 @@ export default function EquipmentDetailPage({ params }: { params: { id: string }
     if ((equipment as any).qr_code_image) {
       return `data:image/png;base64,${(equipment as any).qr_code_image}`;
     }
-    const apiBase = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
+    const apiBase = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8081/api').replace(/\/$/, '');
     return `${apiBase}/v1/equipment/qr/image/${equipment.id}`;
   }, [equipment]);
 
