@@ -1,6 +1,6 @@
 // Partner Association API Client
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8081';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8081/api';
 
 export interface Partner {
   id: string;
@@ -67,7 +67,7 @@ class PartnersAPI {
     if (filters?.type) params.append('type', filters.type);
     if (filters?.association_type) params.append('association_type', filters.association_type);
 
-    const url = `${API_BASE_URL}/api/v1/organizations/${manufacturerId}/partners${params.toString() ? '?' + params.toString() : ''}`;
+    const url = `${API_BASE_URL}/v1/organizations/${manufacturerId}/partners${params.toString() ? '?' + params.toString() : ''}`;
     
     const response = await fetch(url, {
       headers: this.getAuthHeaders(),
@@ -88,7 +88,7 @@ class PartnersAPI {
     const params = new URLSearchParams();
     if (search) params.append('search', search);
 
-    const url = `${API_BASE_URL}/api/v1/organizations/${manufacturerId}/available-partners${params.toString() ? '?' + params.toString() : ''}`;
+    const url = `${API_BASE_URL}/v1/organizations/${manufacturerId}/available-partners${params.toString() ? '?' + params.toString() : ''}`;
     
     const response = await fetch(url, {
       headers: this.getAuthHeaders(),
@@ -110,7 +110,7 @@ class PartnersAPI {
       rel_type?: string;
     }
   ): Promise<any> {
-    const response = await fetch(`${API_BASE_URL}/api/v1/organizations/${manufacturerId}/partners`, {
+    const response = await fetch(`${API_BASE_URL}/v1/organizations/${manufacturerId}/partners`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
       body: JSON.stringify({
@@ -136,7 +136,7 @@ class PartnersAPI {
     const params = new URLSearchParams();
     if (equipmentId) params.append('equipment_id', equipmentId);
 
-    const url = `${API_BASE_URL}/api/v1/organizations/${manufacturerId}/partners/${partnerId}${params.toString() ? '?' + params.toString() : ''}`;
+    const url = `${API_BASE_URL}/v1/organizations/${manufacturerId}/partners/${partnerId}${params.toString() ? '?' + params.toString() : ''}`;
     
     const response = await fetch(url, {
       method: 'DELETE',
@@ -157,7 +157,7 @@ class PartnersAPI {
     const params = new URLSearchParams();
     if (equipmentId) params.append('equipment_id', equipmentId);
 
-    const url = `${API_BASE_URL}/api/v1/engineers/network/${manufacturerId}${params.toString() ? '?' + params.toString() : ''}`;
+    const url = `${API_BASE_URL}/v1/engineers/network/${manufacturerId}${params.toString() ? '?' + params.toString() : ''}`;
     
     const response = await fetch(url, {
       headers: this.getAuthHeaders(),
