@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/aby-med/medical-platform/internal/services"
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
 )
 
 // PartnerHandler handles partner association HTTP requests
@@ -23,22 +23,22 @@ func NewPartnerHandler(db *sql.DB) *PartnerHandler {
 	}
 }
 
-// RegisterRoutes registers partner routes
-func (h *PartnerHandler) RegisterRoutes(r *mux.Router) {
-	// Partner management routes (without /api/v1 prefix since it's already in the mount path)
-	r.HandleFunc("/organizations/{manufacturerId}/partners", h.ListPartners).Methods("GET")
-	r.HandleFunc("/organizations/{manufacturerId}/available-partners", h.GetAvailablePartners).Methods("GET")
-	r.HandleFunc("/organizations/{manufacturerId}/partners", h.AssociatePartner).Methods("POST")
-	r.HandleFunc("/organizations/{manufacturerId}/partners/{partnerId}", h.RemovePartner).Methods("DELETE")
+// RegisterRoutes registers partner routes (no longer used - routes registered directly in main.go)
+// Keeping this for reference but routes are now registered with chi in main.go
+func (h *PartnerHandler) RegisterRoutes(r chi.Router) {
+	// Partner management routes
+	r.Get("/organizations/{manufacturerId}/partners", h.ListPartners)
+	r.Get("/organizations/{manufacturerId}/available-partners", h.GetAvailablePartners)
+	r.Post("/organizations/{manufacturerId}/partners", h.AssociatePartner)
+	r.Delete("/organizations/{manufacturerId}/partners/{partnerId}", h.RemovePartner)
 	
 	// Network engineers route
-	r.HandleFunc("/engineers/network/{manufacturerId}", h.GetNetworkEngineers).Methods("GET")
+	r.Get("/engineers/network/{manufacturerId}", h.GetNetworkEngineers)
 }
 
 // ListPartners handles GET /api/v1/organizations/:manufacturerId/partners
 func (h *PartnerHandler) ListPartners(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	manufacturerID := vars["manufacturerId"]
+	manufacturerID := chi.URLParam(r, "manufacturerId")
 
 	// Get query parameters for filtering
 	filters := make(map[string]string)
@@ -66,8 +66,7 @@ func (h *PartnerHandler) ListPartners(w http.ResponseWriter, r *http.Request) {
 
 // GetAvailablePartners handles GET /api/v1/organizations/:manufacturerId/available-partners
 func (h *PartnerHandler) GetAvailablePartners(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	manufacturerID := vars["manufacturerId"]
+	manufacturerID := chi.URLParam(r, "manufacturerId")
 	search := r.URL.Query().Get("search")
 
 	orgs, err := h.partnerService.GetAvailablePartners(r.Context(), manufacturerID, search)
@@ -87,8 +86,7 @@ func (h *PartnerHandler) GetAvailablePartners(w http.ResponseWriter, r *http.Req
 
 // AssociatePartner handles POST /api/v1/organizations/:manufacturerId/partners
 func (h *PartnerHandler) AssociatePartner(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	manufacturerID := vars["manufacturerId"]
+	manufacturerID := chi.URLParam(r, "manufacturerId")
 
 	var req struct {
 		PartnerOrgID string  `json:"partner_org_id"`
@@ -139,9 +137,8 @@ func (h *PartnerHandler) AssociatePartner(w http.ResponseWriter, r *http.Request
 
 // RemovePartner handles DELETE /api/v1/organizations/:manufacturerId/partners/:partnerId
 func (h *PartnerHandler) RemovePartner(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	manufacturerID := vars["manufacturerId"]
-	partnerID := vars["partnerId"]
+	manufacturerID := chi.URLParam(r, "manufacturerId")
+	partnerID := chi.URLParam(r, "partnerId")
 
 	// Check for equipment_id query parameter
 	var equipmentID *string
@@ -177,8 +174,7 @@ func (h *PartnerHandler) RemovePartner(w http.ResponseWriter, r *http.Request) {
 
 // GetNetworkEngineers handles GET /api/v1/engineers/network/:manufacturerId
 func (h *PartnerHandler) GetNetworkEngineers(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	manufacturerID := vars["manufacturerId"]
+	manufacturerID := chi.URLParam(r, "manufacturerId")
 
 	// Check for equipment_id query parameter
 	var equipmentID *string

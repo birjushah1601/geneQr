@@ -38,7 +38,6 @@ import (
 	// "github.com/aby-med/medical-platform/internal/service-domain/whatsapp" // Disabled - depends on equipment-registry
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/gorilla/mux"
 	"github.com/go-chi/cors"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jmoiron/sqlx"
@@ -137,27 +136,13 @@ func main() {
 	}
 
 	// Initialize modules (non-blocking) with auth middleware
-	modules, modulesCtx, err := initializeModules(ctx, router, enabledModules, cfg, logger, authModule)
+	modules, modulesCtx, err := initializeModules(ctx, router, enabledModules, cfg, logger, authModule, authDB)
 	if err != nil {
 		logger.Error("Failed to initialize modules", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
 
-	// ========================================================================
-	// REGISTER PARTNER ASSOCIATION ROUTES
-	// ========================================================================
-	if authDB != nil {
-		// Convert *sqlx.DB to *sql.DB for the handler
-		partnerHandler := api.NewPartnerHandler(authDB.DB)
-		// Create a gorilla mux router for partner routes
-		partnerRouter := mux.NewRouter()
-		partnerHandler.RegisterRoutes(partnerRouter)
-		// Mount the partner router into the main chi router at /api/v1
-		router.Mount("/api/v1", partnerRouter)
-		logger.Info("✅ Partner association endpoints registered")
-	} else {
-		logger.Warn("Partner association endpoints not registered - database not available")
-	}
+
 
 	// ========================================================================
 	// INITIALIZE NOTIFICATIONS AND REPORTS SYSTEMS
@@ -313,7 +298,7 @@ func setupRouter(cfg *config.Config, logger *slog.Logger, tracer observability.T
 }
 
 // initializeModules initializes all enabled modules and mounts their routes (non-blocking)
-func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []string, cfg *config.Config, logger *slog.Logger, authModule *auth.Module) ([]service.Module, context.Context, error) {
+func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []string, cfg *config.Config, logger *slog.Logger, authModule *auth.Module, authDB *sqlx.DB) ([]service.Module, context.Context, error) {
 	// Get all available modules
 	registry := service.NewRegistry(cfg, logger)
 	// Register individual modules here
@@ -538,6 +523,15 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 			partsImportHandler := api.NewPartsImportHandler(importPool, logger)
 			apiRouter.Post("/parts/import", partsImportHandler.ImportParts)
 			logger.Info("Parts import endpoint registered")
+		}
+		
+		// Add partner association endpoints (inside the existing /api/v1 route)
+		if authDB != nil {
+			partnerHandler := api.NewPartnerHandler(authDB.DB)
+			partnerHandler.RegisterRoutes(apiRouter)
+			logger.Info("✅ Partner association endpoints registered")
+		} else {
+			logger.Warn("Partner association endpoints not registered - database not available")
 		}
 	})
 	

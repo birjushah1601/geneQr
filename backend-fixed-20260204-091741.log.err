@@ -1,0 +1,7 @@
+panic: chi: attempting to Mount() a handler on an existing path, '/api/v1'
+
+goroutine 1 [running]:
+github.com/go-chi/chi/v5.(*Mux).Mount(0xc0001c7140, {0x7ff61d704979, 0x7}, {0x7ff61d8dedc0, 0xc0001760c0})
+	C:/Users/birju/go/pkg/mod/github.com/go-chi/chi/v5@v5.0.10/mux.go:292 +0x494
+main.main()
+	C:/Users/birju/aby-med/cmd/platform/main.go:156 +0xba5
