@@ -50,7 +50,7 @@ export default function AddManufacturerPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/v1/organizations`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/organizations`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

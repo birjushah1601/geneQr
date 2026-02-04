@@ -480,7 +480,7 @@ export default function AIOnboardingWizard() {
       
       for (const member of teamMembers) {
         try {
-          const response = await fetch(`${API_BASE_URL}/v1/organizations/${orgId}/invitations`, {
+          const response = await fetch(`${API_BASE_URL}/api/v1/organizations/${orgId}/invitations`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

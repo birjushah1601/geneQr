@@ -46,7 +46,7 @@ export default function ImportManufacturersPage() {
       formData.append('csv_file', file);
       formData.append('dry_run', isDryRun.toString());
 
-      const response = await fetch(`${API_BASE_URL}/v1/organizations/import`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/organizations/import`, {
         method: 'POST',
         credentials: 'include',
         body: formData,
