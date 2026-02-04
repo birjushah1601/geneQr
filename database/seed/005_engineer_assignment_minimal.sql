@@ -1,4 +1,4 @@
-﻿-- ============================================================================
+-- ============================================================================
 -- SEED DATA: ENGINEER ASSIGNMENT SYSTEM (MINIMAL VERSION)
 -- ============================================================================
 -- Create sample engineers matching the actual schema
@@ -10,7 +10,7 @@ INSERT INTO engineers (id, name, phone, email, skills, home_region, engineer_lev
   (gen_random_uuid(), 'Priya Sharma', '+91-98765-43211', 'priya.sharma@siemens.com', ARRAY['X-Ray'], 'Delhi', 2),
   (gen_random_uuid(), 'Arun Menon', '+91-98765-43230', 'arun.menon@philips.com', ARRAY['MRI'], 'Chennai', 3),
   (gen_random_uuid(), 'Vikram Reddy', '+91-98765-43220', 'vikram.reddy@ge.com', ARRAY['CT Scanner'], 'Hyderabad', 3),
-  (gen_random_uuid(), 'Suresh Gupta', '+91-98765-43250', 'suresh.gupta@Sub-sub_SUB_DEALER.com', ARRAY['X-Ray', 'Ultrasound'], 'Delhi', 2)
+  (gen_random_uuid(), 'Suresh Gupta', '+91-98765-43250', 'suresh.gupta@Sub-sub_SUB_Sub-Dealer.com', ARRAY['X-Ray', 'Ultrasound'], 'Delhi', 2)
 ON CONFLICT (id) DO NOTHING;
 
 -- Link Engineers to Organizations
@@ -19,7 +19,7 @@ DECLARE
   siemens_org_id UUID;
   philips_org_id UUID;
   ge_org_id UUID;
-  sub_sub_Sub-sub_SUB_DEALER_org_id UUID;
+  sub_sub_Sub-sub_SUB_Sub-Dealer_org_id UUID;
   rajesh_id UUID;
   priya_id UUID;
   arun_id UUID;
@@ -30,14 +30,14 @@ BEGIN
   SELECT id INTO siemens_org_id FROM organizations WHERE name LIKE '%Siemens%' LIMIT 1;
   SELECT id INTO philips_org_id FROM organizations WHERE name LIKE '%Philips%' LIMIT 1;
   SELECT id INTO ge_org_id FROM organizations WHERE name LIKE '%GE%' OR name LIKE '%Wipro%' LIMIT 1;
-  SELECT id INTO sub_sub_Sub-sub_SUB_DEALER_org_id FROM organizations WHERE org_type = 'Sub-sub_SUB_DEALER' LIMIT 1;
+  SELECT id INTO sub_sub_Sub-sub_SUB_Sub-Dealer_org_id FROM organizations WHERE org_type = 'Sub-sub_SUB_Sub-Dealer' LIMIT 1;
 
   -- Get engineer IDs
   SELECT id INTO rajesh_id FROM engineers WHERE email = 'rajesh.singh@siemens.com';
   SELECT id INTO priya_id FROM engineers WHERE email = 'priya.sharma@siemens.com';
   SELECT id INTO arun_id FROM engineers WHERE email = 'arun.menon@philips.com';
   SELECT id INTO vikram_id FROM engineers WHERE email = 'vikram.reddy@ge.com';
-  SELECT id INTO suresh_id FROM engineers WHERE email = 'suresh.gupta@Sub-sub_SUB_DEALER.com';
+  SELECT id INTO suresh_id FROM engineers WHERE email = 'suresh.gupta@Sub-sub_SUB_Sub-Dealer.com';
 
   -- Create org memberships
   IF siemens_org_id IS NOT NULL THEN
@@ -84,9 +84,9 @@ BEGIN
     ON CONFLICT DO NOTHING;
   END IF;
 
-  IF sub_sub_Sub-sub_SUB_DEALER_org_id IS NOT NULL AND suresh_id IS NOT NULL THEN
+  IF sub_sub_Sub-sub_SUB_Sub-Dealer_org_id IS NOT NULL AND suresh_id IS NOT NULL THEN
     INSERT INTO engineer_org_memberships (engineer_id, org_id, role) 
-    VALUES (suresh_id, sub_sub_Sub-sub_SUB_DEALER_org_id, 'field_engineer') 
+    VALUES (suresh_id, sub_sub_Sub-sub_SUB_Sub-Dealer_org_id, 'field_engineer') 
     ON CONFLICT DO NOTHING;
     
     INSERT INTO engineer_equipment_types (engineer_id, manufacturer_name, equipment_category, is_certified)
