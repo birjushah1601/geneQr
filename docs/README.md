@@ -1,194 +1,224 @@
-﻿# ServQR Medical Platform - Documentation
+﻿# ServQR Documentation
 
-## ðŸ“š Documentation Structure
-
-This documentation is organized by purpose and audience for easy navigation.
+Welcome to the ServQR platform documentation! This guide will help you navigate all available documentation.
 
 ---
 
-## ðŸ—‚ï¸ Directory Structure
+## Quick Start
 
-```
+**New to ServQR?** Start here:
+1. **[Getting Started](01-GETTING-STARTED.md)** - Installation and setup (15 minutes)
+2. **[Quick Reference](QUICK-REFERENCE.md)** - Common commands and workflows
+
+**For Developers:**
+- **[Architecture](02-ARCHITECTURE.md)** - System design and structure
+- **[API Reference](04-API-REFERENCE.md)** - REST API documentation
+
+**For Product/Business:**
+- **[Features](03-FEATURES.md)** - Complete feature catalog
+- **[Executive Summary](EXECUTIVE-SUMMARY.md)** - Business overview
+
+---
+
+## Documentation Structure
+
+### Core Documentation (Start Here)
+
+
 docs/
-â”œâ”€â”€ README.md (this file)
-â”œâ”€â”€ 01-06 Master Documentation (6 files)
-â”œâ”€â”€ Core Guides (9 files)
-â”œâ”€â”€ guides/ (Implementation guides - 6 files)
-â”œâ”€â”€ design/ (Design & planning docs - 5 files)
-â””â”€â”€ archives/ (Historical logs - 103 files)
-```
+├── 01-GETTING-STARTED.md       # Installation, setup, first run
+├── 02-ARCHITECTURE.md          # System design, tech stack
+├── 03-FEATURES.md              # Feature catalog and status
+├── 04-API-REFERENCE.md         # API endpoints documentation
+├── 05-DEPLOYMENT.md            # Production deployment
+├── 05-TESTING.md               # Testing guide
+├── QUICK-REFERENCE.md          # Command cheat sheet
+├── EXECUTIVE-SUMMARY.md        # Business overview
+└── DOCUMENTATION-INDEX.md      # Complete docs index
 
-### Root Directory
-- **Master Docs:** 01-GETTING-STARTED through 06-PERSONAS
-- **Quick References:** QUICK-REFERENCE, EXECUTIVE-SUMMARY
-- **Deployment:** DEPLOYMENT-GUIDE, PRODUCTION-CHECKLIST, EXTERNAL-SERVICES
-- **Systems:** NOTIFICATIONS-SYSTEM, SECURITY-IMPLEMENTATION
-- **Config:** LOGIN-PASSWORD-DEFAULT
 
-### Subdirectories
-- **guides/** - Implementation guides for features
-- **design/** - Design documents and planning specs
-- **archives/** - Historical progress logs (not needed for current work)
+### How-To Guides
+
+
+docs/guides/
+├── engineer-management.md      # Manage engineers (all org types)
+├── csv-imports.md              # Bulk import organizations/equipment
+├── qr-code-setup.md            # QR code generation and usage
+└── (more guides...)
+
+
+### Feature Specifications
+
+
+docs/specs/
+├── PARTNER-ASSOCIATION-SPECIFICATION.md       # Partner network (NEW!)
+├── QR-CODE-MIGRATION-PLAN.md                  # QR system architecture
+└── DETAILED-ORGANIZATIONS-ARCHITECTURE-DESIGN.md  # Multi-entity design
+
+
+### Configuration & Setup
+
+
+docs/
+├── EXTERNAL-SERVICES-SETUP.md  # Configure SendGrid, OpenAI, etc.
+├── DEPLOYMENT-GUIDE.md         # Detailed deployment procedures
+├── PRODUCTION-DEPLOYMENT-CHECKLIST.md  # Pre-launch checklist
+├── SECURITY-IMPLEMENTATION-COMPLETE.md  # Security features
+└── NOTIFICATIONS-SYSTEM.md     # Email notification system
+
+
+### Historical & Archived
+
+
+docs/archived/
+├── implementation-status/      # Completed feature status docs
+├── README-OLD.md               # Previous README
+└── (other archived docs...)
+
 
 ---
 
-## ðŸ“– Quick Navigation
+## Documentation by Audience
 
 ### For New Developers
-**Start Here:** [`01-GETTING-STARTED.md`](./01-GETTING-STARTED.md)
-- System overview
-- Local development setup
-- First time run guide
-- Common commands
+**Goal:** Get up and running quickly
 
-### For Architects & Tech Leads
-**Read:** [`02-ARCHITECTURE.md`](./02-ARCHITECTURE.md)
-- System architecture
-- Technology stack
-- Database schema
-- Module structure
-- Design decisions
+1. [01-GETTING-STARTED.md](01-GETTING-STARTED.md)
+2. [QUICK-REFERENCE.md](QUICK-REFERENCE.md)
+3. [02-ARCHITECTURE.md](02-ARCHITECTURE.md)
+4. [guides/engineer-management.md](guides/engineer-management.md)
 
-### For Product Managers
-**Read:** [`03-FEATURES.md`](./03-FEATURES.md)
-- Feature catalog
-- User stories
-- Feature flags
-- Roadmap
+### For Frontend Developers
+**Goal:** Build UI components and integrate APIs
 
-### For Frontend/Backend Developers
-**Read:** [`04-API-REFERENCE.md`](./04-API-REFERENCE.md)
-- API endpoints
-- Request/Response formats
-- Authentication
-- Error codes
+1. [02-ARCHITECTURE.md](02-ARCHITECTURE.md) - Frontend stack
+2. [04-API-REFERENCE.md](04-API-REFERENCE.md) - API endpoints
+3. [03-FEATURES.md](03-FEATURES.md) - Feature requirements
+
+### For Backend Developers
+**Goal:** Build APIs and business logic
+
+1. [02-ARCHITECTURE.md](02-ARCHITECTURE.md) - Backend structure
+2. [04-API-REFERENCE.md](04-API-REFERENCE.md) - API specs
+3. [specs/](specs/) - Feature specifications
 
 ### For DevOps Engineers
-**Read:** [`05-DEPLOYMENT.md`](./05-DEPLOYMENT.md)
-- Deployment guide
-- Environment setup
-- CI/CD pipeline
-- Monitoring
+**Goal:** Deploy and maintain the platform
 
-### For Stakeholders
-**Read:** [`06-PERSONAS.md`](./06-PERSONAS.md)
-- User personas
-- Use cases
-- Value proposition
-- Success metrics
+1. [05-DEPLOYMENT.md](05-DEPLOYMENT.md)
+2. [DEPLOYMENT-GUIDE.md](DEPLOYMENT-GUIDE.md)
+3. [PRODUCTION-DEPLOYMENT-CHECKLIST.md](PRODUCTION-DEPLOYMENT-CHECKLIST.md)
+4. [EXTERNAL-SERVICES-SETUP.md](EXTERNAL-SERVICES-SETUP.md)
 
----
+### For Product Managers
+**Goal:** Understand features and capabilities
 
-## ðŸŽ¯ Key Documents
+1. [EXECUTIVE-SUMMARY.md](EXECUTIVE-SUMMARY.md)
+2. [03-FEATURES.md](03-FEATURES.md)
+3. [06-PERSONAS.md](06-PERSONAS.md)
+4. [specs/](specs/) - Feature specifications
 
-| Document | Purpose | Audience |
-|----------|---------|----------|
-| [Getting Started](./01-GETTING-STARTED.md) | Quick setup and overview | All developers |
-| [Architecture](./02-ARCHITECTURE.md) | System design and structure | Architects, Tech Leads |
-| [Features](./03-FEATURES.md) | Feature documentation | PM, Developers |
-| [API Reference](./04-API-REFERENCE.md) | API specifications | Frontend, Backend devs |
-| [Deployment](./05-DEPLOYMENT.md) | Deployment procedures | DevOps, SRE |
-| [Personas](./06-PERSONAS.md) | User perspectives | Stakeholders, PM |
+### For Architects & Tech Leads
+**Goal:** Understand system design decisions
+
+1. [02-ARCHITECTURE.md](02-ARCHITECTURE.md)
+2. [specs/DETAILED-ORGANIZATIONS-ARCHITECTURE-DESIGN.md](specs/DETAILED-ORGANIZATIONS-ARCHITECTURE-DESIGN.md)
+3. [specs/QR-CODE-MIGRATION-PLAN.md](specs/QR-CODE-MIGRATION-PLAN.md)
+4. [specs/PARTNER-ASSOCIATION-SPECIFICATION.md](specs/PARTNER-ASSOCIATION-SPECIFICATION.md)
 
 ---
 
-## ðŸ—ï¸ System Overview
+## Key Features Overview
 
-### What is ServQR?
-Intelligent Medical Equipment Service Management Platform with:
-- **Multi-tenant architecture** for manufacturers, hospitals, and service providers
-- **AI-powered diagnostics** for equipment troubleshooting
-- **WhatsApp integration** for ticket creation
-- **QR code system** for equipment tracking
-- **Parts marketplace** (coming soon)
-- **Field service management** for engineers
+### Multi-Tenancy
+Complete data isolation per organization with 8 organization types supported.
 
-### Technology Stack
-- **Backend:** Go, PostgreSQL, Redis
-- **Frontend:** Next.js 14, React, TypeScript, Tailwind CSS
-- **Infrastructure:** Docker, Kubernetes (optional)
-- **AI:** OpenAI GPT-4, Claude 3, Whisper (STT)
+### Service Tickets
+Full lifecycle management with WhatsApp integration, AI diagnostics, and engineer assignment.
 
----
+### Equipment Registry
+QR code-based tracking with bulk import support.
 
-## ðŸ“Š Platform Metrics
+### Engineer Management
+All organization types (manufacturers, channel partners, sub-dealers) can manage engineers.
 
-- **Modules:** 8 core modules (Tickets, Equipment, Organizations, Engineers, etc.)
-- **APIs:** 50+ REST endpoints
-- **Database:** 40+ tables
-- **User Types:** 8 organization types supported
-- **Features:** Multi-tenant, AI diagnostics, WhatsApp, Email notifications
+### Partner Network (NEW!)
+Associate channel partners and sub-dealers with manufacturers for expanded service coverage.
+
+**Spec:** [specs/PARTNER-ASSOCIATION-SPECIFICATION.md](specs/PARTNER-ASSOCIATION-SPECIFICATION.md)
 
 ---
 
-## ðŸš€ Quick Start
+## Technology Stack
 
-```bash
-# 1. Clone repository
-git clone <repo-url>
-cd ServQR
-
-# 2. Setup environment
-cp .env.example .env
-# Edit .env with your values
-
-# 3. Start database
-cd dev/compose
-docker-compose up -d postgres
-
-# 4. Run migrations
-psql -h localhost -p 5430 -U postgres -d med_platform -f database/migrations/*.sql
-
-# 5. Start backend
-go run cmd/platform/main.go
-
-# 6. Start frontend (new terminal)
-cd admin-ui
-npm install
-npm run dev
-```
-
-Access application at: http://localhost:3000
+- **Backend:** Go 1.21+, PostgreSQL 15+, Gin Framework
+- **Frontend:** Next.js 14+, TypeScript, React 18, Tailwind CSS
+- **AI/ML:** OpenAI GPT-4, Anthropic Claude, Whisper STT
+- **Integrations:** SendGrid (Email), Twilio (WhatsApp)
 
 ---
 
-## ðŸ“‚ Archives
+## Quick Commands
 
-Historical progress logs, session summaries, and old documentation have been moved to [`archives/`](./archives/) to keep the main docs clean. These are useful for understanding project evolution but not required for current development.
+
+# Start development
+go run cmd/platform/main.go           # Backend
+cd admin-ui && npm run dev             # Frontend
+
+# Run tests
+go test ./...                          # Backend tests
+cd admin-ui && npm test                # Frontend tests
+
+# Build production
+go build -o platform cmd/platform/main.go
+cd admin-ui && npm run build
+
+# Database
+./scripts/run-migrations.sh           # Run migrations
+psql -h localhost -p 5430 -U postgres -d med_platform
+
 
 ---
 
-## ðŸ”„ Documentation Updates
+## Getting Help
 
-**Last Updated:** December 23, 2025  
-**Version:** 2.0  
+- **Technical Issues:** Check the relevant guide in [guides/](guides/)
+- **API Questions:** See [04-API-REFERENCE.md](04-API-REFERENCE.md)
+- **Deployment Issues:** See [05-DEPLOYMENT.md](05-DEPLOYMENT.md)
+
+---
+
+## Contributing to Docs
+
+When updating documentation:
+1. Keep it concise and actionable
+2. Use clear headings and code examples
+3. Update this README if adding major sections
+4. Archive outdated docs to [archived/](archived/)
+
+---
+
+## Recent Updates
+
+**February 2026:**
+- ✅ Documentation cleanup and reorganization
+- ✅ New README with clear structure
+- ✅ Partner Association specification added
+- ✅ Guides moved to docs/guides/
+- ✅ Specs moved to docs/specs/
+- ✅ Archived old status documents
+
+**December 2025:**
+- Engineer management for all org types
+- AI diagnostics with multi-model support
+- WhatsApp integration complete
+
+---
+
+**Last Updated:** February 4, 2026  
+**Platform Version:** 2.0  
 **Status:** Active Development
 
-### Recent Changes
-- Reorganized structure (Dec 2025)
-- Added consolidated documentation files
-- Archived old progress logs
-- Added persona-based documentation
-
 ---
 
-## ðŸ¤ Contributing to Docs
-
-When adding documentation:
-1. Determine the appropriate main document (01-06)
-2. Add content in the relevant section
-3. Update this README if adding new major sections
-4. Use clear headings and examples
-5. Keep it concise and actionable
-
----
-
-## ðŸ“ž Support
-
-- **Technical Issues:** Check troubleshooting sections in respective documents
-- **API Questions:** See [API Reference](./04-API-REFERENCE.md)
-- **Deployment Issues:** See [Deployment Guide](./05-DEPLOYMENT.md)
-
----
-
-**Happy Coding! ðŸš€**
+Happy Coding! 🚀

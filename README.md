@@ -1,286 +1,190 @@
-﻿# ServQRical Equipment Platform
+﻿# ServQR - Medical Equipment Service Management Platform
 
-> **Intelligent Medical Equipment Management & Service Platform**  
-> QR-based equipment tracking | Multi-entity engineer management | Tier-based service routing
-
----
-
-## ðŸŽ¯ Overview
-
-ServQRical Platform is a comprehensive B2B medical equipment lifecycle management system designed for the Indian healthcare ecosystem. It connects **manufacturers**, **Channel Partners**, **Sub-Sub-sub_sub_SUB_DEALERs**, and **hospitals** with intelligent service routing and equipment tracking.
-
-### Key Features
-
-âœ… **QR Code Equipment Registry** - Generate, store, and scan QR codes for equipment tracking  
-âœ… **Service Request Management** - Customer-initiated service requests via QR scan  
-âœ… **Multi-Entity Organizations** - Manufacturers, Channel Partners, Sub-Sub-sub_sub_SUB_DEALERs, Hospitals with complex relationships  
-âœ… **Engineer Management** - 50+ service engineers with skills, certifications, and availability  
-âœ… **Tier-Based Routing** - Intelligent engineer assignment with fallback to client in-house BME teams  
-âœ… **Real-Time Dashboards** - Role-specific views for all stakeholders  
+> **Intelligent Service Management for Medical Equipment**  
+> Multi-tenant | AI-Powered | QR-Based Tracking | Engineer Management
 
 ---
 
-## ðŸ—ï¸ Architecture
+## Overview
 
-### Technology Stack
+**ServQR** is a comprehensive B2B medical equipment lifecycle management platform for the healthcare ecosystem. It connects manufacturers, channel partners, sub-dealers, hospitals, and service engineers through intelligent service routing and equipment tracking.
 
-**Backend:**
-- Go 1.21+
-- PostgreSQL 12+ with PostGIS
-- RESTful APIs
+### Platform Highlights
 
-**Frontend:**
-- Next.js 13+ (App Router)
-- React 18
-- TypeScript
-- Tailwind CSS
-- Shadcn/ui components
-
-### Database Schema
-
-**Organizations Architecture:**
-- 10 core tables for multi-entity management
-- 4 engineer management tables
-- Complex relationship modeling (manufacturer â†’ Channel Partner â†’ Sub-sub_SUB_DEALER)
-- Geographic territory management
-
-**Current Data:**
-- 10 real manufacturers (Siemens, GE, Philips, Medtronic, Abbott, etc.)
-- 20 Channel Partners across India
-- 15 Sub-Sub-sub_sub_SUB_DEALERs in major cities
-- 38 manufacturer-Channel Partner relationships
-- 50+ facilities (manufacturing plants, service centers, warehouses)
-
-[ðŸ“– Full Architecture Documentation](docs/architecture/organizations-architecture.md)
+- **Multi-Tenant Architecture** - Complete data isolation per organization  
+- **QR Code Equipment Registry** - Track equipment with scannable QR codes  
+- **Service Ticket Management** - Complete lifecycle from creation to resolution  
+- **Engineer Management** - All organization types can manage engineers  
+- **AI-Powered Diagnostics** - GPT-4/Claude integration for troubleshooting  
+- **WhatsApp Integration** - Create tickets via text or voice messages  
+- **Parts Catalog** - Track parts, pricing, and inventory  
+- **Partner Network** - Associate channel partners and sub-dealers (NEW!)  
 
 ---
 
-## ðŸš€ Quick Start
+## Technology Stack
+
+**Backend:** Go 1.21+ | PostgreSQL 15+ | Gin Framework  
+**Frontend:** Next.js 14+ | TypeScript | React 18 | Tailwind CSS  
+**Integration:** OpenAI GPT-4 | Anthropic Claude | SendGrid | Twilio
+
+---
+
+## Documentation
+
+### Core Documentation
+- **[Getting Started](docs/01-GETTING-STARTED.md)** - Setup and installation
+- **[Architecture](docs/02-ARCHITECTURE.md)** - System design
+- **[Features](docs/03-FEATURES.md)** - Complete feature catalog
+- **[API Reference](docs/04-API-REFERENCE.md)** - API documentation
+- **[Deployment](docs/05-DEPLOYMENT.md)** - Production deployment
+- **[Testing](docs/05-TESTING.md)** - Testing guide
+
+### How-To Guides
+- **[Engineer Management](docs/guides/engineer-management.md)** - Manage engineers (all org types)
+- **[CSV Imports](docs/guides/csv-imports.md)** - Bulk import data
+- **[QR Code Setup](docs/guides/qr-code-setup.md)** - QR code generation
+- **[External Services](docs/EXTERNAL-SERVICES-SETUP.md)** - Configure integrations
+
+### Feature Specifications
+- **[Partner Association](docs/specs/PARTNER-ASSOCIATION-SPECIFICATION.md)** - Partner network (hybrid approach)
+- **[QR Code Migration](docs/specs/QR-CODE-MIGRATION-PLAN.md)** - QR system architecture
+- **[Organizations Architecture](docs/specs/DETAILED-ORGANIZATIONS-ARCHITECTURE-DESIGN.md)** - Multi-entity design
+
+---
+
+## Quick Start
 
 ### Prerequisites
+- Go 1.21+, Node.js 18+, PostgreSQL 15+, Git
 
-- Go 1.21 or higher
-- Node.js 18+ and npm
-- PostgreSQL 12+
-- Docker (optional, for containerized database)
+### Installation
 
-### 1. Database Setup
+bash
+# 1. Clone and setup
+git clone <repo-url>
+cd aby-med
+cp .env.example .env
 
-```bash
-# Start PostgreSQL with Docker
+# 2. Start database
 docker-compose up -d postgres
 
-# Run migrations
-psql -U postgres -d medplatform -f database/migrations/002_organizations_simple.sql
+# 3. Run migrations
+./scripts/run-migrations.sh
 
-# Load seed data
-psql -U postgres -d medplatform -f database/seed/001_manufacturers.sql
-psql -U postgres -d medplatform -f database/seed/002_channel_partners.sql
-psql -U postgres -d medplatform -f database/seed/003_sub_Sub-Sub-sub_sub_SUB_DEALERs.sql
-```
+# 4. Start backend
+go run cmd/platform/main.go
 
-### 2. Backend Setup
-
-```bash
-# Set environment variables
-export DB_HOST=localhost
-export DB_PORT=5433
-export DB_NAME=medplatform
-export DB_USER=postgres
-export DB_PASSWORD=postgres
-
-# Build and run
-cd cmd/platform
-go run main.go
-```
-
-Backend will start on **http://localhost:8081**
-
-### 3. Frontend Setup
-
-```bash
+# 5. Start frontend (new terminal)
 cd admin-ui
 npm install
 npm run dev
-```
 
-Frontend will start on **http://localhost:3000**
 
----
-
-## ðŸ“Š Current Status
-
-### âœ… Phase 1: Database Foundation (COMPLETE)
-
-- [x] Organizations architecture (10 tables)
-- [x] Engineer management (4 tables)
-- [x] Equipment & service tickets enhancement
-- [x] Seed data: 10 manufacturers, 20 Channel Partners, 15 Sub-Sub-sub_sub_SUB_DEALERs
-- [x] 38 B2B relationships with business terms
-
-[ðŸ“– Phase 1 Details](docs/database/phase1-complete.md)
-
-### ðŸš§ Phase 2: Backend APIs (IN PROGRESS)
-
-- [x] Equipment Registry API (working)
-- [x] QR Generation & Storage (working)
-- [ ] Organizations Module API
-- [ ] Engineer Management API
-- [ ] Service Request Routing API
-
-### ðŸš§ Phase 3: Frontend Development (IN PROGRESS)
-
-- [x] Equipment Registry UI
-- [x] QR Code Generation & Display
-- [x] Service Request Page
-- [ ] Organizations Management UI
-- [ ] Engineer Management UI
-
-### â³ Phase 4: Dashboards (PENDING)
-
-- [ ] Manufacturer Dashboard
-- [ ] Channel Partner Dashboard
-- [ ] Sub-sub_SUB_DEALER Dashboard
-- [ ] Hospital Dashboard
-- [ ] Service Provider Dashboard
-- [ ] Platform Admin Dashboard
-
-[ðŸ“– Implementation Roadmap](docs/architecture/implementation-roadmap.md)
+**Access:** http://localhost:3000 (Frontend) | http://localhost:8081 (API)
 
 ---
 
-## ðŸŽ“ Key Concepts
+## Project Structure
 
-### Multi-Entity Engineer Management
 
-Engineers can belong to different organizations:
-- **Manufacturer Engineers**: OEM-certified, Tier-1 routing
-- **Sub-sub_SUB_DEALER Engineers**: Multi-brand trained, Tier-2 routing
-- **Channel Partner Engineers**: Regional coverage, Tier-3 routing
-- **Service Provider Engineers**: Independent, Tier-4 routing
-- **Hospital BME Engineers**: In-house, Tier-5 fallback
-
-[ðŸ“– Engineer Management Design](docs/architecture/engineer-management.md)
-
-### Tier-Based Service Routing
-
-```
-Service Request
-    â†“
-1. OEM Engineer (if covered)
-    â†“
-2. Authorized Sub-sub_SUB_DEALER Engineer
-    â†“
-3. Channel Partner Service Team
-    â†“
-4. Third-Party Service Provider
-    â†“
-5. Hospital In-House BME (Fallback)
-```
-
-### QR Code System
-
-Each equipment has a unique QR code that encodes:
-```json
-{
-  "url": "http://localhost:3000/service-request?qr=QR-eq-001",
-  "id": "EQ-123456",
-  "serial": "SN-2024-001",
-  "qr": "QR-eq-001"
-}
-```
-
-Scanning triggers service request with auto-filled equipment details.
-
----
-
-## ðŸ“ Project Structure
-
-```
 ServQR/
-â”œâ”€â”€ cmd/
-â”‚   â””â”€â”€ platform/           # Backend main entry point
-â”œâ”€â”€ internal/
-â”‚   â””â”€â”€ core/              # Business logic modules
-â”‚       â”œâ”€â”€ equipment-registry/
-â”‚       â”œâ”€â”€ organizations/
-â”‚       â””â”€â”€ service-ticket/
-â”œâ”€â”€ admin-ui/              # Next.js frontend
-â”‚   â”œâ”€â”€ app/              # Next.js 13 app router
-â”‚   â”œâ”€â”€ components/       # React components
-â”‚   â””â”€â”€ lib/             # Utilities & API clients
-â”œâ”€â”€ database/
-â”‚   â”œâ”€â”€ migrations/      # SQL schema migrations
-â”‚   â””â”€â”€ seed/           # Seed data SQL files
-â”œâ”€â”€ docs/
-â”‚   â”œâ”€â”€ architecture/   # Architecture docs
-â”‚   â””â”€â”€ database/      # Database docs
-â””â”€â”€ dev/
-    â””â”€â”€ compose/       # Docker compose files
-```
+├── cmd/platform/          # Backend entry point
+├── internal/              # Business logic
+│   ├── handlers/         # HTTP handlers
+│   ├── services/         # Business services
+│   └── models/           # Data models
+├── admin-ui/             # Next.js frontend
+│   ├── src/app/         # App router pages
+│   └── src/components/  # React components
+├── database/
+│   ├── migrations/      # SQL migrations
+│   └── seed/           # Seed data
+├── docs/                # Documentation
+│   ├── guides/         # How-to guides
+│   ├── specs/          # Feature specs
+│   └── archived/       # Historical docs
+└── storage/            # File uploads
+
 
 ---
 
-## ðŸ§ª Testing
+## Key Features
 
-### Backend API Testing
+### Completed Features
 
-```bash
-# Test equipment API
+**Multi-Tenancy**
+- 8 organization types (manufacturer, channel_partner, sub_dealer, hospital, etc.)
+- Complete data isolation
+- Role-based access control
+
+**Service Tickets**
+- Full lifecycle management
+- WhatsApp integration (text/voice)
+- AI-powered diagnostics (GPT-4, Claude)
+- Engineer assignment
+- File attachments
+
+**Equipment Registry**
+- QR code generation and tracking
+- Bulk CSV import
+- Maintenance history
+
+**Engineer Management**
+- ALL organization types can manage engineers (manufacturers, channel partners, sub-dealers)
+- Assignment tracking
+- Skills and certifications
+
+**Parts Management**
+- Parts catalog
+- Ticket-parts association
+- Pricing and inventory
+
+**Notifications**
+- Email notifications (SendGrid)
+- Daily summary reports
+
+### In Development
+
+**Partner Network Management** (Specification Complete)
+- Associate channel partners/sub-dealers with manufacturers
+- Hybrid approach: organization-level (default) + equipment-level (override)
+- Categorized engineer display
+- Smart filtering logic
+
+**Spec:** [docs/specs/PARTNER-ASSOCIATION-SPECIFICATION.md](docs/specs/PARTNER-ASSOCIATION-SPECIFICATION.md)
+
+---
+
+## Testing
+
+
+# Backend API
+curl http://localhost:8081/health
 curl http://localhost:8081/api/v1/equipment
 
-# Test QR generation
-curl -X POST http://localhost:8081/api/v1/equipment/EQ-001/qr
+# Frontend
+cd admin-ui
+npm run test
+npm run build
 
-# Test QR retrieval
-curl http://localhost:8081/api/v1/equipment/QR-eq-001/qr-image
-```
+# Database
+psql -h localhost -p 5430 -U postgres -d med_platform
 
-### Database Queries
-
-```sql
--- Check organizations
-SELECT org_type, COUNT(*) FROM organizations GROUP BY org_type;
-
--- Check relationships
-SELECT COUNT(*) FROM org_relationships;
-
--- Check equipment with QR codes
-SELECT id, equipment_name, qr_code_id, 
-       CASE WHEN qr_code_image IS NOT NULL THEN 'Yes' ELSE 'No' END as has_qr
-FROM equipment;
-```
 
 ---
 
-## ðŸ“– Documentation
+## Deployment
 
-- [Organizations Architecture](docs/architecture/organizations-architecture.md) - Complete multi-entity design
-- [Engineer Management](docs/architecture/engineer-management.md) - Tier-based routing system
-- [Implementation Roadmap](docs/architecture/implementation-roadmap.md) - 4-week execution plan
-- [Phase 1 Complete](docs/database/phase1-complete.md) - Database foundation summary
+See **[Deployment Guide](docs/05-DEPLOYMENT.md)** for production deployment instructions.
 
 ---
 
-## ðŸ¤ Contributing
+## License
 
-This is a private project. For access or questions, contact the development team.
-
----
-
-## ðŸ“ License
-
-Proprietary - ServQRical Platform  
-Â© 2024 All Rights Reserved
+Proprietary - ServQR Platform  
+© 2024-2026 All Rights Reserved
 
 ---
 
-## ðŸ”— Quick Links
-
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8081/api/v1
-- **Database**: PostgreSQL on port 5433
-
----
-
-**Built with â¤ï¸ for the Indian Healthcare Ecosystem**
+**Built for Healthcare** 🏥
