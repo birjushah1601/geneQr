@@ -35,7 +35,7 @@ export default function SetPasswordPage() {
 
   const validateToken = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/validate-reset-token?token=${token}`);
+      const response = await fetch(`${API_BASE_URL}/v1/auth/validate-reset-token?token=${token}`);
       
       if (response.ok) {
         const data = await response.json();
@@ -62,7 +62,7 @@ export default function SetPasswordPage() {
     setError('');
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/resend-setup-link`, {
+      const response = await fetch(`${API_BASE_URL}/v1/auth/resend-setup-link`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: userEmail }),
@@ -99,7 +99,7 @@ export default function SetPasswordPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/set-password`, {
+      const response = await fetch(`${API_BASE_URL}/v1/auth/set-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

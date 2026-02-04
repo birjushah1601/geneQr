@@ -74,7 +74,7 @@ export default function AcceptInvitationPage() {
 
   const validateToken = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/invitations/validate/${token}`);
+      const response = await fetch(`${API_BASE_URL}/v1/invitations/validate/${token}`);
       const data = await response.json();
 
       // Check if response has an error (API might return {error: {message: "..."}})
@@ -129,7 +129,7 @@ export default function AcceptInvitationPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/invitations/${token}/accept`, {
+      const response = await fetch(`${API_BASE_URL}/v1/invitations/${token}/accept`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
