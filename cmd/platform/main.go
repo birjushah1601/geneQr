@@ -344,7 +344,7 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 	// Setup common variables for Equipment Registry and Service Ticket modules
 	baseURL := os.Getenv("BASE_URL")
 	if baseURL == "" {
-		baseURL = "https://service.yourcompany.com"
+		baseURL = "https://servqr.com"
 	}
 	qrOutputDir := os.Getenv("QR_OUTPUT_DIR")
 	if qrOutputDir == "" {

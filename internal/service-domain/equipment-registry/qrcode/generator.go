@@ -75,23 +75,12 @@ func (g *Generator) GenerateQRCode(equipmentID, serialNumber, qrCodeID string) (
 func (g *Generator) GenerateQRCodeBytes(equipmentID, serialNumber, qrCodeID string) ([]byte, error) {
 	// Create QR data with service-request URL format
 	// This URL is used to initiate service ticket creation flow
+	// QR code now contains ONLY the URL (not JSON with additional data)
 	url := fmt.Sprintf("%s/service-request?qr=%s", g.baseURL, qrCodeID)
 	
-	qrData := QRData{
-		URL:      url,
-		ID:       equipmentID,
-		SerialNo: serialNumber,
-		QRCode:   qrCodeID,
-	}
-
-	// Encode QR data as JSON
-	jsonData, err := json.Marshal(qrData)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal QR data: %w", err)
-	}
-
 	// Generate QR code as PNG bytes with medium error correction
-	qrBytes, err := qrcode.Encode(string(jsonData), qrcode.Medium, g.qrSize)
+	// Encoding only the URL string (not JSON)
+	qrBytes, err := qrcode.Encode(url, qrcode.Medium, g.qrSize)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate QR code: %w", err)
 	}
