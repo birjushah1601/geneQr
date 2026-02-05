@@ -149,6 +149,22 @@ export default function MultiModelAssignment({ ticketId, onAssignmentComplete, l
   }
 
   const models = data.suggestions_by_model;
+  
+  // Sort models by engineer count (descending) - most engineers first
+  const sortedModelEntries = Object.entries(models).sort((a, b) => {
+    const countA = a[1].count || 0;
+    const countB = b[1].count || 0;
+    return countB - countA; // Descending order
+  });
+  
+  // Set initial active tab to the first non-empty category
+  if (!activeTab || !models[activeTab]) {
+    const firstCategory = sortedModelEntries.find(([_, model]) => model.count > 0);
+    if (firstCategory && activeTab !== firstCategory[0]) {
+      setActiveTab(firstCategory[0]);
+    }
+  }
+  
   const activeModel = models[activeTab];
 
   return (
@@ -181,13 +197,18 @@ export default function MultiModelAssignment({ ticketId, onAssignmentComplete, l
         {/* Left Sidebar - Model Tabs */}
         <div className="col-span-3 border-r bg-gray-50 p-4">
           <div className="space-y-2">
-            {Object.entries(models).map(([key, model]) => (
+            {sortedModelEntries.map(([key, model]) => (
               <button
                 key={key}
                 onClick={() => setActiveTab(key)}
+                disabled={model.count === 0}
                 className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-all ${
                   activeTab === key
-                    ? 'bg-blue-600 text-white shadow-md'
+                    ? key === 'partner_engineers'
+                      ? 'bg-purple-600 text-white shadow-md'
+                      : 'bg-blue-600 text-white shadow-md'
+                    : model.count === 0
+                    ? 'bg-gray-100 border border-gray-200 text-gray-400 cursor-not-allowed opacity-50'
                     : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
                 }`}
               >
@@ -195,7 +216,11 @@ export default function MultiModelAssignment({ ticketId, onAssignmentComplete, l
                 <span className="flex-1 text-left">{model.model_name}</span>
                 <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
                   activeTab === key
-                    ? 'bg-white/20 text-white'
+                    ? key === 'partner_engineers'
+                      ? 'bg-purple-700 text-white'
+                      : 'bg-white/20 text-white'
+                    : model.count === 0
+                    ? 'bg-gray-200 text-gray-500'
                     : 'bg-gray-100 text-gray-700'
                 }`}>
                   {model.count}
