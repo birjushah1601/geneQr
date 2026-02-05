@@ -202,7 +202,7 @@ export default function EngineerSelectionModal({
     
     if (category.includes('Channel Partner') || orgType === 'channel_partner') {
       return (
-        <Badge className="bg-orange-100 text-orange-800 border-orange-300">
+        <Badge className="bg-orange-600 text-white border-orange-700">
           <Truck className="h-3 w-3 mr-1" />
           {category.replace('Channel Partner - ', 'Partner: ')}
         </Badge>
@@ -211,9 +211,18 @@ export default function EngineerSelectionModal({
     
     if (category.includes('Sub-Dealer') || orgType === 'sub_dealer') {
       return (
-        <Badge className="bg-purple-100 text-purple-800 border-purple-300">
+        <Badge className="bg-purple-700 text-white border-purple-800">
           <UsersIcon className="h-3 w-3 mr-1" />
           {category.replace('Sub-Dealer - ', 'Dealer: ')}
+        </Badge>
+      );
+    }
+    
+    if (category.includes('Partner')) {
+      return (
+        <Badge className="bg-orange-600 text-white border-orange-700">
+          <Truck className="h-3 w-3 mr-1" />
+          Partner
         </Badge>
       );
     }

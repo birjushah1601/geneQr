@@ -21,7 +21,34 @@ export default function MultiModelAssignment({ ticketId, onAssignmentComplete, l
   // Fetch assignment suggestions
   const { data, isLoading, error } = useQuery({
     queryKey: ["assignment-suggestions", ticketId],
-    queryFn: () => ticketsApi.getAssignmentSuggestions(ticketId),
+    queryFn: async () => {
+      const suggestions = await ticketsApi.getAssignmentSuggestions(ticketId);
+      
+      // Add partner engineers as a separate category
+      if (suggestions && suggestions.suggestions_by_model) {
+        const allEngineers = Object.values(suggestions.suggestions_by_model).flatMap(
+          (model: any) => model.engineers || []
+        );
+        
+        // Filter partner engineers (those not from the main organization)
+        const mainOrgId = suggestions.equipment?.manufacturer_org_id;
+        const partnerEngineers = allEngineers.filter(
+          (eng: any) => eng.organization_id !== mainOrgId
+        );
+        
+        // Add partner engineers category if there are any
+        if (partnerEngineers.length > 0) {
+          suggestions.suggestions_by_model.partner_engineers = {
+            name: "Partner Engineers",
+            description: "Engineers from partner organizations",
+            engineers: partnerEngineers,
+            weight: 1.0
+          };
+        }
+      }
+      
+      return suggestions;
+    },
     staleTime: 30_000,
   });
 
@@ -81,6 +108,7 @@ export default function MultiModelAssignment({ ticketId, onAssignmentComplete, l
       case "low_workload": return <TrendingDown className="h-4 w-4" />;
       case "high_seniority": return <UserCheck className="h-4 w-4" />;
       case "skills_match": return <Users className="h-4 w-4" />;
+      case "partner_engineers": return <Users className="h-4 w-4" />;
       default: return null;
     }
   };
