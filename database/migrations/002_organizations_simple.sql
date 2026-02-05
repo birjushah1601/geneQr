@@ -302,12 +302,12 @@ CREATE INDEX IF NOT EXISTS idx_ticket_engineer ON service_tickets(assigned_engin
 -- 12. Enhance equipment table
 ALTER TABLE equipment
 ADD COLUMN IF NOT EXISTS manufacturer_org_id UUID REFERENCES organizations(id),
-ADD COLUMN IF NOT EXISTS sold_by_sub_sub_Sub-sub_SUB_DEALER_id UUID REFERENCES organizations(id),
+ADD COLUMN IF NOT EXISTS sold_by_sub_dealer_id UUID REFERENCES organizations(id),
 ADD COLUMN IF NOT EXISTS owned_by_org_id UUID REFERENCES organizations(id),
 ADD COLUMN IF NOT EXISTS installed_facility_id UUID REFERENCES organization_facilities(id);
 
 CREATE INDEX IF NOT EXISTS idx_equipment_manufacturer ON equipment(manufacturer_org_id);
-CREATE INDEX IF NOT EXISTS idx_equipment_sub_Sub-sub_SUB_DEALER ON equipment(sold_by_sub_sub_Sub-sub_SUB_DEALER_id);
+CREATE INDEX IF NOT EXISTS idx_equipment_sub_dealer ON equipment(sold_by_sub_dealer_id);
 CREATE INDEX IF NOT EXISTS idx_equipment_owner ON equipment(owned_by_org_id);
 CREATE INDEX IF NOT EXISTS idx_equipment_facility ON equipment(installed_facility_id);
 
