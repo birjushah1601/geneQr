@@ -33,6 +33,7 @@ function StatusBadge({ status }: { status: TicketStatus }) {
 
 export default function TicketDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const { session } = useAuth();
   const [showDiagnosisModal, setShowDiagnosisModal] = useState(false);
   const [showReassignMultiModel, setShowReassignMultiModel] = useState(false);
   const [showEngineerSelection, setShowEngineerSelection] = useState(false);
