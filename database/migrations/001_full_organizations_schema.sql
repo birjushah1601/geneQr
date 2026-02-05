@@ -146,6 +146,20 @@ CREATE INDEX IF NOT EXISTS idx_facility_location ON organization_facilities USIN
 -- 3. ORGANIZATION RELATIONSHIPS (Enhanced)
 -- ============================================================================
 
+-- Create org_relationships table first
+CREATE TABLE IF NOT EXISTS org_relationships (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  parent_org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  child_org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  rel_type TEXT NOT NULL,
+  metadata JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_rel_parent ON org_relationships(parent_org_id);
+CREATE INDEX IF NOT EXISTS idx_rel_child ON org_relationships(child_org_id);
+CREATE INDEX IF NOT EXISTS idx_rel_type ON org_relationships(rel_type);
+
 -- Enhance existing org_relationships table
 ALTER TABLE org_relationships
 ADD COLUMN IF NOT EXISTS relationship_status TEXT DEFAULT 'active',
@@ -551,8 +565,25 @@ CREATE INDEX IF NOT EXISTS idx_assignment_status ON engineer_assignments(status)
 CREATE INDEX IF NOT EXISTS idx_assignment_date ON engineer_assignments(assigned_at);
 
 -- ============================================================================
--- 11. ENHANCE EXISTING SERVICE_TICKETS TABLE
+-- 11. SERVICE TICKETS TABLE
 -- ============================================================================
+
+-- Create service_tickets table first
+CREATE TABLE IF NOT EXISTS service_tickets (
+    id VARCHAR(255) PRIMARY KEY,
+    tenant_id VARCHAR(255) NOT NULL,
+    title VARCHAR(500) NOT NULL,
+    description TEXT,
+    priority VARCHAR(50) DEFAULT 'medium',
+    status VARCHAR(50) DEFAULT 'open',
+    organization_id UUID REFERENCES organizations(id),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_tickets_status ON service_tickets(status);
+CREATE INDEX IF NOT EXISTS idx_tickets_priority ON service_tickets(priority);
+CREATE INDEX IF NOT EXISTS idx_tickets_organization ON service_tickets(organization_id);
 
 -- Add engineer assignment fields
 ALTER TABLE service_tickets 
@@ -563,8 +594,24 @@ ADD COLUMN IF NOT EXISTS assignment_tier_name TEXT;
 CREATE INDEX IF NOT EXISTS idx_ticket_engineer ON service_tickets(assigned_engineer_id);
 
 -- ============================================================================
--- 12. ENHANCE EXISTING EQUIPMENT TABLE
+-- 12. EQUIPMENT TABLE
 -- ============================================================================
+
+-- Create equipment table first
+CREATE TABLE IF NOT EXISTS equipment (
+    id VARCHAR(255) PRIMARY KEY,
+    tenant_id VARCHAR(255) NOT NULL,
+    name VARCHAR(500) NOT NULL,
+    serial_number VARCHAR(200),
+    model VARCHAR(200),
+    manufacturer VARCHAR(200),
+    status VARCHAR(50) DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_equipment_status ON equipment(status);
+CREATE INDEX IF NOT EXISTS idx_equipment_serial ON equipment(serial_number);
 
 -- Link equipment to organizations
 ALTER TABLE equipment
