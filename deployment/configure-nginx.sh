@@ -86,13 +86,13 @@ server {
     # Max upload size
     client_max_body_size 50M;
     
-    # Backend API
+    # Backend API (proxy to backend without modifying path)
     location /api/ {
         # Rate limiting
         limit_req zone=api_limit burst=20 nodelay;
         
-        # Proxy settings
-        proxy_pass http://servqr_backend/api/;
+        # Proxy settings (pass full path including /api/)
+        proxy_pass http://servqr_backend;
         proxy_http_version 1.1;
         
         # Headers
