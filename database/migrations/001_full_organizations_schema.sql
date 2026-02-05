@@ -400,6 +400,47 @@ CREATE INDEX IF NOT EXISTS idx_eng_facility ON engineers(primary_facility_id);
 CREATE INDEX IF NOT EXISTS idx_eng_mobile ON engineers(mobile_engineer);
 
 -- ============================================================================
+-- 7B. SERVICE TICKETS TABLE (Must be created before engineer_assignments)
+-- ============================================================================
+
+-- Create service_tickets table first
+CREATE TABLE IF NOT EXISTS service_tickets (
+    id VARCHAR(255) PRIMARY KEY,
+    tenant_id VARCHAR(255) NOT NULL,
+    title VARCHAR(500) NOT NULL,
+    description TEXT,
+    priority VARCHAR(50) DEFAULT 'medium',
+    status VARCHAR(50) DEFAULT 'open',
+    organization_id UUID REFERENCES organizations(id),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_tickets_status ON service_tickets(status);
+CREATE INDEX IF NOT EXISTS idx_tickets_priority ON service_tickets(priority);
+CREATE INDEX IF NOT EXISTS idx_tickets_organization ON service_tickets(organization_id);
+
+-- ============================================================================
+-- 7C. EQUIPMENT TABLE (Must be created before engineer_assignments)
+-- ============================================================================
+
+-- Create equipment table first
+CREATE TABLE IF NOT EXISTS equipment (
+    id VARCHAR(255) PRIMARY KEY,
+    tenant_id VARCHAR(255) NOT NULL,
+    name VARCHAR(500) NOT NULL,
+    serial_number VARCHAR(200),
+    model VARCHAR(200),
+    manufacturer VARCHAR(200),
+    status VARCHAR(50) DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_equipment_status ON equipment(status);
+CREATE INDEX IF NOT EXISTS idx_equipment_serial ON equipment(serial_number);
+
+-- ============================================================================
 -- 8. ENGINEER SKILLS & CERTIFICATIONS
 -- ============================================================================
 
@@ -565,25 +606,8 @@ CREATE INDEX IF NOT EXISTS idx_assignment_status ON engineer_assignments(status)
 CREATE INDEX IF NOT EXISTS idx_assignment_date ON engineer_assignments(assigned_at);
 
 -- ============================================================================
--- 11. SERVICE TICKETS TABLE
+-- 11. ENHANCE SERVICE_TICKETS TABLE (table created in section 7B)
 -- ============================================================================
-
--- Create service_tickets table first
-CREATE TABLE IF NOT EXISTS service_tickets (
-    id VARCHAR(255) PRIMARY KEY,
-    tenant_id VARCHAR(255) NOT NULL,
-    title VARCHAR(500) NOT NULL,
-    description TEXT,
-    priority VARCHAR(50) DEFAULT 'medium',
-    status VARCHAR(50) DEFAULT 'open',
-    organization_id UUID REFERENCES organizations(id),
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_tickets_status ON service_tickets(status);
-CREATE INDEX IF NOT EXISTS idx_tickets_priority ON service_tickets(priority);
-CREATE INDEX IF NOT EXISTS idx_tickets_organization ON service_tickets(organization_id);
 
 -- Add engineer assignment fields
 ALTER TABLE service_tickets 
@@ -594,24 +618,8 @@ ADD COLUMN IF NOT EXISTS assignment_tier_name TEXT;
 CREATE INDEX IF NOT EXISTS idx_ticket_engineer ON service_tickets(assigned_engineer_id);
 
 -- ============================================================================
--- 12. EQUIPMENT TABLE
+-- 12. ENHANCE EQUIPMENT TABLE (table created in section 7C)
 -- ============================================================================
-
--- Create equipment table first
-CREATE TABLE IF NOT EXISTS equipment (
-    id VARCHAR(255) PRIMARY KEY,
-    tenant_id VARCHAR(255) NOT NULL,
-    name VARCHAR(500) NOT NULL,
-    serial_number VARCHAR(200),
-    model VARCHAR(200),
-    manufacturer VARCHAR(200),
-    status VARCHAR(50) DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_equipment_status ON equipment(status);
-CREATE INDEX IF NOT EXISTS idx_equipment_serial ON equipment(serial_number);
 
 -- Link equipment to organizations
 ALTER TABLE equipment
