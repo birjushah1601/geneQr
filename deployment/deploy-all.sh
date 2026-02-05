@@ -28,6 +28,10 @@ NC='\033[0m' # No Color
 # Configuration
 INSTALL_DIR="/opt/servqr"
 DEPLOYMENT_DIR="${INSTALL_DIR}/deployment"
+
+# Create logs directory first (before using LOG_FILE)
+mkdir -p "${INSTALL_DIR}/logs"
+
 LOG_FILE="${INSTALL_DIR}/logs/deployment-$(date +%Y%m%d-%H%M%S).log"
 
 # Optional: Set your domain and email for SSL
