@@ -670,7 +670,7 @@ SELECT
   e.phone AS engineer_phone,
   st.title AS ticket_title,
   st.priority AS ticket_priority,
-  eq.equipment_name,
+  eq.name AS equipment_name,
   eq.model AS equipment_model,
   o.name AS customer_org_name
 FROM engineer_assignments ea
