@@ -407,6 +407,7 @@ CREATE INDEX IF NOT EXISTS idx_eng_mobile ON engineers(mobile_engineer);
 CREATE TABLE IF NOT EXISTS service_tickets (
     id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uuid()::text,
     tenant_id VARCHAR(255) NOT NULL,
+    equipment_id VARCHAR(255),
     title VARCHAR(500) NOT NULL,
     description TEXT,
     priority VARCHAR(50) DEFAULT 'medium',
@@ -419,6 +420,7 @@ CREATE TABLE IF NOT EXISTS service_tickets (
 CREATE INDEX IF NOT EXISTS idx_tickets_status ON service_tickets(status);
 CREATE INDEX IF NOT EXISTS idx_tickets_priority ON service_tickets(priority);
 CREATE INDEX IF NOT EXISTS idx_tickets_organization ON service_tickets(organization_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_equipment ON service_tickets(equipment_id);
 
 -- ============================================================================
 -- 7C. EQUIPMENT TABLE (Must be created before engineer_assignments)
@@ -632,6 +634,19 @@ CREATE INDEX IF NOT EXISTS idx_equipment_manufacturer ON equipment(manufacturer_
 CREATE INDEX IF NOT EXISTS idx_equipment_sub_dealer ON equipment(sold_by_sub_dealer_id);
 CREATE INDEX IF NOT EXISTS idx_equipment_owner ON equipment(owned_by_org_id);
 CREATE INDEX IF NOT EXISTS idx_equipment_facility ON equipment(installed_facility_id);
+
+-- Add foreign key from service_tickets to equipment (now that equipment table exists)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'service_tickets_equipment_id_fkey'
+    ) THEN
+        ALTER TABLE service_tickets 
+        ADD CONSTRAINT service_tickets_equipment_id_fkey 
+        FOREIGN KEY (equipment_id) REFERENCES equipment(id);
+    END IF;
+END $$;
 
 -- ============================================================================
 -- 13. CREATE VIEWS FOR COMMON QUERIES
