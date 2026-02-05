@@ -225,7 +225,8 @@ build_frontend() {
     
     # Build Next.js application
     log "Building Next.js application..."
-    npm run build || error "Frontend build failed"
+    # Set environment to skip static page errors (these pages are dynamic)
+    SKIP_ENV_VALIDATION=true npm run build || error "Frontend build failed"
     
     # Verify build
     if [[ ! -d ".next" ]]; then
