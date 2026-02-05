@@ -76,9 +76,13 @@ ENABLE_EQUIPMENT=true
 
 2. **Apply Database Migrations**:
 ```bash
-psql -U postgres -d medplatform -f database/migrations/028_create_qr_tables.sql
-psql -U postgres -d medplatform -f database/migrations/029_extend_equipment_registry.sql
-psql -U postgres -d medplatform -f database/migrations/030_migrate_existing_qr_codes.sql
+# Apply equipment FK migrations (Feb 2026)
+psql -U postgres -d medplatform -f migrations/fix-equipment-fk-01-maintenance.sql
+psql -U postgres -d medplatform -f migrations/fix-equipment-fk-02-downtime.sql
+psql -U postgres -d medplatform -f migrations/fix-equipment-fk-03-usage-logs.sql
+psql -U postgres -d medplatform -f migrations/fix-equipment-fk-04-service-config.sql
+psql -U postgres -d medplatform -f migrations/fix-equipment-fk-05-documents.sql
+psql -U postgres -d medplatform -f migrations/fix-equipment-fk-06-attachments.sql
 ```
 
 3. **Start Backend**:

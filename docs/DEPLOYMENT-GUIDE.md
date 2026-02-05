@@ -23,10 +23,13 @@ docker-compose up -d postgres
 # Navigate to project root
 cd /path/to/ServQR
 
-# Apply QR code migrations
-psql -h localhost -p 5430 -U postgres -d med_platform -f database/migrations/028_create_qr_tables.sql
-psql -h localhost -p 5430 -U postgres -d med_platform -f database/migrations/029_extend_equipment_registry.sql
-psql -h localhost -p 5430 -U postgres -d med_platform -f database/migrations/030_migrate_existing_qr_codes.sql
+# Apply equipment FK migrations (Feb 2026)
+psql -h localhost -p 5430 -U postgres -d med_platform -f migrations/fix-equipment-fk-01-maintenance.sql
+psql -h localhost -p 5430 -U postgres -d med_platform -f migrations/fix-equipment-fk-02-downtime.sql
+psql -h localhost -p 5430 -U postgres -d med_platform -f migrations/fix-equipment-fk-03-usage-logs.sql
+psql -h localhost -p 5430 -U postgres -d med_platform -f migrations/fix-equipment-fk-04-service-config.sql
+psql -h localhost -p 5430 -U postgres -d med_platform -f migrations/fix-equipment-fk-05-documents.sql
+psql -h localhost -p 5430 -U postgres -d med_platform -f migrations/fix-equipment-fk-06-attachments.sql
 
 # Verify migrations
 psql -h localhost -p 5430 -U postgres -d med_platform -c "\dt qr_*"
