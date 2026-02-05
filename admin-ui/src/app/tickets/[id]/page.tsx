@@ -204,6 +204,7 @@ export default function TicketDetailPage() {
 
   const [engineerName, setEngineerName] = useState("");
   const [isPartsModalOpen, setIsPartsModalOpen] = useState(false);
+  const [engineerFilter, setEngineerFilter] = useState<'all' | 'own' | 'partners'>('all');
 
   // Fetch engineers list for dropdown (including partner engineers)
   const { data: engineersData } = useQuery({
@@ -211,7 +212,18 @@ export default function TicketDetailPage() {
     queryFn: () => apiClient.get("/v1/engineers?limit=100&include_partners=true"),
     staleTime: 60_000,
   });
-  const engineers = (engineersData as any)?.data?.items || [];
+  const allEngineers = (engineersData as any)?.data?.engineers || [];
+  
+  // Get current user's organization for filtering
+  const userOrgId = (session as any)?.user?.organization_id;
+  
+  // Filter engineers based on selection
+  const engineers = allEngineers.filter((eng: any) => {
+    if (engineerFilter === 'all') return true;
+    if (engineerFilter === 'own') return eng.organization_id === userOrgId;
+    if (engineerFilter === 'partners') return eng.organization_id !== userOrgId;
+    return true;
+  });
 
   // Handle parts assignment
   const handlePartsAssign = async (assignedParts: any[]) => {
