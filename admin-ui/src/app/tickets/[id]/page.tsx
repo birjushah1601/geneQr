@@ -17,6 +17,7 @@ import EngineerSelectionModal from "@/components/EngineerSelectionModal";
 import AssignmentHistory from "@/components/AssignmentHistory";
 import DashboardLayout from "@/components/DashboardLayout";
 import { SendNotificationModal } from "@/components/SendNotificationModal";
+import { useAuth } from "@/contexts/AuthContext";
 
 function StatusBadge({ status }: { status: TicketStatus }) {
   const color = {
