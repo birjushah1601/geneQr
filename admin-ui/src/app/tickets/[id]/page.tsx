@@ -691,7 +691,7 @@ export default function TicketDetailPage() {
                               )}
                             </div>
                             <div className="text-gray-500 mt-1">
-                              {(a.fileSize/1024).toFixed(1)} KB â€¢ {new Date(a.uploadDate).toLocaleString()}
+                              {(a.fileSize/1024).toFixed(1)} KB • {new Date(a.uploadDate).toLocaleString()}
                             </div>
                             {(isImage || isVideo) && (
                               <div className="mt-2 text-xs text-purple-600">
