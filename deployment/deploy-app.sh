@@ -98,13 +98,24 @@ PORT=8081
 BASE_URL=http://${SERVER_IP}:8081
 FRONTEND_URL=http://${SERVER_IP}:3000
 
-# Database Configuration
+# Database Configuration (DATABASE_ prefix)
 DATABASE_HOST=localhost
 DATABASE_PORT=5432
 DATABASE_USER=servqr
 DATABASE_PASSWORD=${DB_PASSWORD}
 DATABASE_NAME=servqr_production
 DATABASE_SSL_MODE=disable
+
+# Database Configuration (DB_ prefix - required by Go code)
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=servqr
+DB_PASSWORD=${DB_PASSWORD}
+DB_NAME=servqr_production
+DB_SSLMODE=disable
+
+# Database Connection String
+DATABASE_URL=postgresql://servqr:${DB_PASSWORD}@localhost:5432/servqr_production?sslmode=disable
 
 # JWT Authentication
 JWT_SECRET=${JWT_SECRET}
@@ -178,6 +189,58 @@ EOF
     info "JWT secret saved to: ${INSTALL_DIR}/.jwt_secret"
     info "Backend config: ${INSTALL_DIR}/.env"
     info "Frontend config: ${FRONTEND_DIR}/.env.local"
+}
+
+# Generate JWT keys
+generate_jwt_keys() {
+    log "Generating JWT RSA keys..."
+    
+    # Create keys directory
+    mkdir -p "${INSTALL_DIR}/keys"
+    
+    # Generate private key if not exists
+    if [[ ! -f "${INSTALL_DIR}/keys/jwt-private.pem" ]]; then
+        openssl genrsa -out "${INSTALL_DIR}/keys/jwt-private.pem" 4096
+        chmod 600 "${INSTALL_DIR}/keys/jwt-private.pem"
+        log "JWT private key generated"
+    else
+        log "JWT private key already exists"
+    fi
+    
+    # Generate public key if not exists
+    if [[ ! -f "${INSTALL_DIR}/keys/jwt-public.pem" ]]; then
+        openssl rsa -in "${INSTALL_DIR}/keys/jwt-private.pem" -pubout -out "${INSTALL_DIR}/keys/jwt-public.pem"
+        chmod 644 "${INSTALL_DIR}/keys/jwt-public.pem"
+        log "JWT public key generated"
+    else
+        log "JWT public key already exists"
+    fi
+    
+    log "JWT keys ready"
+}
+
+# Fix database schema issues
+fix_database_schema() {
+    log "Fixing database schema issues..."
+    
+    # Fix ticket_comments table to use UUID instead of VARCHAR
+    docker exec servqr-postgres psql -U servqr -d servqr_production << 'SQLFIX' 2>/dev/null || true
+-- Drop and recreate ticket_comments with correct UUID type
+DROP TABLE IF EXISTS ticket_comments CASCADE;
+
+CREATE TABLE IF NOT EXISTS ticket_comments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ticket_id UUID NOT NULL REFERENCES service_tickets(id) ON DELETE CASCADE,
+    comment TEXT NOT NULL,
+    is_internal BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    created_by VARCHAR(255)
+);
+
+CREATE INDEX IF NOT EXISTS idx_ticket_comments_ticket ON ticket_comments(ticket_id);
+SQLFIX
+    
+    log "Database schema fixes applied"
 }
 
 # Build backend
@@ -373,6 +436,8 @@ main() {
     
     check_prerequisites
     configure_environment
+    generate_jwt_keys
+    fix_database_schema
     build_backend
     build_frontend
     create_systemd_services

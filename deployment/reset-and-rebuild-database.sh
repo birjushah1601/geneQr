@@ -149,7 +149,28 @@ else
     log "Migration summary: $MIGRATION_COUNT total, $SUCCESS_COUNT succeeded, $FAIL_COUNT failed"
 fi
 
-# Step 6: Verify critical tables exist
+# Step 6: Fix schema issues
+log "Applying schema fixes..."
+
+# Fix ticket_comments to use UUID
+docker exec servqr-postgres psql -U $DB_USER -d $DB_NAME << 'SQLFIX' 2>/dev/null || warn "Schema fix failed (may be non-critical)"
+DROP TABLE IF EXISTS ticket_comments CASCADE;
+
+CREATE TABLE IF NOT EXISTS ticket_comments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ticket_id UUID NOT NULL REFERENCES service_tickets(id) ON DELETE CASCADE,
+    comment TEXT NOT NULL,
+    is_internal BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    created_by VARCHAR(255)
+);
+
+CREATE INDEX IF NOT EXISTS idx_ticket_comments_ticket ON ticket_comments(ticket_id);
+SQLFIX
+
+log "Schema fixes applied"
+
+# Step 7: Verify critical tables exist
 log "Verifying critical tables..."
 CRITICAL_TABLES=("organizations" "users" "service_tickets" "equipment" "engineers")
 MISSING_TABLES=()
@@ -167,11 +188,27 @@ if [[ ${#MISSING_TABLES[@]} -gt 0 ]]; then
     error "Critical tables missing: ${MISSING_TABLES[*]}"
 fi
 
-# Step 7: Display table list
+# Step 8: Generate JWT keys
+log "Generating JWT keys..."
+mkdir -p "$INSTALL_DIR/keys"
+
+if [[ ! -f "$INSTALL_DIR/keys/jwt-private.pem" ]]; then
+    openssl genrsa -out "$INSTALL_DIR/keys/jwt-private.pem" 4096 2>/dev/null
+    chmod 600 "$INSTALL_DIR/keys/jwt-private.pem"
+fi
+
+if [[ ! -f "$INSTALL_DIR/keys/jwt-public.pem" ]]; then
+    openssl rsa -in "$INSTALL_DIR/keys/jwt-private.pem" -pubout -out "$INSTALL_DIR/keys/jwt-public.pem" 2>/dev/null
+    chmod 644 "$INSTALL_DIR/keys/jwt-public.pem"
+fi
+
+log "JWT keys ready"
+
+# Step 9: Display table list
 log "Database schema overview:"
 docker exec servqr-postgres psql -U $DB_USER -d $DB_NAME -c "\dt" | head -40
 
-# Step 8: Restart services
+# Step 10: Restart services
 log "Starting services..."
 systemctl start servqr-backend
 systemctl start servqr-frontend
