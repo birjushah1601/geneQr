@@ -198,7 +198,7 @@ build_backend() {
     log "Compiling Go binary..."
     go build -o platform \
         -ldflags="-s -w -X main.Version=1.0.0 -X main.BuildTime=$(date -u +%Y%m%d.%H%M%S)" \
-        ./cmd/platform/main.go || error "Backend build failed"
+        ./cmd/platform/ || error "Backend build failed"
     
     # Make executable
     chmod +x platform
