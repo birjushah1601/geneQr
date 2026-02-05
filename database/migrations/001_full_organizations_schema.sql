@@ -403,9 +403,9 @@ CREATE INDEX IF NOT EXISTS idx_eng_mobile ON engineers(mobile_engineer);
 -- 7B. SERVICE TICKETS TABLE (Must be created before engineer_assignments)
 -- ============================================================================
 
--- Create service_tickets table first (using UUID to match foreign key references)
+-- Create service_tickets table first (using VARCHAR to match Go code expectations)
 CREATE TABLE IF NOT EXISTS service_tickets (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uuid()::text,
     tenant_id VARCHAR(255) NOT NULL,
     title VARCHAR(500) NOT NULL,
     description TEXT,
@@ -424,9 +424,9 @@ CREATE INDEX IF NOT EXISTS idx_tickets_organization ON service_tickets(organizat
 -- 7C. EQUIPMENT TABLE (Must be created before engineer_assignments)
 -- ============================================================================
 
--- Create equipment table first (using UUID to match foreign key references)
+-- Create equipment table first (using VARCHAR to match Go code expectations)
 CREATE TABLE IF NOT EXISTS equipment (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uuid()::text,
     tenant_id VARCHAR(255) NOT NULL,
     name VARCHAR(500) NOT NULL,
     serial_number VARCHAR(200),
@@ -548,8 +548,8 @@ CREATE TABLE IF NOT EXISTS engineer_assignments (
   
   -- Assignment
   engineer_id UUID NOT NULL REFERENCES engineers(id),
-  ticket_id UUID NOT NULL REFERENCES service_tickets(id),
-  equipment_id UUID NOT NULL REFERENCES equipment(id),
+  ticket_id VARCHAR(255) NOT NULL REFERENCES service_tickets(id),
+  equipment_id VARCHAR(255) NOT NULL REFERENCES equipment(id),
   
   -- Assignment Details
   assigned_by UUID,

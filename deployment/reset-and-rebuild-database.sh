@@ -189,16 +189,16 @@ if [[ ${#MISSING_TABLES[@]} -gt 0 ]]; then
 fi
 
 # Step 8: Generate JWT keys
-log "Generating JWT keys..."
+log "Generating JWT keys (PKCS#8 format)..."
 mkdir -p "$INSTALL_DIR/keys"
 
 if [[ ! -f "$INSTALL_DIR/keys/jwt-private.pem" ]]; then
-    openssl genrsa -out "$INSTALL_DIR/keys/jwt-private.pem" 4096 2>/dev/null
+    openssl genpkey -algorithm RSA -out "$INSTALL_DIR/keys/jwt-private.pem" -pkeyopt rsa_keygen_bits:4096 2>/dev/null
     chmod 600 "$INSTALL_DIR/keys/jwt-private.pem"
 fi
 
 if [[ ! -f "$INSTALL_DIR/keys/jwt-public.pem" ]]; then
-    openssl rsa -in "$INSTALL_DIR/keys/jwt-private.pem" -pubout -out "$INSTALL_DIR/keys/jwt-public.pem" 2>/dev/null
+    openssl rsa -pubout -in "$INSTALL_DIR/keys/jwt-private.pem" -out "$INSTALL_DIR/keys/jwt-public.pem" 2>/dev/null
     chmod 644 "$INSTALL_DIR/keys/jwt-public.pem"
 fi
 

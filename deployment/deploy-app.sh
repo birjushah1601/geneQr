@@ -193,23 +193,23 @@ EOF
 
 # Generate JWT keys
 generate_jwt_keys() {
-    log "Generating JWT RSA keys..."
+    log "Generating JWT RSA keys (PKCS#8 format)..."
     
     # Create keys directory
     mkdir -p "${INSTALL_DIR}/keys"
     
-    # Generate private key if not exists
+    # Generate private key if not exists (PKCS#8 format required by Go)
     if [[ ! -f "${INSTALL_DIR}/keys/jwt-private.pem" ]]; then
-        openssl genrsa -out "${INSTALL_DIR}/keys/jwt-private.pem" 4096
+        openssl genpkey -algorithm RSA -out "${INSTALL_DIR}/keys/jwt-private.pem" -pkeyopt rsa_keygen_bits:4096
         chmod 600 "${INSTALL_DIR}/keys/jwt-private.pem"
-        log "JWT private key generated"
+        log "JWT private key generated (PKCS#8)"
     else
         log "JWT private key already exists"
     fi
     
     # Generate public key if not exists
     if [[ ! -f "${INSTALL_DIR}/keys/jwt-public.pem" ]]; then
-        openssl rsa -in "${INSTALL_DIR}/keys/jwt-private.pem" -pubout -out "${INSTALL_DIR}/keys/jwt-public.pem"
+        openssl rsa -pubout -in "${INSTALL_DIR}/keys/jwt-private.pem" -out "${INSTALL_DIR}/keys/jwt-public.pem"
         chmod 644 "${INSTALL_DIR}/keys/jwt-public.pem"
         log "JWT public key generated"
     else
