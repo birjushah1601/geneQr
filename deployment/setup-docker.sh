@@ -193,15 +193,25 @@ start_postgres() {
 initialize_database() {
     log "Initializing database schema..."
     
-    # Check if migrations directory exists
-    MIGRATIONS_DIR="${INSTALL_DIR}/migrations"
+    # Check if base init schema exists - RUN THIS FIRST
+    if [[ -f "${INSTALL_DIR}/init-database-schema.sql" ]]; then
+        log "Running base schema: init-database-schema.sql"
+        docker exec -i servqr-postgres psql -U servqr -d servqr_production < "${INSTALL_DIR}/init-database-schema.sql" || warn "Base schema failed"
+    elif [[ -f "${INSTALL_DIR}/database/migrations/001_full_organizations_schema.sql" ]]; then
+        log "Running base schema: 001_full_organizations_schema.sql"
+        docker exec -i servqr-postgres psql -U servqr -d servqr_production < "${INSTALL_DIR}/database/migrations/001_full_organizations_schema.sql" || warn "Base schema failed"
+    else
+        warn "Base schema not found. Database may not work correctly."
+    fi
+    
+    # Now check for additional migrations directory
+    MIGRATIONS_DIR="${INSTALL_DIR}/database/migrations"
     if [[ ! -d "$MIGRATIONS_DIR" ]]; then
-        MIGRATIONS_DIR="${INSTALL_DIR}/database/migrations"
+        MIGRATIONS_DIR="${INSTALL_DIR}/migrations"
     fi
     
     if [[ ! -d "$MIGRATIONS_DIR" ]]; then
-        warn "Migrations directory not found. Skipping database initialization."
-        warn "You'll need to run migrations manually later."
+        warn "Migrations directory not found. Skipping additional migrations."
         return 0
     fi
     

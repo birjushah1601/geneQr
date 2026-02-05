@@ -220,7 +220,8 @@ build_frontend() {
     
     # Install dependencies
     log "Installing npm dependencies..."
-    npm ci --production=false || error "npm install failed"
+    # Use npm install instead of npm ci (ci requires package-lock.json)
+    npm install || error "npm install failed"
     
     # Build Next.js application
     log "Building Next.js application..."
