@@ -42,6 +42,7 @@ export default function MultiModelAssignment({ ticketId, onAssignmentComplete, l
       await ticketsApi.assignEngineerToTicket(ticketId, {
         ticket_id: ticketId,
         engineer_id: engineer.id,
+        engineer_name: engineer.name, // Include engineer name
         assignment_tier: "1",
         assignment_tier_name: "Direct Assignment",
         assigned_by: "admin", // TODO: Get from auth context

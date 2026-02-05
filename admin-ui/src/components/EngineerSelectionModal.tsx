@@ -129,8 +129,15 @@ export default function EngineerSelectionModal({
     setError(null);
     
     try {
+      // Find the engineer to get their name
+      const engineer = engineers.find(e => e.engineer_id === engineerId);
+      if (!engineer) {
+        throw new Error('Engineer not found');
+      }
+      
       await apiClient.post(`/v1/tickets/${ticketId}/assign`, {
         engineer_id: engineerId,
+        engineer_name: engineer.engineer_name, // Include engineer name
         assignment_tier: 'tier_1' // Can be determined based on organization type
       });
       
