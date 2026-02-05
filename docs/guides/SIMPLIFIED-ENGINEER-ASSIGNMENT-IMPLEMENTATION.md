@@ -1,24 +1,24 @@
-# 🎯 Simplified Engineer Assignment System - Implementation Guide
+﻿# ðŸŽ¯ Simplified Engineer Assignment System - Implementation Guide
 
 **Date:** November 21, 2025  
-**Status:** Phase 1 Complete (Database) → Phase 2 Starting (APIs)  
+**Status:** Phase 1 Complete (Database) â†’ Phase 2 Starting (APIs)  
 **Approach:** Loosely coupled, configuration-driven, organization-centric
 
 ---
 
-## 📋 Overview
+## ðŸ“‹ Overview
 
 A **simple, extensible engineer assignment system** that routes service tickets based on:
 - Equipment manufacturer & category
 - Warranty/AMC status
 - Engineer levels (L1=Junior, L2=Senior, L3=Expert)
-- Organization hierarchy (OEM → Dealer → Distributor → Hospital)
+- Organization hierarchy (OEM â†’ Sub-sub_SUB_DEALER â†’ Channel Partner â†’ Hospital)
 
 **No AI initially** - pure configuration-based routing that can be enhanced later.
 
 ---
 
-## 🗄️ Database Schema
+## ðŸ—„ï¸ Database Schema
 
 ### **1. Engineers Table (Enhanced)**
 ```sql
@@ -67,8 +67,8 @@ equipment_service_config (
   
   -- Service hierarchy (ordered by priority)
   primary_service_org_id UUID,      -- Usually manufacturer
-  secondary_service_org_id UUID,    -- Usually dealer
-  tertiary_service_org_id UUID,     -- Usually distributor
+  secondary_service_org_id UUID,    -- Usually Sub-sub_SUB_DEALER
+  tertiary_service_org_id UUID,     -- Usually Channel Partner
   fallback_service_org_id UUID,     -- Hospital in-house
   
   -- Warranty/AMC (affects priority)
@@ -94,7 +94,7 @@ equipment_service_config (
 
 ---
 
-## 🔧 Assignment Algorithm (Simple)
+## ðŸ”§ Assignment Algorithm (Simple)
 
 ### **Step 1: Determine Eligible Organizations**
 
@@ -144,7 +144,7 @@ User manually selects one to assign.
 
 ---
 
-## 📊 Seed Data Created
+## ðŸ“Š Seed Data Created
 
 ### **Engineers:**
 
@@ -156,35 +156,35 @@ User manually selects one to assign.
 | **GE Healthcare** | Vikram Reddy | L3 | Hyderabad | GE CT, MRI, PET-CT (certified) |
 | **GE Healthcare** | Sneha Desai | L2 | Mumbai | GE X-Ray, Ultrasound |
 | **Philips** | Arun Menon | L3 | Chennai | Philips MRI, CT (certified) |
-| **City Medical (Dealer)** | Suresh Gupta | L2 | Delhi | Multi-brand X-Ray, Ultrasound |
-| **City Medical (Dealer)** | Rahul Verma | L1 | Delhi | Siemens X-Ray, GE Ultrasound |
+| **City Medical (Sub-sub_SUB_DEALER)** | Suresh Gupta | L2 | Delhi | Multi-brand X-Ray, Ultrasound |
+| **City Medical (Sub-sub_SUB_DEALER)** | Rahul Verma | L1 | Delhi | Siemens X-Ray, GE Ultrasound |
 | **Apollo Hospital** | Manish Joshi | L2 | Delhi | Multi-brand X-Ray, Ultrasound (in-house) |
 | **Apollo Hospital** | Deepak Yadav | L1 | Delhi | Siemens X-Ray, GE Ultrasound |
 
 ### **Equipment Configs:**
 
 1. **Siemens MRI** (Warranty active)
-   - Priority: Siemens → City Medical (dealer) → Apollo (in-house)
+   - Priority: Siemens â†’ City Medical (Sub-sub_SUB_DEALER) â†’ Apollo (in-house)
    - Min Level: L2
    
-2. **GE X-Ray** (AMC with dealer)
-   - Priority: City Medical (dealer) → GE → Apollo
+2. **GE X-Ray** (AMC with Sub-sub_SUB_DEALER)
+   - Priority: City Medical (Sub-sub_SUB_DEALER) â†’ GE â†’ Apollo
    - Min Level: L1
 
 3. **Philips Ultrasound** (No warranty/AMC)
-   - Priority: Philips → City Medical → Apollo
+   - Priority: Philips â†’ City Medical â†’ Apollo
    - Min Level: L1
 
 ---
 
-## 🚀 Implementation Plan
+## ðŸš€ Implementation Plan
 
-### ✅ Phase 1: Database (COMPLETE)
+### âœ… Phase 1: Database (COMPLETE)
 - [x] Create migration file: `003_simplified_engineer_assignment.sql`
 - [x] Create seed data: `005_engineer_assignment_data.sql`
 - [x] Add helper function: `get_eligible_service_orgs()`
 
-### 📝 Phase 2: Backend APIs (NEXT)
+### ðŸ“ Phase 2: Backend APIs (NEXT)
 
 #### **2.1 Engineers Management APIs**
 - `GET /api/v1/organizations/{orgId}/engineers` - List org's engineers
@@ -202,7 +202,7 @@ User manually selects one to assign.
 - `POST /api/v1/service-tickets/{id}/assign` - Manual assignment
 - `GET /api/v1/engineers/{id}/workload` - Current assignments
 
-### 🎨 Phase 3: Frontend (AFTER APIs)
+### ðŸŽ¨ Phase 3: Frontend (AFTER APIs)
 
 #### **3.1 Engineers Management Page**
 - List view with filters (by level, location, status)
@@ -217,7 +217,7 @@ User manually selects one to assign.
 
 ---
 
-## 🔌 API Examples
+## ðŸ”Œ API Examples
 
 ### **Get Suggested Engineers**
 
@@ -260,15 +260,15 @@ GET /api/v1/service-tickets/ticket-123/suggested-engineers
       "reason": "warranty_coverage"
     },
     {
-      "id": "eng-dealer-001",
+      "id": "eng-Sub-sub_SUB_DEALER-001",
       "name": "Suresh Gupta",
       "level": 2,
       "organization": "City Medical Equipment",
-      "organization_id": "org-dealer",
+      "organization_id": "org-Sub-sub_SUB_DEALER",
       "base_location": "Delhi",
       "is_certified": false,
       "priority": 3,
-      "reason": "authorized_dealer"
+      "reason": "authorized_sub_Sub-sub_SUB_DEALER"
     }
   ]
 }
@@ -302,22 +302,22 @@ Content-Type: application/json
 
 ---
 
-## 🧪 Testing Scenarios
+## ðŸ§ª Testing Scenarios
 
 ### **Scenario 1: Warranty Equipment**
 - Equipment: Siemens MRI (warranty active)
 - Expected: Siemens engineer (L2+) suggested first
-- Test: Create ticket → Check suggestions → Assign Rajesh (L3)
+- Test: Create ticket â†’ Check suggestions â†’ Assign Rajesh (L3)
 
 ### **Scenario 2: AMC Equipment**
-- Equipment: GE X-Ray (AMC with dealer)
-- Expected: Dealer engineer suggested first
-- Test: Create ticket → Check suggestions → Assign Suresh (L2 dealer)
+- Equipment: GE X-Ray (AMC with Sub-sub_SUB_DEALER)
+- Expected: Sub-sub_SUB_DEALER engineer suggested first
+- Test: Create ticket â†’ Check suggestions â†’ Assign Suresh (L2 Sub-sub_SUB_DEALER)
 
 ### **Scenario 3: No Coverage**
 - Equipment: Philips Ultrasound (no warranty/AMC)
-- Expected: Manufacturer → Dealer → Hospital order
-- Test: Create ticket → Check all tiers available
+- Expected: Manufacturer â†’ Sub-sub_SUB_DEALER â†’ Hospital order
+- Test: Create ticket â†’ Check all tiers available
 
 ### **Scenario 4: Level Requirements**
 - Equipment: Siemens MRI (requires L2+)
@@ -326,7 +326,7 @@ Content-Type: application/json
 
 ---
 
-## 🔮 Future Enhancements (Not Now)
+## ðŸ”® Future Enhancements (Not Now)
 
 Once the basic system works, we can add:
 
@@ -337,26 +337,26 @@ Once the basic system works, we can add:
 5. **Automatic assignment** (skip manual selection)
 6. **AI suggestions** (historical performance, success rate)
 7. **Skills matrix** (more granular than manufacturer + category)
-8. **Multi-step workflows** (diagnostic → repair → testing)
+8. **Multi-step workflows** (diagnostic â†’ repair â†’ testing)
 
 ---
 
-## 📁 Files Created
+## ðŸ“ Files Created
 
 ```
 database/
-├── migrations/
-│   └── 003_simplified_engineer_assignment.sql  ✅ Created
-└── seed/
-    └── 005_engineer_assignment_data.sql        ✅ Created
+â”œâ”€â”€ migrations/
+â”‚   â””â”€â”€ 003_simplified_engineer_assignment.sql  âœ… Created
+â””â”€â”€ seed/
+    â””â”€â”€ 005_engineer_assignment_data.sql        âœ… Created
 
 docs/
-└── SIMPLIFIED-ENGINEER-ASSIGNMENT-IMPLEMENTATION.md  ✅ This file
+â””â”€â”€ SIMPLIFIED-ENGINEER-ASSIGNMENT-IMPLEMENTATION.md  âœ… This file
 ```
 
 ---
 
-## ✅ Next Steps
+## âœ… Next Steps
 
 1. **Run migration:**
    ```bash
@@ -379,4 +379,4 @@ docs/
 
 ---
 
-**Simple, clean, extensible!** 🎯
+**Simple, clean, extensible!** ðŸŽ¯

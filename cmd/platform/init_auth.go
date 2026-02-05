@@ -1,4 +1,4 @@
-package main
+﻿package main
 
 import (
 	"log/slog"
@@ -32,7 +32,7 @@ func initAuthModule(router *chi.Mux, db *sqlx.DB, logger *slog.Logger) (*auth.Mo
 			return nil, err
 		}
 
-		logger.Info("✅ Authentication module initialized successfully",
+		logger.Info("âœ… Authentication module initialized successfully",
 			slog.String("endpoints", "12 auth endpoints"),
 			slog.Bool("jwt_enabled", true),
 			slog.Bool("otp_enabled", true))
@@ -45,14 +45,14 @@ func initAuthModule(router *chi.Mux, db *sqlx.DB, logger *slog.Logger) (*auth.Mo
 			JWTPublicKeyPath:    getEnvOrDefault("JWT_PUBLIC_KEY_PATH", "./keys/jwt-public.pem"),
 			JWTAccessExpiry:     15 * time.Minute,
 			JWTRefreshExpiry:    7 * 24 * time.Hour,
-			JWTIssuer:           "aby-med-platform",
+			JWTIssuer:           "servqr-platform",
 		})
 		if err != nil {
 			logger.Error("Failed to create auth module", slog.String("error", err.Error()))
 			return nil, err
 		}
 
-		logger.Info("✅ Authentication module created (routes will be registered later)")
+		logger.Info("âœ… Authentication module created (routes will be registered later)")
 		return authModule, nil
 	}
 }

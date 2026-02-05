@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -22,9 +22,20 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [otpSentTo, setOtpSentTo] = useState('');
   const [expiresIn, setExpiresIn] = useState(0);
+  const [showTimeoutMessage, setShowTimeoutMessage] = useState(false);
 
   // Timer for OTP expiry
   const [timeRemaining, setTimeRemaining] = useState(0);
+
+  // Check for session timeout on mount
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('timeout') === 'true') {
+      setShowTimeoutMessage(true);
+      // Hide message after 10 seconds
+      setTimeout(() => setShowTimeoutMessage(false), 10000);
+    }
+  }, []);
 
   React.useEffect(() => {
     if (timeRemaining > 0) {
@@ -144,7 +155,7 @@ export default function LoginPage() {
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              ABY-MED Platform
+              ServQR Platform
             </h1>
             <p className="text-gray-600">
               {step === 'identifier' && 'Sign in to your account'}
@@ -152,6 +163,21 @@ export default function LoginPage() {
               {step === 'password' && 'Enter your password'}
             </p>
           </div>
+
+          {/* Session Timeout Message */}
+          {showTimeoutMessage && (
+            <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="flex items-start gap-3">
+                <svg className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                </svg>
+                <div>
+                  <p className="text-sm font-medium text-amber-800">Session Expired</p>
+                  <p className="text-sm text-amber-700 mt-1">Your session timed out after 30 minutes of inactivity. Please log in again.</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Error Message */}
           {error && (
@@ -175,6 +201,7 @@ export default function LoginPage() {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                   disabled={isLoading}
+                  suppressHydrationWarning
                 />
               </div>
 
@@ -240,7 +267,7 @@ export default function LoginPage() {
                   className="text-gray-600 hover:text-gray-900"
                   disabled={isLoading}
                 >
-                  ← Back
+                  â† Back
                 </button>
                 <button
                   type="button"
@@ -280,6 +307,7 @@ export default function LoginPage() {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                   disabled={isLoading}
+                  suppressHydrationWarning
                 />
               </div>
 
@@ -298,7 +326,7 @@ export default function LoginPage() {
                   className="text-gray-600 hover:text-gray-900"
                   disabled={isLoading}
                 >
-                  ← Back
+                  â† Back
                 </button>
                 <a href="/forgot-password" className="text-blue-600 hover:text-blue-700 font-medium">
                   Forgot password?
@@ -321,7 +349,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <p className="text-center text-sm text-gray-600 mt-8">
-          Secure authentication powered by ABY-MED
+          Secure authentication powered by ServQR
         </p>
       </div>
     </div>

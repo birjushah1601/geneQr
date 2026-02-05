@@ -1,4 +1,4 @@
--- ABY-MED: Align equipment-registry schema with application code
+﻿-- ServQR: Align equipment-registry schema with application code
 -- Purpose: Add columns expected by equipment repository and handlers
 -- Safe: Uses IF NOT EXISTS; rerunnable
 

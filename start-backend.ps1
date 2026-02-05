@@ -1,4 +1,4 @@
-﻿Set-Location 'C:\Users\birju\aby-med'
+﻿Set-Location 'C:\Users\birju\ServQR'
 
 # Database Configuration
 $env:DB_HOST = 'localhost'
@@ -8,7 +8,7 @@ $env:DB_PASSWORD = 'postgres'
 $env:DB_NAME = 'med_platform'
 
 # Storage Configuration
-$env:STORAGE_BASE_PATH = 'C:\Users\birju\aby-med\storage'
+$env:STORAGE_BASE_PATH = 'C:\Users\birju\ServQR\storage'
 
 # Module Configuration
 $env:ENABLED_MODULES = '*'

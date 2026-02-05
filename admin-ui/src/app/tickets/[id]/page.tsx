@@ -7,7 +7,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ticketsApi } from "@/lib/api/tickets";
 import { apiClient } from "@/lib/api/client";
 import type { ServiceTicket, TicketPriority, TicketStatus } from "@/types";
-import { ArrowLeft, Loader2, Package, User, Calendar, Wrench, Pause, Play, CheckCircle, XCircle, AlertTriangle, FileText, MessageSquare, Paperclip, Upload, Brain, Sparkles, TrendingUp, Lightbulb, Shield, Trash, X } from "lucide-react";
+import { ArrowLeft, Loader2, Package, User, Calendar, Wrench, Pause, Play, CheckCircle, XCircle, AlertTriangle, FileText, MessageSquare, Paperclip, Upload, Brain, Sparkles, TrendingUp, Lightbulb, Shield, Trash, X, Mail } from "lucide-react";
 import { AIDiagnosisModal } from "@/components/AIDiagnosisModal";
 import { attachmentsApi } from "@/lib/api/attachments";
 import { PartsAssignmentModal } from "@/components/PartsAssignmentModal";
@@ -16,6 +16,8 @@ import MultiModelAssignment from "@/components/MultiModelAssignment";
 import EngineerSelectionModal from "@/components/EngineerSelectionModal";
 import AssignmentHistory from "@/components/AssignmentHistory";
 import DashboardLayout from "@/components/DashboardLayout";
+import { SendNotificationModal } from "@/components/SendNotificationModal";
+import { useAuth } from "@/contexts/AuthContext";
 
 function StatusBadge({ status }: { status: TicketStatus }) {
   const color = {
@@ -32,9 +34,11 @@ function StatusBadge({ status }: { status: TicketStatus }) {
 
 export default function TicketDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const { session } = useAuth();
   const [showDiagnosisModal, setShowDiagnosisModal] = useState(false);
   const [showReassignMultiModel, setShowReassignMultiModel] = useState(false);
   const [showEngineerSelection, setShowEngineerSelection] = useState(false);
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
   const router = useRouter();
   const qc = useQueryClient();
 
@@ -202,14 +206,26 @@ export default function TicketDetailPage() {
 
   const [engineerName, setEngineerName] = useState("");
   const [isPartsModalOpen, setIsPartsModalOpen] = useState(false);
+  const [engineerFilter, setEngineerFilter] = useState<'all' | 'own' | 'partners'>('all');
 
-  // Fetch engineers list for dropdown
+  // Fetch engineers list for dropdown (including partner engineers)
   const { data: engineersData } = useQuery({
-    queryKey: ["engineers"],
-    queryFn: () => apiClient.get("/v1/engineers?limit=100"),
+    queryKey: ["engineers", "with-partners"],
+    queryFn: () => apiClient.get("/v1/engineers?limit=100&include_partners=true"),
     staleTime: 60_000,
   });
-  const engineers = (engineersData as any)?.data?.items || [];
+  const allEngineers = (engineersData as any)?.data?.engineers || [];
+  
+  // Get current user's organization for filtering
+  const userOrgId = (session as any)?.user?.organization_id;
+  
+  // Filter engineers based on selection
+  const engineers = allEngineers.filter((eng: any) => {
+    if (engineerFilter === 'all') return true;
+    if (engineerFilter === 'own') return eng.organization_id === userOrgId;
+    if (engineerFilter === 'partners') return eng.organization_id !== userOrgId;
+    return true;
+  });
 
   // Handle parts assignment
   const handlePartsAssign = async (assignedParts: any[]) => {
@@ -484,7 +500,7 @@ export default function TicketDetailPage() {
                             <div key={idx} className="flex items-center justify-between text-sm bg-green-50 rounded p-2 border border-green-100">
                               <div className="flex-1">
                                 <div className="font-medium text-gray-900">{part.part_name}</div>
-                                <div className="text-xs text-gray-500">{part.part_code} â€¢ {part.manufacturer}</div>
+                                <div className="text-xs text-gray-500">{part.part_code} • {part.manufacturer}</div>
                               </div>
                               <div className="text-right">
                                 <div className="text-xs text-gray-600">Qty: {part.quantity}</div>
@@ -522,7 +538,7 @@ export default function TicketDetailPage() {
                     <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-purple-100">
                       <div className="flex items-center gap-2">
                         <span>AI Model: {latestDiagnosis.ai_metadata.model}</span>
-                        <span>â€¢</span>
+                        <span>•</span>
                         <span>{new Date(latestDiagnosis.created_at).toLocaleString()}</span>
                       </div>
                       {latestDiagnosis.ai_metadata.alternatives_count > 0 && (
@@ -675,7 +691,7 @@ export default function TicketDetailPage() {
                               )}
                             </div>
                             <div className="text-gray-500 mt-1">
-                              {(a.fileSize/1024).toFixed(1)} KB â€¢ {new Date(a.uploadDate).toLocaleString()}
+                              {(a.fileSize/1024).toFixed(1)} KB • {new Date(a.uploadDate).toLocaleString()}
                             </div>
                             {(isImage || isVideo) && (
                               <div className="mt-2 text-xs text-purple-600">

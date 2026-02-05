@@ -1,14 +1,14 @@
-# Aby-Med Medical Platform
+﻿# ServQR Medical Platform
 
 > A comprehensive medical equipment management and service platform with equipment catalog, spare parts management, service ticketing, QR code generation, and engineer assignment.
 
-**Status:** ✅ Production Ready  
+**Status:** âœ… Production Ready  
 **Version:** 1.0.0  
 **Last Updated:** November 27, 2025
 
 ---
 
-## 🚀 Quick Start
+## ðŸš€ Quick Start
 
 ### Prerequisites
 - Docker Desktop (for PostgreSQL)
@@ -23,7 +23,7 @@ cd dev/compose
 docker-compose up -d postgres
 
 # 2. Start Backend (in new terminal)
-cd C:\Users\birju\aby-med
+cd C:\Users\birju\ServQR
 .\backend.exe
 
 # 3. Start Frontend (in new terminal)
@@ -38,7 +38,7 @@ npm run dev
 
 ---
 
-## 📋 Table of Contents
+## ðŸ“‹ Table of Contents
 - [Features](#features)
 - [Architecture](#architecture)
 - [System Components](#system-components)
@@ -51,60 +51,60 @@ npm run dev
 
 ---
 
-## ✨ Features
+## âœ¨ Features
 
 ### 1. Equipment Catalog Management
-- ✅ Complete CRUD operations for medical equipment
-- ✅ Dynamic specifications with JSONB support
-- ✅ Category-based organization (MRI, CT, Ultrasound, X-Ray, etc.)
-- ✅ Advanced search and filtering
-- ✅ Pagination and sorting
-- ✅ 12 pre-loaded sample equipment items
+- âœ… Complete CRUD operations for medical equipment
+- âœ… Dynamic specifications with JSONB support
+- âœ… Category-based organization (MRI, CT, Ultrasound, X-Ray, etc.)
+- âœ… Advanced search and filtering
+- âœ… Pagination and sorting
+- âœ… 12 pre-loaded sample equipment items
 
 ### 2. Spare Parts Management
-- ✅ Comprehensive parts catalog (16 real parts, ₹8.50 - ₹65,000)
-- ✅ Multi-supplier support (GE Healthcare, Siemens)
-- ✅ Parts bundles/kits for maintenance
-- ✅ Alternative parts tracking
-- ✅ Stock availability monitoring
-- ✅ Engineer skill requirement detection (L1/L2/L3)
-- ✅ Real-time cost calculation
-- ✅ Shopping cart functionality
+- âœ… Comprehensive parts catalog (16 real parts, â‚¹8.50 - â‚¹65,000)
+- âœ… Multi-supplier support (GE Healthcare, Siemens)
+- âœ… Parts bundles/kits for maintenance
+- âœ… Alternative parts tracking
+- âœ… Stock availability monitoring
+- âœ… Engineer skill requirement detection (L1/L2/L3)
+- âœ… Real-time cost calculation
+- âœ… Shopping cart functionality
 
 ### 3. QR Code System
-- ✅ Generate QR codes for equipment (256x256 PNG)
-- ✅ Store QR images in database (no filesystem)
-- ✅ Serve QR images via REST API
-- ✅ Printable PDF labels with equipment details
-- ✅ Bulk QR generation
-- ✅ QR code preview and download
+- âœ… Generate QR codes for equipment (256x256 PNG)
+- âœ… Store QR images in database (no filesystem)
+- âœ… Serve QR images via REST API
+- âœ… Printable PDF labels with equipment details
+- âœ… Bulk QR generation
+- âœ… QR code preview and download
 
 ### 4. Service Ticket Workflow
-- ✅ Create service requests via QR code scan
-- ✅ Integrated parts selection
-- ✅ Equipment issue description
-- ✅ Photo/attachment upload
-- ✅ Engineer assignment
-- ✅ Status tracking
-- ✅ Parts cost calculation
+- âœ… Create service requests via QR code scan
+- âœ… Integrated parts selection
+- âœ… Equipment issue description
+- âœ… Photo/attachment upload
+- âœ… Engineer assignment
+- âœ… Status tracking
+- âœ… Parts cost calculation
 
 ### 5. Engineer Assignment
-- ✅ Skill-based matching (L1, L2, L3)
-- ✅ Capability-based filtering
-- ✅ Service area coverage
-- ✅ Availability tracking
-- ✅ Intelligent suggestions
-- ✅ 13 REST API endpoints
+- âœ… Skill-based matching (L1, L2, L3)
+- âœ… Capability-based filtering
+- âœ… Service area coverage
+- âœ… Availability tracking
+- âœ… Intelligent suggestions
+- âœ… 13 REST API endpoints
 
 ### 6. AI & Analytics
-- ✅ AI-powered diagnosis suggestions
-- ✅ Confidence scoring
-- ✅ Feedback collection
-- ✅ Rating and review system
+- âœ… AI-powered diagnosis suggestions
+- âœ… Confidence scoring
+- âœ… Feedback collection
+- âœ… Rating and review system
 
 ---
 
-## 🏗️ Architecture
+## ðŸ—ï¸ Architecture
 
 ### Technology Stack
 
@@ -130,41 +130,41 @@ npm run dev
 
 ### Architecture Pattern
 ```
-┌─────────────────────────────────────────────────────┐
-│                    Frontend (Next.js)                │
-│  - React Components                                  │
-│  - API Client Layer                                  │
-│  - State Management                                  │
-└────────────────────┬────────────────────────────────┘
-                     │ HTTP/REST
-┌────────────────────▼────────────────────────────────┐
-│                 Backend (Go/Chi)                     │
-│  ┌─────────────────────────────────────────────┐    │
-│  │            API Layer (Handlers)             │    │
-│  └──────────────────┬──────────────────────────┘    │
-│  ┌──────────────────▼──────────────────────────┐    │
-│  │         Service Layer (Business Logic)      │    │
-│  └──────────────────┬──────────────────────────┘    │
-│  ┌──────────────────▼──────────────────────────┐    │
-│  │      Repository Layer (Data Access)         │    │
-│  └──────────────────┬──────────────────────────┘    │
-│  ┌──────────────────▼──────────────────────────┐    │
-│  │         Domain Layer (Entities)             │    │
-│  └─────────────────────────────────────────────┘    │
-└────────────────────┬────────────────────────────────┘
-                     │ SQL
-┌────────────────────▼────────────────────────────────┐
-│             PostgreSQL Database                      │
-│  - Equipment Tables                                  │
-│  - Parts Catalog                                     │
-│  - Service Tickets                                   │
-│  - Engineer Profiles                                 │
-└─────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                    Frontend (Next.js)                â”‚
+â”‚  - React Components                                  â”‚
+â”‚  - API Client Layer                                  â”‚
+â”‚  - State Management                                  â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                     â”‚ HTTP/REST
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                 Backend (Go/Chi)                     â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”    â”‚
+â”‚  â”‚            API Layer (Handlers)             â”‚    â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜    â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”    â”‚
+â”‚  â”‚         Service Layer (Business Logic)      â”‚    â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜    â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”    â”‚
+â”‚  â”‚      Repository Layer (Data Access)         â”‚    â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜    â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”    â”‚
+â”‚  â”‚         Domain Layer (Entities)             â”‚    â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜    â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                     â”‚ SQL
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚             PostgreSQL Database                      â”‚
+â”‚  - Equipment Tables                                  â”‚
+â”‚  - Parts Catalog                                     â”‚
+â”‚  - Service Tickets                                   â”‚
+â”‚  - Engineer Profiles                                 â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ---
 
-## 🎛️ System Components
+## ðŸŽ›ï¸ System Components
 
 ### Backend Modules
 
@@ -243,7 +243,7 @@ npm run dev
 
 ---
 
-## 📡 API Documentation
+## ðŸ“¡ API Documentation
 
 ### Base URL
 ```
@@ -402,7 +402,7 @@ Content-Type: application/json
 
 ---
 
-## 🗄️ Database Schema
+## ðŸ—„ï¸ Database Schema
 
 ### Core Tables
 
@@ -481,13 +481,13 @@ Content-Type: application/json
 ### Sample Data
 
 **Equipment:** 12 items (MRI, CT, Ultrasound, X-Ray, Dialysis)
-**Parts:** 16 items (₹8.50 to ₹65,000)
+**Parts:** 16 items (â‚¹8.50 to â‚¹65,000)
 **Bundles:** 3 maintenance kits
 **Suppliers:** 2 (GE Healthcare, Siemens)
 
 ---
 
-## 🎨 Frontend Pages
+## ðŸŽ¨ Frontend Pages
 
 ### 1. Equipment List (`/equipment`)
 **Features:**
@@ -554,7 +554,7 @@ Content-Type: application/json
 
 ---
 
-## 🧪 Testing
+## ðŸ§ª Testing
 
 ### Automated Test Scripts
 
@@ -626,7 +626,7 @@ Content-Type: application/json
 
 ---
 
-## 🚢 Deployment
+## ðŸš¢ Deployment
 
 ### Environment Variables
 
@@ -685,7 +685,7 @@ docker-compose up -d
 
 ---
 
-## 🐛 Troubleshooting
+## ðŸ› Troubleshooting
 
 ### Common Issues
 
@@ -702,8 +702,8 @@ npm install @radix-ui/react-dialog @radix-ui/react-scroll-area @radix-ui/react-t
 **Error:** `404 Not Found` for `/v1/equipment`
 
 **Solution:** API paths should include `/api` prefix:
-- ❌ `/v1/equipment`
-- ✅ `/api/v1/equipment`
+- âŒ `/v1/equipment`
+- âœ… `/api/v1/equipment`
 
 #### 3. QR Code Image Not Loading
 **Error:** Broken image icon
@@ -753,7 +753,7 @@ Invoke-RestMethod -Uri "http://localhost:8081/api/v1/catalog/parts" -Headers @{"
 
 ---
 
-## 📚 Documentation
+## ðŸ“š Documentation
 
 ### Available Docs
 1. **PROJECT-STATUS.md** - Current status, statistics, features
@@ -772,7 +772,7 @@ Invoke-RestMethod -Uri "http://localhost:8081/api/v1/catalog/parts" -Headers @{"
 
 ---
 
-## 👥 Team & Support
+## ðŸ‘¥ Team & Support
 
 ### Development Team
 - Backend: Go/PostgreSQL
@@ -787,7 +787,7 @@ Invoke-RestMethod -Uri "http://localhost:8081/api/v1/catalog/parts" -Headers @{"
 
 ---
 
-## 📊 Project Statistics
+## ðŸ“Š Project Statistics
 
 **Total Lines of Code:** ~13,000+
 - Backend (Go): ~8,000 lines
@@ -799,21 +799,21 @@ Invoke-RestMethod -Uri "http://localhost:8081/api/v1/catalog/parts" -Headers @{"
 **Database Tables:** 30+ tables
 **Sample Data:** 100+ records
 
-**Status:** ✅ Production Ready (95% complete)
+**Status:** âœ… Production Ready (95% complete)
 
 ---
 
-## 🎉 Conclusion
+## ðŸŽ‰ Conclusion
 
-The Aby-Med Medical Platform is a **comprehensive, production-ready** system for managing medical equipment, spare parts, service tickets, and engineer assignments. With 6 major functional systems, 13,000+ lines of code, and extensive documentation, it's ready for deployment and real-world use.
+The ServQR Medical Platform is a **comprehensive, production-ready** system for managing medical equipment, spare parts, service tickets, and engineer assignments. With 6 major functional systems, 13,000+ lines of code, and extensive documentation, it's ready for deployment and real-world use.
 
 **Key Achievements:**
-✅ Clean architecture (separation of concerns)
-✅ Comprehensive API coverage (50+ endpoints)
-✅ Real data integration (16 parts, 12 equipment)
-✅ Professional UI (modern, responsive)
-✅ Complete documentation
-✅ Tested and verified
+âœ… Clean architecture (separation of concerns)
+âœ… Comprehensive API coverage (50+ endpoints)
+âœ… Real data integration (16 parts, 12 equipment)
+âœ… Professional UI (modern, responsive)
+âœ… Complete documentation
+âœ… Tested and verified
 
 ---
 

@@ -188,7 +188,7 @@ func (r *TicketRepository) GetByID(ctx context.Context, id string) (*domain.Serv
 			)`
 		case "hospital", "imaging_center":
 			query += " AND requester_org_id = $2"
-		case "distributor", "dealer":
+		case "Channel Partner", "Sub-sub_SUB_DEALER":
 			query += " AND (assigned_org_id = $2 OR service_provider_org_id = $2)"
 		default:
 			query += " AND requester_org_id = $2"
@@ -372,7 +372,7 @@ func (r *TicketRepository) List(ctx context.Context, criteria domain.ListCriteri
 			conditions = append(conditions, fmt.Sprintf("requester_org_id = $%d", argPos))
 			args = append(args, orgID.String())
 			argPos++
-		case "distributor", "dealer":
+		case "Channel Partner", "Sub-sub_SUB_DEALER":
 			// Service providers see tickets assigned to them
 			conditions = append(conditions, fmt.Sprintf("(assigned_org_id = $%d OR service_provider_org_id = $%d)", argPos, argPos))
 			args = append(args, orgID.String())

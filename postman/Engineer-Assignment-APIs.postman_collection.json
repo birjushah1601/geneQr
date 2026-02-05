@@ -1,4 +1,4 @@
-{
+﻿{
 	"info": {
 		"_postman_id": "engineer-assignment-2024",
 		"name": "Engineer Assignment System APIs",
@@ -356,7 +356,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"equipment_id\": \"eq-123\",\n  \"under_warranty\": true,\n  \"under_amc\": false,\n  \"primary_service_org_id\": \"org-siemens\",\n  \"secondary_service_org_id\": \"org-dealer\",\n  \"tertiary_service_org_id\": null,\n  \"fallback_service_org_id\": null\n}"
+							"raw": "{\n  \"equipment_id\": \"eq-123\",\n  \"under_warranty\": true,\n  \"under_amc\": false,\n  \"primary_service_org_id\": \"org-siemens\",\n  \"secondary_service_org_id\": \"org-Sub-sub_SUB_DEALER\",\n  \"tertiary_service_org_id\": null,\n  \"fallback_service_org_id\": null\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/equipment-service-config/:equipment_id",
@@ -384,7 +384,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"under_warranty\": false,\n  \"under_amc\": true,\n  \"primary_service_org_id\": \"org-siemens\",\n  \"secondary_service_org_id\": \"org-dealer\",\n  \"tertiary_service_org_id\": \"org-local\",\n  \"fallback_service_org_id\": null\n}"
+							"raw": "{\n  \"under_warranty\": false,\n  \"under_amc\": true,\n  \"primary_service_org_id\": \"org-siemens\",\n  \"secondary_service_org_id\": \"org-Sub-sub_SUB_DEALER\",\n  \"tertiary_service_org_id\": \"org-local\",\n  \"fallback_service_org_id\": null\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/equipment-service-config/:equipment_id",

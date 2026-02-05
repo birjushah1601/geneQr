@@ -1,4 +1,4 @@
-package orgfilter
+﻿package orgfilter
 
 import (
 	"context"
@@ -44,9 +44,9 @@ func EquipmentFilter(orgCtx *OrgContext) (string, uuid.UUID) {
 		// Hospitals see ONLY equipment they own
 		return "(organization_id = $%d OR owner_org_id = $%d)", orgCtx.OrgID
 
-	case "distributor", "dealer":
-		// Distributors see equipment they sold/service
-		return "(distributor_org_id = $%d OR service_provider_org_id = $%d)", orgCtx.OrgID
+	case "Channel Partner", "Sub-sub_SUB_DEALER":
+		// Channel Partners see equipment they sold/service
+		return "(channel_partner_org_id = $%d OR service_provider_org_id = $%d)", orgCtx.OrgID
 
 	case "supplier":
 		// Suppliers see equipment where they supply parts
@@ -73,7 +73,7 @@ func TicketFilter(orgCtx *OrgContext) (string, uuid.UUID) {
 		// Hospitals see tickets they created
 		return "requester_org_id = $%d", orgCtx.OrgID
 
-	case "distributor", "dealer", "supplier":
+	case "Channel Partner", "Sub-sub_SUB_DEALER", "supplier":
 		// Service providers see tickets assigned to them
 		return "(assigned_org_id = $%d OR service_provider_org_id = $%d)", orgCtx.OrgID
 

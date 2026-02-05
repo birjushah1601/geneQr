@@ -15,12 +15,12 @@ import {
   Clock
 } from 'lucide-react';
 
-export default function DistributorDashboard() {
+export default function ChannelPartnerDashboard() {
   const router = useRouter();
 
-  // Fetch distributor-specific data
+  // Fetch Channel Partner-specific data
   const { data: equipmentData, isLoading: loadingEquipment } = useQuery({
-    queryKey: ['equipment', 'distributor'],
+    queryKey: ['equipment', 'Channel Partner'],
     queryFn: async () => {
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8081/api';
       const token = localStorage.getItem('access_token');
@@ -35,7 +35,7 @@ export default function DistributorDashboard() {
   });
 
   const { data: ticketsData, isLoading: loadingTickets } = useQuery({
-    queryKey: ['tickets', 'distributor'],
+    queryKey: ['tickets', 'Channel Partner'],
     queryFn: async () => {
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8081/api';
       const token = localStorage.getItem('access_token');
@@ -57,7 +57,7 @@ export default function DistributorDashboard() {
   });
 
   const { data: engineersData, isLoading: loadingEngineers } = useQuery({
-    queryKey: ['engineers', 'distributor'],
+    queryKey: ['engineers', 'Channel Partner'],
     queryFn: async () => {
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8081/api';
       const token = localStorage.getItem('access_token');
@@ -80,7 +80,7 @@ export default function DistributorDashboard() {
     <div className="space-y-6">
       {/* Welcome Section */}
       <div>
-        <h1 className="text-3xl font-bold mb-2">Distributor Dashboard</h1>
+        <h1 className="text-3xl font-bold mb-2">Channel Partner Dashboard</h1>
         <p className="text-gray-600">
           Manage service operations and engineer assignments
         </p>

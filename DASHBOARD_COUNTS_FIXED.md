@@ -4,8 +4,8 @@
 Admin dashboard showing all counts as 0 for:
 - Organizations
 - Manufacturers
-- Distributors  
-- Dealers
+- Channel Partners  
+- Sub-Sub-sub_sub_SUB_DEALERs
 - Hospitals
 - Equipment
 
@@ -27,7 +27,7 @@ Frontend API client was calling '/organizations' which resolved to:
 ✅ Backend API working correctly:
 - Endpoint: GET /api/v1/organizations
 - Returns: { items: [...18 organizations...] }
-- Includes: manufacturers, distributors, dealers, hospitals, suppliers, imaging centers
+- Includes: manufacturers, Channel Partners, Sub-Sub-sub_sub_SUB_DEALERs, hospitals, suppliers, imaging centers
 
 ## Fix Applied
 
@@ -48,8 +48,8 @@ Also fixed return statement:
 Dashboard should now show:
 - **Organizations: 18**
   - Manufacturers: 4 (Global Manufacturer A, Wipro GE Healthcare, Siemens Healthineers, Philips Healthcare)
-  - Distributors: 4 (Regional Distributor X, SouthCare Distributors, MedSupply Mumbai, etc.)
-  - Dealers: 1 (Local Dealer Z)
+  - Channel Partners: 4 (Regional Channel Partner X, SouthCare Channel Partners, MedSupply Mumbai, etc.)
+  - Sub-Sub-sub_sub_SUB_DEALERs: 1 (Local Sub-sub_SUB_DEALER Z)
   - Hospitals: 5 (AIIMS, Apollo, Fortis, Manipal, Yashoda)
   - Imaging Centers: 3
   - Suppliers: 2

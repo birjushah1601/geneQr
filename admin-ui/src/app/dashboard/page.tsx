@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/DashboardLayout';
 import ManufacturerDashboard from '@/components/dashboards/ManufacturerDashboard';
 import HospitalDashboard from '@/components/dashboards/HospitalDashboard';
-import DistributorDashboard from '@/components/dashboards/DistributorDashboard';
+import ChannelPartnerDashboard from '@/components/dashboards/ChannelPartnerDashboard';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -44,10 +44,12 @@ export default function AdminDashboard() {
         case 'hospital':
         case 'imaging_center':
           return <HospitalDashboard />;
-        case 'distributor':
-        case 'dealer':
-          return <DistributorDashboard />;
-        // If no specific dashboard, fall through to admin dashboard
+        case 'channel_partner':
+        case 'sub_dealer':
+          return <ChannelPartnerDashboard />;
+        default:
+          // If no specific dashboard, fall through to admin dashboard
+          break;
       }
     }
 
@@ -59,7 +61,9 @@ export default function AdminDashboard() {
   
   // If we have org-specific dashboard, wrap it with layout and return
   if (dashboardContent) {
-    return <DashboardLayout>{dashboardContent}</DashboardLayout>;
+    return (
+      <DashboardLayout>{dashboardContent}</DashboardLayout>
+    );
   }
 
   // Default: Show admin/system dashboard (for system_admin or unrecognized org types)
@@ -116,8 +120,8 @@ export default function AdminDashboard() {
   const orgsArray = Array.isArray(organizationsData) ? organizationsData : [];
   const orgsByType = {
     manufacturer: orgsArray.filter((o: any) => o.org_type === 'manufacturer').length,
-    distributor: orgsArray.filter((o: any) => o.org_type === 'distributor').length,
-    dealer: orgsArray.filter((o: any) => o.org_type === 'dealer').length,
+    'channel_partner': orgsArray.filter((o: any) => o.org_type === 'channel_partner').length,
+    'sub_dealer': orgsArray.filter((o: any) => o.org_type === 'sub_dealer').length,
     hospital: orgsArray.filter((o: any) => o.org_type === 'hospital').length,
   };
 
@@ -125,8 +129,8 @@ export default function AdminDashboard() {
   const platformStats = {
     totalOrganizations: orgsArray.length,
     manufacturers: orgsByType.manufacturer,
-    distributors: orgsByType.distributor,
-    dealers: orgsByType.dealer,
+    channelPartners: orgsByType['channel_partner'],
+    subDealers: orgsByType['sub_dealer'],
     hospitals: orgsByType.hospital,
     totalEquipment: equipmentData?.total || 0,
     totalEngineers: engineersData?.total || 0,
@@ -134,15 +138,14 @@ export default function AdminDashboard() {
   };
 
   const isLoading = loadingOrganizations || loadingEquipment || loadingTickets || loadingEngineers;
-
-  return (
+ return (
     <DashboardLayout>
       <div>
         {/* Welcome Message */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold mb-2">Admin Dashboard</h2>
           <p className="text-gray-600">
-            Manage manufacturers, suppliers, and monitor platform activity
+            Manage manufacturers, Channel Partners, and monitor platform activity
           </p>
         </div>
 
@@ -186,62 +189,51 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push('/organizations?type=distributor')}>
+          <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push('/organizations?type=channel_partner')}>
             <CardContent className="pt-6">
               <div className="flex flex-col">
                 <div className="flex items-center gap-2 mb-2">
                   <Truck className="h-5 w-5 text-purple-600" />
-                  <p className="text-sm font-medium text-gray-500">Distributors</p>
+                  <p className="text-sm font-medium text-gray-500">Channel Partners</p>
                 </div>
                 {isLoading ? (
                   <div className="flex items-center gap-2 mt-2">
                     <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
                   </div>
                 ) : (
-                  <p className="text-3xl font-bold mt-2 text-purple-600">{platformStats.distributors}</p>
+                  <p className="text-3xl font-bold mt-2 text-purple-600">{platformStats.channelPartners}</p>
                 )}
                 <p className="text-xs text-gray-400 mt-1">Partners</p>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push('/organizations?type=dealer')}>
-            <CardContent className="pt-6">
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2 mb-2">
-                  <ShoppingBag className="h-5 w-5 text-green-600" />
-                  <p className="text-sm font-medium text-gray-500">Dealers</p>
-                </div>
-                {isLoading ? (
-                  <div className="flex items-center gap-2 mt-2">
-                    <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-                  </div>
-                ) : (
-                  <p className="text-3xl font-bold mt-2 text-green-600">{platformStats.dealers}</p>
-                )}
-                <p className="text-xs text-gray-400 mt-1">Retailers</p>
-              </div>
-            </CardContent>
-          </Card>
+         <Card
+  className="hover:shadow-md transition-shadow cursor-pointer"
+  onClick={() => router.push('/organizations?type=sub_dealer')}
+>
+  <CardContent className="pt-6">
+    <div className="flex flex-col">
+      <div className="flex items-center gap-2 mb-2">
+        <ShoppingBag className="h-5 w-5 text-green-600" />
+        <p className="text-sm font-medium text-gray-500">Sub-dealers</p>
+      </div>
 
-          <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push('/organizations?type=hospital')}>
-            <CardContent className="pt-6">
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2 mb-2">
-                  <Hospital className="h-5 w-5 text-red-600" />
-                  <p className="text-sm font-medium text-gray-500">Hospitals</p>
-                </div>
-                {isLoading ? (
-                  <div className="flex items-center gap-2 mt-2">
-                    <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-                  </div>
-                ) : (
-                  <p className="text-3xl font-bold mt-2 text-red-600">{platformStats.hospitals}</p>
-                )}
-                <p className="text-xs text-gray-400 mt-1">Clients</p>
-              </div>
-            </CardContent>
-          </Card>
+      {isLoading ? (
+        <div className="flex items-center gap-2 mt-2">
+          <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+        </div>
+      ) : (
+        <p className="text-3xl font-bold mt-2 text-green-600">
+          {platformStats.subDealers}
+        </p>
+      )}
+
+      <p className="text-xs text-gray-400 mt-1">Sub network</p>
+    </div>
+  </CardContent>
+</Card>
+
 
           <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push('/equipment')}>
             <CardContent className="pt-6">
@@ -294,38 +286,8 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          {/* Distributors & Dealers Card */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                    <Truck className="w-5 h-5 text-purple-600" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg">Distribution Network</CardTitle>
-                    <CardDescription>Distributors and dealers network</CardDescription>
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600 mb-4">
-                {platformStats.distributors + platformStats.dealers} partners ({platformStats.distributors} distributors, {platformStats.dealers} dealers) providing equipment distribution and service across India.
-              </p>
-              <Button 
-                onClick={() => router.push('/organizations?type=distributor')}
-                className="w-full"
-              >
-                View Distribution Network
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* AI Systems Section */}
-        <div className="mb-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Channel Partners & Sub-Dealers */}
+          <div className="grid grid-cols-2 gap-6">
           {/* AI Diagnosis Demo */}
           <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
             <CardHeader>
@@ -335,7 +297,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className="flex-1">
                   <CardTitle className="text-lg text-purple-900 flex items-center gap-2">
-                    🤖 AI-Assisted Diagnosis
+                   AI-Assisted Diagnosis
                     <Sparkles className="w-4 h-4 text-purple-600" />
                   </CardTitle>
                   <CardDescription className="text-purple-700">
@@ -368,7 +330,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className="flex-1">
                   <CardTitle className="text-lg text-green-900 flex items-center gap-2">
-                    📸 Attachments & AI Analysis
+                   Attachments & AI Analysis
                     <Brain className="w-4 h-4 text-green-600" />
                   </CardTitle>
                   <CardDescription className="text-green-700">
@@ -391,7 +353,7 @@ export default function AdminDashboard() {
               </Button>
             </CardContent>
           </Card>
-        </div>
+        </div></div>
 
         {/* Quick Links Section */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -474,3 +436,4 @@ export default function AdminDashboard() {
     </DashboardLayout>
   );
 }
+ 

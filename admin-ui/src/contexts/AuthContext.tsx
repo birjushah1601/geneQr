@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { setRefreshTokenFunction } from '@/lib/api/client';
-import { decodeJWT, type JWTClaims } from '@/lib/jwt';
+import { decodeJWT, isTokenExpired, type JWTClaims } from '@/lib/jwt';
 
 interface User {
   user_id: string;
@@ -16,7 +16,7 @@ interface User {
 
 interface OrganizationContext {
   organization_id: string;
-  organization_type: string; // manufacturer, hospital, distributor, dealer, supplier, imaging_center
+  organization_type: string; // manufacturer, hospital, Channel Partner, Sub-sub_SUB_DEALER, supplier, imaging_center
   role: string;
 }
 
@@ -44,6 +44,73 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
+  // Session timeout: 30 minutes of inactivity
+  const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
+  const ACTIVITY_CHECK_INTERVAL = 60 * 1000; // Check every minute
+
+  // Update last activity timestamp
+  const updateActivity = () => {
+    localStorage.setItem('last_activity', Date.now().toString());
+  };
+
+  // Check if session has timed out
+  const checkSessionTimeout = () => {
+    const lastActivity = localStorage.getItem('last_activity');
+    if (!lastActivity) {
+      // No activity timestamp yet, assume session is valid
+      // This happens on first login or when tokens exist but no activity tracked yet
+      return false;
+    }
+
+    const timeSinceActivity = Date.now() - parseInt(lastActivity);
+    if (timeSinceActivity > SESSION_TIMEOUT) {
+      console.log('[Auth] Session timeout detected:', Math.round(timeSinceActivity / 1000 / 60), 'minutes since last activity');
+      return true;
+    }
+    
+    return false;
+  };
+
+  // Handle session timeout
+  const handleSessionTimeout = async () => {
+    console.log('[Auth] Session timed out after 30 minutes of inactivity');
+    await logout();
+    router.push('/login?timeout=true');
+  };
+
+  // Track user activity
+  useEffect(() => {
+    if (!accessToken) return;
+
+    // Update activity on mount
+    updateActivity();
+
+    // Activity event listeners
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+    
+    const activityHandler = () => {
+      updateActivity();
+    };
+
+    events.forEach(event => {
+      window.addEventListener(event, activityHandler);
+    });
+
+    // Check for timeout periodically
+    const timeoutChecker = setInterval(() => {
+      if (checkSessionTimeout()) {
+        handleSessionTimeout();
+      }
+    }, ACTIVITY_CHECK_INTERVAL);
+
+    return () => {
+      events.forEach(event => {
+        window.removeEventListener(event, activityHandler);
+      });
+      clearInterval(timeoutChecker);
+    };
+  }, [accessToken]);
+
   // Load tokens from localStorage on mount
   useEffect(() => {
     const loadTokens = async () => {
@@ -52,6 +119,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const storedRefreshToken = localStorage.getItem('refresh_token');
 
         if (storedAccessToken && storedRefreshToken) {
+          // Validate token before using it
+          if (isTokenExpired(storedAccessToken)) {
+            console.log('[Auth] Stored token is expired');
+            clearTokens();
+            setIsLoading(false);
+            return;
+          }
+
+          // Check if session has timed out (only if activity timestamp exists)
+          if (checkSessionTimeout()) {
+            console.log('[Auth] Session timed out, clearing tokens');
+            clearTokens();
+            setIsLoading(false);
+            router.push('/login?timeout=true');
+            return;
+          }
+
           setAccessToken(storedAccessToken);
           setRefreshToken(storedRefreshToken);
 
@@ -60,6 +144,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
           // Fetch user info
           await fetchUserInfo(storedAccessToken);
+          
+          // Update activity timestamp
+          updateActivity();
         }
       } catch (error) {
         console.error('Failed to load tokens:', error);
@@ -167,7 +254,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setOrganizationContext(null);
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
-    localStorage.removeItem('user'); // Clear user data too
+    localStorage.removeItem('user');
+    localStorage.removeItem('last_activity'); // Clear activity timestamp
   };
 
   // Refresh access token

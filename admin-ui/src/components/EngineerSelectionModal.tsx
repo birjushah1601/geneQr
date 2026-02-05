@@ -14,9 +14,13 @@ import {
   CheckCircle2,
   Loader2,
   AlertCircle,
-  Star
+  Star,
+  Truck,
+  Users as UsersIcon
 } from 'lucide-react';
 import apiClient from '@/lib/api/client';
+import { partnersApi } from '@/lib/api/partners';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Engineer {
   engineer_id: string;
@@ -31,6 +35,8 @@ interface Engineer {
   phone?: string;
   email?: string;
   availability?: string;
+  organization_type?: string; // NEW: for badge display
+  category?: string; // NEW: 'Manufacturer', 'Channel Partner - [Name]', etc.
 }
 
 interface EngineerSelectionModalProps {
@@ -48,11 +54,13 @@ export default function EngineerSelectionModal({
   equipmentName,
   onAssignmentSuccess
 }: EngineerSelectionModalProps) {
+  const { organizationContext } = useAuth();
   const [engineers, setEngineers] = useState<Engineer[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isAssigning, setIsAssigning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedEngineer, setSelectedEngineer] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string>('all');
 
   // Fetch suggested engineers when modal opens
   useEffect(() => {
@@ -66,11 +74,51 @@ export default function EngineerSelectionModal({
     setError(null);
     
     try {
-      const response = await apiClient.get(`/v1/engineers/suggestions?ticket_id=${ticketId}`);
-      setEngineers(response.data.suggestions || []);
+      // Get ticket details first to extract manufacturer and equipment info
+      const ticketResponse = await apiClient.get(`/v1/tickets/${ticketId}`);
+      const ticket = ticketResponse.data;
+      
+      // Fetch engineers with partners included
+      const engineersResponse = await apiClient.get('/v1/engineers?limit=100&include_partners=true');
+      const allEngineers = engineersResponse.data.engineers || [];
+      
+      // Get current user's organization
+      const currentOrgId = organizationContext?.organization_id || ticket.manufacturer_id;
+      
+      // Transform to match Engineer interface
+      const transformedEngineers = allEngineers.map((eng: any) => {
+        const isOwnEngineer = eng.organization_id === currentOrgId;
+        const category = isOwnEngineer ? 'Manufacturer' : `Partner - ${eng.organization_name}`;
+        
+        return {
+          engineer_id: eng.id,
+          engineer_name: eng.name,
+          organization_id: eng.organization_id,
+          organization_name: eng.organization_name,
+          organization_type: isOwnEngineer ? 'manufacturer' : 'channel_partner',
+          engineer_level: eng.engineer_level || 'L2',
+          phone: eng.phone,
+          email: eng.email,
+          category: category,
+          manufacturer_certified: !isOwnEngineer,
+          match_score: null, // No AI scoring for now
+          equipment_types: [],
+          location: null,
+        };
+      });
+      
+      // Sort: Own engineers first, then partners, then by name
+      transformedEngineers.sort((a, b) => {
+        const aIsOwn = a.organization_id === currentOrgId ? 0 : 1;
+        const bIsOwn = b.organization_id === currentOrgId ? 0 : 1;
+        if (aIsOwn !== bIsOwn) return aIsOwn - bIsOwn;
+        return a.engineer_name.localeCompare(b.engineer_name);
+      });
+      
+      setEngineers(transformedEngineers);
     } catch (err: any) {
-      console.error('Failed to fetch engineer suggestions:', err);
-      setError(err.response?.data?.error || 'Failed to load engineer suggestions');
+      console.error('Failed to fetch engineers:', err);
+      setError(err.response?.data?.error || 'Failed to load engineers');
     } finally {
       setIsLoading(false);
     }
@@ -81,8 +129,15 @@ export default function EngineerSelectionModal({
     setError(null);
     
     try {
+      // Find the engineer to get their name
+      const engineer = engineers.find(e => e.engineer_id === engineerId);
+      if (!engineer) {
+        throw new Error('Engineer not found');
+      }
+      
       await apiClient.post(`/v1/tickets/${ticketId}/assign`, {
         engineer_id: engineerId,
+        engineer_name: engineer.engineer_name, // Include engineer name
         assignment_tier: 'tier_1' // Can be determined based on organization type
       });
       
@@ -132,6 +187,78 @@ export default function EngineerSelectionModal({
     if (score >= 60) return 'text-yellow-600';
     return 'text-gray-600';
   };
+
+  const getOrgTypeBadge = (category?: string, orgType?: string) => {
+    if (!category) return null;
+    
+    if (category === 'Manufacturer' || orgType === 'manufacturer') {
+      return (
+        <Badge className="bg-blue-100 text-blue-800 border-blue-300">
+          <Building2 className="h-3 w-3 mr-1" />
+          Manufacturer
+        </Badge>
+      );
+    }
+    
+    if (category.includes('Channel Partner') || orgType === 'channel_partner') {
+      return (
+        <Badge className="bg-orange-600 text-white border-orange-700">
+          <Truck className="h-3 w-3 mr-1" />
+          {category.replace('Channel Partner - ', 'Partner: ')}
+        </Badge>
+      );
+    }
+    
+    if (category.includes('Sub-Dealer') || orgType === 'sub_dealer') {
+      return (
+        <Badge className="bg-purple-700 text-white border-purple-800">
+          <UsersIcon className="h-3 w-3 mr-1" />
+          {category.replace('Sub-Dealer - ', 'Dealer: ')}
+        </Badge>
+      );
+    }
+    
+    if (category.includes('Partner')) {
+      return (
+        <Badge className="bg-orange-600 text-white border-orange-700">
+          <Truck className="h-3 w-3 mr-1" />
+          Partner
+        </Badge>
+      );
+    }
+    
+    return null;
+  };
+
+  // Filter engineers by category
+  const filteredEngineers = engineers.filter(eng => {
+    if (activeCategory === 'all') return true;
+    if (activeCategory === 'senior') return eng.engineer_level === 'L3';
+    if (activeCategory === 'certified') return eng.manufacturer_certified;
+    if (activeCategory === 'high-match') return (eng.match_score || 0) >= 80;
+    if (activeCategory === 'partner-network') {
+      return eng.category !== 'Manufacturer' || 
+             eng.organization_type === 'channel_partner' || 
+             eng.organization_type === 'sub_dealer';
+    }
+    return true;
+  });
+
+  const categories = [
+    { id: 'all', label: 'Best Overall Match', count: engineers.length },
+    { id: 'senior', label: 'Sr. Engineers Only', count: engineers.filter(e => e.engineer_level === 'L3').length },
+    { id: 'certified', label: 'Manufacturer Certified', count: engineers.filter(e => e.manufacturer_certified).length },
+    { id: 'high-match', label: 'Skills Match (80%+)', count: engineers.filter(e => (e.match_score || 0) >= 80).length },
+    { 
+      id: 'partner-network', 
+      label: 'Partner Network', 
+      count: engineers.filter(e => 
+        e.category !== 'Manufacturer' || 
+        e.organization_type === 'channel_partner' || 
+        e.organization_type === 'sub_dealer'
+      ).length 
+    },
+  ];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -185,14 +312,32 @@ export default function EngineerSelectionModal({
           </div>
         ) : (
           <div className="space-y-4">
+            {/* Category Filters */}
+            <div className="flex gap-2 flex-wrap">
+              {categories.map(cat => (
+                <Button
+                  key={cat.id}
+                  variant={activeCategory === cat.id ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setActiveCategory(cat.id)}
+                  className={activeCategory === cat.id ? 'bg-blue-600' : ''}
+                >
+                  {cat.label}
+                  <Badge variant="secondary" className="ml-2">
+                    {cat.count}
+                  </Badge>
+                </Button>
+              ))}
+            </div>
+
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <p className="text-sm text-blue-800">
-                <strong>{engineers.length}</strong> engineer{engineers.length !== 1 ? 's' : ''} available
-                {' '}• Sorted by level and match score
+                <strong>{filteredEngineers.length}</strong> engineer{filteredEngineers.length !== 1 ? 's' : ''} available
+                {' '}• Sorted by match score
               </p>
             </div>
 
-            {engineers.map((engineer, index) => (
+            {filteredEngineers.map((engineer, index) => (
               <div
                 key={engineer.engineer_id}
                 className={`border rounded-lg p-4 transition-all ${
@@ -209,14 +354,15 @@ export default function EngineerSelectionModal({
                         {engineer.engineer_name.charAt(0)}
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2 flex-wrap">
                           {engineer.engineer_name}
-                          {index === 0 && (
+                          {index === 0 && activeCategory === 'all' && (
                             <Badge className="bg-amber-100 text-amber-800 border-amber-300">
                               <Star className="h-3 w-3 mr-1" />
                               Recommended
                             </Badge>
                           )}
+                          {getOrgTypeBadge(engineer.category, engineer.organization_type)}
                           {engineer.manufacturer_certified && (
                             <Badge className="bg-green-100 text-green-800 border-green-300">
                               <Award className="h-3 w-3 mr-1" />

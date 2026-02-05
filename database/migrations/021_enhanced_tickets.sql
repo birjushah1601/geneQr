@@ -1,4 +1,4 @@
--- Migration: Enhanced Service Tickets for Anonymous Creation
+﻿-- Migration: Enhanced Service Tickets for Anonymous Creation
 -- Version: 1.0
 -- Date: 2025-12-20
 -- Description: Add support for anonymous ticket creation (QR/WhatsApp) with flexible contact info
@@ -307,7 +307,7 @@ BEGIN
         'Service Ticket Created: ' || NEW.ticket_number,
         format('Your service ticket %s has been created successfully. Track it at: %s',
                NEW.ticket_number,
-               'https://app.aby-med.com/track/' || COALESCE(NEW.tracking_token, NEW.ticket_number));
+               'https://app.ServQR.com/track/' || COALESCE(NEW.tracking_token, NEW.ticket_number));
     
     RETURN NEW;
 END;

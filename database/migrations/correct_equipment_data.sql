@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Data Correction: Migrate to Proper Equipment Architecture
 -- ============================================================================
 -- This script:
@@ -53,8 +53,8 @@ FROM (VALUES
   ('REG-CT-PHIL-001', '550e8400-e29b-41d4-a716-446655440003', 'QR-CT-PHIL-001', 'SN-CT-PHIL-001', 'Ingenuity CT 128-slice', 'Philips Healthcare', 'Columbia Asia', 'Columbia Asia - Diagnostics Center', '2022-09-25', '2025-09-25', 'operational', 'https://app.example.com/qr/REG-CT-PHIL-001', 'admin'),
   
   -- X-Ray Systems
-  ('REG-XR-ALPHA-001', '550e8400-e29b-41d4-a716-446655440006', 'QR-XR-ALPHA-001', 'SN-XR-ALPHA-001', 'X-Ray System Alpha', 'SouthCare Distributors', 'Local Clinic', 'Local Clinic - X-Ray Room', '2023-02-14', '2026-02-14', 'operational', 'https://app.example.com/qr/REG-XR-ALPHA-001', 'admin'),
-  ('REG-XR-ALPHA-002', '550e8400-e29b-41d4-a716-446655440006', 'QR-XR-ALPHA-002', 'SN-XR-ALPHA-002', 'X-Ray System Alpha', 'SouthCare Distributors', 'Community Hospital', 'Community Hospital - Radiology', '2023-04-22', '2026-04-22', 'operational', 'https://app.example.com/qr/REG-XR-ALPHA-002', 'admin'),
+  ('REG-XR-ALPHA-001', '550e8400-e29b-41d4-a716-446655440006', 'QR-XR-ALPHA-001', 'SN-XR-ALPHA-001', 'X-Ray System Alpha', 'SouthCare Channel Partners', 'Local Clinic', 'Local Clinic - X-Ray Room', '2023-02-14', '2026-02-14', 'operational', 'https://app.example.com/qr/REG-XR-ALPHA-001', 'admin'),
+  ('REG-XR-ALPHA-002', '550e8400-e29b-41d4-a716-446655440006', 'QR-XR-ALPHA-002', 'SN-XR-ALPHA-002', 'X-Ray System Alpha', 'SouthCare Channel Partners', 'Community Hospital', 'Community Hospital - Radiology', '2023-04-22', '2026-04-22', 'operational', 'https://app.example.com/qr/REG-XR-ALPHA-002', 'admin'),
   ('REG-XR-CANON-001', '550e8400-e29b-41d4-a716-446655440005', 'QR-XR-CANON-001', 'SN-XR-CANON-001', 'Digital X-Ray System CXDI-410C', 'Canon Medical', 'Regional Medical Center', 'Regional Medical Center', '2022-12-05', '2025-12-05', 'operational', 'https://app.example.com/qr/REG-XR-CANON-001', 'admin'),
   
   -- Ultrasound
@@ -66,8 +66,8 @@ FROM (VALUES
   ('REG-PM-VIS-002', '550e8400-e29b-41d4-a716-446655440008', 'QR-PM-VIS-002', 'SN-PM-VIS-002', 'Patient Monitor Visionary', 'Medtronic India', 'Emergency Hospital', 'Emergency Department - Station 3', '2023-03-10', '2026-03-10', 'operational', 'https://app.example.com/qr/REG-PM-VIS-002', 'admin'),
   
   -- Ventilators
-  ('REG-VENT-SAV-001', '550e8400-e29b-41d4-a716-446655440009', 'QR-VENT-SAV-001', 'SN-VENT-SAV-001', 'Savina 300 Ventilator', 'Dräger Medical', 'Metro Hospital', 'ICU - Critical Care Unit', '2023-02-28', '2026-02-28', 'operational', 'https://app.example.com/qr/REG-VENT-SAV-001', 'admin'),
-  ('REG-VENT-SAV-002', '550e8400-e29b-41d4-a716-446655440009', 'QR-VENT-SAV-002', 'SN-VENT-SAV-002', 'Savina 300 Ventilator', 'Dräger Medical', 'Care Hospital', 'Respiratory Care Unit', '2023-04-05', '2026-04-05', 'operational', 'https://app.example.com/qr/REG-VENT-SAV-002', 'admin'),
+  ('REG-VENT-SAV-001', '550e8400-e29b-41d4-a716-446655440009', 'QR-VENT-SAV-001', 'SN-VENT-SAV-001', 'Savina 300 Ventilator', 'DrÃ¤ger Medical', 'Metro Hospital', 'ICU - Critical Care Unit', '2023-02-28', '2026-02-28', 'operational', 'https://app.example.com/qr/REG-VENT-SAV-001', 'admin'),
+  ('REG-VENT-SAV-002', '550e8400-e29b-41d4-a716-446655440009', 'QR-VENT-SAV-002', 'SN-VENT-SAV-002', 'Savina 300 Ventilator', 'DrÃ¤ger Medical', 'Care Hospital', 'Respiratory Care Unit', '2023-04-05', '2026-04-05', 'operational', 'https://app.example.com/qr/REG-VENT-SAV-002', 'admin'),
   
   -- Dialysis
   ('REG-DIAL-FRES-001', '550e8400-e29b-41d4-a716-446655440011', 'QR-DIAL-FRES-001', 'SN-DIAL-FRES-001', 'Fresenius 5008 Dialysis Machine', 'Fresenius Medical Care', 'Nephrology Center', 'Nephrology Department - Station 1', '2023-05-18', '2026-05-18', 'operational', 'https://app.example.com/qr/REG-DIAL-FRES-001', 'admin'),

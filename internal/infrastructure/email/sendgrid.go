@@ -1,4 +1,4 @@
-package email
+﻿package email
 
 import (
 	"context"
@@ -39,7 +39,7 @@ This code will expire in 5 minutes.
 If you didn't request this code, please ignore this email.
 
 Best regards,
-ABY-MED Platform
+ServQR Platform
 `, otp)
 
 	// HTML content
@@ -59,7 +59,7 @@ ABY-MED Platform
 <body>
     <div class="container">
         <div class="header">
-            <h1>ABY-MED Platform</h1>
+            <h1>ServQR Platform</h1>
         </div>
         <div class="content">
             <h2>Your Verification Code</h2>
@@ -69,8 +69,8 @@ ABY-MED Platform
             <p>If you didn't request this code, please ignore this email.</p>
         </div>
         <div class="footer">
-            <p>This is an automated message from ABY-MED Platform</p>
-            <p>&copy; 2025 ABY-MED. All rights reserved.</p>
+            <p>This is an automated message from ServQR Platform</p>
+            <p>&copy; 2025 ServQR. All rights reserved.</p>
         </div>
     </div>
 </body>

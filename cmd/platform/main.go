@@ -1,4 +1,4 @@
-package main
+﻿package main
 
 import (
 	"context"
@@ -19,6 +19,7 @@ import (
     "github.com/aby-med/medical-platform/internal/shared/service"
 	sharedmiddleware "github.com/aby-med/medical-platform/internal/shared/middleware"
 	appmiddleware "github.com/aby-med/medical-platform/internal/middleware"
+	"github.com/aby-med/medical-platform/internal/api"
 	auth "github.com/aby-med/medical-platform/internal/core/auth"
     organizations "github.com/aby-med/medical-platform/internal/core/organizations"
 	// equipmentcore "github.com/aby-med/medical-platform/internal/core/equipment" // Disabled - using equipment-registry instead
@@ -38,6 +39,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/joho/godotenv"
@@ -51,7 +53,6 @@ import (
 	// "github.com/aby-med/medical-platform/internal/assignment"
 	// "github.com/aby-med/medical-platform/internal/parts"
 	// "github.com/aby-med/medical-platform/internal/feedback"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 const (
@@ -121,7 +122,7 @@ func main() {
 			logger.Warn("Failed to initialize auth module", slog.String("error", err.Error()))
 			authModule = nil
 		} else if authModule != nil {
-			logger.Info("✅ Auth module initialized")
+			logger.Info("âœ… Auth module initialized")
 		}
 	}
 
@@ -131,15 +132,17 @@ func main() {
 	// NOW register auth routes (after middleware is set up)
 	if authModule != nil {
 		authModule.RegisterRoutes(router)
-		logger.Info("✅ Auth routes registered")
+		logger.Info("âœ… Auth routes registered")
 	}
 
 	// Initialize modules (non-blocking) with auth middleware
-	modules, modulesCtx, err := initializeModules(ctx, router, enabledModules, cfg, logger, authModule)
+	modules, modulesCtx, err := initializeModules(ctx, router, enabledModules, cfg, logger, authModule, authDB)
 	if err != nil {
 		logger.Error("Failed to initialize modules", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
+
+
 
 	// ========================================================================
 	// INITIALIZE NOTIFICATIONS AND REPORTS SYSTEMS
@@ -266,13 +269,13 @@ func setupRouter(cfg *config.Config, logger *slog.Logger, tracer observability.T
 	// This validates JWT and sets claims in context
 	if authModule != nil {
 		r.Use(authModule.Handler.AuthMiddleware)
-		logger.Info("✅ Auth middleware applied GLOBALLY (runs before org middleware)")
+		logger.Info("âœ… Auth middleware applied GLOBALLY (runs before org middleware)")
 	}
 
 	// CRITICAL: Organization context middleware for multi-tenant data isolation
 	// Extracts org info from JWT claims (set by auth middleware above)
 	r.Use(appmiddleware.OrganizationContextMiddleware(logger))
-	logger.Info("✅ Organization context middleware registered")
+	logger.Info("âœ… Organization context middleware registered")
 
 	// Health check endpoint
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -295,7 +298,7 @@ func setupRouter(cfg *config.Config, logger *slog.Logger, tracer observability.T
 }
 
 // initializeModules initializes all enabled modules and mounts their routes (non-blocking)
-func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []string, cfg *config.Config, logger *slog.Logger, authModule *auth.Module) ([]service.Module, context.Context, error) {
+func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []string, cfg *config.Config, logger *slog.Logger, authModule *auth.Module, authDB *sqlx.DB) ([]service.Module, context.Context, error) {
 	// Get all available modules
 	registry := service.NewRegistry(cfg, logger)
 	// Register individual modules here
@@ -341,7 +344,7 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 	// Setup common variables for Equipment Registry and Service Ticket modules
 	baseURL := os.Getenv("BASE_URL")
 	if baseURL == "" {
-		baseURL = "https://service.yourcompany.com"
+		baseURL = "https://servqr.com"
 	}
 	qrOutputDir := os.Getenv("QR_OUTPUT_DIR")
 	if qrOutputDir == "" {
@@ -510,6 +513,26 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 		
 		// Add spare parts catalog endpoint
 		apiRouter.Get("/catalog/parts", createSparePartsHandler(cfg.GetDSN(), logger))
+		
+		// Add parts import endpoint
+		// Create database pool for imports
+		importPool, err := pgxpool.New(ctx, cfg.GetDSN())
+		if err != nil {
+			logger.Error("Failed to create pool for parts import", slog.String("error", err.Error()))
+		} else {
+			partsImportHandler := api.NewPartsImportHandler(importPool, logger)
+			apiRouter.Post("/parts/import", partsImportHandler.ImportParts)
+			logger.Info("Parts import endpoint registered")
+		}
+		
+		// Add partner association endpoints (inside the existing /api/v1 route)
+		if authDB != nil {
+			partnerHandler := api.NewPartnerHandler(authDB.DB)
+			partnerHandler.RegisterRoutes(apiRouter)
+			logger.Info("✅ Partner association endpoints registered")
+		} else {
+			logger.Warn("Partner association endpoints not registered - database not available")
+		}
 	})
 	
 	// WhatsApp integration disabled (depends on equipment-registry module which is disabled)
@@ -557,7 +580,7 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 						logger,
 					)
 					whatsappModule.MountRoutes(apiRouter)
-					logger.Info("✅ WhatsApp integration initialized and routes mounted")
+					logger.Info("âœ… WhatsApp integration initialized and routes mounted")
 				} else {
 					logger.Warn("WhatsApp enabled but required services not available yet - webhook endpoint created for verification only")
 					// Create a simple verification endpoint

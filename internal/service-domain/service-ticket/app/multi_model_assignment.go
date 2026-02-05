@@ -1,4 +1,4 @@
-package app
+﻿package app
 
 import (
 	"context"
@@ -169,8 +169,8 @@ func (s *MultiModelAssignmentService) GetMultiModelSuggestions(ctx context.Conte
 		RequiresCertification: ticket.Priority == domain.PriorityCritical,
 	}
 	
-	// 4. Get all engineers
-	allEngineers, err := s.assignRepo.ListEngineers(ctx, nil, 1000, 0)
+	// 4. Get all engineers (include partners for assignment suggestions)
+	allEngineers, err := s.assignRepo.ListEngineers(ctx, nil, true, 1000, 0)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list engineers: %w", err)
 	}

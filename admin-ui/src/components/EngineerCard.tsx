@@ -26,6 +26,16 @@ export default function EngineerCard({ engineer, onAssign, isAssigning }: Engine
     }
   };
 
+  // Clean encoding issues from match reasons
+  const cleanMatchReason = (reason: string) => {
+    return reason
+      .replace(/âœ…/g, '') // Remove broken check mark
+      .replace(/â€¢/g, '') // Remove broken bullet
+      .replace(/Ã¢Å"â€œ/g, '') // Remove junk prefix
+      .replace(/^\s*✓\s*/g, '') // Remove any leading check marks
+      .trim();
+  };
+
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg hover:border-blue-300 transition-all">
       {/* Header with Avatar and Name */}
@@ -65,7 +75,7 @@ export default function EngineerCard({ engineer, onAssign, isAssigning }: Engine
       {/* Top Match Reason */}
       {engineer.match_reasons && engineer.match_reasons.length > 0 && (
         <div className="mb-3 text-sm text-gray-700 bg-blue-50 rounded-md p-2 border border-blue-100">
-          <span className="font-medium text-blue-900">✓</span> {engineer.match_reasons[0]}
+          <span className="font-medium text-blue-900">✓</span> {cleanMatchReason(engineer.match_reasons[0])}
         </div>
       )}
 

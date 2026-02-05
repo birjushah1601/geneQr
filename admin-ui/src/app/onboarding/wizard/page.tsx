@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import OnboardingWizard, { WizardStep } from '@/components/onboarding/OnboardingWizard';
@@ -57,7 +57,7 @@ export default function OnboardingWizardPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Welcome to ABY-MED
+            Welcome to ServQR
           </h1>
           <p className="text-lg text-gray-600">
             Let's get your organization set up in just a few steps

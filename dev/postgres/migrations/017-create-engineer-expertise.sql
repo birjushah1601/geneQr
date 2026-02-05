@@ -1,11 +1,11 @@
--- Migration: 017-create-engineer-expertise.sql
+﻿-- Migration: 017-create-engineer-expertise.sql
 -- Description: Engineer Expertise & Service Configuration
 -- Ticket: T2B.2
 -- Date: 2025-11-16
 -- 
 -- This migration creates:
 -- 1. engineer_equipment_expertise - Engineer skills per equipment (L1/L2/L3)
--- 2. manufacturer_service_config - Who handles service (manufacturer, client, dealer)
+-- 2. manufacturer_service_config - Who handles service (manufacturer, client, Sub-sub_SUB_DEALER)
 -- 3. engineer_certifications - Formal certifications tracking
 --
 -- Purpose:
@@ -125,7 +125,7 @@ CREATE TABLE IF NOT EXISTS manufacturer_service_config (
     equipment_catalog_id UUID REFERENCES equipment_catalog(id),  -- NULL = applies to all equipment from manufacturer
     
     -- Service Provider
-    service_provider_type TEXT NOT NULL,        -- 'manufacturer', 'client', 'dealer', 'distributor'
+    service_provider_type TEXT NOT NULL,        -- 'manufacturer', 'client', 'Sub-sub_SUB_DEALER', 'Channel Partner'
     service_provider_org_id UUID REFERENCES organizations(id),
     
     -- Service Details
@@ -172,7 +172,7 @@ CREATE TABLE IF NOT EXISTS manufacturer_service_config (
     
     -- Constraints
     CONSTRAINT chk_service_provider_type CHECK (service_provider_type IN (
-        'manufacturer', 'client', 'dealer', 'distributor', 'third_party'
+        'manufacturer', 'client', 'Sub-sub_SUB_DEALER', 'Channel Partner', 'third_party'
     )),
     CONSTRAINT chk_sla_priority CHECK (sla_priority IS NULL OR sla_priority IN (
         'critical', 'high', 'medium', 'low'
@@ -203,10 +203,10 @@ CREATE INDEX idx_manufacturer_service_lookup ON manufacturer_service_config(
 CREATE INDEX idx_manufacturer_service_scope ON manufacturer_service_config USING GIN (service_scope);
 CREATE INDEX idx_manufacturer_service_regions ON manufacturer_service_config USING GIN (coverage_regions);
 
-COMMENT ON TABLE manufacturer_service_config IS 'Configure who handles service for equipment (manufacturer vs client vs dealer)';
+COMMENT ON TABLE manufacturer_service_config IS 'Configure who handles service for equipment (manufacturer vs client vs Sub-sub_SUB_DEALER)';
 COMMENT ON COLUMN manufacturer_service_config.equipment_catalog_id IS 'NULL = applies to all equipment from manufacturer';
 COMMENT ON COLUMN manufacturer_service_config.priority IS 'Equipment-specific (10) > Manufacturer-level (5) > Default (1)';
-COMMENT ON COLUMN manufacturer_service_config.service_provider_type IS 'Who provides the service: manufacturer, client, dealer, distributor';
+COMMENT ON COLUMN manufacturer_service_config.service_provider_type IS 'Who provides the service: manufacturer, client, Sub-sub_SUB_DEALER, Channel Partner';
 
 -- =====================================================================
 -- 3. ENGINEER CERTIFICATIONS (Formal tracking)

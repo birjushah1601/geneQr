@@ -1,4 +1,4 @@
-package app
+﻿package app
 
 import (
 	"context"
@@ -75,7 +75,7 @@ func NewJWTService(config *JWTConfig, refreshTokenRepo RefreshTokenRepository) *
 		config.RefreshTokenExpiry = 7 * 24 * time.Hour
 	}
 	if config.Issuer == "" {
-		config.Issuer = "aby-med-platform"
+		config.Issuer = "servqr-platform"
 	}
 
 	return &JWTService{
@@ -289,7 +289,7 @@ type TokenRequest struct {
 	Name             string
 	OrganizationID   string
 	OrganizationName string // Organization display name for filtering
-	OrganizationType string // manufacturer, hospital, distributor, dealer, etc.
+	OrganizationType string // manufacturer, hospital, Channel Partner, Sub-sub_SUB_DEALER, etc.
 	Role             string
 	Permissions      []string
 	DeviceInfo       map[string]interface{}

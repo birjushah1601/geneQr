@@ -1,4 +1,4 @@
-﻿Set-Location 'C:\Users\birju\aby-med'
+﻿Set-Location 'C:\Users\birju\ServQR'
 
 $env:DB_HOST = 'localhost'
 $env:DB_PORT = '5430'

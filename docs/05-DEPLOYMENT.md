@@ -1,10 +1,10 @@
-# ABY-MED Deployment Guide
+﻿# ServQR Deployment Guide
 
 Quick deployment reference. For detailed guide, see [DEPLOYMENT-GUIDE.md](./DEPLOYMENT-GUIDE.md) and [PRODUCTION-DEPLOYMENT-CHECKLIST.md](./PRODUCTION-DEPLOYMENT-CHECKLIST.md).
 
 ---
 
-## 🚀 Quick Deploy
+## ðŸš€ Quick Deploy
 
 ### Prerequisites
 - Go 1.21+, Node.js 18+, PostgreSQL 15+
@@ -36,7 +36,7 @@ psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -f database/migrations/*.sq
 
 ---
 
-## 🔧 Environment Configuration
+## ðŸ”§ Environment Configuration
 
 ### Required Variables
 ```bash
@@ -57,15 +57,15 @@ OPENAI_API_KEY=sk-...
 
 # Email
 SENDGRID_API_KEY=SG...
-SENDGRID_FROM_EMAIL=noreply@aby-med.com
+SENDGRID_FROM_EMAIL=noreply@ServQR.com
 
 # Security
-CORS_ALLOWED_ORIGINS=https://app.aby-med.com
+CORS_ALLOWED_ORIGINS=https://app.ServQR.com
 ```
 
 ---
 
-## 📊 Health Checks
+## ðŸ“Š Health Checks
 
 ```bash
 # Backend health
@@ -77,12 +77,12 @@ psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c "SELECT 1;"
 
 ---
 
-## 🐳 Docker Deployment
+## ðŸ³ Docker Deployment
 
 ```bash
 # Build images
-docker build -t aby-med-backend .
-docker build -t aby-med-frontend ./admin-ui
+docker build -t ServQR-backend .
+docker build -t ServQR-frontend ./admin-ui
 
 # Run with compose
 docker-compose -f docker-compose.prod.yml up -d
@@ -90,7 +90,7 @@ docker-compose -f docker-compose.prod.yml up -d
 
 ---
 
-## 📚 Full Documentation
+## ðŸ“š Full Documentation
 
 - **Detailed Guide:** [DEPLOYMENT-GUIDE.md](./DEPLOYMENT-GUIDE.md)
 - **Production Checklist:** [PRODUCTION-DEPLOYMENT-CHECKLIST.md](./PRODUCTION-DEPLOYMENT-CHECKLIST.md)

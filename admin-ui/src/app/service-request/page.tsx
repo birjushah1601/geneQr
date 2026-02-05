@@ -38,7 +38,7 @@ function ServiceRequestPageInner() {
     requestedBy: '',
     contactName: '',
     contactPhone: '',
-    priority: 'medium' as 'low' | 'medium' | 'high' | 'critical',
+    contactEmail: '',
   });
 
   useEffect(() => {
@@ -165,10 +165,11 @@ function ServiceRequestPageInner() {
         equipment_name: (equipment as any).equipment_name || (equipment as any).name,
         customer_id: (equipment as any).customer_id,
         customer_name: (equipment as any).customer_name || (equipment as any).customerName,
-        customer_phone: '9999999999',
+        customer_phone: formData.contactPhone || '9999999999',
+        customer_email: formData.contactEmail || undefined,
         issue_category: 'breakdown',
         issue_description: formData.description,
-        priority: formData.priority,
+        priority: 'medium', // Default priority for public requests (admin can change later)
         source: 'web',
         created_by: formData.requestedBy || 'web-user',
         notes: diagnosis?.summary ? `AI suggestion: ${diagnosis.summary}` : undefined,
@@ -188,14 +189,12 @@ function ServiceRequestPageInner() {
         setUploadingFiles(true);
         try {
           for (const file of selectedFiles) {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('ticket_id', (created as any).id || (created as any).ticket_id);
-            formData.append('entity_type', 'ticket');
-            formData.append('description', 'Attachment for service request');
-            formData.append('uploaded_by', payload.created_by);
-            
-            await attachmentsApi.upload(formData);
+            await attachmentsApi.upload({
+              file: file,
+              ticketId: (created as any).id || (created as any).ticket_id,
+              category: 'issue_photo',
+              source: 'web_upload'
+            });
           }
           console.log(`Uploaded ${selectedFiles.length} attachment(s)`);
         } catch (uploadErr) {
@@ -207,7 +206,7 @@ function ServiceRequestPageInner() {
       }
       
       setSuccess(true);
-      setFormData({ description: '', requestedBy: '', contactName: '', contactPhone: '' });
+      setFormData({ description: '', requestedBy: '', contactName: '', contactPhone: '', contactEmail: '' });
       setSelectedFiles([]);
       setAssignedParts([]);
       
@@ -349,24 +348,40 @@ function ServiceRequestPageInner() {
               />
             </div>
 
-            {/* Priority Selector */}
-            <div>
-              <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-2">
-                Priority *
-              </label>
-              <select
-                id="priority"
-                value={formData.priority}
-                onChange={(e) => setFormData({ ...formData, priority: e.target.value as any })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              >
-                <option value="low">Low - Can wait, minor issue</option>
-                <option value="medium">Medium - Should be addressed soon</option>
-                <option value="high">High - Affects operations</option>
-                <option value="critical">Critical - Equipment down, urgent</option>
-              </select>
+            {/* Contact Information - Two Columns */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="contactEmail" className="block text-sm font-medium text-gray-700 mb-2">
+                  Email (Optional)
+                </label>
+                <input
+                  type="email"
+                  id="contactEmail"
+                  value={formData.contactEmail}
+                  onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="your@email.com"
+                />
+                <p className="text-xs text-gray-500 mt-1">Get updates via email</p>
+              </div>
+
+              <div>
+                <label htmlFor="contactPhone" className="block text-sm font-medium text-gray-700 mb-2">
+                  Phone Number (Optional)
+                </label>
+                <input
+                  type="tel"
+                  id="contactPhone"
+                  value={formData.contactPhone}
+                  onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="+91-98765-43210"
+                />
+                <p className="text-xs text-gray-500 mt-1">Get updates via SMS/WhatsApp</p>
+              </div>
             </div>
+
+            {/* Priority field hidden - only admins/manufacturers can set priority */}
 
             {/* File Attachments Section */}
             <div>
@@ -429,14 +444,12 @@ function ServiceRequestPageInner() {
               )}
             </div>
 
-</div>
-
             {/* AI Analysis with Attachments - Optional */}
             {formData.description && (
               <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg p-5">
                 <div className="mb-4">
                   <h3 className="text-base font-semibold text-purple-900 flex items-center gap-2 mb-2">
-                    <span className="text-2xl">🤖</span>
+                    <span className="text-2xl">Ã°Å¸Â¤â€“</span>
                     AI-Powered Diagnosis (Optional)
                   </h3>
                   <p className="text-sm text-purple-700">
@@ -470,7 +483,7 @@ function ServiceRequestPageInner() {
                   </h3>
                   {assignedParts.length > 0 && (
                     <p className="text-xs text-green-700 mt-1">
-                      {assignedParts.length} part{assignedParts.length > 1 ? 's' : ''} assigned • ₹{assignedParts.reduce((sum, p) => sum + (p.unit_price * p.quantity), 0).toLocaleString()}
+                      {assignedParts.length} part{assignedParts.length > 1 ? 's' : ''} assigned Ã¢â‚¬Â¢ Ã¢â€šÂ¹{assignedParts.reduce((sum, p) => sum + (p.unit_price * p.quantity), 0).toLocaleString()}
                     </p>
                   )}
                 </div>
@@ -508,7 +521,7 @@ function ServiceRequestPageInner() {
                       </div>
                       <div className="text-right ml-2">
                         <p className="font-semibold text-green-700">{part.quantity}x</p>
-                        <p className="text-gray-600">₹{((part.unit_price || 0) * (part.quantity || 1)).toLocaleString()}</p>
+                        <p className="text-gray-600">Ã¢â€šÂ¹{((part.unit_price || 0) * (part.quantity || 1)).toLocaleString()}</p>
                       </div>
                     </div>
                   ))}
@@ -552,16 +565,16 @@ function ServiceRequestPageInner() {
             />
           </div>
         )}
-      </div>
 
-      {/* Parts Assignment Modal */}
-      <PartsAssignmentModal
-        open={isPartsModalOpen}
-        onClose={() => setIsPartsModalOpen(false)}
-        onAssign={handlePartsAssign}
-        equipmentId={(equipment as any)?.id || 'unknown'}
-        equipmentName={(equipment as any)?.equipment_name || (equipment as any)?.name || 'Equipment'}
-      />
+        {/* Parts Assignment Modal */}
+        <PartsAssignmentModal
+          open={isPartsModalOpen}
+          onClose={() => setIsPartsModalOpen(false)}
+          onAssign={handlePartsAssign}
+          equipmentId={(equipment as any)?.id || 'unknown'}
+          equipmentName={(equipment as any)?.equipment_name || (equipment as any)?.name || 'Equipment'}
+        />
+      </div>
     </div>
   );
 }

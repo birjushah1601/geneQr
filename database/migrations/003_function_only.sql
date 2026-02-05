@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION get_eligible_service_orgs(p_equipment_id VARCHAR)
+﻿CREATE OR REPLACE FUNCTION get_eligible_service_orgs(p_equipment_id VARCHAR)
 RETURNS TABLE(
   org_id UUID,
   org_name TEXT,
@@ -52,7 +52,7 @@ BEGIN
     o.org_type,
     2 as tier,
     'secondary' as tier_name,
-    'authorized_dealer' as reason
+    'authorized_sub_Sub-sub_SUB_DEALER' as reason
   FROM config c
   JOIN organizations o ON o.id = c.secondary_service_org_id
   WHERE c.secondary_service_org_id IS NOT NULL
@@ -65,7 +65,7 @@ BEGIN
     o.org_type,
     3 as tier,
     'tertiary' as tier_name,
-    'distributor' as reason
+    'Channel Partner' as reason
   FROM config c
   JOIN organizations o ON o.id = c.tertiary_service_org_id
   WHERE c.tertiary_service_org_id IS NOT NULL

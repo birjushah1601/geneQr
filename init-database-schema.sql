@@ -1,4 +1,4 @@
--- ABY-MED Platform - Database Initialization Script
+﻿-- ServQR Platform - Database Initialization Script
 -- This script creates the basic schema for testing all services
 
 -- Drop existing tables if they exist (for clean reinstall)

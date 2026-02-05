@@ -1,6 +1,6 @@
-# Parts Marketplace & Commerce Solution - Brainstorming Document
+﻿# Parts Marketplace & Commerce Solution - Brainstorming Document
 
-## 📋 Overview
+## ðŸ“‹ Overview
 
 Building a comprehensive e-commerce marketplace for medical equipment spare parts, integrated with the existing ticket and equipment management system.
 
@@ -13,7 +13,7 @@ Building a comprehensive e-commerce marketplace for medical equipment spare part
 
 ---
 
-## 🎯 Vision Statement
+## ðŸŽ¯ Vision Statement
 
 Create a B2B/B2C marketplace where:
 - Hospitals, clinics, and engineers can easily find and order spare parts
@@ -24,7 +24,7 @@ Create a B2B/B2C marketplace where:
 
 ---
 
-## ❓ Critical Questions to Answer
+## â“ Critical Questions to Answer
 
 ### 1. User Types & Access Control
 
@@ -39,8 +39,8 @@ Create a B2B/B2C marketplace where:
 ```
 - manufacturer
 - supplier
-- distributor
-- dealer
+- Channel Partner
+- Sub-sub_SUB_DEALER
 - hospital
 - clinic
 - service_provider
@@ -67,8 +67,8 @@ Clinic             | ?        | ?       | ?        | ?
 Engineer           | ?        | ?       | ?        | ?
 Manufacturer       | ?        | ?       | ?        | ?
 Supplier           | ?        | ?       | ?        | ?
-Distributor        | ?        | ?       | ?        | ?
-Dealer             | ?        | ?       | ?        | ?
+Channel Partner        | ?        | ?       | ?        | ?
+Sub-sub_SUB_DEALER             | ?        | ?       | ?        | ?
 Service Provider   | ?        | ?       | ?        | ?
 ```
 
@@ -81,27 +81,27 @@ Service Provider   | ?        | ?       | ?        | ?
 **Option A: Ticket-First Approach**
 ```
 User Login
-└─ Has Tickets?
-   ├─ YES → Dashboard with "My Tickets" + "Browse Parts" button
-   └─ NO → Marketplace Landing Page
+â””â”€ Has Tickets?
+   â”œâ”€ YES â†’ Dashboard with "My Tickets" + "Browse Parts" button
+   â””â”€ NO â†’ Marketplace Landing Page
 ```
 
 **Option B: Dashboard-First Approach**
 ```
 User Login
-└─ Dashboard (always)
-   ├─ Sidebar: My Tickets (if any)
-   ├─ Sidebar: Marketplace (always visible)
-   └─ Main: Tickets or Marketplace based on tickets
+â””â”€ Dashboard (always)
+   â”œâ”€ Sidebar: My Tickets (if any)
+   â”œâ”€ Sidebar: Marketplace (always visible)
+   â””â”€ Main: Tickets or Marketplace based on tickets
 ```
 
 **Option C: Role-Based Approach**
 ```
 User Login
-└─ Based on User Type
-   ├─ Hospital/Clinic → Marketplace First (+ Tickets if any)
-   ├─ Engineer → Tickets First (+ Marketplace access)
-   └─ Manufacturer → Seller Dashboard
+â””â”€ Based on User Type
+   â”œâ”€ Hospital/Clinic â†’ Marketplace First (+ Tickets if any)
+   â”œâ”€ Engineer â†’ Tickets First (+ Marketplace access)
+   â””â”€ Manufacturer â†’ Seller Dashboard
 ```
 
 **Preferred Option:** _______________
@@ -321,7 +321,7 @@ Sort By:
 **Q5.4: Product images:**
 - [ ] Single image per product (MVP)
 - [ ] Multiple images (gallery with zoom)
-- [ ] 360° view
+- [ ] 360Â° view
 - [ ] Installation diagrams
 - [ ] Video demonstrations
 
@@ -393,7 +393,7 @@ Step 3: Confirmation
 
 **Option C: Progressive Disclosure**
 ```
-Shipping → [Expand] Review → [Expand] Confirm
+Shipping â†’ [Expand] Review â†’ [Expand] Confirm
 ```
 
 **Preferred:** _______________
@@ -424,11 +424,11 @@ Shipping → [Expand] Review → [Expand] Confirm
 **Q7.5: Order summary display:**
 ```
 Order Summary:
-├─ Items subtotal: $___
-├─ Shipping: $___
-├─ Tax (if applicable): $___
-├─ Discount: -$___
-└─ Total: $___
+â”œâ”€ Items subtotal: $___
+â”œâ”€ Shipping: $___
+â”œâ”€ Tax (if applicable): $___
+â”œâ”€ Discount: -$___
+â””â”€ Total: $___
 ```
 
 **Tax handling:**
@@ -441,23 +441,23 @@ Order Summary:
 
 **Option A: Request Quote**
 ```
-[Place Order] → Generate PO → Email to manufacturer
-→ Manufacturer sends payment details → User pays offline
-→ Manufacturer confirms payment → Order processed
+[Place Order] â†’ Generate PO â†’ Email to manufacturer
+â†’ Manufacturer sends payment details â†’ User pays offline
+â†’ Manufacturer confirms payment â†’ Order processed
 ```
 
 **Option B: Manual Payment Instructions**
 ```
-[Place Order] → Order created (status: pending_payment)
-→ Confirmation email with bank details / payment link
-→ User uploads payment proof → Admin verifies → Order confirmed
+[Place Order] â†’ Order created (status: pending_payment)
+â†’ Confirmation email with bank details / payment link
+â†’ User uploads payment proof â†’ Admin verifies â†’ Order confirmed
 ```
 
 **Option C: Invoice-Based**
 ```
-[Place Order] → Generate invoice (PDF)
-→ Email invoice to user → User pays via wire/check
-→ Manufacturer marks as paid → Order fulfilled
+[Place Order] â†’ Generate invoice (PDF)
+â†’ Email invoice to user â†’ User pays via wire/check
+â†’ Manufacturer marks as paid â†’ Order fulfilled
 ```
 
 **Preferred:** _______________
@@ -478,8 +478,8 @@ Order Summary:
 
 **Proposed Statuses:**
 ```
-pending_payment → payment_verified → processing → 
-packed → shipped → out_for_delivery → delivered
+pending_payment â†’ payment_verified â†’ processing â†’ 
+packed â†’ shipped â†’ out_for_delivery â†’ delivered
 
 Branches:
 - cancelled (by user or manufacturer)
@@ -793,25 +793,25 @@ EU: VAT (standard rate varies by country)
 
 **Scenario A: Engineer recommends parts**
 ```
-Engineer on ticket → "Recommend Parts" button
-→ Search marketplace → Add to customer's cart
-→ Customer receives notification → Reviews and orders
+Engineer on ticket â†’ "Recommend Parts" button
+â†’ Search marketplace â†’ Add to customer's cart
+â†’ Customer receives notification â†’ Reviews and orders
 ```
 
 **Scenario B: Auto-suggest parts**
 ```
 Ticket created for MRI issue
-→ System suggests compatible parts
-→ "Add suggested parts to cart" button
-→ One-click to cart
+â†’ System suggests compatible parts
+â†’ "Add suggested parts to cart" button
+â†’ One-click to cart
 ```
 
 **Scenario C: Linked purchases**
 ```
-Order placed → Associate with ticket
-→ Track parts ordered for ticket
-→ Engineer notified when parts arrive
-→ Update ticket: "Parts received, scheduled for installation"
+Order placed â†’ Associate with ticket
+â†’ Track parts ordered for ticket
+â†’ Engineer notified when parts arrive
+â†’ Update ticket: "Parts received, scheduled for installation"
 ```
 
 **Preferred Integration:** _______________
@@ -819,7 +819,7 @@ Order placed → Associate with ticket
 **Q13.2: Equipment registry integration:**
 - [ ] Show only compatible parts for user's equipment
 - [ ] "Parts for your MRI-20251001" section
-- [ ] Equipment maintenance history → suggests parts
+- [ ] Equipment maintenance history â†’ suggests parts
 - [ ] Warranty status affects part recommendations
 
 **Q13.3: Analytics & insights:**
@@ -834,7 +834,7 @@ Order placed → Associate with ticket
 
 **Q14.1: New user (hospital) journey:**
 ```
-Step 1: Login → No tickets
+Step 1: Login â†’ No tickets
 Step 2: See marketplace homepage
 Step 3: Browse by equipment type or search
 Step 4: Add parts to cart
@@ -848,10 +848,10 @@ Step 10: Parts delivered
 
 **Q14.2: Engineer journey:**
 ```
-Step 1: Login → Has tickets
+Step 1: Login â†’ Has tickets
 Step 2: See tickets dashboard
-Step 3: Click on ticket → Equipment issue
-Step 4: Click "Find Parts" → Opens marketplace
+Step 3: Click on ticket â†’ Equipment issue
+Step 4: Click "Find Parts" â†’ Opens marketplace
 Step 5: Search for specific part
 Step 6: Add to customer's cart (or own cart)
 Step 7: Customer receives notification
@@ -860,21 +860,21 @@ Step 8: Customer reviews and places order
 
 **Q14.3: Manufacturer (seller) journey:**
 ```
-Step 1: Login → Seller dashboard
+Step 1: Login â†’ Seller dashboard
 Step 2: Add products (bulk upload CSV)
 Step 3: Set prices and stock levels
 Step 4: New order notification received
-Step 5: Review order → Accept
-Step 6: Update status → Processing
+Step 5: Review order â†’ Accept
+Step 6: Update status â†’ Processing
 Step 7: Pack items, generate shipping label
-Step 8: Update status → Shipped (add tracking)
+Step 8: Update status â†’ Shipped (add tracking)
 Step 9: Monitor delivery
-Step 10: Order completed → Payment received
+Step 10: Order completed â†’ Payment received
 ```
 
 **Q14.4: Return customer journey:**
 ```
-Step 1: Login → See recent orders + marketplace
+Step 1: Login â†’ See recent orders + marketplace
 Step 2: "Reorder" button on previous order
 Step 3: Review cart, update quantities
 Step 4: Use saved shipping address
@@ -953,53 +953,53 @@ Step 5: Quick checkout (2 clicks)
 
 ---
 
-## 🏗️ Proposed Architecture
+## ðŸ—ï¸ Proposed Architecture
 
 ### Module Structure
 ```
 internal/
-└─ service-domain/
-   └─ marketplace/
-      ├─ domain/
-      │  ├─ product.go
-      │  ├─ cart.go
-      │  ├─ order.go
-      │  └─ repository.go
-      ├─ app/
-      │  ├─ product_service.go
-      │  ├─ cart_service.go
-      │  └─ order_service.go
-      ├─ api/
-      │  ├─ product_handler.go
-      │  ├─ cart_handler.go
-      │  └─ order_handler.go
-      ├─ infra/
-      │  └─ postgres_repository.go
-      └─ module.go
+â””â”€ service-domain/
+   â””â”€ marketplace/
+      â”œâ”€ domain/
+      â”‚  â”œâ”€ product.go
+      â”‚  â”œâ”€ cart.go
+      â”‚  â”œâ”€ order.go
+      â”‚  â””â”€ repository.go
+      â”œâ”€ app/
+      â”‚  â”œâ”€ product_service.go
+      â”‚  â”œâ”€ cart_service.go
+      â”‚  â””â”€ order_service.go
+      â”œâ”€ api/
+      â”‚  â”œâ”€ product_handler.go
+      â”‚  â”œâ”€ cart_handler.go
+      â”‚  â””â”€ order_handler.go
+      â”œâ”€ infra/
+      â”‚  â””â”€ postgres_repository.go
+      â””â”€ module.go
 ```
 
 ### Frontend Structure
 ```
 admin-ui/
-└─ src/
-   └─ app/
-      └─ marketplace/
-         ├─ page.tsx (listings)
-         ├─ [productId]/
-         │  └─ page.tsx (detail)
-         ├─ cart/
-         │  └─ page.tsx
-         ├─ checkout/
-         │  └─ page.tsx
-         └─ orders/
-            ├─ page.tsx (history)
-            └─ [orderId]/
-               └─ page.tsx (detail)
+â””â”€ src/
+   â””â”€ app/
+      â””â”€ marketplace/
+         â”œâ”€ page.tsx (listings)
+         â”œâ”€ [productId]/
+         â”‚  â””â”€ page.tsx (detail)
+         â”œâ”€ cart/
+         â”‚  â””â”€ page.tsx
+         â”œâ”€ checkout/
+         â”‚  â””â”€ page.tsx
+         â””â”€ orders/
+            â”œâ”€ page.tsx (history)
+            â””â”€ [orderId]/
+               â””â”€ page.tsx (detail)
 ```
 
 ---
 
-## 📊 Implementation Phases
+## ðŸ“Š Implementation Phases
 
 ### **Phase 1: Foundation (MVP)**
 **Duration: 2-3 weeks**
@@ -1091,7 +1091,7 @@ admin-ui/
 
 ---
 
-## 🎯 Success Metrics
+## ðŸŽ¯ Success Metrics
 
 **User Metrics:**
 - Active buyers per month
@@ -1116,23 +1116,23 @@ admin-ui/
 
 ---
 
-## 🤔 Decision Matrix
+## ðŸ¤” Decision Matrix
 
 | Feature | Priority | Complexity | MVP? |
 |---------|----------|------------|------|
-| Product Listings | High | Medium | ✅ Yes |
-| Search & Filter | High | Medium | ✅ Yes |
-| Shopping Cart | High | Low | ✅ Yes |
-| Checkout | High | Medium | ✅ Yes |
-| Order Management | High | High | ✅ Yes |
-| Seller Dashboard | High | High | ⚠️ Phase 2 |
-| Payment Gateway | Medium | High | ❌ Future |
-| Reviews & Ratings | Medium | Medium | ❌ Future |
-| Advanced Analytics | Low | High | ❌ Future |
+| Product Listings | High | Medium | âœ… Yes |
+| Search & Filter | High | Medium | âœ… Yes |
+| Shopping Cart | High | Low | âœ… Yes |
+| Checkout | High | Medium | âœ… Yes |
+| Order Management | High | High | âœ… Yes |
+| Seller Dashboard | High | High | âš ï¸ Phase 2 |
+| Payment Gateway | Medium | High | âŒ Future |
+| Reviews & Ratings | Medium | Medium | âŒ Future |
+| Advanced Analytics | Low | High | âŒ Future |
 
 ---
 
-## 📝 Next Steps
+## ðŸ“ Next Steps
 
 1. **Review & Answer Questions** in this document
 2. **Prioritize Features** for MVP
@@ -1144,7 +1144,7 @@ admin-ui/
 
 ---
 
-## 📎 Appendix
+## ðŸ“Ž Appendix
 
 ### A. Similar Platforms for Inspiration
 - Amazon Business

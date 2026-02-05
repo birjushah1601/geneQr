@@ -391,7 +391,7 @@ func (s *DailyReportService) getTopLists(ctx context.Context, report *DailyRepor
 			COALESCE(eq.manufacturer, 'Unknown') as manufacturer,
 			COUNT(st.id) as issue_count,
 			COALESCE(MAX(st.created_at), eq.created_at) as last_service
-		FROM equipment eq
+		FROM equipment_registry eq
 		LEFT JOIN service_tickets st ON eq.id = st.equipment_id
 		WHERE st.created_at >= CURRENT_DATE - INTERVAL '30 days'
 		GROUP BY eq.id, eq.name, eq.manufacturer, eq.created_at

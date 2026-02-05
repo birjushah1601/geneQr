@@ -1,5 +1,5 @@
--- ============================================================================
--- ABY-MED Platform Database Schema Fix
+﻿-- ============================================================================
+-- ServQR Platform Database Schema Fix
 -- This script creates all missing tables and fixes schema mismatches
 -- ============================================================================
 
@@ -215,8 +215,8 @@ INSERT INTO suppliers (
         4.8, 'active', 'approved', 'admin'
     ),
     (
-        'sup-003', 'city-hospital', 'Global HealthTech Distributors', 'BRN-2020-003', 'TAX-GHT-003',
-        2020, 'International distributor of cutting-edge medical technology',
+        'sup-003', 'city-hospital', 'Global HealthTech Channel Partners', 'BRN-2020-003', 'TAX-GHT-003',
+        2020, 'International Channel Partner of cutting-edge medical technology',
         '{"primary_contact_name": "Michael Chen", "primary_contact_email": "michael@globalhealthtech.com", "primary_contact_phone": "+1-555-0103", "website": "https://globalhealthtech.com"}',
         '{"street": "789 Tech Park Drive", "city": "San Francisco", "state": "CA", "postal_code": "94102", "country": "USA"}',
         ARRAY['cat-001', 'cat-002', 'cat-004'],

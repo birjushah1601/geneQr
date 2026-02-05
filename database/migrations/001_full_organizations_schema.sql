@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- PHASE 1: FULL ORGANIZATIONS ARCHITECTURE - DATABASE SCHEMA
 -- ============================================================================
 -- Date: October 11, 2025
@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS organizations (
   created_by TEXT,
   
   CONSTRAINT chk_org_type CHECK (org_type IN (
-    'manufacturer', 'distributor', 'dealer', 'supplier',
+    'manufacturer', 'Channel Partner', 'Sub-sub_SUB_DEALER', 'supplier',
     'hospital', 'laboratory', 'diagnostic_center', 'clinic',
     'service_provider', 'logistics_partner', 'insurance_provider',
     'government_body', 'other'
@@ -81,7 +81,7 @@ ADD COLUMN IF NOT EXISTS created_by TEXT;
 -- Update org_type constraint to include all types
 ALTER TABLE organizations DROP CONSTRAINT IF EXISTS chk_org_type;
 ALTER TABLE organizations ADD CONSTRAINT chk_org_type CHECK (org_type IN (
-  'manufacturer', 'distributor', 'dealer', 'supplier',
+  'manufacturer', 'Channel Partner', 'Sub-sub_SUB_DEALER', 'supplier',
   'hospital', 'laboratory', 'diagnostic_center', 'clinic',
   'service_provider', 'logistics_partner', 'insurance_provider',
   'government_body', 'other'
@@ -168,11 +168,11 @@ ADD COLUMN IF NOT EXISTS notes TEXT;
 -- Update rel_type constraint
 ALTER TABLE org_relationships DROP CONSTRAINT IF EXISTS chk_rel_type;
 ALTER TABLE org_relationships ADD CONSTRAINT chk_rel_type CHECK (rel_type IN (
-  'authorized_distributor', 'exclusive_distributor', 'regional_distributor',
-  'authorized_dealer', 'service_partner', 'dealer_network', 'sub_distributor',
+  'authorized_channel_partner', 'exclusive_channel_partner', 'regional_channel_partner',
+  'authorized_sub_Sub-sub_SUB_DEALER', 'service_partner', 'sub_sub_Sub-sub_SUB_DEALER_network', 'sub_channel_partner',
   'amc_provider', 'spare_parts_supplier', 'strategic_partner', 'oem_partner',
   'direct_buyer', 'institutional_buyer', 'logistics_partner', 'financing_partner',
-  'manufacturer_of', 'distributor_of', 'dealer_of', 'supplier_of', 'partner_of'
+  'manufacturer_of', 'channel_partner_of', 'sub_sub_Sub-sub_SUB_DEALER_of', 'supplier_of', 'partner_of'
 ));
 
 -- Add constraints
@@ -371,7 +371,7 @@ CREATE TABLE IF NOT EXISTS engineers (
   
   CONSTRAINT chk_eng_status CHECK (status IN ('available', 'on_job', 'on_leave', 'inactive')),
   CONSTRAINT chk_eng_org_type CHECK (org_type IN (
-    'manufacturer', 'distributor', 'dealer', 'hospital', 'clinic',
+    'manufacturer', 'Channel Partner', 'Sub-sub_SUB_DEALER', 'hospital', 'clinic',
     'service_provider', 'laboratory', 'diagnostic_center'
   )),
   CONSTRAINT chk_eng_employment CHECK (employment_type IN ('full_time', 'part_time', 'contract', 'freelance'))
@@ -569,12 +569,12 @@ CREATE INDEX IF NOT EXISTS idx_ticket_engineer ON service_tickets(assigned_engin
 -- Link equipment to organizations
 ALTER TABLE equipment
 ADD COLUMN IF NOT EXISTS manufacturer_org_id UUID REFERENCES organizations(id),
-ADD COLUMN IF NOT EXISTS sold_by_dealer_id UUID REFERENCES organizations(id),
+ADD COLUMN IF NOT EXISTS sold_by_sub_sub_Sub-sub_SUB_DEALER_id UUID REFERENCES organizations(id),
 ADD COLUMN IF NOT EXISTS owned_by_org_id UUID REFERENCES organizations(id),
 ADD COLUMN IF NOT EXISTS installed_facility_id UUID REFERENCES organization_facilities(id);
 
 CREATE INDEX IF NOT EXISTS idx_equipment_manufacturer ON equipment(manufacturer_org_id);
-CREATE INDEX IF NOT EXISTS idx_equipment_dealer ON equipment(sold_by_dealer_id);
+CREATE INDEX IF NOT EXISTS idx_equipment_sub_Sub-sub_SUB_DEALER ON equipment(sold_by_sub_sub_Sub-sub_SUB_DEALER_id);
 CREATE INDEX IF NOT EXISTS idx_equipment_owner ON equipment(owned_by_org_id);
 CREATE INDEX IF NOT EXISTS idx_equipment_facility ON equipment(installed_facility_id);
 

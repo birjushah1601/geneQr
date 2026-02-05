@@ -1,8 +1,8 @@
-# Authentication & Multi-Tenancy API Specification
+﻿# Authentication & Multi-Tenancy API Specification
 
 **Version:** 1.0  
 **Date:** December 20, 2025  
-**Base URL:** `https://api.aby-med.com/api/v1`  
+**Base URL:** `https://api.ServQR.com/api/v1`  
 **Format:** REST API with JSON  
 
 ---
@@ -416,7 +416,7 @@
 **Query Parameters:**
 - `page` (default: 1)
 - `limit` (default: 20, max: 100)
-- `type` (filter: manufacturer, hospital, laboratory, distributor, dealer)
+- `type` (filter: manufacturer, hospital, laboratory, Channel Partner, Sub-sub_SUB_DEALER)
 - `status` (filter: active, pending, suspended)
 - `search` (search in name)
 
@@ -821,7 +821,7 @@
     "created_at": "2025-12-20T10:00:00Z"
   },
   "message": "Ticket created successfully",
-  "tracking_url": "https://app.aby-med.com/track/TKT-12345"
+  "tracking_url": "https://app.ServQR.com/track/TKT-12345"
 }
 ```
 
@@ -860,7 +860,7 @@
     ...
   },
   "message": "Ticket created. You'll receive updates via WhatsApp.",
-  "tracking_url": "https://app.aby-med.com/track/TKT-12346"
+  "tracking_url": "https://app.ServQR.com/track/TKT-12346"
 }
 ```
 

@@ -6,7 +6,8 @@ import "context"
 // This is separate from AssignmentRepository (workflow system) in assignment.go
 type EngineerSuggestionRepository interface {
 	// Engineer CRUD operations
-	ListEngineers(ctx context.Context, organizationID *string, limit, offset int) ([]*Engineer, error)
+	// includePartners: when true, includes engineers from partner organizations (via org_relationships)
+	ListEngineers(ctx context.Context, organizationID *string, includePartners bool, limit, offset int) ([]*Engineer, error)
 	GetEngineerByID(ctx context.Context, engineerID string) (*Engineer, error)
 	UpdateEngineerLevel(ctx context.Context, engineerID string, level EngineerLevel) error
 	

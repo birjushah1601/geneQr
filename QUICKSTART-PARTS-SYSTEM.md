@@ -1,6 +1,6 @@
-# 🚀 Parts Management System - Quick Start
+﻿# ðŸš€ Parts Management System - Quick Start
 
-## ⚡ 30-Second Setup
+## âš¡ 30-Second Setup
 
 ```powershell
 # 1. Start Database (if not running)
@@ -8,7 +8,7 @@ cd dev/compose
 docker-compose up -d postgres
 
 # 2. Start Backend
-cd C:\Users\birju\aby-med
+cd C:\Users\birju\ServQR
 $env:DB_HOST="localhost"; $env:DB_PORT="5430"; $env:DB_USER="postgres"; $env:DB_PASSWORD="postgres"; $env:DB_NAME="med_platform"; $env:ENABLE_ORG="true"
 .\backend.exe
 
@@ -17,26 +17,26 @@ cd admin-ui
 npm run dev
 ```
 
-## 🎯 Test It Immediately
+## ðŸŽ¯ Test It Immediately
 
 **Visit:** http://localhost:3000/parts-demo
 
 **What You'll See:**
 1. Sample MRI equipment
 2. "Open Parts Browser" button
-3. Click it → Browse 16 real spare parts
+3. Click it â†’ Browse 16 real spare parts
 4. Select parts, adjust quantities, see cost
 5. Click "Assign" to complete
 
-## 📊 What's Working
+## ðŸ“Š What's Working
 
-✅ **16 Spare Parts** - Battery packs, filters, sensors, etc.  
-✅ **Real-time API** - Live data from backend  
-✅ **Smart Filtering** - Search, category, engineer requirements  
-✅ **Cost Calculator** - Automatic totaling  
-✅ **Engineer Detection** - Auto-identifies skill level needed  
+âœ… **16 Spare Parts** - Battery packs, filters, sensors, etc.  
+âœ… **Real-time API** - Live data from backend  
+âœ… **Smart Filtering** - Search, category, engineer requirements  
+âœ… **Cost Calculator** - Automatic totaling  
+âœ… **Engineer Detection** - Auto-identifies skill level needed  
 
-## 🎨 Key Features to Try
+## ðŸŽ¨ Key Features to Try
 
 ### 1. Search Parts
 Type "battery" or "filter" in search box
@@ -57,46 +57,46 @@ Click multiple part cards or use checkboxes
 - See real-time cost updates
 - View engineer requirements summary
 
-## 📱 Screenshots
+## ðŸ“± Screenshots
 
 ```
-┌─────────────────────────────────────────┐
-│  Parts Assignment Demo                  │
-│  ┌─────────────────────────────────┐   │
-│  │ [Open Parts Browser]            │   │
-│  └─────────────────────────────────┘   │
-│                                         │
-│  Sample Equipment: MRI Scanner          │
-│  Model: GE Discovery MR750              │
-│  Serial: MRI-3T-001                     │
-└─────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  Parts Assignment Demo                  â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”   â”‚
+â”‚  â”‚ [Open Parts Browser]            â”‚   â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜   â”‚
+â”‚                                         â”‚
+â”‚  Sample Equipment: MRI Scanner          â”‚
+â”‚  Model: GE Discovery MR750              â”‚
+â”‚  Serial: MRI-3T-001                     â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 
 After clicking "Open Parts Browser":
 
-┌─────────────────────────────────────────┐
-│  🔍 Assign Spare Parts                  │
-│  ┌──────────┬──────────┐               │
-│  │ Browse   │  Cart    │               │
-│  └──────────┴──────────┘               │
-│  [Search...]  [Category ▼]  [Filters]  │
-│                                         │
-│  ☑ Battery Pack - ₹350                 │
-│  □ Blood Tubing Set - ₹25              │
-│  □ Convex Probe - ₹9,500               │
-│  □ Detector Module - ₹25,000           │
-│                                         │
-│  [Cancel]          [Assign 1 Part]     │
-└─────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  ðŸ” Assign Spare Parts                  â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”               â”‚
+â”‚  â”‚ Browse   â”‚  Cart    â”‚               â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜               â”‚
+â”‚  [Search...]  [Category â–¼]  [Filters]  â”‚
+â”‚                                         â”‚
+â”‚  â˜‘ Battery Pack - â‚¹350                 â”‚
+â”‚  â–¡ Blood Tubing Set - â‚¹25              â”‚
+â”‚  â–¡ Convex Probe - â‚¹9,500               â”‚
+â”‚  â–¡ Detector Module - â‚¹25,000           â”‚
+â”‚                                         â”‚
+â”‚  [Cancel]          [Assign 1 Part]     â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
-## 🔥 Pro Tips
+## ðŸ”¥ Pro Tips
 
 1. **Filter Combo** - Use search + category + engineer filter together
 2. **Cart Preview** - Switch to Cart tab to see summary before assigning
 3. **Quantity Shortcuts** - Click +/- multiple times or click the part card again to remove
 4. **Cost Tracking** - Total cost updates instantly as you adjust quantities
 
-## 📞 Quick Troubleshooting
+## ðŸ“ž Quick Troubleshooting
 
 **Backend not starting?**
 ```powershell
@@ -119,34 +119,34 @@ curl -H "X-Tenant-ID: default" http://localhost:8081/api/v1/catalog/parts
 curl http://localhost:8081/health
 ```
 
-## 🎯 What's Next?
+## ðŸŽ¯ What's Next?
 
 1. **Test the UI** - Spend 5 minutes playing with it
 2. **Check the data** - All 16 parts are real
 3. **Review the code** - See `admin-ui/src/components/PartsAssignmentModal.tsx`
 4. **Read full docs** - See `docs/PARTS-MANAGEMENT-COMPLETE.md`
 
-## 📦 System Status
+## ðŸ“¦ System Status
 
 | Component | Status | URL |
 |-----------|--------|-----|
-| Database | ✅ Running | localhost:5430 |
-| Backend | ✅ Running | http://localhost:8081 |
-| Frontend | ✅ Running | http://localhost:3000 |
-| Parts API | ✅ Working | /api/v1/catalog/parts |
-| Demo Page | ✅ Ready | /parts-demo |
+| Database | âœ… Running | localhost:5430 |
+| Backend | âœ… Running | http://localhost:8081 |
+| Frontend | âœ… Running | http://localhost:3000 |
+| Parts API | âœ… Working | /api/v1/catalog/parts |
+| Demo Page | âœ… Ready | /parts-demo |
 
-## 🎊 You're All Set!
+## ðŸŽŠ You're All Set!
 
 The system is **100% functional** for the core workflow:
-- Browse parts ✅
-- Search & filter ✅  
-- Multi-select ✅
-- Calculate costs ✅
-- Detect engineer needs ✅
+- Browse parts âœ…
+- Search & filter âœ…  
+- Multi-select âœ…
+- Calculate costs âœ…
+- Detect engineer needs âœ…
 
 **Go try it now:** http://localhost:3000/parts-demo
 
 ---
 
-**Built with ❤️ by Factory AI**
+**Built with â¤ï¸ by Factory AI**

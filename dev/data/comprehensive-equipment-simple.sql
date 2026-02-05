@@ -1,5 +1,5 @@
--- =============================================================================
--- ABY-Med Platform - Comprehensive Medical Equipment Catalog (Simplified)
+﻿-- =============================================================================
+-- ServQR Platform - Comprehensive Medical Equipment Catalog (Simplified)
 -- =============================================================================
 -- This file contains a comprehensive catalog of 60 medical equipment items
 -- covering dental, laboratory, hospital infrastructure, emergency care,
@@ -50,7 +50,7 @@ TRUE, 'demo-hospital'),
 
 -- Dental X-Ray Systems
 ('01HFPQ3Z5P8VF5PXZRT4K7MHG6', 'Planmeca ProMax 3D', 'Classic', '01HFPQ2Z5P8VF5PXZRT4K7MHG2', '01HFPQ2Z5P8VF5PXZRT4K7MHG6', 'Advanced panoramic and 3D dental imaging system',
-'{"imaging_modes": ["Panoramic", "Cephalometric", "3D CBCT"], "field_of_view": "8x8 cm", "resolution": "75-600 μm", "voltage": "60-90 kV", "warranty": "2 years"}',
+'{"imaging_modes": ["Panoramic", "Cephalometric", "3D CBCT"], "field_of_view": "8x8 cm", "resolution": "75-600 Î¼m", "voltage": "60-90 kV", "warranty": "2 years"}',
 2850000.00, 'INR', 'PLM-DX-PC-001',
 ARRAY['https://abymed.com/images/equipment/dental/planmeca-promax-3d-1.jpg'],
 TRUE, 'demo-hospital'),
@@ -69,26 +69,26 @@ TRUE, 'demo-hospital'),
 
 -- Dental Sterilizers
 ('01HFPQ3Z5P8VF5PXZRT4K7MHGB', 'Tuttnauer Autoclave', '3870EA', '01HFPQ2Z5P8VF5PXZRT4K7MHG3', '01HFPQ2Z5P8VF5PXZRT4K7MHGB', 'Automatic autoclave with closed door drying',
-'{"chamber_size": "85 liters", "temperature_range": "105-138°C", "cycle_options": ["Unwrapped", "Wrapped", "Liquid"], "drying_system": "Closed door", "warranty": "2 years"}',
+'{"chamber_size": "85 liters", "temperature_range": "105-138Â°C", "cycle_options": ["Unwrapped", "Wrapped", "Liquid"], "drying_system": "Closed door", "warranty": "2 years"}',
 385000.00, 'INR', 'TTN-DS-3870-001',
 ARRAY['https://abymed.com/images/equipment/dental/tuttnauer-3870ea-1.jpg'],
 TRUE, 'demo-hospital'),
 
 ('01HFPQ3Z5P8VF5PXZRT4K7MHGC', 'Confident Autoclave', 'Class B 22L', '01HFPQ2Z5P8VF5PXZRT4K7MHG3', '01HFPQ2Z5P8VF5PXZRT4K7MHG2', 'Class B autoclave with vacuum system',
-'{"chamber_size": "22 liters", "temperature_range": "121-134°C", "cycle_options": ["Unwrapped", "Wrapped", "Prion"], "vacuum_system": "Pre and post vacuum", "warranty": "1 year"}',
+'{"chamber_size": "22 liters", "temperature_range": "121-134Â°C", "cycle_options": ["Unwrapped", "Wrapped", "Prion"], "vacuum_system": "Pre and post vacuum", "warranty": "1 year"}',
 195000.00, 'INR', 'CNF-DS-B22-001',
 ARRAY['https://abymed.com/images/equipment/dental/confident-autoclave-1.jpg'],
 TRUE, 'demo-hospital'),
 
 -- Dental Handpieces
 ('01HFPQ3Z5P8VF5PXZRT4K7MHGF', 'NSK High-Speed Handpiece', 'Pana-Max Plus', '01HFPQ2Z5P8VF5PXZRT4K7MHG4', '01HFPQ2Z5P8VF5PXZRT4K7MHGF', 'Premium high-speed dental handpiece',
-'{"speed": "Up to 400,000 rpm", "spray_type": "Quattro spray", "light_source": "LED", "bearing_type": "Ceramic", "sterilization": "Autoclavable 135°C", "warranty": "1 year"}',
+'{"speed": "Up to 400,000 rpm", "spray_type": "Quattro spray", "light_source": "LED", "bearing_type": "Ceramic", "sterilization": "Autoclavable 135Â°C", "warranty": "1 year"}',
 28500.00, 'INR', 'NSK-DH-PMP-001',
 ARRAY['https://abymed.com/images/equipment/dental/nsk-panamax-1.jpg'],
 TRUE, 'demo-hospital'),
 
 ('01HFPQ3Z5P8VF5PXZRT4K7MHGG', 'Being Dental Handpiece', 'Rose-H2', '01HFPQ2Z5P8VF5PXZRT4K7MHG4', '01HFPQ2Z5P8VF5PXZRT4K7MHGG', 'Affordable high-speed handpiece',
-'{"speed": "Up to 350,000 rpm", "spray_type": "Triple spray", "light_source": "None", "bearing_type": "Steel", "sterilization": "Autoclavable 135°C", "warranty": "6 months"}',
+'{"speed": "Up to 350,000 rpm", "spray_type": "Triple spray", "light_source": "None", "bearing_type": "Steel", "sterilization": "Autoclavable 135Â°C", "warranty": "6 months"}',
 12500.00, 'INR', 'BNG-DH-RH2-001',
 ARRAY['https://abymed.com/images/equipment/dental/being-rose-1.jpg'],
 TRUE, 'demo-hospital'),
@@ -164,32 +164,32 @@ TRUE, 'demo-hospital'),
 
 -- Autoclaves & Sterilizers
 ('01HFPQ3Z5P8VF5PXZRT4K7MHH3', 'Tuttnauer Laboratory Autoclave', '3870ELV', '01HFPQ2Z5P8VF5PXZRT4K7MHGB3', '01HFPQ2Z5P8VF5PXZRT4K7MHGB', 'Vertical laboratory autoclave',
-'{"chamber_size": "85 liters", "temperature": "105-138°C", "cycles": ["Unwrapped", "Wrapped", "Liquid", "Agar"], "drying": "Vacuum-assisted", "warranty": "2 years"}',
+'{"chamber_size": "85 liters", "temperature": "105-138Â°C", "cycles": ["Unwrapped", "Wrapped", "Liquid", "Agar"], "drying": "Vacuum-assisted", "warranty": "2 years"}',
 450000.00, 'INR', 'TTN-LS-3870ELV-001',
 ARRAY['https://abymed.com/images/equipment/lab/tuttnauer-3870elv-1.jpg'],
 TRUE, 'demo-hospital'),
 
 ('01HFPQ3Z5P8VF5PXZRT4K7MHH4', 'Equitron Autoclave', 'EQ-75L', '01HFPQ2Z5P8VF5PXZRT4K7MHGB3', '01HFPQ2Z5P8VF5PXZRT4K7MHH4', 'Indian-made vertical autoclave',
-'{"chamber_size": "75 liters", "temperature": "121-134°C", "cycles": ["Standard", "Liquid"], "control": "Digital PID", "warranty": "1 year"}',
+'{"chamber_size": "75 liters", "temperature": "121-134Â°C", "cycles": ["Standard", "Liquid"], "control": "Digital PID", "warranty": "1 year"}',
 125000.00, 'INR', 'EQT-LS-75L-001',
 ARRAY['https://abymed.com/images/equipment/lab/equitron-75l-1.jpg'],
 TRUE, 'demo-hospital'),
 
 -- Incubators & Spectrophotometers
 ('01HFPQ3Z5P8VF5PXZRT4K7MHH6', 'Thermo Scientific CO2 Incubator', 'Heracell 150i', '01HFPQ2Z5P8VF5PXZRT4K7MHGB4', '01HFPQ2Z5P8VF5PXZRT4K7MHGZ', 'CO2 incubator for cell culture',
-'{"chamber_size": "150 liters", "temperature": "Ambient +3°C to 55°C", "CO2_range": "0-20%", "humidity": "Up to 95% RH", "sterilization": "180°C dry heat", "warranty": "2 years"}',
+'{"chamber_size": "150 liters", "temperature": "Ambient +3Â°C to 55Â°C", "CO2_range": "0-20%", "humidity": "Up to 95% RH", "sterilization": "180Â°C dry heat", "warranty": "2 years"}',
 850000.00, 'INR', 'THS-LI-H150I-001',
 ARRAY['https://abymed.com/images/equipment/lab/thermo-heracell-1.jpg'],
 TRUE, 'demo-hospital'),
 
 ('01HFPQ3Z5P8VF5PXZRT4K7MHH7', 'Remi Bacteriological Incubator', 'RI-175', '01HFPQ2Z5P8VF5PXZRT4K7MHGB4', '01HFPQ2Z5P8VF5PXZRT4K7MHGY', 'General purpose incubator',
-'{"chamber_size": "175 liters", "temperature": "Ambient +5°C to 70°C", "accuracy": "±0.5°C", "shelves": "3 adjustable", "circulation": "Natural convection", "warranty": "1 year"}',
+'{"chamber_size": "175 liters", "temperature": "Ambient +5Â°C to 70Â°C", "accuracy": "Â±0.5Â°C", "shelves": "3 adjustable", "circulation": "Natural convection", "warranty": "1 year"}',
 65000.00, 'INR', 'RMI-LI-RI175-001',
 ARRAY['https://abymed.com/images/equipment/lab/remi-incubator-1.jpg'],
 TRUE, 'demo-hospital'),
 
 ('01HFPQ3Z5P8VF5PXZRT4K7MHH8', 'Shimadzu UV-Vis Spectrophotometer', 'UV-1800', '01HFPQ2Z5P8VF5PXZRT4K7MHGB5', '01HFPQ2Z5P8VF5PXZRT4K7MHH8', 'Double-beam UV-Visible spectrophotometer',
-'{"wavelength": "190-1100 nm", "bandwidth": "1 nm", "accuracy": "±0.1 nm", "photometric_range": "-4 to +4 Abs", "light_source": "Deuterium and Tungsten", "warranty": "1 year"}',
+'{"wavelength": "190-1100 nm", "bandwidth": "1 nm", "accuracy": "Â±0.1 nm", "photometric_range": "-4 to +4 Abs", "light_source": "Deuterium and Tungsten", "warranty": "1 year"}',
 650000.00, 'INR', 'SHM-LS-UV1800-001',
 ARRAY['https://abymed.com/images/equipment/lab/shimadzu-uv1800-1.jpg'],
 TRUE, 'demo-hospital'),
@@ -209,7 +209,7 @@ TRUE, 'demo-hospital'),
 
 -- Water Baths, Shakers, PCR
 ('01HFPQ3Z5P8VF5PXZRT4K7MHHF', 'Thermo Scientific Water Bath', 'Precision 28', '01HFPQ2Z5P8VF5PXZRT4K7MHGB7', '01HFPQ2Z5P8VF5PXZRT4K7MHGZ', 'Digital laboratory water bath',
-'{"capacity": "28 liters", "temperature": "Ambient +5°C to 100°C", "uniformity": "±0.1°C at 37°C", "display": "LCD", "safety": ["Over-temp cutoff", "Low-water alarm"], "warranty": "2 years"}', 
+'{"capacity": "28 liters", "temperature": "Ambient +5Â°C to 100Â°C", "uniformity": "Â±0.1Â°C at 37Â°C", "display": "LCD", "safety": ["Over-temp cutoff", "Low-water alarm"], "warranty": "2 years"}', 
 135000.00, 'INR', 'THS-LW-P28-001',
 ARRAY['https://abymed.com/images/equipment/lab/thermo-waterbath-1.jpg'],
 TRUE, 'demo-hospital'),
@@ -221,7 +221,7 @@ ARRAY['https://abymed.com/images/equipment/lab/remi-shaker-1.jpg'],
 TRUE, 'demo-hospital'),
 
 ('01HFPQ3Z5P8VF5PXZRT4K7MHHH', 'Bio-Rad Gradient PCR', 'T100', '01HFPQ2Z5P8VF5PXZRT4K7MHGB9', '01HFPQ2Z5P8VF5PXZRT4K7MHHH', '96-well gradient thermal cycler',
-'{"capacity": "96 x 0.2 ml", "temperature": "4-100 °C", "gradient": "30 °C", "interface": "Touchscreen", "storage": "500 methods", "warranty": "2 years"}',
+'{"capacity": "96 x 0.2 ml", "temperature": "4-100 Â°C", "gradient": "30 Â°C", "interface": "Touchscreen", "storage": "500 methods", "warranty": "2 years"}',
 385000.00, 'INR', 'BRD-LP-T100-001',
 ARRAY['https://abymed.com/images/equipment/lab/biorad-t100-1.jpg'],
 TRUE, 'demo-hospital'),
@@ -245,13 +245,13 @@ TRUE, 'city-hospital'),
 
 -- OT Tables
 ('01HFPQ3Z5P8VF5PXZRT4K7MHHK', 'Hospitech OT Table', 'C-MAX Pro', '01HFPQ2Z5P8VF5PXZRT4K7MHGC2', '01HFPQ2Z5P8VF5PXZRT4K7MHHK', 'Electro-hydraulic operating table',
-'{"tabletop": "Radiolucent, modular", "height": "600-1000 mm", "tilt": "±20°", "trendelenburg": "±30°", "load": "350 kg", "warranty": "3 years"}',
+'{"tabletop": "Radiolucent, modular", "height": "600-1000 mm", "tilt": "Â±20Â°", "trendelenburg": "Â±30Â°", "load": "350 kg", "warranty": "3 years"}',
 495000.00, 'INR', 'HST-HI-CMP-001',
 ARRAY['https://abymed.com/images/equipment/infra/hospitech-cmax-1.jpg'],
 TRUE, 'city-hospital'),
 
 ('01HFPQ3Z5P8VF5PXZRT4K7MHI2', 'Narang OT Table', 'Surgimax', '01HFPQ2Z5P8VF5PXZRT4K7MHGC2', '01HFPQ2Z5P8VF5PXZRT4K7MHI2', 'Hydraulic operating table',
-'{"tabletop": "5-section", "height": "750-950 mm", "tilt": "±15°", "trendelenburg": "±25°", "load": "200 kg", "warranty": "2 years"}',
+'{"tabletop": "5-section", "height": "750-950 mm", "tilt": "Â±15Â°", "trendelenburg": "Â±25Â°", "load": "200 kg", "warranty": "2 years"}',
 285000.00, 'INR', 'NRG-HI-SGM-001',
 ARRAY['https://abymed.com/images/equipment/infra/narang-surgimax-1.jpg'],
 TRUE, 'city-hospital'),
@@ -284,7 +284,7 @@ ARRAY['https://abymed.com/images/equipment/infra/bluestar-hvac-1.jpg'],
 TRUE, 'city-hospital'),
 
 ('01HFPQ3Z5P8VF5PXZRT4K7MHI7', 'Eureka Forbes Air Purifier', 'Aeroguard SCPR', '01HFPQ2Z5P8VF5PXZRT4K7MHGC5', '01HFPQ2Z5P8VF5PXZRT4K7MHI7', 'Hospital air purification system',
-'{"coverage": "1500 sq ft", "filtration": "6-stage with HEPA", "CADR": "500 m³/hr", "noise": "32-58 dB", "indicators": "AQI display", "warranty": "1 year"}',
+'{"coverage": "1500 sq ft", "filtration": "6-stage with HEPA", "CADR": "500 mÂ³/hr", "noise": "32-58 dB", "indicators": "AQI display", "warranty": "1 year"}',
 85000.00, 'INR', 'EFK-HI-AGSCPR-001',
 ARRAY['https://abymed.com/images/equipment/infra/eureka-aeroguard-1.jpg'],
 TRUE, 'city-hospital'),
@@ -341,13 +341,13 @@ TRUE, 'city-hospital'),
 
 -- Infusion Pumps
 ('01HFPQ3Z5P8VF5PXZRT4K7MHIE', 'B Braun Infusion Pump', 'Infusomat Space', '01HFPQ2Z5P8VF5PXZRT4K7MHGD4', '01HFPQ2Z5P8VF5PXZRT4K7MHIE', 'Volumetric infusion pump',
-'{"flow_rate": "0.1-1200 ml/h", "accuracy": "±2%", "display": "Color", "drug_library": "Yes", "alarms": ["Air", "Occlusion", "KVO"], "warranty": "2 years"}',
+'{"flow_rate": "0.1-1200 ml/h", "accuracy": "Â±2%", "display": "Color", "drug_library": "Yes", "alarms": ["Air", "Occlusion", "KVO"], "warranty": "2 years"}',
 125000.00, 'INR', 'BBR-EC-IS-001',
 ARRAY['https://abymed.com/images/equipment/emergency/bbraun-infusomat-1.jpg'],
 TRUE, 'city-hospital'),
 
 ('01HFPQ3Z5P8VF5PXZRT4K7MHIF', 'Smiths Medical Syringe Pump', 'Graseby 2000', '01HFPQ2Z5P8VF5PXZRT4K7MHGD4', '01HFPQ2Z5P8VF5PXZRT4K7MHIF', 'Precision syringe pump',
-'{"flow_rate": "0.1-999 ml/h", "accuracy": "±2%", "syringe_size": "5-60 ml", "alarms": ["Occlusion", "Near-empty", "End"], "battery": "10 hrs", "warranty": "2 years"}',
+'{"flow_rate": "0.1-999 ml/h", "accuracy": "Â±2%", "syringe_size": "5-60 ml", "alarms": ["Occlusion", "Near-empty", "End"], "battery": "10 hrs", "warranty": "2 years"}',
 85000.00, 'INR', 'SMT-EC-G2000-001',
 ARRAY['https://abymed.com/images/equipment/emergency/smiths-graseby-1.jpg'],
 TRUE, 'city-hospital'),
@@ -429,7 +429,7 @@ ARRAY['https://abymed.com/images/equipment/special/zeiss-sl220-1.jpg'],
 TRUE, 'city-hospital'),
 
 ('01HFPQ3Z5P8VF5PXZRT4K7MHIQ', 'Appasamy Auto Refractometer', 'ARK-900', '01HFPQ2Z5P8VF5PXZRT4K7MHGE5', '01HFPQ2Z5P8VF5PXZRT4K7MHIQ', 'Indian-made auto refractometer',
-'{"measurement_range": "Sphere: -25D to +22D, Cylinder: 0D to ±10D", "minimum_pupil": "2.0 mm", "display": "7 inch LCD touchscreen", "printer": "Built-in thermal", "warranty": "1 year"}',
+'{"measurement_range": "Sphere: -25D to +22D, Cylinder: 0D to Â±10D", "minimum_pupil": "2.0 mm", "display": "7 inch LCD touchscreen", "printer": "Built-in thermal", "warranty": "1 year"}',
 450000.00, 'INR', 'APS-SE-ARK900-001',
 ARRAY['https://abymed.com/images/equipment/special/appasamy-ark900-1.jpg'],
 TRUE, 'city-hospital');

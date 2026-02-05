@@ -1,5 +1,5 @@
--- Indian Medical Device Manufacturers Dataset
--- For ABY-Med Platform Catalog Module
+﻿-- Indian Medical Device Manufacturers Dataset
+-- For ServQR Platform Catalog Module
 -- This file populates the manufacturers table with Indian medical device companies
 
 -- First ensure the schema exists

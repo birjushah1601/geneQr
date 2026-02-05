@@ -1,17 +1,17 @@
-# Feature Flags - Notification System
+﻿# Feature Flags - Notification System
 
 **Date:** December 22, 2025  
-**Status:** ✅ **Complete**
+**Status:** âœ… **Complete**
 
 ---
 
-## 🎯 Overview
+## ðŸŽ¯ Overview
 
 Feature flag system to enable/disable notifications independently for each event type and channel (Email, SMS, WhatsApp).
 
 ---
 
-## 🚀 Feature Flags
+## ðŸš€ Feature Flags
 
 ### **Master Switches**
 
@@ -51,7 +51,7 @@ Individual toggles for each event type:
 
 ---
 
-## 📝 Configuration
+## ðŸ“ Configuration
 
 ### **Quick Start - Enable All Email Notifications**
 
@@ -66,11 +66,11 @@ FEATURE_EMAIL_STATUS_CHANGED=true
 
 # SendGrid Configuration (required for email)
 SENDGRID_API_KEY=SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-SENDGRID_FROM_EMAIL=noreply@aby-med.com
-SENDGRID_FROM_NAME=ABY-MED Service Platform
+SENDGRID_FROM_EMAIL=noreply@ServQR.com
+SENDGRID_FROM_NAME=ServQR Service Platform
 
 # Admin Email (for alerts)
-ADMIN_EMAIL=admin@aby-med.com
+ADMIN_EMAIL=admin@ServQR.com
 ```
 
 ### **Granular Control Examples**
@@ -107,7 +107,7 @@ FEATURE_EMAIL_NOTIFICATIONS=false
 
 ---
 
-## 🔧 Boolean Value Formats
+## ðŸ”§ Boolean Value Formats
 
 The system accepts multiple formats for boolean values:
 
@@ -129,15 +129,15 @@ The system accepts multiple formats for boolean values:
 
 ---
 
-## 💻 Usage in Code
+## ðŸ’» Usage in Code
 
 ### **Initialization**
 
 ```go
 import (
-    "github.com/aby-med/internal/infrastructure/config"
-    "github.com/aby-med/internal/infrastructure/email"
-    "github.com/aby-med/internal/infrastructure/notification"
+    "github.com/ServQR/internal/infrastructure/config"
+    "github.com/ServQR/internal/infrastructure/email"
+    "github.com/ServQR/internal/infrastructure/notification"
 )
 
 // Load feature flags
@@ -203,36 +203,36 @@ if featureFlags.ShouldSendEmailNotification("ticket_created") {
 
 ---
 
-## 📊 Notification Flow with Feature Flags
+## ðŸ“Š Notification Flow with Feature Flags
 
 ```
 Event Occurs (e.g., Ticket Created)
-         ↓
+         â†“
 [Notification Manager]
-         ↓
+         â†“
 Check Master Switch (FEATURE_EMAIL_NOTIFICATIONS)
-         ↓
-    Enabled? ────NO───→ Skip, Log Debug
-         ↓
+         â†“
+    Enabled? â”€â”€â”€â”€NOâ”€â”€â”€â†’ Skip, Log Debug
+         â†“
         YES
-         ↓
+         â†“
 Check Event Flag (FEATURE_EMAIL_TICKET_CREATED)
-         ↓
-    Enabled? ────NO───→ Skip, Log Debug
-         ↓
+         â†“
+    Enabled? â”€â”€â”€â”€NOâ”€â”€â”€â†’ Skip, Log Debug
+         â†“
         YES
-         ↓
+         â†“
 Send Notification (Email Service)
-         ↓
-    ┌────────┴────────┐
-    ↓                 ↓
+         â†“
+    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”
+    â†“                 â†“
 [Success]        [Failure]
 Log Info         Log Error
 ```
 
 ---
 
-## 🧪 Testing Feature Flags
+## ðŸ§ª Testing Feature Flags
 
 ### **Test 1: All Disabled (Default)**
 
@@ -272,12 +272,12 @@ FEATURE_EMAIL_TICKET_CREATED=true
 ```
 
 **Expected:**
-- ✅ Emails sent on ticket creation
+- âœ… Emails sent on ticket creation
 - Logs show: "Sending ticket created email notifications"
 
 ---
 
-## 🎛️ Runtime Configuration
+## ðŸŽ›ï¸ Runtime Configuration
 
 ### **Restart Required?**
 
@@ -297,7 +297,7 @@ For runtime changes without restart:
 
 ---
 
-## 📋 Environment File Examples
+## ðŸ“‹ Environment File Examples
 
 ### **Development (.env.development)**
 
@@ -320,11 +320,11 @@ FEATURE_EMAIL_STATUS_CHANGED=true
 
 # Use test SendGrid account
 SENDGRID_API_KEY=SG.test_key_here
-SENDGRID_FROM_EMAIL=staging@aby-med.com
-SENDGRID_FROM_NAME=ABY-MED Staging
+SENDGRID_FROM_EMAIL=staging@ServQR.com
+SENDGRID_FROM_NAME=ServQR Staging
 
 # Test admin email
-ADMIN_EMAIL=admin-staging@aby-med.com
+ADMIN_EMAIL=admin-staging@ServQR.com
 ```
 
 ### **Production (.env.production)**
@@ -338,16 +338,16 @@ FEATURE_EMAIL_STATUS_CHANGED=true
 
 # Production SendGrid
 SENDGRID_API_KEY=SG.production_key_here
-SENDGRID_FROM_EMAIL=noreply@aby-med.com
-SENDGRID_FROM_NAME=ABY-MED Service Platform
+SENDGRID_FROM_EMAIL=noreply@ServQR.com
+SENDGRID_FROM_NAME=ServQR Service Platform
 
 # Production admin
-ADMIN_EMAIL=admin@aby-med.com
+ADMIN_EMAIL=admin@ServQR.com
 ```
 
 ---
 
-## 🔍 Monitoring & Logging
+## ðŸ” Monitoring & Logging
 
 ### **Log Levels**
 
@@ -378,7 +378,7 @@ ERROR: Failed to send ticket created email ticket=TKT-001 error="sendgrid error:
 
 ---
 
-## 🚀 Rollout Strategy
+## ðŸš€ Rollout Strategy
 
 ### **Phase 1: Silent Mode (Week 1)**
 
@@ -438,7 +438,7 @@ FEATURE_EMAIL_STATUS_CHANGED=true  # All notifications
 
 ---
 
-## 📊 Feature Flag Dashboard (Future)
+## ðŸ“Š Feature Flag Dashboard (Future)
 
 ### **Potential UI Features**
 
@@ -457,7 +457,7 @@ POST /api/v1/admin/feature-flags/{flag}/toggle
 
 ---
 
-## ✅ Checklist
+## âœ… Checklist
 
 ### **Implementation**
 
@@ -482,21 +482,21 @@ POST /api/v1/admin/feature-flags/{flag}/toggle
 
 ---
 
-## 🎯 Summary
+## ðŸŽ¯ Summary
 
 **Feature Flags Implemented:**
-- ✅ 3 master switches (Email, SMS, WhatsApp)
-- ✅ 9 individual event flags (3 per channel)
-- ✅ Flexible boolean parsing
-- ✅ Runtime checking
-- ✅ Comprehensive logging
+- âœ… 3 master switches (Email, SMS, WhatsApp)
+- âœ… 9 individual event flags (3 per channel)
+- âœ… Flexible boolean parsing
+- âœ… Runtime checking
+- âœ… Comprehensive logging
 
 **Benefits:**
-- 🎛️ Granular control over notifications
-- 🔄 Easy rollback if issues occur
-- 🧪 Safe testing in production
-- 📊 Better monitoring and metrics
-- 🚀 Gradual rollout capability
+- ðŸŽ›ï¸ Granular control over notifications
+- ðŸ”„ Easy rollback if issues occur
+- ðŸ§ª Safe testing in production
+- ðŸ“Š Better monitoring and metrics
+- ðŸš€ Gradual rollout capability
 
 **Next Steps:**
 1. Add to `.env` file
@@ -508,7 +508,7 @@ POST /api/v1/admin/feature-flags/{flag}/toggle
 ---
 
 **Last Updated:** December 22, 2025  
-**Status:** ✅ Complete - Ready for Integration  
+**Status:** âœ… Complete - Ready for Integration  
 **Files Created:** 
 - `internal/infrastructure/config/feature_flags.go`
 - `internal/infrastructure/notification/manager.go`

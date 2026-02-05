@@ -1,4 +1,4 @@
--- Sample Equipment Catalog for ABY-Med Platform
+﻿-- Sample Equipment Catalog for ServQR Platform
 -- This file populates the equipment table with representative medical devices from Indian manufacturers
 
 -- First ensure the schema exists
@@ -41,7 +41,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
         "detector_type": "Flat Panel Digital Detector",
         "detector_size": "43cm x 43cm (17\" x 17\")",
         "resolution": "3.5 lp/mm",
-        "pixel_size": "140 μm",
+        "pixel_size": "140 Î¼m",
         "image_depth": "16-bit",
         "generator_power": "50 kW",
         "tube_voltage_range": "40-150 kV",
@@ -57,7 +57,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
     1850000.00,
     'INR',
     'BPL-XR-DX5100',
-    ARRAY['https://aby-med.com/images/equipment/bpl-dx5100-1.jpg', 'https://aby-med.com/images/equipment/bpl-dx5100-2.jpg'],
+    ARRAY['https://ServQR.com/images/equipment/bpl-dx5100-1.jpg', 'https://ServQR.com/images/equipment/bpl-dx5100-2.jpg'],
     TRUE,
     'demo-hospital'
 ),
@@ -79,7 +79,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
         "collimator": "Manual with LED light",
         "arm_reach": "1200 mm",
         "vertical_travel": "500-2000 mm",
-        "rotation": "±180°",
+        "rotation": "Â±180Â°",
         "weight": "175 kg",
         "dimensions": "1200 x 700 x 1750 mm",
         "display": "10.4\" touchscreen",
@@ -89,7 +89,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
     950000.00,
     'INR',
     'BPL-XR-MX2020',
-    ARRAY['https://aby-med.com/images/equipment/bpl-mx2020-1.jpg', 'https://aby-med.com/images/equipment/bpl-mx2020-2.jpg'],
+    ARRAY['https://ServQR.com/images/equipment/bpl-mx2020-1.jpg', 'https://ServQR.com/images/equipment/bpl-mx2020-2.jpg'],
     TRUE,
     'demo-hospital'
 ),
@@ -104,7 +104,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
         "detector_type": "Amorphous Silicon Flat Panel Detector",
         "detector_size": "43cm x 43cm (17\" x 17\")",
         "resolution": "3.9 lp/mm",
-        "pixel_size": "127 μm",
+        "pixel_size": "127 Î¼m",
         "image_depth": "16-bit",
         "generator_power": "65 kW",
         "tube_voltage_range": "40-150 kV",
@@ -124,7 +124,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
     2250000.00,
     'INR',
     'ALG-DR-MARS40',
-    ARRAY['https://aby-med.com/images/equipment/allengers-mars40-1.jpg', 'https://aby-med.com/images/equipment/allengers-mars40-2.jpg'],
+    ARRAY['https://ServQR.com/images/equipment/allengers-mars40-1.jpg', 'https://ServQR.com/images/equipment/allengers-mars40-2.jpg'],
     TRUE,
     'demo-hospital'
 ),
@@ -139,16 +139,16 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
         "detector_type": "CMOS Flat Panel",
         "detector_size": "30cm x 30cm (12\" x 12\")",
         "resolution": "4.0 lp/mm",
-        "pixel_size": "125 μm",
+        "pixel_size": "125 Î¼m",
         "image_depth": "16-bit",
         "generator_power": "15 kW",
         "tube_voltage_range": "40-120 kV",
         "tube_current_range": "0.2-250 mA",
         "exposure_modes": ["Continuous", "Pulsed", "Single Shot"],
-        "orbital_rotation": "135°",
+        "orbital_rotation": "135Â°",
         "horizontal_travel": "200 mm",
         "vertical_travel": "450 mm",
-        "swivel_range": "±225°",
+        "swivel_range": "Â±225Â°",
         "display": "Dual 19\" medical-grade LCD monitors",
         "cooling_system": "Liquid cooling with integrated heat exchanger",
         "3D_reconstruction": true,
@@ -162,7 +162,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
     3500000.00,
     'INR',
     'ALG-CA-FLEX3D',
-    ARRAY['https://aby-med.com/images/equipment/allengers-flexiview-1.jpg', 'https://aby-med.com/images/equipment/allengers-flexiview-2.jpg'],
+    ARRAY['https://ServQR.com/images/equipment/allengers-flexiview-1.jpg', 'https://ServQR.com/images/equipment/allengers-flexiview-2.jpg'],
     TRUE,
     'demo-hospital'
 ),
@@ -200,7 +200,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
     285000.00,
     'INR',
     'TRV-PM-CP12',
-    ARRAY['https://aby-med.com/images/equipment/trivitron-claritypro-1.jpg', 'https://aby-med.com/images/equipment/trivitron-claritypro-2.jpg'],
+    ARRAY['https://ServQR.com/images/equipment/trivitron-claritypro-1.jpg', 'https://ServQR.com/images/equipment/trivitron-claritypro-2.jpg'],
     TRUE,
     'demo-hospital'
 ),
@@ -235,7 +235,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
     125000.00,
     'INR',
     'TRV-PM-VT7',
-    ARRAY['https://aby-med.com/images/equipment/trivitron-vitalst7-1.jpg', 'https://aby-med.com/images/equipment/trivitron-vitalst7-2.jpg'],
+    ARRAY['https://ServQR.com/images/equipment/trivitron-vitalst7-1.jpg', 'https://ServQR.com/images/equipment/trivitron-vitalst7-2.jpg'],
     TRUE,
     'demo-hospital'
 ),
@@ -253,7 +253,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
         "ecg_leads": "3/5/12-lead selectable",
         "ecg_analysis": "Advanced arrhythmia detection, ST/QT analysis, pacemaker detection",
         "nibp_measurement": "Oscillometric method with auto/manual/continuous modes",
-        "spo2_technology": "Masimo SET®",
+        "spo2_technology": "Masimo SETÂ®",
         "temperature_channels": 2,
         "ibp_channels": 4,
         "etco2_method": "Mainstream and Sidestream",
@@ -273,7 +273,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
     450000.00,
     'INR',
     'BPL-PM-ICU15',
-    ARRAY['https://aby-med.com/images/equipment/bpl-penlon-1.jpg', 'https://aby-med.com/images/equipment/bpl-penlon-2.jpg'],
+    ARRAY['https://ServQR.com/images/equipment/bpl-penlon-1.jpg', 'https://ServQR.com/images/equipment/bpl-penlon-2.jpg'],
     TRUE,
     'demo-hospital'
 ),
@@ -291,7 +291,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
         "ecg_leads": "3/5-lead selectable",
         "ecg_analysis": "Neonatal-specific arrhythmia detection",
         "nibp_measurement": "Oscillometric method with neonatal cuffs",
-        "spo2_technology": "Masimo SET® with neonatal sensors",
+        "spo2_technology": "Masimo SETÂ® with neonatal sensors",
         "temperature_channels": 2,
         "ibp_channels": 2,
         "etco2_method": "Microstream technology (low flow)",
@@ -311,7 +311,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
     325000.00,
     'INR',
     'BPL-PM-NEOPLUS',
-    ARRAY['https://aby-med.com/images/equipment/bpl-neoguard-1.jpg', 'https://aby-med.com/images/equipment/bpl-neoguard-2.jpg'],
+    ARRAY['https://ServQR.com/images/equipment/bpl-neoguard-1.jpg', 'https://ServQR.com/images/equipment/bpl-neoguard-2.jpg'],
     TRUE,
     'demo-hospital'
 ),
@@ -342,7 +342,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
     1200.00, -- Price per box of 100
     'INR',
     'HMD-SYR-KOJAK-2ML',
-    ARRAY['https://aby-med.com/images/equipment/hmd-kojak-1.jpg', 'https://aby-med.com/images/equipment/hmd-kojak-2.jpg'],
+    ARRAY['https://ServQR.com/images/equipment/hmd-kojak-1.jpg', 'https://ServQR.com/images/equipment/hmd-kojak-2.jpg'],
     TRUE,
     'demo-hospital'
 ),
@@ -392,7 +392,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
     3500.00, -- Price per box of 50
     'INR',
     'HMD-CAN-SAFETY-20G',
-    ARRAY['https://aby-med.com/images/equipment/hmd-safetypro-1.jpg', 'https://aby-med.com/images/equipment/hmd-safetypro-2.jpg'],
+    ARRAY['https://ServQR.com/images/equipment/hmd-safetypro-1.jpg', 'https://ServQR.com/images/equipment/hmd-safetypro-2.jpg'],
     TRUE,
     'demo-hospital'
 ),
@@ -424,7 +424,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
     2800.00, -- Price per box of 100
     'INR',
     'POLY-INF-PF-STD',
-    ARRAY['https://aby-med.com/images/equipment/poly-polyflo-1.jpg', 'https://aby-med.com/images/equipment/poly-polyflo-2.jpg'],
+    ARRAY['https://ServQR.com/images/equipment/poly-polyflo-1.jpg', 'https://ServQR.com/images/equipment/poly-polyflo-2.jpg'],
     TRUE,
     'demo-hospital'
 ),
@@ -467,7 +467,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
     12000.00, -- Price per box of 20
     'INR',
     'POLY-HD-PRODIAL',
-    ARRAY['https://aby-med.com/images/equipment/poly-dialysis-1.jpg', 'https://aby-med.com/images/equipment/poly-dialysis-2.jpg'],
+    ARRAY['https://ServQR.com/images/equipment/poly-dialysis-1.jpg', 'https://ServQR.com/images/equipment/poly-dialysis-2.jpg'],
     TRUE,
     'demo-hospital'
 ),
@@ -485,13 +485,13 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
         "test_positions": 64,
         "sample_positions": 80,
         "reagent_positions": 70,
-        "sample_volume": "2-45 μL",
-        "reagent_volume": "20-350 μL",
-        "reaction_volume": "180-500 μL",
+        "sample_volume": "2-45 Î¼L",
+        "reagent_volume": "20-350 Î¼L",
+        "reaction_volume": "180-500 Î¼L",
         "wavelengths": ["340", "380", "405", "450", "480", "505", "546", "570", "600", "660", "700", "800"],
         "light_source": "Halogen lamp with 2000 hours life",
         "detection_system": "Photometric range: 0-3.5 OD",
-        "temperature_control": "37°C ± 0.1°C",
+        "temperature_control": "37Â°C Â± 0.1Â°C",
         "sample_types": ["Serum", "Plasma", "Urine", "CSF"],
         "test_methods": ["End-point", "Fixed-time", "Kinetic", "Two-point kinetic", "Non-linear multipoint calibration"],
         "onboard_refrigeration": true,
@@ -512,7 +512,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
     1850000.00,
     'INR',
     'TRA-BIO-XL640',
-    ARRAY['https://aby-med.com/images/equipment/transasia-xl640-1.jpg', 'https://aby-med.com/images/equipment/transasia-xl640-2.jpg'],
+    ARRAY['https://ServQR.com/images/equipment/transasia-xl640-1.jpg', 'https://ServQR.com/images/equipment/transasia-xl640-2.jpg'],
     TRUE,
     'demo-hospital'
 ),
@@ -527,8 +527,8 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
         "parameters": 29,
         "throughput": "60 samples/hour",
         "sample_volume": {
-            "whole_blood": "20 μL",
-            "pre-diluted": "20 μL"
+            "whole_blood": "20 Î¼L",
+            "pre-diluted": "20 Î¼L"
         },
         "measuring_principle": {
             "wbc_diff": "Laser light scatter, cytochemistry",
@@ -542,10 +542,10 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
             "plt": "10-1000 x 10^9/L"
         },
         "precision": {
-            "wbc": "≤ 2.0%",
-            "rbc": "≤ 1.5%",
-            "hgb": "≤ 1.5%",
-            "plt": "≤ 4.0%"
+            "wbc": "â‰¤ 2.0%",
+            "rbc": "â‰¤ 1.5%",
+            "hgb": "â‰¤ 1.5%",
+            "plt": "â‰¤ 4.0%"
         },
         "sample_modes": ["Whole blood", "Pre-diluted", "Capillary"],
         "data_storage": "100,000 results including graphics",
@@ -564,7 +564,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
     1250000.00,
     'INR',
     'TRA-HEM-H560',
-    ARRAY['https://aby-med.com/images/equipment/transasia-h560-1.jpg', 'https://aby-med.com/images/equipment/transasia-h560-2.jpg'],
+    ARRAY['https://ServQR.com/images/equipment/transasia-h560-1.jpg', 'https://ServQR.com/images/equipment/transasia-h560-2.jpg'],
     TRUE,
     'demo-hospital'
 ),
@@ -583,8 +583,8 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
         "sample_positions": 40,
         "reagent_positions": 20,
         "cuvette_positions": 400,
-        "sample_volume": "2-100 μL",
-        "reagent_volume": "5-300 μL",
+        "sample_volume": "2-100 Î¼L",
+        "reagent_volume": "5-300 Î¼L",
         "detection_methods": ["Clotting", "Chromogenic", "Immunological"],
         "onboard_refrigeration": true,
         "sample_identification": "Barcode reader",
@@ -603,7 +603,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
     950000.00,
     'INR',
     'TRA-COA-ECL760',
-    ARRAY['https://aby-med.com/images/equipment/transasia-ecl760-1.jpg', 'https://aby-med.com/images/equipment/transasia-ecl760-2.jpg'],
+    ARRAY['https://ServQR.com/images/equipment/transasia-ecl760-1.jpg', 'https://ServQR.com/images/equipment/transasia-ecl760-2.jpg'],
     TRUE,
     'demo-hospital'
 ),
@@ -620,7 +620,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
         "test_menu": ["Thyroid panel", "Fertility hormones", "Tumor markers", "Cardiac markers", "Infectious diseases"],
         "sample_capacity": 15,
         "reagent_capacity": 6,
-        "sample_volume": "5-100 μL",
+        "sample_volume": "5-100 Î¼L",
         "sample_types": ["Serum", "Plasma"],
         "reaction_time": "15-30 minutes",
         "detection_limit": "Down to 0.001 ng/mL",
@@ -641,7 +641,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
     1450000.00,
     'INR',
     'TRA-IMM-ELAN30',
-    ARRAY['https://aby-med.com/images/equipment/transasia-elan30-1.jpg', 'https://aby-med.com/images/equipment/transasia-elan30-2.jpg'],
+    ARRAY['https://ServQR.com/images/equipment/transasia-elan30-1.jpg', 'https://ServQR.com/images/equipment/transasia-elan30-2.jpg'],
     TRUE,
     'demo-hospital'
 ),
@@ -671,7 +671,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
         "castors": "150 mm diameter with central locking",
         "bumpers": "Corner protection on all sides",
         "iv_pole": "2 locations with height adjustment",
-        "weighing_system": "Integrated with accuracy ±500g",
+        "weighing_system": "Integrated with accuracy Â±500g",
         "x_ray_compatibility": "Cassette holder for chest X-ray",
         "dimensions": "220 x 100 x 45-80 cm",
         "frame_material": "Epoxy-coated steel",
@@ -684,7 +684,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
     185000.00,
     'INR',
     'JNK-BED-CC5000',
-    ARRAY['https://aby-med.com/images/equipment/janak-cc5000-1.jpg', 'https://aby-med.com/images/equipment/janak-cc5000-2.jpg'],
+    ARRAY['https://ServQR.com/images/equipment/janak-cc5000-1.jpg', 'https://ServQR.com/images/equipment/janak-cc5000-2.jpg'],
     TRUE,
     'demo-hospital'
 ),
@@ -704,9 +704,9 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
         "battery_backup": "24V, up to 4 hours",
         "sections": 3,
         "height_adjustment": "45-70 cm",
-        "backrest_angle": "0-70°",
-        "knee_break_angle": "0-35°",
-        "trendelenburg": "±12°",
+        "backrest_angle": "0-70Â°",
+        "knee_break_angle": "0-35Â°",
+        "trendelenburg": "Â±12Â°",
         "safe_working_load": "200 kg",
         "mattress_platform": "200 x 90 cm",
         "side_rails": "Collapsible full-length",
@@ -722,7 +722,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
     85000.00,
     'INR',
     'JNK-BED-MC3000',
-    ARRAY['https://aby-med.com/images/equipment/janak-mc3000-1.jpg', 'https://aby-med.com/images/equipment/janak-mc3000-2.jpg'],
+    ARRAY['https://ServQR.com/images/equipment/janak-mc3000-1.jpg', 'https://ServQR.com/images/equipment/janak-mc3000-2.jpg'],
     TRUE,
     'demo-hospital'
 ),
@@ -741,13 +741,13 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
         "battery_backup": "24V, up to 6 hours",
         "sections": 2,
         "height_adjustment": "65-95 cm",
-        "backrest_angle": "0-60°",
+        "backrest_angle": "0-60Â°",
         "safe_working_load": "100 kg",
         "mattress_platform": "160 x 75 cm",
         "side_rails": "Transparent acrylic panels with safety lock",
         "side_rail_height": "60 cm from mattress platform",
         "castors": "100 mm diameter with central locking",
-        "trendelenburg": "±12°",
+        "trendelenburg": "Â±12Â°",
         "iv_pole": "2 locations",
         "dimensions": "175 x 85 x 65-95 cm",
         "frame_material": "Epoxy-coated steel with colorful panels",
@@ -760,7 +760,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
     120000.00,
     'INR',
     'JNK-BED-KC2000',
-    ARRAY['https://aby-med.com/images/equipment/janak-kc2000-1.jpg', 'https://aby-med.com/images/equipment/janak-kc2000-2.jpg'],
+    ARRAY['https://ServQR.com/images/equipment/janak-kc2000-1.jpg', 'https://ServQR.com/images/equipment/janak-kc2000-2.jpg'],
     TRUE,
     'demo-hospital'
 ),
@@ -776,8 +776,8 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
         "adjustment_mechanism": "Hydraulic foot pump",
         "positions": ["Flat", "Chair", "Trendelenburg", "Reverse Trendelenburg"],
         "height_adjustment": "50-95 cm",
-        "backrest_angle": "0-80°",
-        "trendelenburg": "±15°",
+        "backrest_angle": "0-80Â°",
+        "trendelenburg": "Â±15Â°",
         "safe_working_load": "180 kg",
         "table_top": "2-section",
         "padding": "65 mm high-density foam",
@@ -797,7 +797,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
     65000.00,
     'INR',
     'JNK-EXT-EP1500',
-    ARRAY['https://aby-med.com/images/equipment/janak-ep1500-1.jpg', 'https://aby-med.com/images/equipment/janak-ep1500-2.jpg'],
+    ARRAY['https://ServQR.com/images/equipment/janak-ep1500-1.jpg', 'https://ServQR.com/images/equipment/janak-ep1500-2.jpg'],
     TRUE,
     'demo-hospital'
 ),
@@ -822,7 +822,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
             "ac": "50/60 Hz"
         },
         "sampling_rate": "32,000 samples/second/channel",
-        "resolution": "5 μV/LSB (24-bit ADC)",
+        "resolution": "5 Î¼V/LSB (24-bit ADC)",
         "cmrr": "> 115 dB",
         "pacemaker_detection": true,
         "interpretation": "SCHILLER ECG Analysis Program",
@@ -847,7 +847,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
     325000.00,
     'INR',
     'SCH-ECG-AT102P',
-    ARRAY['https://aby-med.com/images/equipment/schiller-at102-1.jpg', 'https://aby-med.com/images/equipment/schiller-at102-2.jpg'],
+    ARRAY['https://ServQR.com/images/equipment/schiller-at102-1.jpg', 'https://ServQR.com/images/equipment/schiller-at102-2.jpg'],
     TRUE,
     'demo-hospital'
 ),
@@ -870,7 +870,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
             "ac": "50/60 Hz"
         },
         "sampling_rate": "32,000 samples/second/channel",
-        "resolution": "1 μV/LSB (32-bit ADC)",
+        "resolution": "1 Î¼V/LSB (32-bit ADC)",
         "cmrr": "> 140 dB",
         "pacemaker_detection": true,
         "interpretation": "SCHILLER ECG Analysis Program with C.A.R.E. algorithm",
@@ -899,7 +899,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
     575000.00,
     'INR',
     'SCH-ECG-MS2015',
-    ARRAY['https://aby-med.com/images/equipment/schiller-ms2015-1.jpg', 'https://aby-med.com/images/equipment/schiller-ms2015-2.jpg'],
+    ARRAY['https://ServQR.com/images/equipment/schiller-ms2015-1.jpg', 'https://ServQR.com/images/equipment/schiller-ms2015-2.jpg'],
     TRUE,
     'demo-hospital'
 ),
@@ -922,7 +922,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
             "ac": "50/60 Hz"
         },
         "sampling_rate": "16,000 samples/second/channel",
-        "resolution": "5 μV/LSB (24-bit ADC)",
+        "resolution": "5 Î¼V/LSB (24-bit ADC)",
         "cmrr": "> 105 dB",
         "pacemaker_detection": true,
         "interpretation": "Glasgow algorithm",
@@ -946,7 +946,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
     175000.00,
     'INR',
     'BPL-ECG-6208V',
-    ARRAY['https://aby-med.com/images/equipment/bpl-6208-1.jpg', 'https://aby-med.com/images/equipment/bpl-6208-2.jpg'],
+    ARRAY['https://ServQR.com/images/equipment/bpl-6208-1.jpg', 'https://ServQR.com/images/equipment/bpl-6208-2.jpg'],
     TRUE,
     'demo-hospital'
 ),
@@ -969,7 +969,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
             "ac": "50/60 Hz"
         },
         "sampling_rate": "8,000 samples/second/channel",
-        "resolution": "10 μV/LSB (16-bit ADC)",
+        "resolution": "10 Î¼V/LSB (16-bit ADC)",
         "cmrr": "> 95 dB",
         "pacemaker_detection": false,
         "memory": "50 ECGs internal storage",
@@ -992,7 +992,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
     45000.00,
     'INR',
     'BPL-ECG-9108P',
-    ARRAY['https://aby-med.com/images/equipment/bpl-9108-1.jpg', 'https://aby-med.com/images/equipment/bpl-9108-2.jpg'],
+    ARRAY['https://ServQR.com/images/equipment/bpl-9108-1.jpg', 'https://ServQR.com/images/equipment/bpl-9108-2.jpg'],
     TRUE,
     'demo-hospital'
 );
@@ -1031,7 +1031,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
     285000.00,
     'INR',
     'TRV-PM-CP12',
-    ARRAY['https://aby-med.com/images/equipment/trivitron-claritypro-1.jpg', 'https://aby-med.com/images/equipment/trivitron-claritypro-2.jpg'],
+    ARRAY['https://ServQR.com/images/equipment/trivitron-claritypro-1.jpg', 'https://ServQR.com/images/equipment/trivitron-claritypro-2.jpg'],
     TRUE,
     'city-hospital'
 ),
@@ -1046,7 +1046,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
         "detector_type": "Flat Panel Digital Detector",
         "detector_size": "43cm x 43cm (17\" x 17\")",
         "resolution": "3.5 lp/mm",
-        "pixel_size": "140 μm",
+        "pixel_size": "140 Î¼m",
         "image_depth": "16-bit",
         "generator_power": "50 kW",
         "tube_voltage_range": "40-150 kV",
@@ -1062,7 +1062,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
     1850000.00,
     'INR',
     'BPL-XR-DX5100',
-    ARRAY['https://aby-med.com/images/equipment/bpl-dx5100-1.jpg', 'https://aby-med.com/images/equipment/bpl-dx5100-2.jpg'],
+    ARRAY['https://ServQR.com/images/equipment/bpl-dx5100-1.jpg', 'https://ServQR.com/images/equipment/bpl-dx5100-2.jpg'],
     TRUE,
     'city-hospital'
 ),
@@ -1091,7 +1091,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
     1200.00, -- Price per box of 100
     'INR',
     'HMD-SYR-KOJAK-2ML',
-    ARRAY['https://aby-med.com/images/equipment/hmd-kojak-1.jpg', 'https://aby-med.com/images/equipment/hmd-kojak-2.jpg'],
+    ARRAY['https://ServQR.com/images/equipment/hmd-kojak-1.jpg', 'https://ServQR.com/images/equipment/hmd-kojak-2.jpg'],
     TRUE,
     'city-hospital'
 ),
@@ -1119,7 +1119,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
         "castors": "150 mm diameter with central locking",
         "bumpers": "Corner protection on all sides",
         "iv_pole": "2 locations with height adjustment",
-        "weighing_system": "Integrated with accuracy ±500g",
+        "weighing_system": "Integrated with accuracy Â±500g",
         "x_ray_compatibility": "Cassette holder for chest X-ray",
         "dimensions": "220 x 100 x 45-80 cm",
         "frame_material": "Epoxy-coated steel",
@@ -1132,7 +1132,7 @@ INSERT INTO equipment (id, name, model, category_id, manufacturer_id, descriptio
     185000.00,
     'INR',
     'JNK-BED-CC5000',
-    ARRAY['https://aby-med.com/images/equipment/janak-cc5000-1.jpg', 'https://aby-med.com/images/equipment/janak-cc5000-2.jpg'],
+    ARRAY['https://ServQR.com/images/equipment/janak-cc5000-1.jpg', 'https://ServQR.com/images/equipment/janak-cc5000-2.jpg'],
     TRUE,
     'city-hospital'
 );

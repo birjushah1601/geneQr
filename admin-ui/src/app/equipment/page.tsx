@@ -25,8 +25,8 @@ interface Equipment {
   lastService?: string;
   qrCode?: string;
   qrCodeUrl?: string;
-  qrCodeImageUrl?: string; // Data URL for the QR code image
-  hasQRCode?: boolean; // true only if image exists/generated
+  qrCodeImageUrl?: string; // Data URL for the QR code image from database
+  hasQRCodeImage?: boolean; // true only if image exists in database
 }
 
 function EquipmentListPageInner() {
@@ -92,7 +92,8 @@ function EquipmentListPageInner() {
         const equipmentItems = responseData.items || responseData.equipment || [];
         
         const mappedEquipment: Equipment[] = equipmentItems.map((item: any, index: number) => {
-          const hasQR = !!item.qr_code && !!item.qr_code_url;
+          // Check if QR code IMAGE exists in database (not just the qr_code field)
+          const hasQRImage = !!item.qr_code_image;
           
           // Debug first few items
           if (index < 3) {
@@ -101,7 +102,8 @@ function EquipmentListPageInner() {
               name: item.equipment_name,
               qr_code: item.qr_code,
               qr_code_url: item.qr_code_url,
-              hasQRCode: hasQR
+              qr_code_image: item.qr_code_image ? 'EXISTS' : 'MISSING',
+              hasQRCodeImage: hasQRImage
             });
           }
           
@@ -119,12 +121,12 @@ function EquipmentListPageInner() {
             qrCode: item.qr_code,
             qrCodeUrl: item.qr_code_url,
             qrCodeImageUrl: item.qr_code_image ? `data:image/png;base64,${item.qr_code_image}` : undefined,
-            hasQRCode: hasQR, // Check if qr_code and qr_code_url exist
+            hasQRCodeImage: hasQRImage, // Check if qr_code_image exists in database
           };
         });
         
-        const withQR = mappedEquipment.filter(e => e.hasQRCode).length;
-        console.log(`[Equipment Load] Loaded ${mappedEquipment.length} equipment items (${withQR} with QR codes)`);
+        const withQRImages = mappedEquipment.filter(e => e.hasQRCodeImage).length;
+        console.log(`[Equipment Load] Loaded ${mappedEquipment.length} equipment items (${withQRImages} with QR code images)`);
         setEquipmentData(mappedEquipment);
       } catch (err) {
         console.error('Failed to fetch equipment from API:', err);
@@ -201,10 +203,9 @@ function EquipmentListPageInner() {
   };
 
   const handlePreviewQR = (equipment: Equipment) => {
-    if (equipment.hasQRCode) {
-      // Generate QR code image that encodes the service-request URL
-      const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(equipment.qrCodeUrl || '')}`;
-      setQrPreview({ id: equipment.id, url: qrImageUrl });
+    if (equipment.hasQRCodeImage && equipment.qrCodeImageUrl) {
+      // Use the QR code image from database (base64 data URL)
+      setQrPreview({ id: equipment.id, url: equipment.qrCodeImageUrl });
     }
   };
 
@@ -545,6 +546,9 @@ function EquipmentListPageInner() {
                         Serial Number
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Category
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -557,7 +561,7 @@ function EquipmentListPageInner() {
                         Last Service
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
+                        View
                       </th>
                     </tr>
                   </thead>
@@ -572,10 +576,12 @@ function EquipmentListPageInner() {
                             aria-label={`Select ${equipment.name}`}
                           />
                         </td>
+                        
                         {/* QR Code Column */}
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-2">
-                            {equipment.hasQRCode ? (
+                            {equipment.hasQRCodeImage && equipment.qrCodeImageUrl ? (
+                              // Show QR code image from database with preview/download options
                               <div className="group relative">
                                 <div 
                                   className="w-20 h-20 border-2 border-gray-200 rounded-md overflow-hidden cursor-pointer hover:border-blue-500 transition-colors bg-white"
@@ -583,11 +589,11 @@ function EquipmentListPageInner() {
                                   title="Click to preview full size"
                                 >
                                   <img
-                                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(equipment.qrCodeUrl || '')}`}
+                                    src={equipment.qrCodeImageUrl}
                                     alt={`QR Code for ${equipment.name}`}
                                     className="w-full h-full object-contain p-1"
                                     onError={(e) => {
-                                      console.error('Failed to load QR image for', equipment.id);
+                                      console.error('Failed to load QR image from database for', equipment.id);
                                     }}
                                   />
                                 </div>
@@ -613,22 +619,23 @@ function EquipmentListPageInner() {
                                 </div>
                               </div>
                             ) : (
+                              // Show "Generate QR Code" button if no QR image in database
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleGenerateQR(equipment.id)}
                                 disabled={generatingQR === equipment.id}
-                                className="w-16 h-16 flex flex-col items-center justify-center text-xs"
+                                className="w-20 h-20 flex flex-col items-center justify-center text-xs"
                               >
                                 {generatingQR === equipment.id ? (
                                   <>
                                     <Loader2 className="h-4 w-4 animate-spin mb-1" />
-                                    <span className="text-[10px]">Wait...</span>
+                                    <span className="text-[10px]">Generating...</span>
                                   </>
                                 ) : (
                                   <>
-                                    <QrCode className="h-4 w-4 mb-1" />
-                                    <span className="text-[10px]">Generate</span>
+                                    <QrCode className="h-5 w-5 mb-1" />
+                                    <span className="text-[10px] text-center">Generate QR</span>
                                   </>
                                 )}
                               </Button>
@@ -650,6 +657,22 @@ function EquipmentListPageInner() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {equipment.serialNumber}
                         </td>
+                        
+                        {/* Actions Column */}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const code = equipment.qrCode || equipment.id;
+                              const url = code ? `/service-request?qr=${encodeURIComponent(code)}` : '/service-request';
+                              router.push(url);
+                            }}
+                          >
+                            Create Service Request
+                          </Button>
+                        </td>
+                        
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {equipment.category}
                         </td>
@@ -664,27 +687,16 @@ function EquipmentListPageInner() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {equipment.lastService || 'N/A'}
                         </td>
+                        
+                        {/* View Column - Last */}
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex items-center justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => router.push(`/equipment/${equipment.id}`)}
-                            >
-                              View
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                const code = equipment.qrCode || equipment.id;
-                                const url = code ? `/service-request?qr=${encodeURIComponent(code)}` : '/service-request';
-                                router.push(url);
-                              }}
-                            >
-                              Create Service Request
-                            </Button>
-                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => router.push(`/equipment/${equipment.id}`)}
+                          >
+                            View
+                          </Button>
                         </td>
                       </tr>
                     ))}

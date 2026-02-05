@@ -1,4 +1,4 @@
--- Migration: Create equipment relationships history table
+﻿-- Migration: Create equipment relationships history table
 -- Ticket: T1.4
 -- Purpose: Track equipment ownership, location, and relationship changes over time
 
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS equipment_relationships (
     -- Constraints
     CONSTRAINT relationship_type_check CHECK (
         relationship_type IN (
-            'manufacturer', 'distributor', 'dealer', 'owner', 
+            'manufacturer', 'Channel Partner', 'Sub-sub_SUB_DEALER', 'owner', 
             'facility', 'service_provider', 'leasing_company', 'other'
         )
     ),
@@ -438,7 +438,7 @@ COMMENT ON TABLE equipment_relationships IS
     'Tracks equipment ownership, location, and relationship history over time. Supports temporal queries and full audit trail.';
 
 COMMENT ON COLUMN equipment_relationships.relationship_type IS 
-    'Type of relationship: manufacturer, distributor, dealer, owner, facility, service_provider, leasing_company, other';
+    'Type of relationship: manufacturer, Channel Partner, Sub-sub_SUB_DEALER, owner, facility, service_provider, leasing_company, other';
 
 COMMENT ON COLUMN equipment_relationships.effective_from IS 
     'Start timestamp of this relationship. Required. Includes date and time for same-day precision.';
@@ -495,7 +495,7 @@ BEGIN
     IF v_orphaned_count > 0 THEN
         RAISE WARNING '% equipment items have no relationships', v_orphaned_count;
     ELSE
-        RAISE NOTICE '✓ All equipment have at least one relationship';
+        RAISE NOTICE 'âœ“ All equipment have at least one relationship';
     END IF;
     
     RAISE NOTICE '==============================================';
@@ -512,12 +512,12 @@ BEGIN
     RAISE NOTICE 'Equipment relationships history tracking enabled';
     RAISE NOTICE '==============================================';
     RAISE NOTICE 'Features enabled:';
-    RAISE NOTICE '  ✓ Ownership history tracking';
-    RAISE NOTICE '  ✓ Location change history';
-    RAISE NOTICE '  ✓ Temporal queries (owner at specific date)';
-    RAISE NOTICE '  ✓ Transfer equipment function';
-    RAISE NOTICE '  ✓ Relationship audit trail';
-    RAISE NOTICE '  ✓ Views for easy access';
+    RAISE NOTICE '  âœ“ Ownership history tracking';
+    RAISE NOTICE '  âœ“ Location change history';
+    RAISE NOTICE '  âœ“ Temporal queries (owner at specific date)';
+    RAISE NOTICE '  âœ“ Transfer equipment function';
+    RAISE NOTICE '  âœ“ Relationship audit trail';
+    RAISE NOTICE '  âœ“ Views for easy access';
     RAISE NOTICE '==============================================';
     RAISE NOTICE 'Example queries:';
     RAISE NOTICE '  SELECT * FROM get_current_owner(''EQ-12345'');';

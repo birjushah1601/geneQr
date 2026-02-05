@@ -1,8 +1,8 @@
-# ABY-MED Onboarding System - Deployment Guide
+﻿# ServQR Onboarding System - Deployment Guide
 
 Quick deployment guide for the complete onboarding system.
 
-## 🚀 Quick Start
+## ðŸš€ Quick Start
 
 ### Prerequisites
 - PostgreSQL 15+ (running on port 5430 via Docker)
@@ -21,7 +21,7 @@ docker-compose up -d postgres
 #### Apply Migrations
 ```bash
 # Navigate to project root
-cd /path/to/aby-med
+cd /path/to/ServQR
 
 # Apply QR code migrations
 psql -h localhost -p 5430 -U postgres -d med_platform -f database/migrations/028_create_qr_tables.sql
@@ -88,7 +88,7 @@ npm run dev
 http://localhost:3000/onboarding/wizard
 ```
 
-## 🧪 Testing
+## ðŸ§ª Testing
 
 ### Test Organizations Import
 
@@ -166,7 +166,7 @@ SELECT * FROM qr_codes_unassigned LIMIT 10;
 SELECT * FROM qr_batches_summary;
 ```
 
-## 📋 Frontend Testing Checklist
+## ðŸ“‹ Frontend Testing Checklist
 
 ### Wizard Flow
 - [ ] Step 1: Company Profile
@@ -210,7 +210,7 @@ SELECT * FROM qr_batches_summary;
   - [ ] Icons render correctly
   - [ ] Selected state highlights
 
-## 🔧 Troubleshooting
+## ðŸ”§ Troubleshooting
 
 ### Backend Won't Start
 ```bash
@@ -249,7 +249,7 @@ docker ps | grep postgres
 psql -h localhost -p 5430 -U postgres -d med_platform -c "\dt"
 ```
 
-## 📊 Performance Benchmarks
+## ðŸ“Š Performance Benchmarks
 
 ### Expected Performance
 - Organizations Import (6 items): < 1 second
@@ -262,7 +262,7 @@ psql -h localhost -p 5430 -U postgres -d med_platform -c "\dt"
 - CSV parsing: ~1000 rows/second
 - Validation: ~5000 rows/second
 
-## 🔒 Security Checklist
+## ðŸ”’ Security Checklist
 
 - [ ] Database passwords not in .env file committed to git
 - [ ] API endpoints require authentication (production)
@@ -271,7 +271,7 @@ psql -h localhost -p 5430 -U postgres -d med_platform -c "\dt"
 - [ ] SQL injection prevention (prepared statements)
 - [ ] Feature flags enabled only for authorized users
 
-## 🚀 Production Deployment
+## ðŸš€ Production Deployment
 
 ### Build for Production
 
@@ -341,7 +341,7 @@ RUN npm install --production
 CMD ["npm", "start"]
 ```
 
-## 📈 Monitoring
+## ðŸ“ˆ Monitoring
 
 ### Health Checks
 - Backend: `GET /health` (every 30s)
@@ -355,7 +355,7 @@ CMD ["npm", "start"]
 - User completion rate (wizard)
 - Template download count
 
-## ✅ Pre-Launch Checklist
+## âœ… Pre-Launch Checklist
 
 - [ ] All migrations applied successfully
 - [ ] Backend compiles without errors
@@ -370,7 +370,7 @@ CMD ["npm", "start"]
 - [ ] Performance benchmarks met
 - [ ] Backup strategy in place
 
-## 🎉 Success Criteria
+## ðŸŽ‰ Success Criteria
 
 - [ ] Backend health check returns 200
 - [ ] Frontend wizard loads in < 2 seconds

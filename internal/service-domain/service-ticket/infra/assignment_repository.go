@@ -1,4 +1,4 @@
-package infra
+﻿package infra
 
 import (
 	"context"
@@ -25,7 +25,8 @@ func NewAssignmentRepository(pool *pgxpool.Pool) *AssignmentRepository {
 }
 
 // ListEngineers retrieves engineers, optionally filtered by organization
-func (r *AssignmentRepository) ListEngineers(ctx context.Context, organizationID *string, limit, offset int) ([]*domain.Engineer, error) {
+// includePartners: when true, includes engineers from partner organizations (via org_relationships)
+func (r *AssignmentRepository) ListEngineers(ctx context.Context, organizationID *string, includePartners bool, limit, offset int) ([]*domain.Engineer, error) {
 	// Get organization context for filtering
 	orgID, hasOrgID := middleware.GetOrganizationID(ctx)
 	
@@ -57,10 +58,29 @@ func (r *AssignmentRepository) ListEngineers(ctx context.Context, organizationID
 	// Apply organization filter (CRITICAL for multi-tenancy)
 	// Engineers belong to organizations through engineer_org_memberships
 	if hasOrgID && !orgfilter.IsSystemAdmin(ctx) {
-		query += fmt.Sprintf(` AND eom.org_id = $%d`, argPos)
-		args = append(args, orgID.String())
-		argPos++
-		fmt.Printf("[ORGFILTER] Engineer list filtered for org_id=%s\n", orgID)
+		if includePartners {
+			// Include both own engineers AND partner engineers
+			// Partner engineers are from organizations linked via org_relationships
+			query += fmt.Sprintf(` AND eom.org_id IN (
+				-- Own organization
+				SELECT $%d::UUID
+				UNION
+				-- Partner organizations that service this organization
+				SELECT child_org_id
+				FROM org_relationships
+				WHERE parent_org_id = $%d::UUID
+				  AND rel_type = 'services_for'
+			)`, argPos, argPos+1)
+			args = append(args, orgID.String(), orgID.String())
+			argPos += 2
+			fmt.Printf("[ORGFILTER] Engineer list with partners for org_id=%s\n", orgID)
+		} else {
+			// Only own organization engineers (default behavior)
+			query += fmt.Sprintf(` AND eom.org_id = $%d`, argPos)
+			args = append(args, orgID.String())
+			argPos++
+			fmt.Printf("[ORGFILTER] Engineer list filtered for org_id=%s\n", orgID)
+		}
 	} else if organizationID != nil && *organizationID != "" {
 		// Fallback to parameter-based filtering if provided
 		query += fmt.Sprintf(` AND eom.org_id = $%d`, argPos)

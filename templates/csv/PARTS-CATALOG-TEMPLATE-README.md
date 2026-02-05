@@ -1,25 +1,25 @@
-# Parts Catalog CSV Template - Field Guide
+﻿# Parts Catalog CSV Template - Field Guide
 
 ## Template File
-📁 **File:** `parts-catalog-template.csv`
+ðŸ“ **File:** `parts-catalog-template.csv`
 
 ## Purpose
-This template helps you prepare your parts catalog data for bulk upload into the ABY-MED platform. Use this format to import spare parts for your medical equipment.
+This template helps you prepare your parts catalog data for bulk upload into the ServQR Platform. Use this format to import spare parts for your medical equipment.
 
 ---
 
-## 📋 Field Descriptions
+## ðŸ“‹ Field Descriptions
 
 ### Required Fields (*)
 
 | Field | Type | Description | Example | Required |
 |-------|------|-------------|---------|----------|
-| **part_number** * | Text | Unique identifier for the part | VENT-FILT-001 | ✅ Yes |
-| **part_name** * | Text | Display name of the part | HEPA Filter H13 | ✅ Yes |
+| **part_number** * | Text | Unique identifier for the part | VENT-FILT-001 | âœ… Yes |
+| **part_name** * | Text | Display name of the part | HEPA Filter H13 | âœ… Yes |
 | **description** | Text | Detailed description | High-efficiency particulate air filter... | No |
-| **category** * | Text | Main category | Filter, Sensor, Valve, Battery, Cable, Circuit | ✅ Yes |
+| **category** * | Text | Main category | Filter, Sensor, Valve, Battery, Cable, Circuit | âœ… Yes |
 | **subcategory** | Text | Subcategory | Air Filter, Gas Sensor, Pressure Valve | No |
-| **part_type** * | Text | Type of part | Component, Consumable, Accessory, Tool | ✅ Yes |
+| **part_type** * | Text | Type of part | Component, Consumable, Accessory, Tool | âœ… Yes |
 | **is_oem_part** | Boolean | Is this an OEM part? | true, false | No (default: true) |
 | **manufacturer_name** | Text | Manufacturer name | Medtronic, GE Healthcare, Philips | No |
 | **unit_price** | Decimal | Price per unit | 450.00 | No |
@@ -33,7 +33,7 @@ This template helps you prepare your parts catalog data for bulk upload into the
 
 ---
 
-## 🎯 Part Categories
+## ðŸŽ¯ Part Categories
 
 **Common Categories:**
 - Filter (Air Filter, Oil Filter, Water Filter)
@@ -49,7 +49,7 @@ This template helps you prepare your parts catalog data for bulk upload into the
 
 ---
 
-## 📦 Part Types
+## ðŸ“¦ Part Types
 
 | Type | Description | Examples |
 |------|-------------|----------|
@@ -60,7 +60,7 @@ This template helps you prepare your parts catalog data for bulk upload into the
 
 ---
 
-## 🔧 Technical Specifications (JSON Format)
+## ðŸ”§ Technical Specifications (JSON Format)
 
 The `specifications` field accepts JSON format for technical details:
 
@@ -70,7 +70,7 @@ The `specifications` field accepts JSON format for technical details:
   "particle_size": "0.3 microns",
   "flow_rate": "60 L/min",
   "pressure_range": "0-100 psi",
-  "temperature_range": "31-41°C",
+  "temperature_range": "31-41Â°C",
   "material": "silicone",
   "sterilizable": true,
   "autoclavable": true
@@ -92,7 +92,7 @@ The `specifications` field accepts JSON format for technical details:
 
 ---
 
-## 📝 Example Rows
+## ðŸ“ Example Rows
 
 ### Example 1: Filter (Consumable)
 ```csv
@@ -101,7 +101,7 @@ VENT-FILT-001,HEPA Filter H13,High-efficiency particulate air filter for ventila
 
 ### Example 2: Sensor (Component)
 ```csv
-VENT-SENS-002,Oxygen Sensor,Galvanic oxygen sensor for O2 monitoring,Sensor,Gas Sensor,Component,true,GE Healthcare,2500.00,INR,10,14,0.05,"5x3x2 cm",12,"{""range"": ""0-100%"", ""accuracy"": ""±2%"", ""response_time"": ""<15 sec""}"
+VENT-SENS-002,Oxygen Sensor,Galvanic oxygen sensor for O2 monitoring,Sensor,Gas Sensor,Component,true,GE Healthcare,2500.00,INR,10,14,0.05,"5x3x2 cm",12,"{""range"": ""0-100%"", ""accuracy"": ""Â±2%"", ""response_time"": ""<15 sec""}"
 ```
 
 ### Example 3: Battery (Component)
@@ -111,7 +111,7 @@ VENT-BATT-005,Backup Battery Pack,Lithium-ion battery for emergency backup,Batte
 
 ---
 
-## ✅ Validation Rules
+## âœ… Validation Rules
 
 1. **part_number**: Must be unique across all parts
 2. **part_name**: Required, max 200 characters
@@ -128,7 +128,7 @@ VENT-BATT-005,Backup Battery Pack,Lithium-ion battery for emergency backup,Batte
 
 ---
 
-## 🚀 How to Use
+## ðŸš€ How to Use
 
 ### Step 1: Download Template
 Download `parts-catalog-template.csv` from the platform
@@ -146,7 +146,7 @@ Download `parts-catalog-template.csv` from the platform
 - Review part categorization
 
 ### Step 4: Save as CSV
-- File → Save As → CSV (Comma delimited)
+- File â†’ Save As â†’ CSV (Comma delimited)
 - Keep the header row intact
 - Use UTF-8 encoding
 
@@ -159,7 +159,7 @@ Download `parts-catalog-template.csv` from the platform
 
 ---
 
-## 💡 Tips & Best Practices
+## ðŸ’¡ Tips & Best Practices
 
 ### Naming Conventions
 - **Part Numbers**: Use consistent prefix (e.g., VENT-FILT-001, VENT-SENS-002)
@@ -189,7 +189,7 @@ Download `parts-catalog-template.csv` from the platform
 
 ---
 
-## ❌ Common Mistakes to Avoid
+## âŒ Common Mistakes to Avoid
 
 1. **Duplicate Part Numbers**: Each part_number must be unique
 2. **Invalid JSON**: Use double quotes in specifications, not single quotes
@@ -202,7 +202,7 @@ Download `parts-catalog-template.csv` from the platform
 
 ---
 
-## 📞 Support
+## ðŸ“ž Support
 
 Need help with the template?
 - Check the platform documentation
@@ -211,12 +211,12 @@ Need help with the template?
 
 ---
 
-## 🔄 Template Version
+## ðŸ”„ Template Version
 **Version:** 1.0  
 **Last Updated:** January 2026  
-**Compatible With:** ABY-MED Platform v2.0+
+**Compatible With:** ServQR Platform v2.0+
 
 ---
 
-**Ready to import your parts catalog?** 🚀  
+**Ready to import your parts catalog?** ðŸš€  
 Follow the steps above and your parts data will be ready in minutes!

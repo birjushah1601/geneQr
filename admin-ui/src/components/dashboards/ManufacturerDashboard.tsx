@@ -152,7 +152,7 @@ export default function ManufacturerDashboard() {
               </div>
               <div className="flex-1">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  🚀 Get Started with AI Onboarding
+                  Ã°Å¸Å¡â‚¬ Get Started with AI Onboarding
                 </h3>
                 <p className="text-gray-700 mb-4">
                   Import your equipment, parts catalog, hospitals, and engineers in minutes using our AI-powered assistant. 

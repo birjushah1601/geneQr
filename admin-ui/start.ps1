@@ -1,7 +1,7 @@
-# Add Node.js to PATH
+﻿# Add Node.js to PATH
 $env:Path = "C:\Program Files\nodejs;$env:Path"
 
-Set-Location "C:\Users\birju\aby-med\admin-ui"
+Set-Location "C:\Users\birju\ServQR\admin-ui"
 
 # Restore tsconfig
 if (Test-Path "tsconfig.json.bak") {

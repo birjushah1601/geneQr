@@ -1,4 +1,4 @@
-export default function OnboardingLayout({
+﻿export default function OnboardingLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -10,7 +10,7 @@ export default function OnboardingLayout({
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-2">
-              ABY-MED Admin Portal
+              ServQR Admin Portal
             </h1>
             <p className="text-gray-600">
               Medical Equipment Service Management Platform

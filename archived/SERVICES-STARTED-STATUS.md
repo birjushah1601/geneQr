@@ -1,56 +1,56 @@
-# 🚀 ABY-MED Services - Startup Status
+﻿# ðŸš€ ServQR Services - Startup Status
 
 **Date:** October 5, 2025  
-**Status:** ✅ All Services Successfully Started
+**Status:** âœ… All Services Successfully Started
 
 ---
 
-## 📊 Service Status Overview
+## ðŸ“Š Service Status Overview
 
-### ✅ Infrastructure Services (Docker)
+### âœ… Infrastructure Services (Docker)
 
 | Service | Status | Port | Health |
 |---------|--------|------|--------|
-| **PostgreSQL** | ✅ Running | 5433 | Healthy |
-| **Redis** | ✅ Running | 6379 | Healthy |
-| **Zookeeper** | ✅ Running | 2181 | Healthy |
-| **Prometheus** | ✅ Running | 9090 | Healthy |
-| **Grafana** | ✅ Running | 3000 | Healthy |
-| **Keycloak** | ⚠️ Running | 8080 | Unhealthy (non-blocking) |
-| **MailHog** | ✅ Running | 8025 | Healthy |
+| **PostgreSQL** | âœ… Running | 5433 | Healthy |
+| **Redis** | âœ… Running | 6379 | Healthy |
+| **Zookeeper** | âœ… Running | 2181 | Healthy |
+| **Prometheus** | âœ… Running | 9090 | Healthy |
+| **Grafana** | âœ… Running | 3000 | Healthy |
+| **Keycloak** | âš ï¸ Running | 8080 | Unhealthy (non-blocking) |
+| **MailHog** | âœ… Running | 8025 | Healthy |
 
 **Note:** Kafka had a dependency startup issue with Zookeeper but core services are operational.
 
-### ✅ Application Services
+### âœ… Application Services
 
 | Service | Status | Port | Window |
 |---------|--------|------|--------|
-| **Go Backend** | 🔄 Initializing | 8081 | Separate PowerShell window |
-| **Next.js Admin UI** | ✅ Running | 3000 | Separate PowerShell window |
+| **Go Backend** | ðŸ”„ Initializing | 8081 | Separate PowerShell window |
+| **Next.js Admin UI** | âœ… Running | 3000 | Separate PowerShell window |
 
 ---
 
-## 📁 Database Status
+## ðŸ“ Database Status
 
-**Connection:** `localhost:5433` → `aby_med_platform`
+**Connection:** `localhost:5433` â†’ `aby_med_platform`
 
 ### Tables Created (16 total):
-- ✅ `equipment_registry` - Medical devices with QR codes
-- ✅ `equipment` - Equipment master data
-- ✅ `service_tickets` - Service requests
-- ✅ `engineers` - Field technicians (5 engineers loaded)
-- ✅ `suppliers` - Vendor registry
-- ✅ `manufacturers` - Manufacturer data
-- ✅ `rfqs` - Request for Quotes
-- ✅ `rfq_items` - RFQ line items
-- ✅ `rfq_invitations` - RFQ invitations to suppliers
-- ✅ `quotes` - Supplier quotes
-- ✅ `quote_items` - Quote line items
-- ✅ `contracts` - Purchase orders
-- ✅ `comparisons` - Quote comparison matrix
-- ✅ `categories` - Product categories
-- ✅ `ticket_comments` - Service ticket comments
-- ✅ `ticket_status_history` - Ticket status audit trail
+- âœ… `equipment_registry` - Medical devices with QR codes
+- âœ… `equipment` - Equipment master data
+- âœ… `service_tickets` - Service requests
+- âœ… `engineers` - Field technicians (5 engineers loaded)
+- âœ… `suppliers` - Vendor registry
+- âœ… `manufacturers` - Manufacturer data
+- âœ… `rfqs` - Request for Quotes
+- âœ… `rfq_items` - RFQ line items
+- âœ… `rfq_invitations` - RFQ invitations to suppliers
+- âœ… `quotes` - Supplier quotes
+- âœ… `quote_items` - Quote line items
+- âœ… `contracts` - Purchase orders
+- âœ… `comparisons` - Quote comparison matrix
+- âœ… `categories` - Product categories
+- âœ… `ticket_comments` - Service ticket comments
+- âœ… `ticket_status_history` - Ticket status audit trail
 
 ### Sample Data:
 - **Equipment:** 3 items
@@ -58,10 +58,10 @@
 
 ---
 
-## 🌐 Access URLs
+## ðŸŒ Access URLs
 
 ### Primary Services
-- **Admin UI:** http://localhost:3000 ✅
+- **Admin UI:** http://localhost:3000 âœ…
 - **Backend API:** http://localhost:8081 (initializing...)
 - **API Health:** http://localhost:8081/health
 
@@ -82,7 +82,7 @@
 
 ---
 
-## 🧪 Testing Your Workflows
+## ðŸ§ª Testing Your Workflows
 
 ### 1. Equipment Management
 
@@ -147,7 +147,7 @@ Invoke-RestMethod -Uri "http://localhost:8081/api/v1/whatsapp/webhook" `
 
 ---
 
-## 🔍 Checking Backend Status
+## ðŸ” Checking Backend Status
 
 The Go backend is initializing in a separate PowerShell window. To verify:
 
@@ -166,16 +166,16 @@ The Go backend is initializing in a separate PowerShell window. To verify:
 
 ### Manual Backend Start (if needed):
 ```powershell
-cd C:\Users\birju\aby-med
+cd C:\Users\birju\ServQR
 go run cmd/platform/main.go
 ```
 
 ---
 
-## 📝 Postman Collection
+## ðŸ“ Postman Collection
 
 Import the API collection for comprehensive testing:
-- **File:** `ABY-MED-Postman-Collection.json`
+- **File:** `ServQR-Postman-Collection.json`
 - **Location:** Project root directory
 - **Environment Variables:**
   - `BASE_URL`: `http://localhost:8081`
@@ -183,7 +183,7 @@ Import the API collection for comprehensive testing:
 
 ---
 
-## 🛠️ Troubleshooting
+## ðŸ› ï¸ Troubleshooting
 
 ### Backend Not Starting?
 1. Check if port 8081 is available:
@@ -205,7 +205,7 @@ docker logs med-platform-postgres
 
 ### Admin UI Issues?
 ```powershell
-cd C:\Users\birju\aby-med\admin-ui
+cd C:\Users\birju\ServQR\admin-ui
 
 # Check build issues
 npm run build
@@ -222,7 +222,7 @@ netstat -ano | findstr "3000 8081 5433 6379 9090"
 
 ---
 
-## 🎯 Next Steps
+## ðŸŽ¯ Next Steps
 
 1. **Wait for Backend:** The Go server is initializing. Once you see "Server started on :8081", test the API
 2. **Open Admin UI:** Browser should have opened to http://localhost:3000
@@ -232,7 +232,7 @@ netstat -ano | findstr "3000 8081 5433 6379 9090"
 
 ---
 
-## 🔄 Stopping Services
+## ðŸ”„ Stopping Services
 
 ### Stop All Services:
 ```powershell
@@ -249,28 +249,28 @@ docker compose -f dev/compose/docker-compose.yml -p med-platform down
 docker compose -f dev/compose/docker-compose.yml -p med-platform up -d
 
 # Restart backend
-cd C:\Users\birju\aby-med
+cd C:\Users\birju\ServQR
 go run cmd/platform/main.go
 
 # Restart frontend
-cd C:\Users\birju\aby-med\admin-ui
+cd C:\Users\birju\ServQR\admin-ui
 npm run dev
 ```
 
 ---
 
-## ✅ Success Criteria Met
+## âœ… Success Criteria Met
 
-- ✅ Docker Desktop started
-- ✅ 7 infrastructure services running
-- ✅ PostgreSQL connected with 16 tables
-- ✅ Database initialized with sample data
-- ✅ Go backend launched (initializing)
-- ✅ Next.js admin UI running and accessible
-- ✅ Browser opened to admin dashboard
-- ✅ Testing scripts ready
+- âœ… Docker Desktop started
+- âœ… 7 infrastructure services running
+- âœ… PostgreSQL connected with 16 tables
+- âœ… Database initialized with sample data
+- âœ… Go backend launched (initializing)
+- âœ… Next.js admin UI running and accessible
+- âœ… Browser opened to admin dashboard
+- âœ… Testing scripts ready
 
-**Your ABY-MED platform is ready for testing!** 🎉
+**Your ServQR Platform is ready for testing!** ðŸŽ‰
 
 ---
 

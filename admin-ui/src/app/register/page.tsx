@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -172,7 +172,7 @@ export default function RegisterPage() {
               Create Account
             </h1>
             <p className="text-gray-600">
-              {step === 'details' ? 'Join ABY-MED Platform' : 'Verify your account'}
+              {step === 'details' ? 'Join ServQR Platform' : 'Verify your account'}
             </p>
           </div>
 
@@ -327,7 +327,7 @@ export default function RegisterPage() {
                   className="text-gray-600 hover:text-gray-900"
                   disabled={isLoading}
                 >
-                  ← Back
+                  â† Back
                 </button>
                 <button
                   type="button"
@@ -344,7 +344,7 @@ export default function RegisterPage() {
 
         {/* Footer */}
         <p className="text-center text-sm text-gray-600 mt-8">
-          Secure registration powered by ABY-MED
+          Secure registration powered by ServQR
         </p>
       </div>
     </div>

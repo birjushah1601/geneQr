@@ -1,4 +1,4 @@
-package api
+﻿package api
 
 import (
 	"context"
@@ -43,7 +43,7 @@ type ImportError struct {
 // OrganizationCSVRow represents a single CSV row
 type OrganizationCSVRow struct {
 	Name         string
-	OrgType      string // manufacturer|supplier|distributor|dealer|hospital|service_provider|other
+	OrgType      string // manufacturer|supplier|Channel Partner|Sub-sub_SUB_DEALER|hospital|service_provider|other
 	Status       string // active|inactive|suspended
 	ExternalRef  string
 	GSTIN        string
@@ -354,15 +354,15 @@ func (h *BulkImportHandler) validateRow(row *OrganizationCSVRow) error {
 	validTypes := map[string]bool{
 		"manufacturer":     true,
 		"supplier":         true,
-		"distributor":      true,
-		"dealer":           true,
+		"Channel Partner":      true,
+		"Sub-sub_SUB_DEALER":           true,
 		"hospital":         true,
 		"clinic":           true,
 		"service_provider": true,
 		"other":            true,
 	}
 	if !validTypes[row.OrgType] {
-		return fmt.Errorf("invalid org_type: %s (must be one of: manufacturer, supplier, distributor, dealer, hospital, clinic, service_provider, other)", row.OrgType)
+		return fmt.Errorf("invalid org_type: %s (must be one of: manufacturer, supplier, Channel Partner, Sub-sub_SUB_DEALER, hospital, clinic, service_provider, other)", row.OrgType)
 	}
 
 	// Validate status

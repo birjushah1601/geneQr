@@ -1,4 +1,4 @@
-package infra
+﻿package infra
 
 import (
 	"context"
@@ -44,6 +44,9 @@ const equipmentSelectColumns = `
     COALESCE(photos,'[]'::jsonb) AS photos,
     COALESCE(documents,'[]'::jsonb) AS documents,
     COALESCE(qr_code_url,'') AS qr_code_url,
+    qr_code_image,
+    qr_code_format,
+    qr_code_generated_at,
     COALESCE(notes,'') AS notes,
     created_at,
     updated_at,
@@ -152,8 +155,8 @@ func (r *EquipmentRepository) GetByID(ctx context.Context, id string) (*domain.E
 			query += " AND manufacturer_id = $2"
 		case "hospital", "imaging_center":
 			query += " AND (customer_id = $2 OR organization_id = $2)"
-		case "distributor", "dealer":
-			query += " AND (distributor_org_id = $2 OR service_provider_org_id = $2)"
+		case "Channel Partner", "Sub-sub_SUB_DEALER":
+			query += " AND (channel_partner_org_id = $2 OR service_provider_org_id = $2)"
 		default:
 			query += " AND customer_id = $2"
 		}
@@ -252,9 +255,9 @@ func (r *EquipmentRepository) List(ctx context.Context, criteria domain.ListCrit
 			queryBuilder.WriteString(fmt.Sprintf(" AND (customer_id = $%d OR organization_id = $%d)", argCount, argCount))
 			args = append(args, orgID.String())
 			argCount++
-		case "distributor", "dealer":
-			// Distributors see equipment they sold/service
-			queryBuilder.WriteString(fmt.Sprintf(" AND (distributor_org_id = $%d OR service_provider_org_id = $%d)", argCount, argCount))
+		case "Channel Partner", "Sub-sub_SUB_DEALER":
+			// Channel Partners see equipment they sold/service
+			queryBuilder.WriteString(fmt.Sprintf(" AND (channel_partner_org_id = $%d OR service_provider_org_id = $%d)", argCount, argCount))
 			args = append(args, orgID.String())
 			argCount++
 		default:
@@ -608,6 +611,9 @@ func (r *EquipmentRepository) scanEquipment(row pgx.Row) (*domain.Equipment, err
 		&photos,
 		&docs,
 		&equipment.QRCodeURL,
+		&equipment.QRCodeImage,
+		&equipment.QRCodeFormat,
+		&equipment.QRCodeGeneratedAt,
 		&equipment.Notes,
 		&equipment.CreatedAt,
 		&equipment.UpdatedAt,
@@ -670,6 +676,9 @@ func (r *EquipmentRepository) scanEquipmentFromRows(rows pgx.Rows) (*domain.Equi
 		&photos,
 		&docs,
 		&equipment.QRCodeURL,
+		&equipment.QRCodeImage,
+		&equipment.QRCodeFormat,
+		&equipment.QRCodeGeneratedAt,
 		&equipment.Notes,
 		&equipment.CreatedAt,
 		&equipment.UpdatedAt,
@@ -678,7 +687,7 @@ func (r *EquipmentRepository) scanEquipmentFromRows(rows pgx.Rows) (*domain.Equi
 
 	if err != nil {
 		log.Printf("[ERROR] Failed to scan equipment row: %v", err)
-		log.Printf("[ERROR] Number of columns: %d, Number of scan destinations: 30", len(rows.RawValues()))
+		log.Printf("[ERROR] Number of columns: %d, Number of scan destinations: 33", len(rows.RawValues()))
 		return nil, err
 	}
 	
@@ -701,21 +710,25 @@ func (r *EquipmentRepository) scanEquipmentFromRows(rows pgx.Rows) (*domain.Equi
 	return &equipment, nil
 }
 
-// UpdateQRCode updates the QR code in database
-// Note: equipment_registry doesn't store qr_code_image, so we just update the URL
+// UpdateQRCode updates the QR code image in database
 func (r *EquipmentRepository) UpdateQRCode(ctx context.Context, equipmentID string, qrImage []byte, format string) error {
-	// For equipment_registry, we don't store the image bytes
-	// The QR code is already stored when equipment is created
-	// This function is kept for API compatibility but is a no-op for equipment_registry
 	query := `
 		UPDATE equipment_registry 
-		SET updated_at = NOW()
+		SET qr_code_image = $2,
+		    qr_code_format = $3,
+		    qr_code_generated_at = NOW(),
+		    updated_at = NOW()
 		WHERE id = $1
 	`
-	_, err := r.pool.Exec(ctx, query, equipmentID)
+	tag, err := r.pool.Exec(ctx, query, equipmentID, qrImage, format)
 	if err != nil {
-		return fmt.Errorf("failed to update QR code timestamp: %w", err)
+		return fmt.Errorf("failed to update QR code: %w", err)
 	}
+	
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("equipment not found: %s", equipmentID)
+	}
+	
 	return nil
 }
 

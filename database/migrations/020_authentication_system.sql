@@ -1,4 +1,4 @@
--- Migration: Authentication System
+﻿-- Migration: Authentication System
 -- Version: 1.0
 -- Date: 2025-12-20
 -- Description: Core authentication tables for OTP-first login system
@@ -221,7 +221,7 @@ CREATE TABLE IF NOT EXISTS organizations (
     
     -- Basic Information
     name VARCHAR(255) NOT NULL,
-    org_type VARCHAR(50) NOT NULL CHECK (org_type IN ('manufacturer', 'hospital', 'laboratory', 'distributor', 'dealer')),
+    org_type VARCHAR(50) NOT NULL CHECK (org_type IN ('manufacturer', 'hospital', 'laboratory', 'Channel Partner', 'Sub-sub_SUB_DEALER')),
     
     -- Status
     status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'pending', 'suspended', 'deleted')),
@@ -249,7 +249,7 @@ CREATE INDEX IF NOT EXISTS idx_organizations_status ON organizations(status);
 CREATE INDEX IF NOT EXISTS idx_organizations_created_at ON organizations(created_at);
 
 -- Comments
-COMMENT ON COLUMN organizations.org_type IS 'Type: manufacturer, hospital, laboratory, distributor, dealer';
+COMMENT ON COLUMN organizations.org_type IS 'Type: manufacturer, hospital, laboratory, Channel Partner, Sub-sub_SUB_DEALER';
 COMMENT ON COLUMN organizations.metadata IS 'Org-specific fields (license_number, bed_count, etc.)';
 
 -- ============================================================================
@@ -304,7 +304,7 @@ CREATE TABLE IF NOT EXISTS roles (
     description TEXT,
     
     -- Organization Type (NULL = global role)
-    org_type VARCHAR(50) CHECK (org_type IN ('manufacturer', 'hospital', 'laboratory', 'distributor', 'dealer')),
+    org_type VARCHAR(50) CHECK (org_type IN ('manufacturer', 'hospital', 'laboratory', 'Channel Partner', 'Sub-sub_SUB_DEALER')),
     
     -- Permissions
     permissions JSONB NOT NULL DEFAULT '[]'::jsonb, -- Array of permission strings
@@ -455,12 +455,12 @@ FROM roles
 WHERE org_type = 'hospital'
 ON CONFLICT (name) DO NOTHING;
 
--- Distributor Roles
+-- Channel Partner Roles
 INSERT INTO roles (id, name, display_name, description, org_type, permissions, is_system)
 VALUES
-(gen_random_uuid(), 'distributor_admin', 'Distributor Admin', 'Full access to distributor operations', 'distributor',
+(gen_random_uuid(), 'channel_partner_admin', 'Channel Partner Admin', 'Full access to Channel Partner operations', 'Channel Partner',
  '["manage_organization", "manage_users", "manage_inventory", "view_sales", "create_tickets", "view_reports"]'::jsonb, TRUE),
-(gen_random_uuid(), 'distributor_sales', 'Sales Representative', 'Manage sales and customers', 'distributor',
+(gen_random_uuid(), 'channel_partner_sales', 'Sales Representative', 'Manage sales and customers', 'Channel Partner',
  '["view_inventory", "create_orders", "view_customers", "create_tickets"]'::jsonb, TRUE)
 ON CONFLICT (name) DO NOTHING;
 

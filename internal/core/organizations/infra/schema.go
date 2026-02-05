@@ -1,4 +1,4 @@
-package infra
+﻿package infra
 
 import (
     "context"
@@ -13,7 +13,7 @@ func EnsureOrgSchema(ctx context.Context, db *pgxpool.Pool, logger *slog.Logger)
         `CREATE TABLE IF NOT EXISTS organizations (
             id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
             name             TEXT NOT NULL,
-            org_type         TEXT NOT NULL, -- manufacturer|supplier|distributor|dealer|hospital|service_provider|other
+            org_type         TEXT NOT NULL, -- manufacturer|supplier|Channel Partner|Sub-sub_SUB_DEALER|hospital|service_provider|other
             status           TEXT NOT NULL DEFAULT 'active',
             external_ref     TEXT NULL,
             metadata         JSONB NULL,
@@ -27,7 +27,7 @@ func EnsureOrgSchema(ctx context.Context, db *pgxpool.Pool, logger *slog.Logger)
             id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
             parent_org_id    UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
             child_org_id     UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
-            rel_type         TEXT NOT NULL, -- manufacturer_of|distributor_of|dealer_of|supplier_of|partner_of
+            rel_type         TEXT NOT NULL, -- manufacturer_of|channel_partner_of|sub_sub_Sub-sub_SUB_DEALER_of|supplier_of|partner_of
             metadata         JSONB NULL,
             created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
         );`,

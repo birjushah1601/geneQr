@@ -1,4 +1,4 @@
--- Simple Authentication Migration - Core Tables Only
+﻿-- Simple Authentication Migration - Core Tables Only
 
 -- Users table
 CREATE TABLE IF NOT EXISTS users (
@@ -139,7 +139,7 @@ INSERT INTO roles (name, description, permissions, organization_type, is_system_
 ('manufacturer_admin', 'Manufacturer Administrator', ARRAY['equipment:read', 'equipment:write', 'tickets:read', 'engineers:manage'], 'manufacturer', TRUE),
 ('hospital_admin', 'Hospital Administrator', ARRAY['equipment:read', 'tickets:create', 'tickets:read'], 'hospital', TRUE),
 ('engineer', 'Service Engineer', ARRAY['tickets:read', 'tickets:update', 'equipment:read'], NULL, TRUE),
-('dealer_admin', 'Dealer Administrator', ARRAY['equipment:read', 'equipment:write', 'tickets:read'], 'dealer', TRUE)
+('sub_sub_Sub-sub_SUB_DEALER_admin', 'Sub-sub_SUB_DEALER Administrator', ARRAY['equipment:read', 'equipment:write', 'tickets:read'], 'Sub-sub_SUB_DEALER', TRUE)
 ON CONFLICT (name) DO NOTHING;
 
 -- Success message

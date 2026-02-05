@@ -1,5 +1,5 @@
--- Medical Equipment Categories Dataset
--- For ABY-Med Platform Catalog Module
+﻿-- Medical Equipment Categories Dataset
+-- For ServQR Platform Catalog Module
 -- This file populates the categories table with hierarchical medical equipment categories
 
 -- First ensure the schema exists

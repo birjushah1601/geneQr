@@ -1,7 +1,7 @@
-{
+﻿{
   "info": {
-    "name": "ABY-MED Medical Platform API",
-    "description": "Complete API collection for testing the ABY-MED medical equipment marketplace and service management platform",
+    "name": "ServQR Medical Platform API",
+    "description": "Complete API collection for testing the ServQR medical equipment marketplace and service management platform",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [

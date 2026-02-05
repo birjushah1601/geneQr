@@ -1,0 +1,9 @@
+product_code,product_name,manufacturer_name,model_number,category,subcategory,description,base_price,currency,weight_kg,recommended_service_interval_days,estimated_lifespan_years,maintenance_complexity
+ICU-VENT-001,ICU Ventilator,Drager,Evita V800,Ventilator,ICU,"Advanced ICU ventilator with lung-protective strategies",45000,USD,45,90,10,high
+ICU-MON-001,Patient Monitor,Philips Healthcare,IntelliVue MX850,Patient Monitor,Multi-parameter,"Advanced patient monitor with 19-inch touchscreen",28000,USD,8,180,10,medium
+ICU-PUMP-001,Infusion Pump,Baxter,Sigma Spectrum,Infusion Pump,Large Volume,"Smart infusion pump with drug library and dose error reduction",5500,USD,3.5,180,8,medium
+ICU-SYRINGE-001,Syringe Pump,B. Braun,Perfusor Space,Infusion Pump,Syringe,"Compact syringe pump for precise medication delivery",3200,USD,1.2,180,8,low
+ICU-DIALYSIS-001,CRRT Machine,Fresenius Medical Care,multiFiltrate,Dialysis,CRRT,"Continuous renal replacement therapy system",75000,USD,85,90,10,high
+ICU-WARMING-001,Patient Warming System,3M,Bair Hugger 775,Other,Temperature Management,"Forced-air patient warming system",4800,USD,8,365,8,low
+ICU-BED-001,ICU Bed,Hill-Rom,Progressa,Other,Patient Bed,"Electric ICU bed with scale and CPR quick-release",12000,USD,185,365,12,medium
+ICU-DECON-001,UV Disinfection Robot,Xenex,LightStrike,Other,Disinfection,"Pulsed xenon UV disinfection robot for rooms",125000,USD,68,180,8,low

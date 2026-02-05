@@ -1,10 +1,10 @@
-# ABY-MED Admin Dashboard
+﻿# ServQR Admin Dashboard
 
-## 🎯 Overview
+## ðŸŽ¯ Overview
 
 Admin dashboard for managing manufacturer onboarding, equipment registry, field engineers, and service tickets.
 
-## 🚀 Tech Stack
+## ðŸš€ Tech Stack
 
 - **Framework:** Next.js 14 (App Router)
 - **Language:** TypeScript
@@ -15,40 +15,40 @@ Admin dashboard for managing manufacturer onboarding, equipment registry, field 
 - **Real-time:** Socket.io (for ticket notifications)
 - **Authentication:** Next-Auth (ready for Keycloak)
 
-## 📁 Project Structure
+## ðŸ“ Project Structure
 
 ```
 admin-ui/
-├── src/
-│   ├── app/                    # Next.js app router
-│   │   ├── (auth)/
-│   │   │   └── login/
-│   │   ├── (dashboard)/
-│   │   │   ├── layout.tsx      # Dashboard layout
-│   │   │   ├── page.tsx        # Overview dashboard
-│   │   │   ├── manufacturers/  # Manufacturer management
-│   │   │   ├── equipment/      # Equipment registry
-│   │   │   ├── engineers/      # Field engineers
-│   │   │   ├── tickets/        # Service tickets
-│   │   │   └── settings/       # Settings
-│   │   └── api/                # API routes
-│   ├── components/
-│   │   ├── ui/                 # shadcn/ui components
-│   │   ├── forms/              # Form components
-│   │   ├── tables/             # Data tables
-│   │   └── dashboard/          # Dashboard widgets
-│   ├── lib/
-│   │   ├── api/                # API client
-│   │   ├── hooks/              # Custom React hooks
-│   │   ├── utils/              # Utilities
-│   │   └── validation/         # Zod schemas
-│   ├── types/                  # TypeScript types
-│   └── styles/                 # Global styles
-├── public/
-└── package.json
+â”œâ”€â”€ src/
+â”‚   â”œâ”€â”€ app/                    # Next.js app router
+â”‚   â”‚   â”œâ”€â”€ (auth)/
+â”‚   â”‚   â”‚   â””â”€â”€ login/
+â”‚   â”‚   â”œâ”€â”€ (dashboard)/
+â”‚   â”‚   â”‚   â”œâ”€â”€ layout.tsx      # Dashboard layout
+â”‚   â”‚   â”‚   â”œâ”€â”€ page.tsx        # Overview dashboard
+â”‚   â”‚   â”‚   â”œâ”€â”€ manufacturers/  # Manufacturer management
+â”‚   â”‚   â”‚   â”œâ”€â”€ equipment/      # Equipment registry
+â”‚   â”‚   â”‚   â”œâ”€â”€ engineers/      # Field engineers
+â”‚   â”‚   â”‚   â”œâ”€â”€ tickets/        # Service tickets
+â”‚   â”‚   â”‚   â””â”€â”€ settings/       # Settings
+â”‚   â”‚   â””â”€â”€ api/                # API routes
+â”‚   â”œâ”€â”€ components/
+â”‚   â”‚   â”œâ”€â”€ ui/                 # shadcn/ui components
+â”‚   â”‚   â”œâ”€â”€ forms/              # Form components
+â”‚   â”‚   â”œâ”€â”€ tables/             # Data tables
+â”‚   â”‚   â””â”€â”€ dashboard/          # Dashboard widgets
+â”‚   â”œâ”€â”€ lib/
+â”‚   â”‚   â”œâ”€â”€ api/                # API client
+â”‚   â”‚   â”œâ”€â”€ hooks/              # Custom React hooks
+â”‚   â”‚   â”œâ”€â”€ utils/              # Utilities
+â”‚   â”‚   â””â”€â”€ validation/         # Zod schemas
+â”‚   â”œâ”€â”€ types/                  # TypeScript types
+â”‚   â””â”€â”€ styles/                 # Global styles
+â”œâ”€â”€ public/
+â””â”€â”€ package.json
 ```
 
-## 🔧 Setup Instructions
+## ðŸ”§ Setup Instructions
 
 ### 1. Install Dependencies
 
@@ -71,9 +71,9 @@ NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=your-secret-key
 
 # Keycloak (for later)
-KEYCLOAK_CLIENT_ID=aby-med-admin
+KEYCLOAK_CLIENT_ID=ServQR-admin
 KEYCLOAK_CLIENT_SECRET=your-client-secret
-KEYCLOAK_ISSUER=http://localhost:8080/realms/aby-med
+KEYCLOAK_ISSUER=http://localhost:8080/realms/ServQR
 ```
 
 ### 3. Run Development Server
@@ -84,37 +84,37 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000)
 
-## 📋 Features
+## ðŸ“‹ Features
 
 ### Phase 1 (Current)
-- ✅ Manufacturer onboarding with CSV upload
-- ✅ Equipment registry management
-- ✅ Field engineer management
-- ✅ Service ticket dashboard
-- ✅ Manual engineer assignment
-- ✅ Service overview
+- âœ… Manufacturer onboarding with CSV upload
+- âœ… Equipment registry management
+- âœ… Field engineer management
+- âœ… Service ticket dashboard
+- âœ… Manual engineer assignment
+- âœ… Service overview
 
 ### Phase 2 (Next)
-- 🔄 WhatsApp integration
-- 🔄 Real-time ticket updates
-- 🔄 Advanced filtering
-- 🔄 Reporting dashboard
+- ðŸ”„ WhatsApp integration
+- ðŸ”„ Real-time ticket updates
+- ðŸ”„ Advanced filtering
+- ðŸ”„ Reporting dashboard
 
 ### Phase 3 (Future)
-- ⏳ Keycloak integration
-- ⏳ Role-based access control
-- ⏳ Mobile responsive views
-- ⏳ Engineer mobile app
+- â³ Keycloak integration
+- â³ Role-based access control
+- â³ Mobile responsive views
+- â³ Engineer mobile app
 
-## 📱 Screenshots
+## ðŸ“± Screenshots
 
 (Will be added after implementation)
 
-## 🔗 API Integration
+## ðŸ”— API Integration
 
 See `docs/API_INTEGRATION.md` for detailed API documentation.
 
-## 🧪 Testing
+## ðŸ§ª Testing
 
 ```bash
 # Run tests
@@ -127,7 +127,7 @@ npm run test:e2e
 npm run type-check
 ```
 
-## 📦 Build & Deploy
+## ðŸ“¦ Build & Deploy
 
 ```bash
 # Build for production
@@ -137,6 +137,6 @@ npm run build
 npm start
 ```
 
-## 📄 License
+## ðŸ“„ License
 
-Private - ABY-MED Platform
+Private - ServQR Platform

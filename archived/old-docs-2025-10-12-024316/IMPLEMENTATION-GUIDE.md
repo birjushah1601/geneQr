@@ -1,6 +1,6 @@
-# 🚀 ABY-MED Admin UI - Complete Implementation Guide
+﻿# ðŸš€ ServQR Admin UI - Complete Implementation Guide
 
-## 📋 Table of Contents
+## ðŸ“‹ Table of Contents
 
 1. [Overview](#overview)
 2. [Architecture](#architecture)
@@ -14,23 +14,23 @@
 
 ---
 
-## 🎯 Overview
+## ðŸŽ¯ Overview
 
 This guide provides step-by-step instructions to implement the complete manufacturer onboarding and service ticket management system.
 
 ### Features Delivered:
-- ✅ Manufacturer onboarding with CSV upload
-- ✅ Equipment registry with QR code generation
-- ✅ Field engineer management
-- ✅ Service ticket dashboard with manual assignment
-- ✅ WhatsApp integration for automatic ticket creation
-- ✅ Service overview dashboard
+- âœ… Manufacturer onboarding with CSV upload
+- âœ… Equipment registry with QR code generation
+- âœ… Field engineer management
+- âœ… Service ticket dashboard with manual assignment
+- âœ… WhatsApp integration for automatic ticket creation
+- âœ… Service overview dashboard
 
 ### Tech Stack:
 **Backend:**
 - Go 1.21+
 - PostgreSQL 15+
-- Existing ABY-MED services
+- Existing ServQR services
 
 **Frontend:**
 - Next.js 14 (App Router)
@@ -41,31 +41,31 @@ This guide provides step-by-step instructions to implement the complete manufact
 
 ---
 
-## 🏗️ Architecture
+## ðŸ—ï¸ Architecture
 
 ```
-┌──────────────────────────────────────────────────────────────┐
-│                     ABY-MED Platform                          │
-├──────────────────────────────────────────────────────────────┤
-│                                                               │
-│  ┌─────────────┐   ┌──────────────┐   ┌─────────────┐      │
-│  │  Admin UI   │   │   Backend    │   │  WhatsApp   │      │
-│  │  (Next.js)  │───│   Services   │───│   Webhook   │      │
-│  └─────────────┘   └──────────────┘   └─────────────┘      │
-│         │                  │                   │              │
-│         │                  │                   │              │
-│         └──────────────────┴───────────────────┘              │
-│                            │                                  │
-│                    ┌───────┴────────┐                        │
-│                    │   PostgreSQL   │                        │
-│                    │    Database    │                        │
-│                    └────────────────┘                        │
-└──────────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                     ServQR Platform                          â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚                                                               â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”   â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”   â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”      â”‚
+â”‚  â”‚  Admin UI   â”‚   â”‚   Backend    â”‚   â”‚  WhatsApp   â”‚      â”‚
+â”‚  â”‚  (Next.js)  â”‚â”€â”€â”€â”‚   Services   â”‚â”€â”€â”€â”‚   Webhook   â”‚      â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜   â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜   â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜      â”‚
+â”‚         â”‚                  â”‚                   â”‚              â”‚
+â”‚         â”‚                  â”‚                   â”‚              â”‚
+â”‚         â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜              â”‚
+â”‚                            â”‚                                  â”‚
+â”‚                    â”Œâ”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”                        â”‚
+â”‚                    â”‚   PostgreSQL   â”‚                        â”‚
+â”‚                    â”‚    Database    â”‚                        â”‚
+â”‚                    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜                        â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ---
 
-## ⚙️ Setup Instructions
+## âš™ï¸ Setup Instructions
 
 ### Step 1: Database Setup
 
@@ -73,7 +73,7 @@ This guide provides step-by-step instructions to implement the complete manufact
 
 ```bash
 # Navigate to project root
-cd C:\Users\birju\aby-med
+cd C:\Users\birju\ServQR
 
 # Execute engineer schema
 docker cp database/engineers-schema.sql med-platform-postgres:/tmp/
@@ -94,11 +94,11 @@ docker exec med-platform-postgres psql -U postgres -d aby_med_platform -c "\dt"
 ```
 
 Should show:
-- ✅ equipment_registry
-- ✅ service_tickets
-- ✅ engineers (new)
-- ✅ suppliers
-- ✅ rfqs, contracts, comparisons, quotes
+- âœ… equipment_registry
+- âœ… service_tickets
+- âœ… engineers (new)
+- âœ… suppliers
+- âœ… rfqs, contracts, comparisons, quotes
 
 ---
 
@@ -112,14 +112,14 @@ Create `internal/service-domain/engineer/` directory structure:
 
 ```
 engineer/
-├── domain/
-│   └── engineer.go
-├── app/
-│   └── service.go
-├── api/
-│   └── handler.go
-└── infra/
-    └── repository.go
+â”œâ”€â”€ domain/
+â”‚   â””â”€â”€ engineer.go
+â”œâ”€â”€ app/
+â”‚   â””â”€â”€ service.go
+â”œâ”€â”€ api/
+â”‚   â””â”€â”€ handler.go
+â””â”€â”€ infra/
+    â””â”€â”€ repository.go
 ```
 
 **Note:** The WhatsApp handler (`internal/service-domain/whatsapp/handler.go`) is already created and ready!
@@ -414,7 +414,7 @@ export default function TicketsPage() {
                     {ticket.priority}
                   </Badge>
                   {ticket.source === 'whatsapp' && (
-                    <Badge variant="outline">📱 WhatsApp</Badge>
+                    <Badge variant="outline">ðŸ“± WhatsApp</Badge>
                   )}
                 </div>
                 
@@ -426,7 +426,7 @@ export default function TicketsPage() {
                 
                 {ticket.assigned_engineer_name && (
                   <p className="text-sm">
-                    👨‍🔧 Assigned to: {ticket.assigned_engineer_name}
+                    ðŸ‘¨â€ðŸ”§ Assigned to: {ticket.assigned_engineer_name}
                   </p>
                 )}
               </div>
@@ -448,7 +448,7 @@ export default function TicketsPage() {
 
 ---
 
-## 🔗 WhatsApp Integration
+## ðŸ”— WhatsApp Integration
 
 ### Step 5: Configure WhatsApp Webhook
 
@@ -486,16 +486,16 @@ MRI machine not starting, showing error E-503. Urgent!
 ```
 
 Expected flow:
-1. ✅ Webhook receives message
-2. ✅ Extracts QR code: `QR-20251001-832300`
-3. ✅ Looks up equipment in database
-4. ✅ Determines priority: `critical` (keyword: "urgent")
-5. ✅ Creates service ticket
-6. ✅ Sends confirmation back to customer
+1. âœ… Webhook receives message
+2. âœ… Extracts QR code: `QR-20251001-832300`
+3. âœ… Looks up equipment in database
+4. âœ… Determines priority: `critical` (keyword: "urgent")
+5. âœ… Creates service ticket
+6. âœ… Sends confirmation back to customer
 
 ---
 
-## 🧪 Testing
+## ðŸ§ª Testing
 
 ### Step 6: Test Complete Workflow
 
@@ -503,7 +503,7 @@ Expected flow:
 
 ```powershell
 # Test with sample CSV
-cd C:\Users\birju\aby-med
+cd C:\Users\birju\ServQR
 Invoke-RestMethod -Uri "http://localhost:3000/equipment/import" -Method Get
 # Upload manufacturer-installations-sample.csv via UI
 ```
@@ -515,7 +515,7 @@ Invoke-RestMethod -Uri "http://localhost:3000/equipment/import" -Method Get
 Invoke-RestMethod -Uri "http://localhost:8081/api/v1/engineers" -Headers @{"X-Tenant-ID"="city-hospital"}
 ```
 
-#### 6.3 Test WhatsApp → Ticket Creation
+#### 6.3 Test WhatsApp â†’ Ticket Creation
 
 ```powershell
 # Simulate WhatsApp webhook
@@ -539,7 +539,7 @@ Invoke-RestMethod -Uri "http://localhost:8081/api/v1/whatsapp/webhook" `
 
 ---
 
-## 📦 Deployment
+## ðŸ“¦ Deployment
 
 ### Step 7: Production Deployment
 
@@ -547,10 +547,10 @@ Invoke-RestMethod -Uri "http://localhost:8081/api/v1/whatsapp/webhook" `
 
 ```bash
 # Build Go binary
-go build -o aby-med-server ./cmd/server
+go build -o ServQR-server ./cmd/server
 
 # Run with production config
-./aby-med-server --config=production.yaml
+./ServQR-server --config=production.yaml
 ```
 
 #### 7.2 Frontend Deployment (Vercel)
@@ -572,7 +572,7 @@ vercel --prod
 
 ---
 
-## ✅ Checklist
+## âœ… Checklist
 
 ### Phase 1: Core Setup
 - [ ] Database: Create engineers table
@@ -597,7 +597,7 @@ vercel --prod
 
 ---
 
-## 🎯 Quick Start Command Sequence
+## ðŸŽ¯ Quick Start Command Sequence
 
 ```bash
 # 1. Setup database
@@ -617,14 +617,14 @@ start http://localhost:3000
 
 ---
 
-## 📞 Support & Next Steps
+## ðŸ“ž Support & Next Steps
 
-### Completed ✅
-- ✅ TypeScript type definitions
-- ✅ API client layer (equipment, engineers, tickets)
-- ✅ Database schema for engineers
-- ✅ WhatsApp webhook handler
-- ✅ Project structure
+### Completed âœ…
+- âœ… TypeScript type definitions
+- âœ… API client layer (equipment, engineers, tickets)
+- âœ… Database schema for engineers
+- âœ… WhatsApp webhook handler
+- âœ… Project structure
 
 ### Next: Implement UI Components
 1. Create dashboard layout
@@ -643,13 +643,13 @@ start http://localhost:3000
 
 ---
 
-## 🎊 Success Criteria
+## ðŸŽŠ Success Criteria
 
-- ✅ Manufacturer can upload CSV with 400 installations
-- ✅ Equipment records created with QR codes
-- ✅ Engineers can be managed via UI
-- ✅ WhatsApp message creates ticket automatically
-- ✅ Admin can assign engineer to ticket
-- ✅ Customer receives confirmation via WhatsApp
+- âœ… Manufacturer can upload CSV with 400 installations
+- âœ… Equipment records created with QR codes
+- âœ… Engineers can be managed via UI
+- âœ… WhatsApp message creates ticket automatically
+- âœ… Admin can assign engineer to ticket
+- âœ… Customer receives confirmation via WhatsApp
 
-**All systems are GO! Ready to implement!** 🚀
+**All systems are GO! Ready to implement!** ðŸš€

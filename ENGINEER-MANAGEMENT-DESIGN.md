@@ -1,4 +1,4 @@
-# 🔧 Engineer Management Architecture - Comprehensive Design
+﻿# ðŸ”§ Engineer Management Architecture - Comprehensive Design
 
 **Document Type:** Technical Design  
 **Date:** October 11, 2025  
@@ -6,16 +6,16 @@
 
 ---
 
-## 📋 Overview
+## ðŸ“‹ Overview
 
 This document covers the **multi-entity engineer management system** where:
 - **Manufacturers** have engineers (per facility)
-- **Dealers** have engineers (per location)
-- **Distributors** have service engineers (per service center)
+- **Sub-Sub-sub_sub_SUB_DEALERs** have engineers (per location)
+- **Channel Partners** have service engineers (per service center)
 - **Hospitals/Clients** have in-house BME teams
 - **Independent Service Providers** have engineer teams
 
-**Critical Routing Logic:** If manufacturer/dealer/distributor don't have available engineers, the system should route service requests to the client's in-house engineers as a fallback.
+**Critical Routing Logic:** If manufacturer/Sub-sub_SUB_DEALER/Channel Partner don't have available engineers, the system should route service requests to the client's in-house engineers as a fallback.
 
 ---
 
@@ -37,7 +37,7 @@ interface Engineer {
   
   // Employment
   org_id: UUID; // Which organization employs this engineer
-  org_type: OrgType; // manufacturer, dealer, hospital, service_provider
+  org_type: OrgType; // manufacturer, Sub-sub_SUB_DEALER, hospital, service_provider
   employment_type: 'full_time' | 'part_time' | 'contract' | 'freelance';
   joining_date: Date;
   
@@ -269,7 +269,7 @@ interface ServiceRoutingConfig {
 
 interface RoutingTier {
   tier_number: number;
-  tier_name: string; // "OEM Service", "Dealer Service", "Client In-House"
+  tier_name: string; // "OEM Service", "Sub-sub_SUB_DEALER Service", "Client In-House"
   org_ids: UUID[]; // Organizations to check in this tier
   auto_route: boolean; // Auto-assign or wait for manual?
   timeout_minutes: number; // Wait time before moving to next tier
@@ -286,8 +286,8 @@ interface RoutingTier {
  * 
  * Priority Order:
  * 1. OEM/Manufacturer's Own Engineers (if available)
- * 2. Authorized Dealer's Engineers (who sold the equipment)
- * 3. Distributor's Service Centers (in the region)
+ * 2. Authorized Sub-sub_SUB_DEALER's Engineers (who sold the equipment)
+ * 3. Channel Partner's Service Centers (in the region)
  * 4. Independent Service Providers (with manufacturer authorization)
  * 5. Client's In-House Engineers (BME Team) - FALLBACK
  * 6. Any Available Engineer (with required skills)
@@ -331,11 +331,11 @@ async function routeServiceRequest(ticket: ServiceTicket): Promise<RoutingResult
     });
   }
   
-  // TIER 2: Dealer's Engineers (who sold this equipment)
-  if (equipment.sold_by_dealer_id) {
-    const dealerEngineers = await findEligibleEngineers({
-      org_id: equipment.sold_by_dealer_id,
-      org_type: 'dealer',
+  // TIER 2: Sub-sub_SUB_DEALER's Engineers (who sold this equipment)
+  if (equipment.sold_by_sub_sub_Sub-sub_SUB_DEALER_id) {
+    const Sub-sub_SUB_DEALEREngineers = await findEligibleEngineers({
+      org_id: equipment.sold_by_sub_sub_Sub-sub_SUB_DEALER_id,
+      org_type: 'Sub-sub_SUB_DEALER',
       equipment_id: equipment.id,
       location: customer.location,
       max_distance_km: 50,
@@ -343,26 +343,26 @@ async function routeServiceRequest(ticket: ServiceTicket): Promise<RoutingResult
       skills_match: true
     });
     
-    if (dealerEngineers.length > 0) {
+    if (Sub-sub_SUB_DEALEREngineers.length > 0) {
       config.routing_tiers.push({
         tier_number: 2,
-        tier_name: 'Dealer Service',
-        org_ids: [equipment.sold_by_dealer_id],
+        tier_name: 'Sub-sub_SUB_DEALER Service',
+        org_ids: [equipment.sold_by_sub_sub_Sub-sub_SUB_DEALER_id],
         auto_route: true,
         timeout_minutes: 20
       });
     }
   }
   
-  // TIER 3: Distributor's Service Centers
-  const distributors = await getDistributorsForManufacturer({
+  // TIER 3: Channel Partner's Service Centers
+  const Channel Partners = await getChannel PartnersForManufacturer({
     manufacturer_id: equipment.manufacturer_id,
     covers_location: customer.location
   });
   
-  const distributorEngineers = await findEligibleEngineers({
-    org_ids: distributors.map(d => d.id),
-    org_type: 'distributor',
+  const Channel PartnerEngineers = await findEligibleEngineers({
+    org_ids: Channel Partners.map(d => d.id),
+    org_type: 'Channel Partner',
     equipment_id: equipment.id,
     location: customer.location,
     max_distance_km: 100,
@@ -370,11 +370,11 @@ async function routeServiceRequest(ticket: ServiceTicket): Promise<RoutingResult
     skills_match: true
   });
   
-  if (distributorEngineers.length > 0) {
+  if (Channel PartnerEngineers.length > 0) {
     config.routing_tiers.push({
       tier_number: 3,
-      tier_name: 'Distributor Service Centers',
-      org_ids: distributors.map(d => d.id),
+      tier_name: 'Channel Partner Service Centers',
+      org_ids: Channel Partners.map(d => d.id),
       auto_route: true,
       timeout_minutes: 30
     });
@@ -537,29 +537,29 @@ async function findEligibleEngineers(criteria: {
 
 ```
 Organization: Siemens Healthineers India Ltd
-├── Chennai Service Hub (Facility)
-│   ├── Ramesh Kumar (Engineer)
-│   │   ├── Skills: CT Scanner, MRI (Siemens only)
-│   │   ├── Certifications: Siemens CT Advanced, MRI Expert
-│   │   ├── Coverage: Tamil Nadu, Kerala, Karnataka
-│   │   ├── Mobile: Yes (200 km radius)
-│   │   └── Active Tickets: 2/5
-│   ├── Suresh M (Engineer)
-│   │   ├── Skills: X-Ray, Ultrasound (Siemens only)
-│   │   ├── Coverage: Tamil Nadu
-│   │   └── Mobile: Yes (150 km radius)
-│   └── Priya S (Engineer)
-│       ├── Skills: All Imaging Equipment
-│       ├── Certifications: Siemens Master Technician
-│       └── Mobile: Yes (300 km radius)
-│
-├── Mumbai Service Hub (Facility)
-│   ├── 5 Engineers covering West India
-│   └── Skills: All Siemens equipment
-│
-└── Delhi Service Hub (Facility)
-    ├── 8 Engineers covering North India
-    └── Skills: All Siemens equipment
+â”œâ”€â”€ Chennai Service Hub (Facility)
+â”‚   â”œâ”€â”€ Ramesh Kumar (Engineer)
+â”‚   â”‚   â”œâ”€â”€ Skills: CT Scanner, MRI (Siemens only)
+â”‚   â”‚   â”œâ”€â”€ Certifications: Siemens CT Advanced, MRI Expert
+â”‚   â”‚   â”œâ”€â”€ Coverage: Tamil Nadu, Kerala, Karnataka
+â”‚   â”‚   â”œâ”€â”€ Mobile: Yes (200 km radius)
+â”‚   â”‚   â””â”€â”€ Active Tickets: 2/5
+â”‚   â”œâ”€â”€ Suresh M (Engineer)
+â”‚   â”‚   â”œâ”€â”€ Skills: X-Ray, Ultrasound (Siemens only)
+â”‚   â”‚   â”œâ”€â”€ Coverage: Tamil Nadu
+â”‚   â”‚   â””â”€â”€ Mobile: Yes (150 km radius)
+â”‚   â””â”€â”€ Priya S (Engineer)
+â”‚       â”œâ”€â”€ Skills: All Imaging Equipment
+â”‚       â”œâ”€â”€ Certifications: Siemens Master Technician
+â”‚       â””â”€â”€ Mobile: Yes (300 km radius)
+â”‚
+â”œâ”€â”€ Mumbai Service Hub (Facility)
+â”‚   â”œâ”€â”€ 5 Engineers covering West India
+â”‚   â””â”€â”€ Skills: All Siemens equipment
+â”‚
+â””â”€â”€ Delhi Service Hub (Facility)
+    â”œâ”€â”€ 8 Engineers covering North India
+    â””â”€â”€ Skills: All Siemens equipment
 ```
 
 **When Apollo Chennai raises a ticket for Siemens CT Scanner:**
@@ -571,38 +571,38 @@ Organization: Siemens Healthineers India Ltd
 
 ---
 
-### 3.2 Scenario: Dealer with Service Team
+### 3.2 Scenario: Sub-sub_SUB_DEALER with Service Team
 
 **City Medical Equipment Co. (Delhi):**
 
 ```
 Organization: City Medical Equipment Co.
-├── Main Showroom (Facility)
-├── Service Center (Facility)
-│   ├── Amit Sharma (Engineer)
-│   │   ├── Skills: Multi-brand (Siemens, GE, Philips CT/MRI)
-│   │   ├── Certifications: Siemens CT, GE CT, Philips Ultrasound
-│   │   ├── Coverage: Delhi NCR
-│   │   └── Mobile: Yes (50 km)
-│   ├── Rajesh Verma (Engineer)
-│   │   ├── Skills: X-Ray, Ultrasound (all brands)
-│   │   ├── Coverage: Delhi NCR
-│   │   └── Mobile: Yes (30 km)
-│   ├── Vikram Singh (Engineer)
-│   │   ├── Skills: Patient Monitors, Lab Equipment
-│   │   └── Mobile: Yes (40 km)
-│   ├── Anil Kumar (Engineer)
-│   │   ├── Skills: Installation Specialist (all equipment)
-│   │   └── Mobile: Yes (60 km)
-│   └── Deepak R (Engineer)
-│       ├── Skills: General Service (all equipment)
-│       └── Mobile: Yes (50 km)
-└── Warehouse (Facility)
+â”œâ”€â”€ Main Showroom (Facility)
+â”œâ”€â”€ Service Center (Facility)
+â”‚   â”œâ”€â”€ Amit Sharma (Engineer)
+â”‚   â”‚   â”œâ”€â”€ Skills: Multi-brand (Siemens, GE, Philips CT/MRI)
+â”‚   â”‚   â”œâ”€â”€ Certifications: Siemens CT, GE CT, Philips Ultrasound
+â”‚   â”‚   â”œâ”€â”€ Coverage: Delhi NCR
+â”‚   â”‚   â””â”€â”€ Mobile: Yes (50 km)
+â”‚   â”œâ”€â”€ Rajesh Verma (Engineer)
+â”‚   â”‚   â”œâ”€â”€ Skills: X-Ray, Ultrasound (all brands)
+â”‚   â”‚   â”œâ”€â”€ Coverage: Delhi NCR
+â”‚   â”‚   â””â”€â”€ Mobile: Yes (30 km)
+â”‚   â”œâ”€â”€ Vikram Singh (Engineer)
+â”‚   â”‚   â”œâ”€â”€ Skills: Patient Monitors, Lab Equipment
+â”‚   â”‚   â””â”€â”€ Mobile: Yes (40 km)
+â”‚   â”œâ”€â”€ Anil Kumar (Engineer)
+â”‚   â”‚   â”œâ”€â”€ Skills: Installation Specialist (all equipment)
+â”‚   â”‚   â””â”€â”€ Mobile: Yes (60 km)
+â”‚   â””â”€â”€ Deepak R (Engineer)
+â”‚       â”œâ”€â”€ Skills: General Service (all equipment)
+â”‚       â””â”€â”€ Mobile: Yes (50 km)
+â””â”€â”€ Warehouse (Facility)
 ```
 
 **When Max Hospital Gurgaon raises a ticket for GE CT Scanner (purchased from City Medical):**
 1. System checks: Sold by = City Medical
-2. Routing Tier 2: Dealer Service (City Medical has priority)
+2. Routing Tier 2: Sub-sub_SUB_DEALER Service (City Medical has priority)
 3. Filters: GE CT skills + available + Gurgaon coverage
 4. **Result:** Amit Sharma (multi-brand expert, has GE CT certification)
 5. Auto-assigns to Amit
@@ -615,31 +615,31 @@ Organization: City Medical Equipment Co.
 
 ```
 Organization: Apollo Hospital Delhi
-├── Biomedical Engineering Department
-│   ├── Head BME: Dr. Rajiv Mehta
-│   ├── Senior Engineers (5)
-│   │   ├── Mohan L (Senior BME)
-│   │   │   ├── Skills: All imaging equipment (Siemens, GE, Philips)
-│   │   │   ├── 15 years experience
-│   │   │   ├── Certifications: Siemens, GE, Philips authorized
-│   │   │   └── Can handle: 80% of issues
-│   │   ├── Prakash K (Senior BME)
-│   │   │   ├── Skills: Patient monitoring, ICU equipment
-│   │   │   └── 12 years experience
-│   │   └── [3 more senior engineers]
-│   └── Junior Engineers (10)
-│       ├── Skills: Basic maintenance, preventive maintenance
-│       └── Supervised by senior engineers
+â”œâ”€â”€ Biomedical Engineering Department
+â”‚   â”œâ”€â”€ Head BME: Dr. Rajiv Mehta
+â”‚   â”œâ”€â”€ Senior Engineers (5)
+â”‚   â”‚   â”œâ”€â”€ Mohan L (Senior BME)
+â”‚   â”‚   â”‚   â”œâ”€â”€ Skills: All imaging equipment (Siemens, GE, Philips)
+â”‚   â”‚   â”‚   â”œâ”€â”€ 15 years experience
+â”‚   â”‚   â”‚   â”œâ”€â”€ Certifications: Siemens, GE, Philips authorized
+â”‚   â”‚   â”‚   â””â”€â”€ Can handle: 80% of issues
+â”‚   â”‚   â”œâ”€â”€ Prakash K (Senior BME)
+â”‚   â”‚   â”‚   â”œâ”€â”€ Skills: Patient monitoring, ICU equipment
+â”‚   â”‚   â”‚   â””â”€â”€ 12 years experience
+â”‚   â”‚   â””â”€â”€ [3 more senior engineers]
+â”‚   â””â”€â”€ Junior Engineers (10)
+â”‚       â”œâ”€â”€ Skills: Basic maintenance, preventive maintenance
+â”‚       â””â”€â”€ Supervised by senior engineers
 ```
 
 **Scenario A: Siemens CT Scanner issue (manufacturer has engineers nearby):**
-1. Routing Tier 1: Siemens Service → Auto-assigned to Siemens engineer
+1. Routing Tier 1: Siemens Service â†’ Auto-assigned to Siemens engineer
 2. Apollo's BME team NOT involved (vendor handling)
 
-**Scenario B: GE Patient Monitor issue (GE has no engineers in Delhi, dealer unavailable):**
-1. Routing Tier 1: GE Service → No engineers available in Delhi
-2. Routing Tier 2: Dealer Service → Dealer engineers busy (3/3 active)
-3. Routing Tier 3: Distributor Service → None in Delhi
+**Scenario B: GE Patient Monitor issue (GE has no engineers in Delhi, Sub-sub_SUB_DEALER unavailable):**
+1. Routing Tier 1: GE Service â†’ No engineers available in Delhi
+2. Routing Tier 2: Sub-sub_SUB_DEALER Service â†’ Sub-sub_SUB_DEALER engineers busy (3/3 active)
+3. Routing Tier 3: Channel Partner Service â†’ None in Delhi
 4. **Routing Tier 5: Apollo's In-House BME Team** (FALLBACK)
 5. Filters: GE Patient Monitor skills + available
 6. **Result:** Prakash K (patient monitoring expert) assigned
@@ -660,24 +660,24 @@ Organization: Apollo Hospital Delhi
 
 ```
 Organization: QuickFix Medical Services
-├── Delhi Service Center
-│   ├── 8 Engineers
-│   └── Coverage: Delhi NCR
-├── Mumbai Service Center
-│   ├── 12 Engineers
-│   └── Coverage: Mumbai, Pune, Ahmedabad
-├── Bangalore Service Center
-│   ├── 10 Engineers
-│   └── Coverage: Bangalore, Hyderabad
-└── Regional Engineers (Freelance/Contract)
-    ├── 50+ engineers across India
-    └── On-demand availability
+â”œâ”€â”€ Delhi Service Center
+â”‚   â”œâ”€â”€ 8 Engineers
+â”‚   â””â”€â”€ Coverage: Delhi NCR
+â”œâ”€â”€ Mumbai Service Center
+â”‚   â”œâ”€â”€ 12 Engineers
+â”‚   â””â”€â”€ Coverage: Mumbai, Pune, Ahmedabad
+â”œâ”€â”€ Bangalore Service Center
+â”‚   â”œâ”€â”€ 10 Engineers
+â”‚   â””â”€â”€ Coverage: Bangalore, Hyderabad
+â””â”€â”€ Regional Engineers (Freelance/Contract)
+    â”œâ”€â”€ 50+ engineers across India
+    â””â”€â”€ On-demand availability
 ```
 
 **When a hospital in Jaipur raises a ticket for Siemens X-Ray:**
-1. Tier 1: Siemens Service → No engineer in Jaipur
-2. Tier 2: Dealer Service → No dealer engineers
-3. Tier 4: **Service Provider (QuickFix) → Authorized for Siemens**
+1. Tier 1: Siemens Service â†’ No engineer in Jaipur
+2. Tier 2: Sub-sub_SUB_DEALER Service â†’ No Sub-sub_SUB_DEALER engineers
+3. Tier 4: **Service Provider (QuickFix) â†’ Authorized for Siemens**
 4. Finds nearest QuickFix engineer in Jaipur (freelance contract)
 5. Auto-assigns
 
@@ -740,7 +740,7 @@ CREATE TABLE engineers (
   
   CONSTRAINT chk_eng_status CHECK (status IN ('available', 'on_job', 'on_leave', 'inactive')),
   CONSTRAINT chk_eng_org_type CHECK (org_type IN (
-    'manufacturer', 'distributor', 'dealer', 'hospital', 'clinic',
+    'manufacturer', 'Channel Partner', 'Sub-sub_SUB_DEALER', 'hospital', 'clinic',
     'service_provider', 'laboratory', 'diagnostic_center'
   ))
 );
@@ -901,7 +901,7 @@ CREATE INDEX idx_assignment_status ON engineer_assignments(status);
 ALTER TABLE service_tickets 
 ADD COLUMN assigned_engineer_id UUID REFERENCES engineers(id),
 ADD COLUMN assignment_tier INT, -- Which routing tier was used
-ADD COLUMN assignment_tier_name TEXT; -- "OEM Service", "Dealer Service", etc.
+ADD COLUMN assignment_tier_name TEXT; -- "OEM Service", "Sub-sub_SUB_DEALER Service", etc.
 ```
 
 ---
@@ -965,35 +965,35 @@ GET    /api/v1/organizations/:id/engineers/performance
 
 ## 6. Implementation Checklist
 
-### Phase 1: Database & Core Models ✅
+### Phase 1: Database & Core Models âœ…
 - [ ] Create engineers table
 - [ ] Create engineer_skills table
 - [ ] Create engineer_availability table
 - [ ] Create engineer_assignments table
 - [ ] Add seed data (30+ engineers across orgs)
 
-### Phase 2: Routing Logic ✅
+### Phase 2: Routing Logic âœ…
 - [ ] Implement tier-based routing algorithm
 - [ ] Implement skill matching logic
 - [ ] Implement location-based filtering
 - [ ] Implement availability checking
 - [ ] Add fallback to client's in-house engineers
 
-### Phase 3: APIs ✅
+### Phase 3: APIs âœ…
 - [ ] Engineers CRUD APIs
 - [ ] Skills management APIs
 - [ ] Availability management APIs
 - [ ] Assignment tracking APIs
 - [ ] Routing APIs
 
-### Phase 4: Frontend ✅
+### Phase 4: Frontend âœ…
 - [ ] Engineer management page (per organization)
 - [ ] Engineer profile page
 - [ ] Skills & certifications management
 - [ ] Assignment tracking UI
 - [ ] Real-time engineer location tracking
 
-### Phase 5: Mobile App (Future) 🔮
+### Phase 5: Mobile App (Future) ðŸ”®
 - [ ] Engineer mobile app for assignment acceptance
 - [ ] Real-time status updates
 - [ ] Navigation to customer site
@@ -1004,32 +1004,32 @@ GET    /api/v1/organizations/:id/engineers/performance
 
 ## 7. Key Design Decisions
 
-### ✅ Multi-Entity Engineer Support
-- Engineers belong to manufacturers, dealers, distributors, hospitals, service providers
+### âœ… Multi-Entity Engineer Support
+- Engineers belong to manufacturers, Sub-Sub-sub_sub_SUB_DEALERs, Channel Partners, hospitals, service providers
 - Each organization manages their own engineer team
 - Flexible assignment based on availability and skills
 
-### ✅ Skill-Based Routing
+### âœ… Skill-Based Routing
 - Engineers have specific skills for equipment types, models, manufacturers
 - Certification tracking with expiry dates
-- Proficiency levels (beginner → expert)
+- Proficiency levels (beginner â†’ expert)
 
-### ✅ Tier-Based Routing with Fallback
-- **Priority:** OEM → Dealer → Distributor → Service Provider → **Client In-House**
+### âœ… Tier-Based Routing with Fallback
+- **Priority:** OEM â†’ Sub-sub_SUB_DEALER â†’ Channel Partner â†’ Service Provider â†’ **Client In-House**
 - Timeout-based escalation
 - Client's engineers as critical fallback option
 
-### ✅ Location-Based Assignment
+### âœ… Location-Based Assignment
 - Mobile engineers with coverage radius
 - Real-time location tracking
 - Distance-based optimization
 
-### ✅ Workload Management
+### âœ… Workload Management
 - Max daily tickets per engineer
 - Active ticket tracking
 - Availability scheduling
 
-### ✅ Performance Tracking
+### âœ… Performance Tracking
 - Customer ratings
 - Resolution times
 - First-time fix rates
@@ -1037,7 +1037,7 @@ GET    /api/v1/organizations/:id/engineers/performance
 
 ---
 
-**Status:** 📝 ENGINEER MANAGEMENT DESIGN COMPLETE  
+**Status:** ðŸ“ ENGINEER MANAGEMENT DESIGN COMPLETE  
 **Ready for:** Implementation  
 **Integration:** Will be integrated with Organizations Architecture
 
