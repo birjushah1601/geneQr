@@ -403,17 +403,17 @@ CREATE INDEX IF NOT EXISTS idx_eng_mobile ON engineers(mobile_engineer);
 -- 7B. SERVICE TICKETS TABLE (Must be created before engineer_assignments)
 -- ============================================================================
 
--- Create service_tickets table first
+-- Create service_tickets table first (using UUID to match foreign key references)
 CREATE TABLE IF NOT EXISTS service_tickets (
-    id VARCHAR(255) PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id VARCHAR(255) NOT NULL,
     title VARCHAR(500) NOT NULL,
     description TEXT,
     priority VARCHAR(50) DEFAULT 'medium',
     status VARCHAR(50) DEFAULT 'open',
     organization_id UUID REFERENCES organizations(id),
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_tickets_status ON service_tickets(status);
@@ -424,17 +424,17 @@ CREATE INDEX IF NOT EXISTS idx_tickets_organization ON service_tickets(organizat
 -- 7C. EQUIPMENT TABLE (Must be created before engineer_assignments)
 -- ============================================================================
 
--- Create equipment table first
+-- Create equipment table first (using UUID to match foreign key references)
 CREATE TABLE IF NOT EXISTS equipment (
-    id VARCHAR(255) PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id VARCHAR(255) NOT NULL,
     name VARCHAR(500) NOT NULL,
     serial_number VARCHAR(200),
     model VARCHAR(200),
     manufacturer VARCHAR(200),
     status VARCHAR(50) DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_equipment_status ON equipment(status);
