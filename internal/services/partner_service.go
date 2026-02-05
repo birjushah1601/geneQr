@@ -79,7 +79,7 @@ func (s *PartnerService) GetPartners(ctx context.Context, manufacturerID string,
 			r.created_at
 		FROM org_relationships r
 		JOIN organizations o ON o.id = r.child_org_id
-		LEFT JOIN equipment e ON e.id = r.equipment_id
+		LEFT JOIN equipment_registry e ON e.id = r.equipment_id
 		LEFT JOIN engineer_org_memberships eom ON eom.org_id = o.id
 		WHERE r.parent_org_id = $1 
 		AND r.rel_type = 'services_for'
@@ -238,7 +238,7 @@ func (s *PartnerService) CreateAssociation(ctx context.Context, req CreateAssoci
 	if req.EquipmentID != nil && *req.EquipmentID != "" {
 		var mfgID sql.NullString
 		err := s.db.QueryRowContext(ctx,
-			"SELECT manufacturer_id FROM equipment WHERE id = $1",
+			"SELECT manufacturer_id FROM equipment_registry WHERE id = $1",
 			*req.EquipmentID,
 		).Scan(&mfgID)
 		
@@ -289,7 +289,7 @@ func (s *PartnerService) CreateAssociation(ctx context.Context, req CreateAssoci
 			r.created_at
 		FROM org_relationships r
 		JOIN organizations o ON o.id = r.child_org_id
-		LEFT JOIN equipment e ON e.id = r.equipment_id
+		LEFT JOIN equipment_registry e ON e.id = r.equipment_id
 		WHERE r.id = $1
 	`, id).Scan(
 		&assoc.ID,
