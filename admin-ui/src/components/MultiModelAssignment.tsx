@@ -26,24 +26,37 @@ export default function MultiModelAssignment({ ticketId, onAssignmentComplete, l
       
       // Add partner engineers as a separate category
       if (suggestions && suggestions.suggestions_by_model) {
-        const allEngineers = Object.values(suggestions.suggestions_by_model).flatMap(
-          (model: any) => model.engineers || []
-        );
+        // Get the main organization ID from the first engineer in best_match
+        const bestMatch = suggestions.suggestions_by_model.best_match;
+        const mainOrgId = bestMatch?.engineers?.[0]?.organization_id;
         
-        // Filter partner engineers (those not from the main organization)
-        const mainOrgId = suggestions.equipment?.manufacturer_org_id;
-        const partnerEngineers = allEngineers.filter(
-          (eng: any) => eng.organization_id !== mainOrgId
-        );
-        
-        // Add partner engineers category if there are any
-        if (partnerEngineers.length > 0) {
-          suggestions.suggestions_by_model.partner_engineers = {
-            name: "Partner Engineers",
-            description: "Engineers from partner organizations",
-            engineers: partnerEngineers,
-            weight: 1.0
-          };
+        if (mainOrgId) {
+          // Collect unique partner engineers (use Set to avoid duplicates)
+          const seenIds = new Set<string>();
+          const partnerEngineers: any[] = [];
+          
+          // Go through all categories and collect unique partner engineers
+          Object.values(suggestions.suggestions_by_model).forEach((model: any) => {
+            if (model.engineers) {
+              model.engineers.forEach((eng: any) => {
+                // Only add if it's a partner and we haven't seen this ID yet
+                if (eng.organization_id !== mainOrgId && !seenIds.has(eng.id)) {
+                  seenIds.add(eng.id);
+                  partnerEngineers.push(eng);
+                }
+              });
+            }
+          });
+          
+          // Add partner engineers category if there are any
+          if (partnerEngineers.length > 0) {
+            suggestions.suggestions_by_model.partner_engineers = {
+              model_name: "Partner Engineers",
+              description: "Engineers from partner organizations",
+              engineers: partnerEngineers,
+              count: partnerEngineers.length
+            };
+          }
         }
       }
       
