@@ -68,8 +68,8 @@ upstream servqr_frontend {
 }
 
 server {
-    listen 80;
-    listen [::]:80;
+    listen 3000;
+    listen [::]:3000;
     
     server_name $SERVER_ADDRESS;
     
