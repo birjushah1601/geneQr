@@ -138,15 +138,16 @@ main() {
     
     log "Services configured and started"
     
-    # Setup Nginx (optional, if domain provided)
+    # Setup Nginx reverse proxy
+    log "Configuring Nginx reverse proxy..."
+    SERVER_IP=$(hostname -I | awk '{print $1}')
+    
     if [[ -n "$DOMAIN" ]]; then
-        log "Configuring Nginx reverse proxy for domain: $DOMAIN"
-        setup_nginx
+        log "Using domain: $DOMAIN"
+        bash "${DEPLOYMENT_DIR}/configure-nginx.sh" "$DOMAIN" || warn "Nginx setup failed"
     else
-        info "No domain configured. Skipping Nginx setup."
-        info "Services accessible at:"
-        info "  - Backend: http://$(hostname -I | awk '{print $1}'):8081"
-        info "  - Frontend: http://$(hostname -I | awk '{print $1}'):3000"
+        log "Using IP address: $SERVER_IP"
+        bash "${DEPLOYMENT_DIR}/configure-nginx.sh" "$SERVER_IP" || warn "Nginx setup failed"
     fi
     
     # Setup automated backups
