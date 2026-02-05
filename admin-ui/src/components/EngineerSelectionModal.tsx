@@ -78,68 +78,47 @@ export default function EngineerSelectionModal({
       const ticketResponse = await apiClient.get(`/v1/tickets/${ticketId}`);
       const ticket = ticketResponse.data;
       
-      // Fetch AI suggestions
-      const aiResponse = await apiClient.get(`/v1/engineers/suggestions?ticket_id=${ticketId}`);
-      const aiSuggestions = aiResponse.data.suggestions || [];
+      // Fetch engineers with partners included
+      const engineersResponse = await apiClient.get('/v1/engineers?limit=100&include_partners=true');
+      const allEngineers = engineersResponse.data.engineers || [];
       
-      // Fetch network engineers (from manufacturer + partners)
-      let networkEngineers: any[] = [];
-      const manufacturerId = organizationContext?.organization_id || ticket.manufacturer_id;
+      // Get current user's organization
+      const currentOrgId = organizationContext?.organization_id || ticket.manufacturer_id;
       
-      if (manufacturerId) {
-        try {
-          const networkData = await partnersApi.getNetworkEngineers(
-            manufacturerId,
-            ticket.equipment_id
-          );
-          
-          // Transform network engineers to match Engineer interface
-          networkEngineers = (networkData.engineers || []).map((eng: any) => ({
-            engineer_id: eng.id,
-            engineer_name: eng.name,
-            organization_id: eng.organization.id,
-            organization_name: eng.organization.name,
-            organization_type: eng.organization.org_type,
-            engineer_level: eng.level || 'L2',
-            phone: eng.phone,
-            email: eng.email,
-            category: eng.category || 'Manufacturer',
-            manufacturer_certified: eng.category !== 'Manufacturer',
-          }));
-        } catch (netErr) {
-          console.warn('Failed to fetch network engineers, falling back to AI only:', netErr);
-        }
-      }
-      
-      // Merge AI suggestions with network engineers
-      const mergedEngineers = networkEngineers.map(netEng => {
-        const aiMatch = aiSuggestions.find((ai: any) => ai.engineer_id === netEng.engineer_id);
+      // Transform to match Engineer interface
+      const transformedEngineers = allEngineers.map((eng: any) => {
+        const isOwnEngineer = eng.organization_id === currentOrgId;
+        const category = isOwnEngineer ? 'Manufacturer' : `Partner - ${eng.organization_name}`;
+        
         return {
-          ...netEng,
-          match_score: aiMatch?.match_score || null,
-          equipment_types: aiMatch?.equipment_types || [],
-          location: aiMatch?.location || netEng.location,
+          engineer_id: eng.id,
+          engineer_name: eng.name,
+          organization_id: eng.organization_id,
+          organization_name: eng.organization_name,
+          organization_type: isOwnEngineer ? 'manufacturer' : 'channel_partner',
+          engineer_level: eng.engineer_level || 'L2',
+          phone: eng.phone,
+          email: eng.email,
+          category: category,
+          manufacturer_certified: !isOwnEngineer,
+          match_score: null, // No AI scoring for now
+          equipment_types: [],
+          location: null,
         };
       });
       
-      // Add any AI suggestions not in network (shouldn't happen normally)
-      aiSuggestions.forEach((ai: any) => {
-        if (!mergedEngineers.find(e => e.engineer_id === ai.engineer_id)) {
-          mergedEngineers.push({
-            ...ai,
-            category: 'Manufacturer',
-            organization_type: 'manufacturer',
-          });
-        }
+      // Sort: Own engineers first, then partners, then by name
+      transformedEngineers.sort((a, b) => {
+        const aIsOwn = a.organization_id === currentOrgId ? 0 : 1;
+        const bIsOwn = b.organization_id === currentOrgId ? 0 : 1;
+        if (aIsOwn !== bIsOwn) return aIsOwn - bIsOwn;
+        return a.engineer_name.localeCompare(b.engineer_name);
       });
       
-      // Sort by match score
-      mergedEngineers.sort((a, b) => (b.match_score || 0) - (a.match_score || 0));
-      
-      setEngineers(mergedEngineers);
+      setEngineers(transformedEngineers);
     } catch (err: any) {
-      console.error('Failed to fetch engineer suggestions:', err);
-      setError(err.response?.data?.error || 'Failed to load engineer suggestions');
+      console.error('Failed to fetch engineers:', err);
+      setError(err.response?.data?.error || 'Failed to load engineers');
     } finally {
       setIsLoading(false);
     }
