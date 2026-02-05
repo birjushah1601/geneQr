@@ -500,7 +500,7 @@ export default function TicketDetailPage() {
                             <div key={idx} className="flex items-center justify-between text-sm bg-green-50 rounded p-2 border border-green-100">
                               <div className="flex-1">
                                 <div className="font-medium text-gray-900">{part.part_name}</div>
-                                <div className="text-xs text-gray-500">{part.part_code} â€¢ {part.manufacturer}</div>
+                                <div className="text-xs text-gray-500">{part.part_code} • {part.manufacturer}</div>
                               </div>
                               <div className="text-right">
                                 <div className="text-xs text-gray-600">Qty: {part.quantity}</div>
@@ -538,7 +538,7 @@ export default function TicketDetailPage() {
                     <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-purple-100">
                       <div className="flex items-center gap-2">
                         <span>AI Model: {latestDiagnosis.ai_metadata.model}</span>
-                        <span>â€¢</span>
+                        <span>•</span>
                         <span>{new Date(latestDiagnosis.created_at).toLocaleString()}</span>
                       </div>
                       {latestDiagnosis.ai_metadata.alternatives_count > 0 && (
