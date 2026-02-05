@@ -193,39 +193,45 @@ start_postgres() {
 initialize_database() {
     log "Initializing database schema..."
     
-    # Check if base init schema exists - RUN THIS FIRST
-    if [[ -f "${INSTALL_DIR}/init-database-schema.sql" ]]; then
-        log "Running base schema: init-database-schema.sql"
-        docker exec -i servqr-postgres psql -U servqr -d servqr_production < "${INSTALL_DIR}/init-database-schema.sql" || warn "Base schema failed"
-    elif [[ -f "${INSTALL_DIR}/database/migrations/001_full_organizations_schema.sql" ]]; then
+    # STEP 1: Run base schema FIRST (creates all core tables)
+    BASE_SCHEMA="${INSTALL_DIR}/database/migrations/001_full_organizations_schema.sql"
+    
+    if [[ -f "$BASE_SCHEMA" ]]; then
         log "Running base schema: 001_full_organizations_schema.sql"
-        docker exec -i servqr-postgres psql -U servqr -d servqr_production < "${INSTALL_DIR}/database/migrations/001_full_organizations_schema.sql" || warn "Base schema failed"
+        docker exec -i servqr-postgres psql -U servqr -d servqr_production < "$BASE_SCHEMA" || error "Base schema failed - cannot continue"
+        log "Base schema applied successfully"
     else
-        warn "Base schema not found. Database may not work correctly."
+        error "Base schema not found: $BASE_SCHEMA - cannot initialize database"
     fi
     
-    # Now check for additional migrations directory
+    # STEP 2: Run additional migrations (SKIP the base schema file)
     MIGRATIONS_DIR="${INSTALL_DIR}/database/migrations"
     if [[ ! -d "$MIGRATIONS_DIR" ]]; then
         MIGRATIONS_DIR="${INSTALL_DIR}/migrations"
     fi
     
     if [[ ! -d "$MIGRATIONS_DIR" ]]; then
-        warn "Migrations directory not found. Skipping additional migrations."
+        warn "Migrations directory not found. Only base schema applied."
         return 0
     fi
     
-    # Run migrations
-    log "Running database migrations..."
+    log "Running additional database migrations..."
     
     # Copy migration files to container
     docker cp "$MIGRATIONS_DIR" servqr-postgres:/tmp/migrations
     
-    # Execute migrations
+    # Execute migrations in sorted order (SKIP 001_full_organizations_schema.sql)
     for migration in $(ls -1 "$MIGRATIONS_DIR"/*.sql 2>/dev/null | sort); do
         migration_file=$(basename "$migration")
+        
+        # Skip the base schema file (already applied)
+        if [[ "$migration_file" == "001_full_organizations_schema.sql" ]]; then
+            log "Skipping $migration_file (already applied as base schema)"
+            continue
+        fi
+        
         log "Applying migration: $migration_file"
-        docker exec servqr-postgres psql -U servqr -d servqr_production -f "/tmp/migrations/$migration_file" || warn "Migration $migration_file failed"
+        docker exec servqr-postgres psql -U servqr -d servqr_production -f "/tmp/migrations/$migration_file" || warn "Migration $migration_file failed (non-critical)"
     done
     
     log "Database initialization completed"

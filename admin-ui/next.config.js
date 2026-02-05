@@ -9,6 +9,10 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  experimental: {
+    // Allow useSearchParams without Suspense boundary
+    missingSuspenseWithCSRBailout: false,
+  },
   images: {
     domains: ['localhost'],
     remotePatterns: [
