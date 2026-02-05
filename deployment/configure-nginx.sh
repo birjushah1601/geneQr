@@ -63,7 +63,7 @@ upstream servqr_backend {
 }
 
 upstream servqr_frontend {
-    server localhost:3000 max_fails=3 fail_timeout=30s;
+    server localhost:3001 max_fails=3 fail_timeout=30s;
     keepalive 32;
 }
 
@@ -216,8 +216,13 @@ sed -i "s|FRONTEND_URL=.*|FRONTEND_URL=http://${SERVER_ADDRESS}|g" /opt/servqr/.
 
 # Update frontend .env.local
 log "Updating frontend configuration..."
-sed -i "s|NEXT_PUBLIC_API_URL=.*|NEXT_PUBLIC_API_URL=http://${SERVER_ADDRESS}/api/v1|g" /opt/servqr/admin-ui/.env.local
-sed -i "s|NEXT_PUBLIC_BASE_URL=.*|NEXT_PUBLIC_BASE_URL=http://${SERVER_ADDRESS}|g" /opt/servqr/admin-ui/.env.local
+sed -i "s|NEXT_PUBLIC_API_URL=.*|NEXT_PUBLIC_API_URL=http://${SERVER_ADDRESS}:3000/api/v1|g" /opt/servqr/admin-ui/.env.local
+sed -i "s|NEXT_PUBLIC_BASE_URL=.*|NEXT_PUBLIC_BASE_URL=http://${SERVER_ADDRESS}:3000|g" /opt/servqr/admin-ui/.env.local
+
+# Update frontend systemd service to use port 3001
+log "Updating frontend service to run on port 3001..."
+cp /opt/servqr/deployment/systemd/servqr-frontend.service /etc/systemd/system/
+systemctl daemon-reload
 
 # Restart services to pick up new config
 log "Restarting services..."

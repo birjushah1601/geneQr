@@ -12,7 +12,7 @@ WorkingDirectory=/opt/servqr/admin-ui
 
 # Environment
 Environment="NODE_ENV=production"
-Environment="PORT=3000"
+Environment="PORT=3001"
 Environment="HOSTNAME=0.0.0.0"
 
 # Main process
