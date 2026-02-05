@@ -1,0 +1,52 @@
+[Unit]
+Description=ServQR Backend API Server
+Documentation=https://github.com/aby-med/medical-platform
+After=network.target servqr-postgres.service
+Requires=servqr-postgres.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/servqr
+Environment="PATH=/usr/local/go/bin:/usr/bin:/bin"
+EnvironmentFile=/opt/servqr/.env
+
+# Main process
+ExecStart=/opt/servqr/platform
+
+# Restart policy
+Restart=always
+RestartSec=10
+StartLimitInterval=5min
+StartLimitBurst=5
+
+# Logging
+StandardOutput=append:/opt/servqr/logs/backend.log
+StandardError=append:/opt/servqr/logs/backend-error.log
+SyslogIdentifier=servqr-backend
+
+# Resource Limits
+LimitNOFILE=65536
+LimitNPROC=32768
+LimitCORE=0
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/servqr/data /opt/servqr/logs /opt/servqr/storage
+
+# Performance
+Nice=0
+IOSchedulingClass=2
+IOSchedulingPriority=4
+
+# Timeout settings
+TimeoutStartSec=60s
+TimeoutStopSec=30s
+
+[Install]
+WantedBy=multi-user.target

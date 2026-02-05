@@ -1,0 +1,53 @@
+[Unit]
+Description=ServQR Frontend (Next.js)
+Documentation=https://github.com/aby-med/medical-platform
+After=network.target servqr-backend.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/servqr/admin-ui
+
+# Environment
+Environment="NODE_ENV=production"
+Environment="PORT=3000"
+Environment="HOSTNAME=0.0.0.0"
+
+# Main process
+ExecStart=/usr/bin/npm start
+
+# Restart policy
+Restart=always
+RestartSec=10
+StartLimitInterval=5min
+StartLimitBurst=5
+
+# Logging
+StandardOutput=append:/opt/servqr/logs/frontend.log
+StandardError=append:/opt/servqr/logs/frontend-error.log
+SyslogIdentifier=servqr-frontend
+
+# Resource Limits
+LimitNOFILE=65536
+LimitNPROC=16384
+LimitCORE=0
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/servqr/logs
+
+# Performance
+Nice=5
+IOSchedulingClass=2
+IOSchedulingPriority=6
+
+# Timeout settings
+TimeoutStartSec=120s
+TimeoutStopSec=30s
+
+[Install]
+WantedBy=multi-user.target
