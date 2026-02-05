@@ -404,19 +404,33 @@ CREATE INDEX IF NOT EXISTS idx_eng_mobile ON engineers(mobile_engineer);
 -- ============================================================================
 
 -- Create service_tickets table first (using VARCHAR to match Go code expectations)
+-- Include ALL columns from init-database-schema.sql that Go modules expect
 CREATE TABLE IF NOT EXISTS service_tickets (
     id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uuid()::text,
     tenant_id VARCHAR(255) NOT NULL,
     equipment_id VARCHAR(255),
+    ticket_number VARCHAR(100),
     title VARCHAR(500) NOT NULL,
     description TEXT,
     priority VARCHAR(50) DEFAULT 'medium',
     status VARCHAR(50) DEFAULT 'open',
+    reported_by VARCHAR(200),
+    contact_phone VARCHAR(50),
+    contact_email VARCHAR(200),
+    assigned_to VARCHAR(255),
+    resolution TEXT,
+    parts_used JSONB,
+    labor_hours DECIMAL(5,2),
+    resolved_at TIMESTAMPTZ,
     organization_id UUID REFERENCES organizations(id),
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    created_by VARCHAR(255),
+    updated_by VARCHAR(255),
+    UNIQUE(tenant_id, ticket_number)
 );
 
+CREATE INDEX IF NOT EXISTS idx_tickets_tenant ON service_tickets(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_tickets_status ON service_tickets(status);
 CREATE INDEX IF NOT EXISTS idx_tickets_priority ON service_tickets(priority);
 CREATE INDEX IF NOT EXISTS idx_tickets_organization ON service_tickets(organization_id);
@@ -427,6 +441,7 @@ CREATE INDEX IF NOT EXISTS idx_tickets_equipment ON service_tickets(equipment_id
 -- ============================================================================
 
 -- Create equipment table first (using VARCHAR to match Go code expectations)
+-- Include ALL columns from init-database-schema.sql that Go modules expect
 CREATE TABLE IF NOT EXISTS equipment (
     id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uuid()::text,
     tenant_id VARCHAR(255) NOT NULL,
@@ -434,13 +449,25 @@ CREATE TABLE IF NOT EXISTS equipment (
     serial_number VARCHAR(200),
     model VARCHAR(200),
     manufacturer VARCHAR(200),
+    purchase_date DATE,
+    installation_date DATE,
+    location JSONB,
+    warranty_expiry DATE,
+    maintenance_schedule VARCHAR(100),
     status VARCHAR(50) DEFAULT 'active',
+    qr_code_path VARCHAR(500),
+    notes TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    created_by VARCHAR(255),
+    updated_by VARCHAR(255),
+    UNIQUE(tenant_id, serial_number)
 );
 
+CREATE INDEX IF NOT EXISTS idx_equipment_tenant ON equipment(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_equipment_status ON equipment(status);
 CREATE INDEX IF NOT EXISTS idx_equipment_serial ON equipment(serial_number);
+CREATE INDEX IF NOT EXISTS idx_equipment_manufacturer ON equipment(manufacturer);
 
 -- ============================================================================
 -- 8. ENGINEER SKILLS & CERTIFICATIONS
