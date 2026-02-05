@@ -38,6 +38,7 @@ function ServiceRequestPageInner() {
     requestedBy: '',
     contactName: '',
     contactPhone: '',
+    contactEmail: '',
   });
 
   useEffect(() => {
@@ -164,7 +165,8 @@ function ServiceRequestPageInner() {
         equipment_name: (equipment as any).equipment_name || (equipment as any).name,
         customer_id: (equipment as any).customer_id,
         customer_name: (equipment as any).customer_name || (equipment as any).customerName,
-        customer_phone: '9999999999',
+        customer_phone: formData.contactPhone || '9999999999',
+        customer_email: formData.contactEmail || undefined,
         issue_category: 'breakdown',
         issue_description: formData.description,
         priority: 'medium', // Default priority for public requests (admin can change later)
@@ -204,7 +206,7 @@ function ServiceRequestPageInner() {
       }
       
       setSuccess(true);
-      setFormData({ description: '', requestedBy: '', contactName: '', contactPhone: '' });
+      setFormData({ description: '', requestedBy: '', contactName: '', contactPhone: '', contactEmail: '' });
       setSelectedFiles([]);
       setAssignedParts([]);
       
@@ -344,6 +346,39 @@ function ServiceRequestPageInner() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Describe the issue or service needed..."
               />
+            </div>
+
+            {/* Contact Information - Two Columns */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="contactEmail" className="block text-sm font-medium text-gray-700 mb-2">
+                  Email (Optional)
+                </label>
+                <input
+                  type="email"
+                  id="contactEmail"
+                  value={formData.contactEmail}
+                  onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="your@email.com"
+                />
+                <p className="text-xs text-gray-500 mt-1">Get updates via email</p>
+              </div>
+
+              <div>
+                <label htmlFor="contactPhone" className="block text-sm font-medium text-gray-700 mb-2">
+                  Phone Number (Optional)
+                </label>
+                <input
+                  type="tel"
+                  id="contactPhone"
+                  value={formData.contactPhone}
+                  onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="+91-98765-43210"
+                />
+                <p className="text-xs text-gray-500 mt-1">Get updates via SMS/WhatsApp</p>
+              </div>
             </div>
 
             {/* Priority field hidden - only admins/manufacturers can set priority */}
