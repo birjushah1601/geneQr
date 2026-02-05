@@ -34,9 +34,10 @@ func NewAssignmentService(
 }
 
 // ListEngineers retrieves engineers, optionally filtered by organization
-func (s *AssignmentService) ListEngineers(ctx context.Context, organizationID *string, limit, offset int) ([]*domain.Engineer, error) {
-	s.logger.Info("Listing engineers", slog.Any("org_id", organizationID))
-	return s.assignRepo.ListEngineers(ctx, organizationID, limit, offset)
+// includePartners: when true, includes engineers from partner organizations
+func (s *AssignmentService) ListEngineers(ctx context.Context, organizationID *string, includePartners bool, limit, offset int) ([]*domain.Engineer, error) {
+	s.logger.Info("Listing engineers", slog.Any("org_id", organizationID), slog.Bool("include_partners", includePartners))
+	return s.assignRepo.ListEngineers(ctx, organizationID, includePartners, limit, offset)
 }
 
 // GetEngineer retrieves a single engineer by ID

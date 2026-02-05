@@ -546,6 +546,9 @@ function EquipmentListPageInner() {
                         Serial Number
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Category
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -558,7 +561,7 @@ function EquipmentListPageInner() {
                         Last Service
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
+                        View
                       </th>
                     </tr>
                   </thead>
@@ -573,6 +576,7 @@ function EquipmentListPageInner() {
                             aria-label={`Select ${equipment.name}`}
                           />
                         </td>
+                        
                         {/* QR Code Column */}
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-2">
@@ -653,6 +657,22 @@ function EquipmentListPageInner() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {equipment.serialNumber}
                         </td>
+                        
+                        {/* Actions Column */}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const code = equipment.qrCode || equipment.id;
+                              const url = code ? `/service-request?qr=${encodeURIComponent(code)}` : '/service-request';
+                              router.push(url);
+                            }}
+                          >
+                            Create Service Request
+                          </Button>
+                        </td>
+                        
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {equipment.category}
                         </td>
@@ -667,27 +687,16 @@ function EquipmentListPageInner() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {equipment.lastService || 'N/A'}
                         </td>
+                        
+                        {/* View Column - Last */}
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex items-center justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => router.push(`/equipment/${equipment.id}`)}
-                            >
-                              View
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                const code = equipment.qrCode || equipment.id;
-                                const url = code ? `/service-request?qr=${encodeURIComponent(code)}` : '/service-request';
-                                router.push(url);
-                              }}
-                            >
-                              Create Service Request
-                            </Button>
-                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => router.push(`/equipment/${equipment.id}`)}
+                          >
+                            View
+                          </Button>
                         </td>
                       </tr>
                     ))}

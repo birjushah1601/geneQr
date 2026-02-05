@@ -205,10 +205,10 @@ export default function TicketDetailPage() {
   const [engineerName, setEngineerName] = useState("");
   const [isPartsModalOpen, setIsPartsModalOpen] = useState(false);
 
-  // Fetch engineers list for dropdown
+  // Fetch engineers list for dropdown (including partner engineers)
   const { data: engineersData } = useQuery({
-    queryKey: ["engineers"],
-    queryFn: () => apiClient.get("/v1/engineers?limit=100"),
+    queryKey: ["engineers", "with-partners"],
+    queryFn: () => apiClient.get("/v1/engineers?limit=100&include_partners=true"),
     staleTime: 60_000,
   });
   const engineers = (engineersData as any)?.data?.items || [];

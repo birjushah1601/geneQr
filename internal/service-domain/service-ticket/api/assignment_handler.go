@@ -26,6 +26,10 @@ func NewAssignmentHandler(service *app.AssignmentService, logger *slog.Logger) *
 }
 
 // ListEngineers handles GET /engineers or GET /organizations/{orgId}/engineers
+// Query parameters:
+//   - limit: max number of engineers to return (default: 100)
+//   - offset: pagination offset (default: 0)
+//   - include_partners: include engineers from partner organizations (default: false)
 func (h *AssignmentHandler) ListEngineers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	
@@ -43,7 +47,10 @@ func (h *AssignmentHandler) ListEngineers(w http.ResponseWriter, r *http.Request
 	}
 	offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
 	
-	engineers, err := h.service.ListEngineers(ctx, orgID, limit, offset)
+	// Parse include_partners parameter (default: false)
+	includePartners := r.URL.Query().Get("include_partners") == "true"
+	
+	engineers, err := h.service.ListEngineers(ctx, orgID, includePartners, limit, offset)
 	if err != nil {
 		h.logger.Error("Failed to list engineers", slog.String("error", err.Error()))
 		h.respondError(w, http.StatusInternalServerError, "Failed to list engineers: "+err.Error())
@@ -51,8 +58,9 @@ func (h *AssignmentHandler) ListEngineers(w http.ResponseWriter, r *http.Request
 	}
 	
 	h.respondJSON(w, http.StatusOK, map[string]interface{}{
-		"engineers": engineers,
-		"total":     len(engineers),
+		"engineers":        engineers,
+		"total":            len(engineers),
+		"include_partners": includePartners,
 	})
 }
 
