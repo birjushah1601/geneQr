@@ -199,9 +199,21 @@ func loadRSAPrivateKey(path string) (*rsa.PrivateKey, error) {
 		return nil, fmt.Errorf("failed to decode PEM block")
 	}
 
-	privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	// Try PKCS8 first (modern format with "BEGIN PRIVATE KEY")
+	key, err := x509.ParsePKCS8PrivateKey(block.Bytes)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse private key: %w", err)
+		// Fallback to PKCS1 (old format with "BEGIN RSA PRIVATE KEY")
+		privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse private key: %w", err)
+		}
+		return privateKey, nil
+	}
+
+	// PKCS8 can contain different key types, ensure it's RSA
+	privateKey, ok := key.(*rsa.PrivateKey)
+	if !ok {
+		return nil, fmt.Errorf("not an RSA private key")
 	}
 
 	return privateKey, nil
