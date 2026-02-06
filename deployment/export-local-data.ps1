@@ -57,7 +57,8 @@ try {
         exit 1
     }
 } catch {
-    Write-Host "ERROR: $($_.Exception.Message)" -ForegroundColor Red
+    $errorMsg = $_.Exception.Message
+    Write-Host "ERROR: $errorMsg" -ForegroundColor Red
     exit 1
 } finally {
     $env:PGPASSWORD = ""
