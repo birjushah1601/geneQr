@@ -207,3 +207,139 @@ site/
 # ----
 .scratch/
 .notes/
+
+# ============================================
+# PROJECT-SPECIFIC IGNORES (Clean Repository)
+# ============================================
+
+# Backend Logs (NEVER commit)
+# ----------------------------
+backend-*.log
+backend-*.log.err
+*.log
+logs/
+*.log.*
+
+# SQL Dumps & Backups (NEVER commit - contain data)
+# --------------------------------------------------
+*.sql
+!database/migrations/*.sql
+!database/schema/*.sql
+!scripts/*.sql
+backup-*.sql
+*-backup-*.sql
+local_data_export.sql
+local_schema_export.sql
+add-remaining-tables.sql
+apply-qr-migration.sql
+fix-*.sql
+create-test-*.sql
+
+# Generated/Compiled Binaries
+# ----------------------------
+platform.exe
+platform.exe~
+aby-med-platform.exe
+*.exe
+!scripts/*.exe
+/bin/
+/build/
+
+# Temporary Test Files
+# --------------------
+test-qr-*.png
+equipment-ids.json
+70
+
+# Storage/Uploads (user data - NEVER commit)
+# -------------------------------------------
+storage/attachments/
+storage/uploads/
+storage/qrcodes/
+storage/*.png
+storage/*.jpg
+data/
+!data/.gitkeep
+
+# Generated Keys & Secrets (SECURITY)
+# ------------------------------------
+keys/*.pem
+keys/*.key
+!keys/.gitkeep
+!keys/README.md
+
+# Archived/Old Documentation (dead files)
+# ----------------------------------------
+archived/
+*-REMOVED.md
+*-OLD.md
+*-ARCHIVE.md
+*-DEPRECATED.md
+CHANGELOG-*.md
+!CHANGELOG.md
+
+# Temporary Scripts (dead/testing)
+# ---------------------------------
+start-*.ps1
+start-*.bat
+test-*.ps1
+run-*.ps1
+configure-*.ps1
+rebrand-*.ps1
+cleanup-*.ps1
+*.temp.ps1
+*.temp.sh
+
+# Old/Temporary Documentation Files (you have many!)
+# ---------------------------------------------------
+AI-*.md
+TEST-*.md
+TEST-*.txt
+CUSTOMER-*.md
+MULTI-*.md
+ONBOARDING-*.md
+ENGINEER-MANAGEMENT-*.md
+!ENGINEER-MANAGEMENT-DESIGN.md
+INVITATION-*.md
+TEAM-*.md
+PARTS-*.md
+!PARTS-CATALOG-TEMPLATE-GUIDE.md
+EQUIPMENT-*-PLAN.md
+EQUIPMENT-*-CLARIFICATION.md
+QR-CODE-*.md
+PHASE4-*.md
+IMPLEMENTATION-*.md
+MANUFACTURER-*.md
+REASSIGN_*.md
+DASHBOARD_*.md
+FRONTEND-*.md
+PROTECTED-*.md
+CSV-*.md
+
+# Sample/Test Data Files
+# -----------------------
+manufacturer-*.csv
+*-sample.csv
+test-data/
+temp_*.txt
+page.tsx
+verify_hash.go
+generate_hash.go
+test_password.go
+gen_simple.go
+test.go
+
+# Deployment Generated Files (regenerated on server)
+# ---------------------------------------------------
+deployment/CONFIGURATION-SUMMARY.md
+deployment/PRE-DEPLOYMENT-CONFIGURATION.md
+deployment/*.generated.*
+
+# Documentation that should be kept
+# ----------------------------------
+!README.md
+!README-COMPLETE.md
+!DOCUMENTATION-INDEX.md
+!docs/
+!deployment/README.md
+!deployment/*.md
