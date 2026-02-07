@@ -11,14 +11,18 @@ import (
 	"time"
 
 	"github.com/aby-med/medical-platform/internal/service-domain/service-ticket/domain"
-	"github.com/aby-med/medical-platform/pkg/email"
 )
+
+// EmailService is a placeholder interface for email functionality
+type EmailService interface {
+	Send(to, subject, body string) error
+}
 
 // NotificationService handles ticket notifications
 type NotificationService struct {
-	ticketRepo       domain.Repository
+	ticketRepo       domain.TicketRepository
 	notificationRepo domain.NotificationRepository
-	emailService     *email.NotificationService
+	emailService     EmailService
 	logger           *slog.Logger
 	baseURL          string
 }
@@ -33,9 +37,9 @@ type NotificationConfig struct {
 
 // NewNotificationService creates a new notification service
 func NewNotificationService(
-	ticketRepo domain.Repository,
+	ticketRepo domain.TicketRepository,
 	notificationRepo domain.NotificationRepository,
-	emailService *email.NotificationService,
+	emailService EmailService,
 	logger *slog.Logger,
 	config *NotificationConfig,
 ) *NotificationService {
@@ -59,137 +63,24 @@ func NewNotificationService(
 }
 
 // SendManualEmail sends a manual email notification for a ticket
+// TODO: Implement when email service and customer_email field are available
 func (s *NotificationService) SendManualEmail(ctx context.Context, ticketID string, includeComments bool) error {
-	// Check feature flag
-	if os.Getenv("FEATURE_TICKET_MANUAL_EMAIL") == "false" {
-		return fmt.Errorf("manual email feature is disabled")
-	}
-
-	// Get ticket details
-	ticket, err := s.ticketRepo.GetByID(ctx, ticketID)
-	if err != nil {
-		return fmt.Errorf("failed to get ticket: %w", err)
-	}
-
-	// Validate customer email
-	if ticket.CustomerEmail == "" {
-		return fmt.Errorf("ticket has no customer email")
-	}
-
-	// Get or create tracking token
-	token, err := s.GetOrCreateTrackingToken(ticketID)
-	if err != nil {
-		s.logger.Error("Failed to create tracking token", slog.String("error", err.Error()))
-		// Continue without tracking token
-		token = ""
-	}
-
-	// Prepare email data
-	emailData := s.prepareEmailData(ticket, token, includeComments)
-
-	// Send email
-	err = s.sendEmail(ticket.CustomerEmail, "ticket-update", emailData)
-	
-	// Log notification
-	logEntry := &domain.NotificationLog{
-		TicketID:         ticketID,
-		NotificationType: domain.NotificationTypeManual,
-		RecipientEmail:   ticket.CustomerEmail,
-		Status:           domain.NotificationStatusSent,
-	}
-	
-	if err != nil {
-		errMsg := err.Error()
-		logEntry.Status = domain.NotificationStatusFailed
-		logEntry.ErrorMessage = &errMsg
-		s.notificationRepo.LogNotification(logEntry)
-		return fmt.Errorf("failed to send email: %w", err)
-	}
-
-	s.notificationRepo.LogNotification(logEntry)
-	s.logger.Info("Manual email sent", 
-		slog.String("ticket_id", ticketID),
-		slog.String("recipient", ticket.CustomerEmail),
-	)
-
-	return nil
+	s.logger.Warn("Email functionality not yet implemented",
+		slog.String("ticket_id", ticketID))
+	return fmt.Errorf("email functionality not yet implemented")
 }
 
 // SendTicketCreatedEmail sends an email when a ticket is created
+// TODO: Implement when email service and customer_email field are available
 func (s *NotificationService) SendTicketCreatedEmail(ctx context.Context, ticketID string) error {
-	// Check feature flag
-	if os.Getenv("FEATURE_TICKET_CREATED_EMAIL") != "true" {
-		s.logger.Debug("Ticket created email disabled", slog.String("ticket_id", ticketID))
-		return nil // Not an error, just disabled
-	}
-
-	// Get ticket details
-	ticket, err := s.ticketRepo.GetByID(ctx, ticketID)
-	if err != nil {
-		return fmt.Errorf("failed to get ticket: %w", err)
-	}
-
-	// Validate customer email
-	if ticket.CustomerEmail == "" {
-		s.logger.Warn("Ticket has no customer email", slog.String("ticket_id", ticketID))
-		return nil // Not an error
-	}
-
-	// Create tracking token
-	token, err := s.GetOrCreateTrackingToken(ticketID)
-	if err != nil {
-		s.logger.Error("Failed to create tracking token", slog.String("error", err.Error()))
-		token = ""
-	}
-
-	// Prepare email data
-	emailData := s.prepareEmailData(ticket, token, false)
-
-	// Send email
-	err = s.sendEmail(ticket.CustomerEmail, "ticket-created", emailData)
-	
-	// Log notification
-	logEntry := &domain.NotificationLog{
-		TicketID:         ticketID,
-		NotificationType: domain.NotificationTypeTicketCreated,
-		RecipientEmail:   ticket.CustomerEmail,
-		Status:           domain.NotificationStatusSent,
-	}
-	
-	if err != nil {
-		errMsg := err.Error()
-		logEntry.Status = domain.NotificationStatusFailed
-		logEntry.ErrorMessage = &errMsg
-		s.notificationRepo.LogNotification(logEntry)
-		return fmt.Errorf("failed to send ticket created email: %w", err)
-	}
-
-	s.notificationRepo.LogNotification(logEntry)
-	s.logger.Info("Ticket created email sent", 
-		slog.String("ticket_id", ticketID),
-		slog.String("recipient", ticket.CustomerEmail),
-	)
-
+	s.logger.Debug("Ticket created email not yet implemented", slog.String("ticket_id", ticketID))
 	return nil
 }
 
 // SendDailyDigest sends daily digest emails for all active tickets
+// TODO: Implement when email service is available
 func (s *NotificationService) SendDailyDigest(ctx context.Context) error {
-	// Check feature flag
-	if os.Getenv("FEATURE_TICKET_DAILY_DIGEST") != "true" {
-		s.logger.Debug("Daily digest disabled")
-		return nil
-	}
-
-	s.logger.Info("Starting daily digest")
-
-	// Get tickets updated in the last 24 hours
-	since := time.Now().Add(-24 * time.Hour)
-	
-	// TODO: Add method to ticketRepo to get tickets updated since timestamp
-	// For now, we'll skip implementation until the repository method is added
-	
-	s.logger.Info("Daily digest completed", slog.Int("sent", 0))
+	s.logger.Debug("Daily digest not yet implemented")
 	return nil
 }
 
@@ -246,8 +137,8 @@ func (s *NotificationService) GetPublicTicketView(ctx context.Context, token str
 	// Build public view
 	publicView := &domain.PublicTicketView{
 		TicketNumber:     ticket.TicketNumber,
-		Status:           ticket.Status,
-		Priority:         ticket.Priority,
+		Status:           string(ticket.Status),
+		Priority:         string(ticket.Priority),
 		EquipmentName:    ticket.EquipmentName,
 		IssueDescription: ticket.IssueDescription,
 		CreatedAt:        ticket.CreatedAt,
@@ -259,127 +150,4 @@ func (s *NotificationService) GetPublicTicketView(ctx context.Context, token str
 	return publicView, nil
 }
 
-// prepareEmailData prepares data for email templates
-func (s *NotificationService) prepareEmailData(ticket *domain.ServiceTicket, trackingToken string, includeComments bool) *domain.EmailTemplateData {
-	trackingURL := ""
-	if trackingToken != "" {
-		trackingURL = fmt.Sprintf("%s/%s", s.baseURL, trackingToken)
-	}
-
-	data := &domain.EmailTemplateData{
-		TicketNumber:         ticket.TicketNumber,
-		TicketID:             ticket.ID,
-		Status:               ticket.Status,
-		Priority:             ticket.Priority,
-		CustomerName:         ticket.CustomerName,
-		CustomerEmail:        ticket.CustomerEmail,
-		EquipmentName:        ticket.EquipmentName,
-		SerialNumber:         ticket.SerialNumber,
-		IssueDescription:     ticket.IssueDescription,
-		IssueCategory:        ticket.IssueCategory,
-		AssignedEngineerName: ticket.AssignedEngineerName,
-		AssignedAt:           ticket.AssignedAt,
-		CreatedAt:            ticket.CreatedAt,
-		UpdatedAt:            ticket.UpdatedAt,
-		TrackingURL:          trackingURL,
-		TrackingToken:        trackingToken,
-		Comments:             []domain.CommentData{},
-	}
-
-	// TODO: Add comments if requested and available
-	// This requires accessing comment repository
-
-	return data
-}
-
-// sendEmail sends an email using the email service
-func (s *NotificationService) sendEmail(to, templateName string, data *domain.EmailTemplateData) error {
-	// For now, use a simple email format
-	// TODO: Implement proper HTML templates
-	
-	subject := s.getEmailSubject(templateName, data)
-	body := s.getEmailBody(templateName, data)
-
-	// Use the existing email service
-	// Note: This is a placeholder - actual implementation depends on email.NotificationService interface
-	s.logger.Info("Sending email",
-		slog.String("to", to),
-		slog.String("subject", subject),
-		slog.String("template", templateName),
-	)
-
-	// TODO: Call actual email service send method
-	// err := s.emailService.Send(to, subject, body)
-	
-	return nil
-}
-
-// getEmailSubject returns the subject for an email template
-func (s *NotificationService) getEmailSubject(templateName string, data *domain.EmailTemplateData) string {
-	switch templateName {
-	case "ticket-created":
-		return fmt.Sprintf("New Service Ticket Created - %s", data.TicketNumber)
-	case "ticket-update":
-		return fmt.Sprintf("Service Ticket Update - %s", data.TicketNumber)
-	case "daily-digest":
-		return fmt.Sprintf("Daily Service Ticket Summary - %s", data.TicketNumber)
-	default:
-		return fmt.Sprintf("Service Ticket Notification - %s", data.TicketNumber)
-	}
-}
-
-// getEmailBody returns the body for an email template
-func (s *NotificationService) getEmailBody(templateName string, data *domain.EmailTemplateData) string {
-	// TODO: Use proper HTML templates
-	switch templateName {
-	case "ticket-created":
-		return fmt.Sprintf(`
-Dear %s,
-
-Your service request has been created successfully.
-
-Ticket Details:
-- Ticket #: %s
-- Equipment: %s
-- Issue: %s
-- Priority: %s
-- Status: %s
-
-Track your ticket: %s
-
-Thank you,
-ServQR Support Team
-`,
-			data.CustomerName,
-			data.TicketNumber,
-			data.EquipmentName,
-			data.IssueDescription,
-			data.Priority,
-			data.Status,
-			data.TrackingURL,
-		)
-	case "ticket-update":
-		return fmt.Sprintf(`
-Dear %s,
-
-Here's an update on your service request.
-
-Ticket #: %s
-Current Status: %s
-Equipment: %s
-
-Track your ticket: %s
-
-Thank you,
-ServQR Support Team
-`,
-			data.CustomerName,
-			data.TicketNumber,
-			data.Status,
-			data.EquipmentName,
-			data.TrackingURL,
-		)
-	default:
-		return fmt.Sprintf("Service ticket notification for %s", data.TicketNumber)
-	}
-}
+// TODO: Email helper methods will be implemented when email service is integrated

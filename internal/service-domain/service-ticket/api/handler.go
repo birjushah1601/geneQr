@@ -1115,12 +1115,9 @@ func (h *TicketHandler) SendEmailNotification(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	// Get ticket to return recipient info
-	ticket, _ := h.service.GetTicketByID(ctx, ticketID)
-	recipientEmail := ""
-	if ticket != nil {
-		recipientEmail = ticket.CustomerEmail
-	}
+	// Get ticket to return recipient info (optional for now)
+	// ticket, _ := h.service.GetByID(ctx, ticketID)
+	recipientEmail := "not-implemented"
 
 	h.logger.Info("Email notification sent",
 		slog.String("ticket_id", ticketID),
