@@ -43,22 +43,33 @@ type NotificationLog struct {
 
 // PublicTicketView represents the public-facing view of a ticket
 type PublicTicketView struct {
-	TicketNumber      string           `json:"ticket_number"`
-	Status            string           `json:"status"`
-	Priority          string           `json:"priority"`
-	EquipmentName     string           `json:"equipment_name"`
-	IssueDescription  string           `json:"issue_description"`
-	CreatedAt         time.Time        `json:"created_at"`
-	UpdatedAt         time.Time        `json:"updated_at"`
-	PublicComments    []PublicComment  `json:"comments"`
-	AssignedEngineer  string           `json:"assigned_engineer,omitempty"`
+	TicketNumber      string              `json:"ticket_number"`
+	Status            string              `json:"status"`
+	Priority          string              `json:"priority"`
+	EquipmentName     string              `json:"equipment_name"`
+	IssueDescription  string              `json:"issue_description"`
+	CreatedAt         time.Time           `json:"created_at"`
+	UpdatedAt         time.Time           `json:"updated_at"`
+	PublicComments    []PublicComment     `json:"comments"`
+	StatusHistory     []PublicStatusEvent `json:"status_history"`
+	AssignedEngineer  string              `json:"assigned_engineer,omitempty"`
 }
 
 // PublicComment represents a comment visible to customers
 type PublicComment struct {
-	Comment   string    `json:"comment"`
-	CreatedAt time.Time `json:"created_at"`
-	AuthorRole string   `json:"author_role"` // 'system', 'engineer', 'admin'
+	Comment    string    `json:"comment"`
+	AuthorName string    `json:"author_name"`
+	CreatedAt  time.Time `json:"created_at"`
+	AuthorRole string    `json:"author_role"` // 'system', 'engineer', 'admin'
+}
+
+// PublicStatusEvent represents a status change event
+type PublicStatusEvent struct {
+	FromStatus string    `json:"from_status,omitempty"`
+	ToStatus   string    `json:"to_status"`
+	ChangedBy  string    `json:"changed_by"`
+	ChangedAt  time.Time `json:"changed_at"`
+	Comment    string    `json:"comment,omitempty"`
 }
 
 // EmailTemplateData contains all data for email templates
