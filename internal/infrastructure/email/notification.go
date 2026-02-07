@@ -830,3 +830,28 @@ Best regards,
 
 	return nil
 }
+
+// SendManualNotification sends a manual notification email for a ticket
+func (s *NotificationService) SendManualNotification(ctx context.Context, toEmail, toName, ticketNumber, message string) error {
+	from := mail.NewEmail(s.fromName, s.fromEmail)
+	subject := fmt.Sprintf("Update on Your Service Request %s", ticketNumber)
+	to := mail.NewEmail(toName, toEmail)
+
+	plainText := fmt.Sprintf("Hello,\n\nYou have an update regarding your service request %s:\n\n%s\n\nBest regards,\nServQR Support Team", ticketNumber, message)
+
+	htmlContent := fmt.Sprintf("<html><body><h2>Service Request Update</h2><p>Ticket #%s</p><div style='background: #f9f9f9; padding: 20px; margin: 20px 0;'><pre style='white-space: pre-wrap;'>%s</pre></div><p>Best regards,<br>ServQR Support Team</p></body></html>", ticketNumber, message)
+
+	emailMsg := mail.NewSingleEmail(from, subject, to, plainText, htmlContent)
+	client := sendgrid.NewSendClient(s.apiKey)
+
+	response, err := client.Send(emailMsg)
+	if err != nil {
+		return fmt.Errorf("failed to send notification email: %%w", err)
+	}
+
+	if response.StatusCode >= 400 {
+		return fmt.Errorf("sendgrid error: status %%d, body: %%s", response.StatusCode, response.Body)
+	}
+
+	return nil
+}

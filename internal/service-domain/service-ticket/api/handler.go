@@ -13,6 +13,7 @@ import (
 	"github.com/aby-med/medical-platform/internal/service-domain/service-ticket/app"
 	"github.com/aby-med/medical-platform/internal/service-domain/service-ticket/domain"
 	"github.com/aby-med/medical-platform/internal/shared/audit"
+	emailInfra "github.com/aby-med/medical-platform/internal/infrastructure/email"
 	"github.com/go-chi/chi/v5"
     "github.com/jackc/pgx/v5/pgxpool"
 )
@@ -1157,15 +1158,49 @@ func (h *TicketHandler) NotifyCustomer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: Implement actual email sending when email service is ready
-	// For now, just log and return success
 	h.logger.Info("Manual notification requested",
 		slog.String("ticket_id", ticketID),
 		slog.String("email", req.Email),
 		slog.String("comment_preview", req.Comment[:min(50, len(req.Comment))]))
 
-	// TODO: Call notification service to send email
-	// err := h.notificationService.SendManualNotification(ctx, ticketID, req.Email, req.Comment)
+	// Get ticket details for the email
+	ticket, err := h.service.GetTicket(r.Context(), ticketID)
+	if err != nil {
+		h.respondError(w, http.StatusNotFound, "Ticket not found")
+		return
+	}
+
+	// Send email using SendGrid
+	sendgridAPIKey := os.Getenv("SENDGRID_API_KEY")
+	if sendgridAPIKey == "" {
+		h.logger.Warn("SENDGRID_API_KEY not configured, email not sent")
+		h.respondJSON(w, http.StatusOK, map[string]interface{}{
+			"success": true,
+			"message": "Notification logged (email service not configured)",
+			"email":   req.Email,
+		})
+		return
+	}
+
+	// Send email via SendGrid
+	emailService := emailInfra.NewNotificationService(
+		sendgridAPIKey,
+		os.Getenv("SENDGRID_FROM_EMAIL"),
+		os.Getenv("SENDGRID_FROM_NAME"),
+	)
+
+	err = emailService.SendManualNotification(r.Context(), req.Email, ticket.CustomerName, ticket.TicketNumber, req.Comment)
+	if err != nil {
+		h.logger.Error("Failed to send notification email",
+			slog.String("error", err.Error()),
+			slog.String("email", req.Email))
+		h.respondError(w, http.StatusInternalServerError, "Failed to send email: "+err.Error())
+		return
+	}
+
+	h.logger.Info("Manual notification email sent successfully",
+		slog.String("ticket_id", ticketID),
+		slog.String("email", req.Email))
 
 	h.respondJSON(w, http.StatusOK, map[string]interface{}{
 		"success": true,
