@@ -378,6 +378,45 @@ export default function TicketDetailPage() {
             </div>
           </div>
 
+          {/* Customer Contact Information */}
+          <div className="bg-blue-50 border border-blue-200 rounded p-4">
+            <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
+              <User className="h-4 w-4 text-blue-600" />
+              Customer Contact
+            </h2>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center gap-2">
+                <span className="text-gray-600 w-20">Name:</span>
+                <span className="font-medium">{ticket.customer_name}</span>
+              </div>
+              {ticket.customer_email && (
+                <div className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 text-gray-400" />
+                  <span className="text-gray-600 w-20">Email:</span>
+                  <a href={`mailto:${ticket.customer_email}`} className="font-medium text-blue-600 hover:underline">
+                    {ticket.customer_email}
+                  </a>
+                </div>
+              )}
+              <div className="flex items-center gap-2">
+                <span className="text-gray-400">📱</span>
+                <span className="text-gray-600 w-20">Phone:</span>
+                <a href={`tel:${ticket.customer_phone}`} className="font-medium text-blue-600 hover:underline">
+                  {ticket.customer_phone}
+                </a>
+              </div>
+              {ticket.customer_whatsapp && (
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-400">💬</span>
+                  <span className="text-gray-600 w-20">WhatsApp:</span>
+                  <a href={`https://wa.me/${ticket.customer_whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="font-medium text-green-600 hover:underline">
+                    {ticket.customer_whatsapp}
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* AI Diagnosis Section */}
           {diagnosisHistory && diagnosisHistory.length > 0 && (
             <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-200 rounded-lg p-5 shadow-sm">
@@ -822,7 +861,7 @@ export default function TicketDetailPage() {
         <SendNotificationModal
           ticketId={ticket.id}
           ticketNumber={ticket.ticket_number}
-          customerEmail={ticket.customer_phone || ''}  // TODO: Add customer_email field to ServiceTicket
+          customerEmail={ticket.customer_email || ''}
           customerPhone={ticket.customer_phone}
           ticket={ticket}
           onClose={() => setShowNotificationModal(false)}
