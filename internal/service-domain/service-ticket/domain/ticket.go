@@ -55,9 +55,10 @@ type ServiceTicket struct {
 	QRCode        string `json:"qr_code,omitempty"`
 	SerialNumber  string `json:"serial_number"`
 	EquipmentName string `json:"equipment_name"`
-	CustomerID    string `json:"customer_id"`
-	CustomerName  string `json:"customer_name"`
-	CustomerPhone string `json:"customer_phone"`
+	CustomerID       string `json:"customer_id"`
+	CustomerName     string `json:"customer_name"`
+	CustomerPhone    string `json:"customer_phone"`
+	CustomerEmail    string `json:"customer_email,omitempty"`
 	CustomerWhatsApp string `json:"customer_whatsapp,omitempty"`
 	
 	// Issue details
