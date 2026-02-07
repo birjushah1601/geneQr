@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Ticket Created</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #2563eb; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #f9fafb; padding: 30px; border-left: 1px solid #e5e7eb; border-right: 1px solid #e5e7eb; }
+        .details { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #e5e7eb; }
+        .detail-row { padding: 10px 0; border-bottom: 1px solid #e5e7eb; }
+        .detail-label { font-weight: bold; color: #6b7280; }
+        .detail-value { color: #111827; }
+        .button { display: inline-block; background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+        .footer { background: #f3f4f6; padding: 20px; text-align: center; font-size: 12px; color: #6b7280; border-radius: 0 0 8px 8px; border: 1px solid #e5e7eb; }
+        .priority-high { color: #dc2626; font-weight: bold; }
+        .priority-medium { color: #f59e0b; font-weight: bold; }
+        .priority-low { color: #10b981; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✓ Service Request Created</h1>
+        </div>
+        
+        <div class="content">
+            <p>Dear {{.CustomerName}},</p>
+            
+            <p>Your service request has been successfully created and assigned ticket number <strong>{{.TicketNumber}}</strong>.</p>
+            
+            <div class="details">
+                <div class="detail-row">
+                    <span class="detail-label">Ticket Number:</span>
+                    <span class="detail-value">{{.TicketNumber}}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Equipment:</span>
+                    <span class="detail-value">{{.EquipmentName}}</span>
+                </div>
+                {{if .SerialNumber}}
+                <div class="detail-row">
+                    <span class="detail-label">Serial Number:</span>
+                    <span class="detail-value">{{.SerialNumber}}</span>
+                </div>
+                {{end}}
+                <div class="detail-row">
+                    <span class="detail-label">Issue:</span>
+                    <span class="detail-value">{{.IssueDescription}}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Priority:</span>
+                    <span class="detail-value priority-{{.Priority}}">{{.Priority | ToUpper}}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Status:</span>
+                    <span class="detail-value">{{.Status}}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Created:</span>
+                    <span class="detail-value">{{.CreatedAt | FormatDate}}</span>
+                </div>
+            </div>
+            
+            {{if .TrackingURL}}
+            <div style="text-align: center;">
+                <a href="{{.TrackingURL}}" class="button">Track Your Ticket</a>
+            </div>
+            <p style="font-size: 12px; color: #6b7280;">
+                Or copy this link: <a href="{{.TrackingURL}}">{{.TrackingURL}}</a>
+            </p>
+            {{end}}
+            
+            <p>We will keep you updated on the progress of your service request.</p>
+        </div>
+        
+        <div class="footer">
+            <p><strong>ServQR Support Team</strong></p>
+            <p>This is an automated message. Please do not reply to this email.</p>
+            {{if .TrackingURL}}
+            <p>Use your tracking link to view real-time updates.</p>
+            {{end}}
+        </div>
+    </div>
+</body>
+</html>

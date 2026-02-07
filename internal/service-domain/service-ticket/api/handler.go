@@ -17,10 +17,11 @@ import (
 
 // TicketHandler handles HTTP requests for service tickets
 type TicketHandler struct {
-	service     *app.TicketService
-	logger      *slog.Logger
-    pool        *pgxpool.Pool
-	auditLogger *audit.AuditLogger
+	service             *app.TicketService
+	notificationService *app.NotificationService
+	logger              *slog.Logger
+    pool                *pgxpool.Pool
+	auditLogger         *audit.AuditLogger
 }
 
 // NewTicketHandler creates a new ticket HTTP handler
@@ -31,6 +32,11 @@ func NewTicketHandler(service *app.TicketService, logger *slog.Logger, pool *pgx
         pool:        pool,
 		auditLogger: auditLogger,
 	}
+}
+
+// SetNotificationService sets the notification service (called after initialization)
+func (h *TicketHandler) SetNotificationService(notificationService *app.NotificationService) {
+	h.notificationService = notificationService
 }
 
 // CreateTicket handles POST /tickets
@@ -1046,4 +1052,81 @@ func (h *TicketHandler) UpdateTicketPriority(w http.ResponseWriter, r *http.Requ
 		"new_priority": req.Priority,
 		"message":      "Priority updated successfully",
 	})
+}
+
+// SendEmailNotification handles POST /tickets/:id/send-notification
+func (h *TicketHandler) SendEmailNotification(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	ticketID := chi.URLParam(r, "id")
+
+	if h.notificationService == nil {
+		h.respondError(w, http.StatusServiceUnavailable, "Notification service not available")
+		return
+	}
+
+	var req struct {
+		IncludeComments bool `json:"include_comments"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		req.IncludeComments = true // Default to including comments
+	}
+
+	err := h.notificationService.SendManualEmail(ctx, ticketID, req.IncludeComments)
+	if err != nil {
+		h.logger.Error("Failed to send email notification",
+			slog.String("ticket_id", ticketID),
+			slog.String("error", err.Error()))
+		h.respondError(w, http.StatusInternalServerError, "Failed to send email: "+err.Error())
+		return
+	}
+
+	// Get ticket to return recipient info
+	ticket, _ := h.service.GetTicketByID(ctx, ticketID)
+	recipientEmail := ""
+	if ticket != nil {
+		recipientEmail = ticket.CustomerEmail
+	}
+
+	h.logger.Info("Email notification sent",
+		slog.String("ticket_id", ticketID),
+		slog.String("recipient", recipientEmail))
+
+	h.respondJSON(w, http.StatusOK, map[string]interface{}{
+		"sent":      true,
+		"recipient": recipientEmail,
+		"message":   "Email notification sent successfully",
+	})
+}
+
+// GetPublicTicket handles GET /track/:token
+func (h *TicketHandler) GetPublicTicket(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	token := chi.URLParam(r, "token")
+
+	if h.notificationService == nil {
+		h.respondError(w, http.StatusServiceUnavailable, "Tracking service not available")
+		return
+	}
+
+	publicView, err := h.notificationService.GetPublicTicketView(ctx, token)
+	if err != nil {
+		h.logger.Warn("Invalid tracking token access attempt",
+			slog.String("token", token[:min(8, len(token))]), // Log first 8 chars only
+			slog.String("error", err.Error()))
+		h.respondError(w, http.StatusNotFound, "Invalid or expired tracking link")
+		return
+	}
+
+	h.logger.Info("Public ticket viewed",
+		slog.String("ticket_number", publicView.TicketNumber),
+		slog.String("token", token[:min(8, len(token))]))
+
+	h.respondJSON(w, http.StatusOK, publicView)
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
