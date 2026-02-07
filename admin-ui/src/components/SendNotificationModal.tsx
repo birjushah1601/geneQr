@@ -24,7 +24,7 @@ export function SendNotificationModal({
   onClose, 
   onSuccess 
 }: SendNotificationModalProps) {
-  const [email, setEmail] = useState(customerEmail || customerPhone || "");
+  const [email, setEmail] = useState(customerEmail || "");
   const [comment, setComment] = useState("");
   const [loadingComments, setLoadingComments] = useState(true);
   const [sending, setSending] = useState(false);
@@ -151,15 +151,25 @@ export function SendNotificationModal({
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Recipient Email
+                  {!customerEmail && customerPhone && (
+                    <span className="ml-2 text-xs text-amber-600">
+                      (No email on record - Phone: {customerPhone})
+                    </span>
+                  )}
                 </label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="engineer@example.com"
+                  placeholder={customerEmail ? customerEmail : "Enter customer email address"}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   disabled={sending}
                 />
+                {!customerEmail && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    This ticket was created before email field was added. Please enter customer's email manually.
+                  </p>
+                )}
               </div>
 
               {/* Comment Input */}
