@@ -93,8 +93,10 @@ func (s *NotificationService) GetOrCreateTrackingToken(ticketID string) (string,
 	}
 	tokenStr := hex.EncodeToString(tokenBytes)
 
-	// Get expiry days from env or default to 30
-	expiryDays := 30
+	// Set expiry to 5 years in the future (effectively permanent for ticket tracking)
+	// Tokens should remain valid as long as the ticket exists
+	// Customer may need to reference it months/years later for warranty/records
+	expiryDays := 365 * 5 // 5 years
 	if envDays := os.Getenv("TRACKING_TOKEN_EXPIRY_DAYS"); envDays != "" {
 		if days, err := strconv.Atoi(envDays); err == nil {
 			expiryDays = days

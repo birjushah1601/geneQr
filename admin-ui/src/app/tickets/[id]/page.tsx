@@ -39,7 +39,7 @@ export default function TicketDetailPage() {
 
   const fetchTicket = async () => {
     try {
-      const response = await fetch(`/api/v1/tickets/${ticketId}`, {
+      const response = await fetch(`http://localhost:8081/api/v1/tickets/${ticketId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
@@ -67,7 +67,7 @@ export default function TicketDetailPage() {
 
     setSendingEmail(true);
     try {
-      const response = await fetch(`/api/v1/tickets/${ticketId}/send-notification`, {
+      const response = await fetch(`http://localhost:8081/api/v1/tickets/${ticketId}/send-notification`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
