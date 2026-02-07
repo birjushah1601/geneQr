@@ -86,6 +86,9 @@ func (s *TicketService) CreateTicket(ctx context.Context, req CreateTicketReques
 	ticket.TicketNumber = ticketDomain.GenerateTicketNumber()
 	ticket.CustomerID = req.CustomerID
 	ticket.CustomerPhone = req.CustomerPhone
+	if req.CustomerEmail != "" {
+		ticket.CustomerEmail = &req.CustomerEmail
+	}
 	ticket.CustomerWhatsApp = req.CustomerWhatsApp
 	ticket.IssueCategory = req.IssueCategory
 	ticket.Priority = req.Priority
@@ -707,6 +710,7 @@ type CreateTicketRequest struct {
 	CustomerID       string                      `json:"customer_id"`
 	CustomerName     string                      `json:"customer_name"`
 	CustomerPhone    string                      `json:"customer_phone"`
+	CustomerEmail    string                      `json:"customer_email"`
 	CustomerWhatsApp string                      `json:"customer_whatsapp"`
 	IssueCategory    string                      `json:"issue_category"`
 	IssueDescription string                      `json:"issue_description"`
