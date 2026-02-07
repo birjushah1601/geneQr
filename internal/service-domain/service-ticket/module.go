@@ -89,6 +89,7 @@ func (m *Module) Initialize(ctx context.Context) error {
 	// Create repositories
 	ticketRepo := infra.NewTicketRepository(pool)
 	assignmentRepo := infra.NewAssignmentRepository(pool)
+	notificationRepo := infra.NewNotificationRepository(pool)
 	
 	// Create equipment repository for WhatsApp integration
 	equipmentRepo := equipmentInfra.NewEquipmentRepository(pool)
@@ -97,6 +98,19 @@ func (m *Module) Initialize(ctx context.Context) error {
     policyRepo := infra.NewPolicyRepository(pool)
     eventRepo := infra.NewEventRepository(pool)
     ticketService := app.NewTicketService(ticketRepo, equipmentRepo, policyRepo, eventRepo, m.logger)
+	
+	// Create notification service
+	// TODO: Replace nil with actual email service when configured
+	notificationService := app.NewNotificationService(
+		ticketRepo,
+		notificationRepo,
+		nil, // emailService - to be added when SendGrid is configured
+		m.logger,
+		&app.NotificationConfig{
+			BaseURL:         m.config.BaseURL,
+			TokenExpiryDays: 30,
+		},
+	)
 
 	// Create assignment service
 	assignmentService := app.NewAssignmentService(assignmentRepo, ticketRepo, pool, m.logger)
@@ -115,6 +129,9 @@ func (m *Module) Initialize(ctx context.Context) error {
 	
     // Create HTTP handlers (with audit logger)
     m.ticketHandler = api.NewTicketHandler(ticketService, m.logger, pool, m.auditLogger)
+	m.ticketHandler.SetNotificationService(notificationService)
+	m.logger.Info("Notification service wired to ticket handler")
+	
 	m.assignmentHandler = api.NewAssignmentHandler(assignmentService, m.logger)
 	m.multiModelAssignmentHandler = api.NewMultiModelAssignmentHandler(multiModelService, m.logger)
 
@@ -225,7 +242,13 @@ func (m *Module) MountRoutes(r chi.Router) {
 		r.Get("/{id}/comments", m.ticketHandler.GetComments)       // Get comments
 		r.Delete("/{id}/comments/{commentId}", m.ticketHandler.DeleteComment) // Delete comment
 		r.Get("/{id}/history", m.ticketHandler.GetStatusHistory)   // Get status history
+		
+		// Notification routes
+		r.Post("/{id}/send-notification", m.ticketHandler.SendEmailNotification) // Send manual email
 	})
+	
+	// Public tracking route (no auth required)
+	r.Get("/track/{token}", m.ticketHandler.GetPublicTicket)
 
 	// Engineer management routes
 	r.Route("/engineers", func(r chi.Router) {
