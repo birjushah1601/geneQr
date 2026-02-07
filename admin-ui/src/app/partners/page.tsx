@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/DashboardLayout';
 import { partnersApi, Partner, Organization } from '@/lib/api/partners';
-import { manufacturersApi } from '@/lib/api/manufacturers';
+import { organizationsApi } from '@/lib/api/organizations';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -54,11 +54,16 @@ export default function PartnersPage() {
   const loadManufacturers = async () => {
     try {
       setLoadingManufacturers(true);
-      const data = await manufacturersApi.list({ page: 1, page_size: 100 });
-      setManufacturers(data.items || []);
+      // Filter to only show manufacturer organizations
+      const data = await organizationsApi.list({ 
+        type: 'manufacturer',
+        limit: 100,
+        status: 'active'
+      });
+      setManufacturers(data || []);
       // Auto-select first manufacturer if available
-      if (data.items && data.items.length > 0 && !selectedManufacturerId) {
-        setSelectedManufacturerId(data.items[0].id);
+      if (data && data.length > 0 && !selectedManufacturerId) {
+        setSelectedManufacturerId(data[0].id);
       }
     } catch (err: any) {
       console.error('Failed to load manufacturers:', err);
