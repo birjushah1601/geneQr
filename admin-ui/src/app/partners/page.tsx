@@ -150,13 +150,16 @@ export default function PartnersPage() {
                 : 'Manage your channel partners and sub-dealers for service coverage'}
             </p>
           </div>
-          <Button onClick={() => {
-            setShowAddModal(true);
-            loadAvailablePartners('');
-          }}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Partner
-          </Button>
+          {/* Show Add Partner button only for manufacturer admins (system admins see it after manufacturer selector) */}
+          {!isSystemAdmin && (
+            <Button onClick={() => {
+              setShowAddModal(true);
+              loadAvailablePartners('');
+            }}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Partner
+            </Button>
+          )}
         </div>
 
         {error && (
@@ -205,6 +208,19 @@ export default function PartnersPage() {
               )}
             </CardContent>
           </Card>
+        )}
+
+        {/* Add Partner button for system admin (shown after manufacturer selection) */}
+        {isSystemAdmin && manufacturerId && (
+          <div className="flex justify-end">
+            <Button onClick={() => {
+              setShowAddModal(true);
+              loadAvailablePartners('');
+            }}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Partner to {manufacturers.find(m => m.id === selectedManufacturerId)?.name || 'Selected Manufacturer'}
+            </Button>
+          </div>
         )}
 
         {/* Show message if system admin hasn't selected manufacturer */}
