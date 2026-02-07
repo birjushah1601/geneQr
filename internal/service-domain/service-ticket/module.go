@@ -313,3 +313,8 @@ func (m *Module) Health(ctx context.Context) error {
 func (m *Module) Name() string {
 	return "service-ticket"
 }
+
+// GetTicketHandler returns the ticket handler (for public routes)
+func (m *Module) GetTicketHandler() *api.TicketHandler {
+	return m.ticketHandler
+}

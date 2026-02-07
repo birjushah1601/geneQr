@@ -665,6 +665,12 @@ func (h *AuthHandler) AuthMiddleware(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
+		
+		// Allow public ticket tracking (no auth required - uses secure tokens)
+		if strings.HasPrefix(r.URL.Path, "/api/v1/track/") {
+			next.ServeHTTP(w, r)
+			return
+		}
 
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
