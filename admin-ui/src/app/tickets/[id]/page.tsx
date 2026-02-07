@@ -822,6 +822,9 @@ export default function TicketDetailPage() {
         <SendNotificationModal
           ticketId={ticket.id}
           ticketNumber={ticket.ticket_number}
+          customerEmail={ticket.customer_phone || ''}  // TODO: Add customer_email field to ServiceTicket
+          customerPhone={ticket.customer_phone}
+          ticket={ticket}
           onClose={() => setShowNotificationModal(false)}
           onSuccess={() => {
             setShowNotificationModal(false);
