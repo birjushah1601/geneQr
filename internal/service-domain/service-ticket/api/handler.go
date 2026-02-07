@@ -61,7 +61,10 @@ func (h *TicketHandler) CreateTicket(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Info("✅ Request decoded successfully",
 		slog.String("equipment_id", req.EquipmentID),
-		slog.String("qr_code", req.QRCode))
+		slog.String("qr_code", req.QRCode),
+		slog.String("customer_phone", req.CustomerPhone),
+		slog.String("customer_email", req.CustomerEmail),
+		slog.String("customer_name", req.CustomerName))
 
 	ticket, err := h.service.CreateTicket(ctx, req)
 	if err != nil {

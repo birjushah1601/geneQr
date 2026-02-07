@@ -70,7 +70,9 @@ func NewTicketService(
 func (s *TicketService) CreateTicket(ctx context.Context, req CreateTicketRequest) (*ticketDomain.ServiceTicket, error) {
 	s.logger.Info("Creating service ticket",
 		slog.String("equipment_id", req.EquipmentID),
-		slog.String("customer_name", req.CustomerName))
+		slog.String("customer_name", req.CustomerName),
+		slog.String("customer_phone", req.CustomerPhone),
+		slog.String("customer_email", req.CustomerEmail))
 
 	// Create ticket
 	ticket := ticketDomain.NewServiceTicket(
@@ -88,6 +90,12 @@ func (s *TicketService) CreateTicket(ctx context.Context, req CreateTicketReques
 	ticket.CustomerPhone = req.CustomerPhone
 	if req.CustomerEmail != "" {
 		ticket.CustomerEmail = &req.CustomerEmail
+		s.logger.Info("✅ Setting CustomerEmail on ticket",
+			slog.String("email", req.CustomerEmail),
+			slog.String("ticket_id", ticket.ID))
+	} else {
+		s.logger.Warn("⚠️ CustomerEmail is empty in request",
+			slog.String("ticket_id", ticket.ID))
 	}
 	ticket.CustomerWhatsApp = req.CustomerWhatsApp
 	ticket.IssueCategory = req.IssueCategory
