@@ -304,6 +304,13 @@ export default function TicketDetailPage() {
               <Brain className="h-4 w-4" />
               AI Diagnosis
             </button>
+            <button
+              onClick={() => setShowNotificationModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+            >
+              <Mail className="h-4 w-4" />
+              Send Notification
+            </button>
             <Link href="/tickets" className="text-sm text-blue-600 hover:underline">All tickets</Link>
           </div>
         </div>
@@ -809,6 +816,20 @@ export default function TicketDetailPage() {
         isLoading={aiAnalyzing}
         onTriggerAnalysis={triggerAIAnalysis}
       />
+
+      {/* Send Notification Modal */}
+      {showNotificationModal && (
+        <SendNotificationModal
+          ticketId={ticket.id}
+          ticketNumber={ticket.ticket_number}
+          onClose={() => setShowNotificationModal(false)}
+          onSuccess={() => {
+            setShowNotificationModal(false);
+            refetch();
+          }}
+        />
+      )}
+
       {/* Engineer Reassignment - Multi-Model Assignment */}
       {showReassignMultiModel && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">

@@ -244,7 +244,8 @@ func (m *Module) MountRoutes(r chi.Router) {
 		r.Get("/{id}/history", m.ticketHandler.GetStatusHistory)   // Get status history
 		
 		// Notification routes
-		r.Post("/{id}/send-notification", m.ticketHandler.SendEmailNotification) // Send manual email
+		r.Post("/{id}/send-notification", m.ticketHandler.SendEmailNotification) // Send manual email (auto)
+		r.Post("/{id}/notify", m.ticketHandler.NotifyCustomer)                   // Manual notification by admin
 	})
 	
 	// Public tracking route (no auth required)

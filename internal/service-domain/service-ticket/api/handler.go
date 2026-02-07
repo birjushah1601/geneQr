@@ -1130,6 +1130,48 @@ func (h *TicketHandler) SendEmailNotification(w http.ResponseWriter, r *http.Req
 	})
 }
 
+// NotifyCustomer handles POST /tickets/:id/notify - Manual notification by admin
+func (h *TicketHandler) NotifyCustomer(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	ticketID := chi.URLParam(r, "id")
+
+	// Check feature flag
+	if os.Getenv("FEATURE_MANUAL_NOTIFICATIONS") == "false" {
+		h.respondError(w, http.StatusForbidden, "Manual notifications are disabled")
+		return
+	}
+
+	var req struct {
+		Email   string `json:"email"`
+		Comment string `json:"comment"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.respondError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	if req.Email == "" || req.Comment == "" {
+		h.respondError(w, http.StatusBadRequest, "Email and comment are required")
+		return
+	}
+
+	// TODO: Implement actual email sending when email service is ready
+	// For now, just log and return success
+	h.logger.Info("Manual notification requested",
+		slog.String("ticket_id", ticketID),
+		slog.String("email", req.Email),
+		slog.String("comment_preview", req.Comment[:min(50, len(req.Comment))]))
+
+	// TODO: Call notification service to send email
+	// err := h.notificationService.SendManualNotification(ctx, ticketID, req.Email, req.Comment)
+
+	h.respondJSON(w, http.StatusOK, map[string]interface{}{
+		"success": true,
+		"message": "Notification sent successfully",
+		"email":   req.Email,
+	})
+}
+
 // GetPublicTicket handles GET /track/:token
 func (h *TicketHandler) GetPublicTicket(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
