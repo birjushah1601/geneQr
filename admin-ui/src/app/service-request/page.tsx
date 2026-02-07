@@ -20,6 +20,8 @@ function ServiceRequestPageInner() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [createdTicket, setCreatedTicket] = useState<any>(null);
+  const [trackingUrl, setTrackingUrl] = useState<string>('');
   
   // AI Diagnosis state
   const [diagnosis, setDiagnosis] = useState<any>(null);
@@ -184,6 +186,13 @@ function ServiceRequestPageInner() {
       const created = await (await import('@/lib/api/tickets')).ticketsApi.create(payload as any);
       console.log('Ticket created', created);
       
+      // Extract tracking URL from response
+      const ticketData = (created as any).ticket || created;
+      const trackingUrlFromResponse = (created as any).tracking_url || '';
+      
+      setCreatedTicket(ticketData);
+      setTrackingUrl(trackingUrlFromResponse);
+      
       // Upload attachments if any files selected
       if (selectedFiles.length > 0) {
         setUploadingFiles(true);
@@ -191,7 +200,7 @@ function ServiceRequestPageInner() {
           for (const file of selectedFiles) {
             await attachmentsApi.upload({
               file: file,
-              ticketId: (created as any).id || (created as any).ticket_id,
+              ticketId: ticketData.id || ticketData.ticket_id,
               category: 'issue_photo',
               source: 'web_upload'
             });
@@ -250,25 +259,85 @@ function ServiceRequestPageInner() {
   if (success) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6">
+        <div className="max-w-2xl w-full bg-white rounded-lg shadow-lg p-6">
           <div className="flex items-center gap-3 text-green-600 mb-4">
-            <CheckCircle className="h-6 w-6" />
-            <h2 className="text-lg font-semibold">Service Request Created!</h2>
+            <CheckCircle className="h-8 w-8" />
+            <h2 className="text-2xl font-bold">Service Request Created!</h2>
           </div>
+          
           <p className="text-gray-700 mb-6">
             Your service request has been submitted successfully. Our team will contact you soon.
           </p>
-          <div className="bg-gray-50 p-4 rounded-md mb-4">
-            <p className="text-sm text-gray-600 mb-1">
-              <strong>Equipment:</strong> {(equipment as any).equipment_name || (equipment as any).name || 'N/A'}
-            </p>
-            <p className="text-sm text-gray-600">
-              <strong>Serial Number:</strong> {(equipment as any).serial_number || (equipment as any).serialNumber || 'N/A'}
-            </p>
-          </div>
+          
+          {createdTicket && (
+            <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 mb-6">
+              <p className="text-sm text-blue-700 font-medium mb-1">Ticket Number</p>
+              <p className="text-2xl font-bold text-blue-900 mb-3">{createdTicket.ticket_number}</p>
+              
+              <p className="text-sm text-blue-600 mb-1">
+                <strong>Equipment:</strong> {(equipment as any).equipment_name || (equipment as any).name || 'N/A'}
+              </p>
+              <p className="text-sm text-blue-600">
+                <strong>Serial Number:</strong> {(equipment as any).serial_number || (equipment as any).serialNumber || 'N/A'}
+              </p>
+            </div>
+          )}
+          
+          {trackingUrl && (
+            <div className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-200 rounded-lg p-5 mb-6">
+              <div className="flex items-start gap-3 mb-3">
+                <Package className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Track Your Service Request
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-3">
+                    Use this link to check the status of your service request anytime. 
+                    Bookmark it or share it with your team!
+                  </p>
+                  
+                  <div className="bg-white border border-gray-300 rounded-md p-3 mb-3">
+                    <a 
+                      href={trackingUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 break-all text-sm font-mono"
+                    >
+                      {trackingUrl}
+                    </a>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(trackingUrl);
+                        alert('Tracking link copied to clipboard!');
+                      }}
+                      className="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50 transition-colors text-sm"
+                    >
+                      📋 Copy Link
+                    </button>
+                    <a
+                      href={trackingUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm"
+                    >
+                      🔍 View Status
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <button
-            onClick={() => setSuccess(false)}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
+            onClick={() => {
+              setSuccess(false);
+              setCreatedTicket(null);
+              setTrackingUrl('');
+            }}
+            className="w-full bg-gray-600 text-white py-3 px-4 rounded-md hover:bg-gray-700 transition-colors font-medium"
           >
             Create Another Request
           </button>

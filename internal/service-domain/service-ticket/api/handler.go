@@ -3,8 +3,10 @@
 import (
     "database/sql"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -138,6 +140,29 @@ func (h *TicketHandler) CreateTicket(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Generate tracking token for the ticket
+	var trackingToken string
+	var trackingURL string
+	if h.notificationService != nil {
+		token, err := h.notificationService.GetOrCreateTrackingToken(ticket.ID)
+		if err != nil {
+			h.logger.Warn("Failed to create tracking token",
+				slog.String("ticket_id", ticket.ID),
+				slog.String("error", err.Error()))
+		} else {
+			trackingToken = token
+			baseURL := "http://localhost:3000" // TODO: Get from config
+			if envURL := os.Getenv("FRONTEND_BASE_URL"); envURL != "" {
+				baseURL = envURL
+			}
+			trackingURL = fmt.Sprintf("%s/track/%s", baseURL, trackingToken)
+			
+			h.logger.Info("Tracking token generated",
+				slog.String("ticket_id", ticket.ID),
+				slog.String("token", trackingToken[:8]+"..."))
+		}
+	}
+
 	// Log successful ticket creation to audit
 	if h.auditLogger != nil {
 		durationMs := int(time.Since(startTime).Milliseconds())
@@ -157,6 +182,9 @@ func (h *TicketHandler) CreateTicket(w http.ResponseWriter, r *http.Request) {
 		if req.CustomerPhone != "" {
 			metadata["customer_phone"] = req.CustomerPhone
 		}
+		if trackingToken != "" {
+			metadata["tracking_token_generated"] = true
+		}
 
 		h.auditLogger.LogAsync(ctx, &audit.AuditEvent{
 			EventType:     "ticket_created",
@@ -175,7 +203,14 @@ func (h *TicketHandler) CreateTicket(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	h.respondJSON(w, http.StatusCreated, ticket)
+	// Build response with ticket and tracking information
+	response := map[string]interface{}{
+		"ticket":        ticket,
+		"tracking_url":  trackingURL,
+		"tracking_token": trackingToken,
+	}
+
+	h.respondJSON(w, http.StatusCreated, response)
 }
 
 // Helper function
