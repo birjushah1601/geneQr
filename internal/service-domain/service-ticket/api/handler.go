@@ -1132,7 +1132,6 @@ func (h *TicketHandler) SendEmailNotification(w http.ResponseWriter, r *http.Req
 
 // NotifyCustomer handles POST /tickets/:id/notify - Manual notification by admin
 func (h *TicketHandler) NotifyCustomer(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
 	ticketID := chi.URLParam(r, "id")
 
 	// Check feature flag
