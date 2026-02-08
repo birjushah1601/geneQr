@@ -40,6 +40,23 @@ function PriorityBadge({ priority, onChange }: { priority: TicketPriority; onCha
     critical: { bg: "bg-red-100", text: "text-red-700" },
   }[priority];
 
+  // If onChange is provided, make it a dropdown
+  if (onChange) {
+    return (
+      <select
+        value={priority}
+        onChange={(e) => onChange(e.target.value as TicketPriority)}
+        className={`${config.bg} ${config.text} px-2 py-1 rounded text-xs font-semibold uppercase cursor-pointer hover:opacity-80 border-0 outline-none`}
+      >
+        <option value="low">LOW</option>
+        <option value="medium">MEDIUM</option>
+        <option value="high">HIGH</option>
+        <option value="critical">CRITICAL</option>
+      </select>
+    );
+  }
+
+  // Otherwise just display
   return (
     <span className={`${config.bg} ${config.text} px-2 py-1 rounded text-xs font-semibold uppercase`}>
       {priority}

@@ -342,6 +342,18 @@ export default function TicketDetailPage() {
     else if (ticket.status === "resolved" && newStatus === "in_progress") start.mutate(); // Reopen
   };
 
+  const handlePriorityChange = async (newPriority: TicketPriority) => {
+    if (confirm(`Change priority to ${newPriority.toUpperCase()}?`)) {
+      try {
+        await apiClient.patch(`/v1/tickets/${id}/priority`, { priority: newPriority });
+        refetch();
+      } catch (err) {
+        alert('Failed to update priority.');
+        console.error('Priority update error:', err);
+      }
+    }
+  };
+
   if (isLoading || !ticket) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -360,6 +372,7 @@ export default function TicketDetailPage() {
           onSendNotification={() => setShowNotificationModal(true)}
           onReassign={() => setShowReassignMultiModel(true)}
           onAIDiagnosis={() => setShowDiagnosisModal(true)}
+          onPriorityChange={handlePriorityChange}
         />
       </div>
 
@@ -463,11 +476,19 @@ export default function TicketDetailPage() {
                 const completedMilestones = timeline.milestones.filter(m => m.status === 'completed').length;
                 const totalMilestones = timeline.milestones.length;
                 
-                // Use progress_percentage from timeline if available, otherwise calculate
-                const progressPercentage = timeline.progress_percentage ?? 
-                  (totalMilestones > 0 ? Math.round((completedMilestones / totalMilestones) * 100) : 0);
+                // Calculate progress from actual milestone completion (more accurate)
+                const progressPercentage = totalMilestones > 0 
+                  ? Math.round((completedMilestones / totalMilestones) * 100) 
+                  : 0;
                 
                 const currentMilestone = timeline.milestones.find(m => m.is_current);
+                
+                console.log('Progress calculation:', { 
+                  completedMilestones, 
+                  totalMilestones, 
+                  progressPercentage,
+                  backendProgress: timeline.progress_percentage 
+                });
                 
                 // Get target completion date - try all possible sources
                 const targetDate = timeline.estimated_resolution;
