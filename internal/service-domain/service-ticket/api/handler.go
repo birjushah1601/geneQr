@@ -684,7 +684,10 @@ func (h *TicketHandler) GetTimeline(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Apply any admin overrides from database
+	// Convert to public view first
+	publicTimeline := h.timelineService.ConvertToPublicTimeline(timeline, ticket)
+	
+	// Try to apply any admin overrides from database (if columns exist)
 	var timelineOverrides []byte
 	var partsOverride []byte
 	err = h.pool.QueryRow(ctx, 
@@ -695,14 +698,11 @@ func (h *TicketHandler) GetTimeline(w http.ResponseWriter, r *http.Request) {
 		// Apply milestone overrides if they exist
 		if len(timelineOverrides) > 0 {
 			var customMilestones []domain.PublicMilestone
-			if err := json.Unmarshal(timelineOverrides, &customMilestones); err == nil {
-				// Replace auto-generated milestones with custom ones
-				h.logger.Info("Applying custom milestone overrides", 
+			if err := json.Unmarshal(timelineOverrides, &customMilestones); err == nil && len(customMilestones) > 0 {
+				publicTimeline.Milestones = customMilestones
+				h.logger.Info("Applied custom milestones to public timeline",
 					slog.String("ticket_id", id),
-					slog.Int("custom_count", len(customMilestones)))
-				
-				// We need to convert PublicMilestone back to internal TicketMilestone for the timeline
-				// For now, we'll apply overrides at the public timeline level
+					slog.Int("count", len(customMilestones)))
 			}
 		}
 		
@@ -712,24 +712,18 @@ func (h *TicketHandler) GetTimeline(w http.ResponseWriter, r *http.Request) {
 			if err := json.Unmarshal(partsOverride, &partsData); err == nil {
 				if etaStr, ok := partsData["eta"].(string); ok {
 					if eta, err := time.Parse(time.RFC3339, etaStr); err == nil {
-						timeline.PartsETA = &eta
+						publicTimeline.PartsETA = &eta
 					}
+				}
+				if status, ok := partsData["status"].(string); ok {
+					publicTimeline.PartsStatus = status
 				}
 			}
 		}
-	}
-
-	// Convert to public view
-	publicTimeline := h.timelineService.ConvertToPublicTimeline(timeline, ticket)
-	
-	// Apply milestone overrides at public level
-	if len(timelineOverrides) > 0 {
-		var customMilestones []domain.PublicMilestone
-		if err := json.Unmarshal(timelineOverrides, &customMilestones); err == nil && len(customMilestones) > 0 {
-			publicTimeline.Milestones = customMilestones
-			h.logger.Info("Applied custom milestones to public timeline",
-				slog.Int("count", len(customMilestones)))
-		}
+	} else {
+		// Column might not exist yet - just log and continue
+		h.logger.Debug("Timeline overrides not available (migration may not be applied yet)",
+			slog.String("ticket_id", id))
 	}
 
 	h.respondJSON(w, http.StatusOK, publicTimeline)
