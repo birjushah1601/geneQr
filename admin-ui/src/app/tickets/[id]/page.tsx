@@ -541,7 +541,7 @@ export default function TicketDetailPage() {
           <TicketTabbedContent
             commentsCount={0}
             partsCount={parts?.parts?.length || 0}
-            attachmentsCount={attachmentList?.attachments?.length || 0}
+            attachmentsCount={attachmentList?.data?.items?.length || 0}
             comments={
               <div>
                 <CommentBox ticketId={id} onAdded={() => qc.invalidateQueries({ queryKey: ["ticket", id, "comments"] })} />
@@ -616,21 +616,21 @@ export default function TicketDetailPage() {
                 </div>
                 {loadingAttachments ? (
                   <div className="text-center py-4"><Loader2 className="h-6 w-6 animate-spin mx-auto text-gray-400" /></div>
-                ) : attachmentList?.attachments?.length ? (
+                ) : attachmentList?.data?.items?.length ? (
                   <div className="space-y-2">
-                    {attachmentList.attachments.map((att) => (
+                    {attachmentList.data.items.map((att: any) => (
                       <div key={att.id} className="flex items-center justify-between p-3 bg-gray-50 rounded border border-gray-200 hover:bg-gray-100 transition-colors">
                         <div className="flex items-center gap-2 flex-1 min-w-0">
                           <Paperclip className="h-4 w-4 text-gray-400 flex-shrink-0" />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-gray-900 truncate">
-                              {att.original_filename || att.filename}
+                              {att.fileName}
                             </p>
-                            <p className="text-xs text-gray-500">{(att.file_size_bytes / 1024).toFixed(1)} KB</p>
+                            <p className="text-xs text-gray-500">{(att.fileSize / 1024).toFixed(1)} KB</p>
                           </div>
                         </div>
                         <a 
-                          href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081'}/v1/attachments/${att.id}/download`}
+                          href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081'}/api/v1/attachments/${att.id}/download`}
                           download
                           className="ml-2 px-3 py-1.5 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 transition-colors flex items-center gap-1 flex-shrink-0"
                         >
