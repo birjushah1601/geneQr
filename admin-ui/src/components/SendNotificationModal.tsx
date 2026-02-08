@@ -36,7 +36,8 @@ export function SendNotificationModal({
     const generateSummary = async () => {
       try {
         // Fetch comments for the ticket
-        const comments = await ticketsApi.getComments(ticketId);
+        const response = await ticketsApi.getComments(ticketId);
+        const comments = response.comments || [];
         
         // Generate ticket summary with history
         let summary = `Ticket Update: ${ticketNumber}\n\n`;

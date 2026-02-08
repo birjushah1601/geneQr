@@ -377,13 +377,13 @@ export const ticketsApi = {
   },
 
   // Get comments for a ticket
-  async getComments(ticketId: string): Promise<TicketComment[]> {
+  async getComments(ticketId: string): Promise<{ comments: TicketComment[] }> {
     try {
       const response = await apiClient.get<{ comments: TicketComment[] }>(`/v1/tickets/${ticketId}/comments`);
-      return response.data.comments || [];
+      return response.data;
     } catch (error) {
       console.error('Failed to fetch comments:', error);
-      return [];
+      return { comments: [] };
     }
   },
 };
