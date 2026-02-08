@@ -20,6 +20,8 @@ import { SendNotificationModal } from "@/components/SendNotificationModal";
 import { TicketTimeline } from "@/components/TicketTimeline";
 import { TimelineEditModal } from "@/components/TimelineEditModal";
 import { TicketStatusWorkflow } from "@/components/TicketStatusWorkflow";
+import { TicketDetailsStickyHeader } from "@/components/TicketDetailsStickyHeader";
+import { TicketTabbedContent } from "@/components/TicketTabbedContent";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -315,35 +317,19 @@ export default function TicketDetailPage() {
 
   return (
     <DashboardLayout>
-      <div className="bg-white border-b -mx-6 -mt-6 px-6 mb-6">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button onClick={() => router.back()} className="p-2 rounded hover:bg-gray-100"><ArrowLeft className="h-5 w-5" /></button>
-            <h1 className="text-lg font-semibold">Ticket {ticket.ticket_number}</h1>
-            <StatusBadge status={ticket.status} />
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowDiagnosisModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
-            >
-              <Brain className="h-4 w-4" />
-              AI Diagnosis
-            </button>
-            <button
-              onClick={() => setShowNotificationModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-            >
-              <Mail className="h-4 w-4" />
-              Send Notification
-            </button>
-            <Link href="/tickets" className="text-sm text-blue-600 hover:underline">All tickets</Link>
-          </div>
-        </div>
+      {/* New Sticky Header */}
+      <div className="-mx-6 -mt-6 mb-6">
+        <TicketDetailsStickyHeader
+          ticket={ticket}
+          onEditTimeline={() => setShowTimelineEditModal(true)}
+          onSendNotification={() => setShowNotificationModal(true)}
+          onReassign={() => setShowReassignMultiModel(true)}
+          onAIDiagnosis={() => setShowDiagnosisModal(true)}
+        />
       </div>
 
-      <div className="container mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: details */}
+      <div className="container mx-auto px-4 py-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Left Column: Main Content (65%) */}
         <div className="lg:col-span-2 space-y-4">
           <div className="bg-white border rounded p-4">
             <h2 className="text-base font-semibold mb-3">Details</h2>
