@@ -243,7 +243,24 @@ func (h *TicketHandler) GetTicket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.respondJSON(w, http.StatusOK, ticket)
+	// Convert ticket to map and add tracking URL
+	ticketMap := make(map[string]interface{})
+	ticketBytes, _ := json.Marshal(ticket)
+	json.Unmarshal(ticketBytes, &ticketMap)
+	
+	// Add tracking URL if notification service is available
+	if h.notificationService != nil {
+		token, err := h.notificationService.GetOrCreateTrackingToken(ticket.ID)
+		if err == nil {
+			baseURL := os.Getenv("TICKET_TRACKING_BASE_URL")
+			if baseURL == "" {
+				baseURL = "https://servqr.com/track"
+			}
+			ticketMap["tracking_url"] = fmt.Sprintf("%s/%s", baseURL, token)
+		}
+	}
+
+	h.respondJSON(w, http.StatusOK, ticketMap)
 }
 
 // GetTicketByNumber handles GET /tickets/number/{number}
