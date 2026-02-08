@@ -532,38 +532,55 @@ export default function TicketDetailPage() {
             </div>
           </div> */}
 
-          {/* Customer Contact Information */}
-          <div className="bg-blue-50 border border-blue-200 rounded p-4">
-            <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
-              <User className="h-4 w-4 text-blue-600" />
+          {/* Equipment Summary */}
+          <div className="bg-white border rounded-lg shadow-sm p-4">
+            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+              <Package className="h-4 w-4 text-gray-600" />
+              Equipment
+            </h3>
+            <div className="space-y-2 text-xs">
+              <div>
+                <p className="text-gray-500 mb-0.5">Name</p>
+                <p className="font-medium text-gray-900">{ticket.equipment_name || 'N/A'}</p>
+              </div>
+              {ticket.equipment_id && (
+                <div>
+                  <p className="text-gray-500 mb-0.5">Equipment ID</p>
+                  <p className="font-mono text-gray-700">{ticket.equipment_id}</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Customer Contact - Compact */}
+          <div className="bg-white border rounded-lg shadow-sm p-4">
+            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+              <User className="h-4 w-4 text-gray-600" />
               Customer Contact
-            </h2>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2">
-                <span className="text-gray-600 w-20">Name:</span>
-                <span className="font-medium">{ticket.customer_name}</span>
+            </h3>
+            <div className="space-y-2 text-xs">
+              <div>
+                <p className="text-gray-500 mb-0.5">Name</p>
+                <p className="font-medium text-gray-900">{ticket.customer_name}</p>
               </div>
               {ticket.customer_email && (
-                <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-gray-400" />
-                  <span className="text-gray-600 w-20">Email:</span>
-                  <a href={`mailto:${ticket.customer_email}`} className="font-medium text-blue-600 hover:underline">
+                <div>
+                  <p className="text-gray-500 mb-0.5">Email</p>
+                  <a href={`mailto:${ticket.customer_email}`} className="text-blue-600 hover:underline break-all">
                     {ticket.customer_email}
                   </a>
                 </div>
               )}
-              <div className="flex items-center gap-2">
-                <span className="text-gray-400">📱</span>
-                <span className="text-gray-600 w-20">Phone:</span>
-                <a href={`tel:${ticket.customer_phone}`} className="font-medium text-blue-600 hover:underline">
+              <div>
+                <p className="text-gray-500 mb-0.5">Phone</p>
+                <a href={`tel:${ticket.customer_phone}`} className="text-blue-600 hover:underline">
                   {ticket.customer_phone}
                 </a>
               </div>
               {ticket.customer_whatsapp && (
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-400">💬</span>
-                  <span className="text-gray-600 w-20">WhatsApp:</span>
-                  <a href={`https://wa.me/${ticket.customer_whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="font-medium text-green-600 hover:underline">
+                <div>
+                  <p className="text-gray-500 mb-0.5">WhatsApp</p>
+                  <a href={`https://wa.me/${ticket.customer_whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline">
                     {ticket.customer_whatsapp}
                   </a>
                 </div>
@@ -803,25 +820,26 @@ export default function TicketDetailPage() {
           )} */}
         </div>
 
-        {/* Right: actions */}
+        {/* Right Sidebar: Compact Cards */}
         <div className="space-y-4">
-          {/* Currently Assigned Engineer */}
+          {/* Assigned Engineer - Compact */}
           {ticket.assigned_engineer_name && (
-            <div className="bg-white border rounded p-4">
-              <h3 className="text-sm font-semibold mb-3">Currently Assigned</h3>
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold">
+            <div className="bg-white border rounded-lg shadow-sm p-4">
+              <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                <User className="h-4 w-4 text-blue-600" />
+                Assigned Engineer
+              </h3>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold text-sm">
                   {ticket.assigned_engineer_name.split(' ').map(n => n[0]).join('').substring(0, 2)}
                 </div>
-                <div>
-                  <p className="font-medium text-gray-900">{ticket.assigned_engineer_name}</p>
-                  <p className="text-xs text-gray-500">Assigned Engineer</p>
-
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-gray-900 text-sm truncate">{ticket.assigned_engineer_name}</p>
                   <button
                     onClick={() => setShowReassignMultiModel(true)}
-                    className="mt-2 text-sm text-blue-600 hover:text-blue-800 underline"
+                    className="text-xs text-blue-600 hover:text-blue-800 underline"
                   >
-                    Reassign Engineer
+                    Reassign
                   </button>
                 </div>
               </div>
