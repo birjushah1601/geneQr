@@ -23,6 +23,12 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
   const [blockerComments, setBlockerComments] = useState<{[key: number]: string}>({});
   const [customMilestones, setCustomMilestones] = useState<PublicMilestone[]>([]);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  
+  // Debug: Log what we receive from backend
+  console.log('Timeline data from backend:', {
+    estimated_resolution: timeline.estimated_resolution,
+    estimated_resolution_as_date: timeline.estimated_resolution ? new Date(timeline.estimated_resolution).toString() : null
+  });
 
   const handleMilestoneStatusChange = (index: number, newStatus: string) => {
     const updated = { ...editedTimeline };
@@ -237,9 +243,8 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
                   selected={editedTimeline.estimated_resolution ? new Date(editedTimeline.estimated_resolution) : null}
                   onChange={(date) => {
                     if (date) {
-                      console.log('Selected date:', date);
-                      console.log('ISO string:', date.toISOString());
-                      // Store as ISO string - toISOString() converts to UTC
+                      console.log('Selected date (local):', date.toString());
+                      console.log('ISO string (UTC):', date.toISOString());
                       handleResolutionDateChange(date.toISOString());
                     } else {
                       handleResolutionDateChange('');
@@ -249,10 +254,13 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
                   timeFormat="HH:mm"
                   timeIntervals={1}
                   dateFormat="MMM d, yyyy h:mm aa"
+                  timeCaption="Time"
                   className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-sm"
                   calendarClassName="date-picker-calendar"
                   popperClassName="date-picker-popper"
                   placeholderText="Select date and time"
+                  withPortal={false}
+                  shouldCloseOnSelect={false}
                 />
               </div>
             </div>
