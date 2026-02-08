@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { apiClient } from "@/lib/api/client";
 import { Loader2, CheckCircle, Clock, AlertCircle, Package, User, Calendar, MessageSquare, History } from "lucide-react";
+import { TicketTimeline } from "@/components/TicketTimeline";
+import type { PublicTimeline } from "@/types";
 
 interface PublicComment {
   comment: string;
@@ -38,7 +40,9 @@ export default function TrackTicketPage() {
   const token = params.token as string;
   
   const [ticket, setTicket] = useState<PublicTicketView | null>(null);
+  const [timeline, setTimeline] = useState<PublicTimeline | null>(null);
   const [loading, setLoading] = useState(true);
+  const [timelineLoading, setTimelineLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -54,8 +58,26 @@ export default function TrackTicketPage() {
       }
     };
 
+    const fetchTimeline = async () => {
+      try {
+        setTimelineLoading(true);
+        // Get ticket ID first from the token
+        const ticketResponse = await apiClient.get(`/v1/track/${token}`);
+        if (ticketResponse.data?.ticket_id) {
+          const timelineResponse = await apiClient.get(`/v1/tickets/${ticketResponse.data.ticket_id}/timeline`);
+          setTimeline(timelineResponse.data);
+        }
+      } catch (err: any) {
+        console.error("Failed to fetch timeline:", err);
+        // Don't show error - timeline is optional enhancement
+      } finally {
+        setTimelineLoading(false);
+      }
+    };
+
     if (token) {
       fetchTicket();
+      fetchTimeline();
     }
   }, [token]);
 
@@ -146,68 +168,112 @@ export default function TrackTicketPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-3xl font-bold text-gray-900">{ticket.ticket_number}</h1>
-            <div className={`px-4 py-2 rounded-full border-2 flex items-center gap-2 ${getStatusColor(ticket.status)}`}>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+      <div className="max-w-3xl mx-auto">
+        {/* Compact Header */}
+        <div className="bg-white rounded-xl shadow-md p-4 mb-4">
+          <div className="flex items-center justify-between mb-3">
+            <h1 className="text-2xl font-bold text-gray-900">{ticket.ticket_number}</h1>
+            <div className={`px-3 py-1.5 rounded-full border flex items-center gap-1.5 ${getStatusColor(ticket.status)}`}>
               {getStatusIcon(ticket.status)}
-              <span className="font-semibold capitalize">{ticket.status.replace("_", " ")}</span>
+              <span className="text-sm font-semibold capitalize">{ticket.status.replace("_", " ")}</span>
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-3 text-sm">
+            <div className="flex items-center gap-1.5">
               <Package className="h-4 w-4 text-gray-400" />
-              <span className="text-gray-600">Equipment:</span>
-              <span className="font-medium">{ticket.equipment_name}</span>
+              <span className="font-medium text-gray-900">{ticket.equipment_name}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getPriorityColor(ticket.priority)}`}>
-                {ticket.priority.toUpperCase()} Priority
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-gray-400" />
-              <span className="text-gray-600">Created:</span>
-              <span className="font-medium">{formatDate(ticket.created_at)}</span>
+            <span className="text-gray-300">•</span>
+            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${getPriorityColor(ticket.priority)}`}>
+              {ticket.priority.toUpperCase()}
+            </span>
+            <span className="text-gray-300">•</span>
+            <div className="flex items-center gap-1.5 text-gray-600">
+              <Calendar className="h-3.5 w-3.5" />
+              <span className="text-xs">{formatDate(ticket.created_at)}</span>
             </div>
           </div>
 
           {ticket.assigned_engineer && (
-            <div className="mt-4 p-3 bg-blue-50 rounded-lg flex items-center gap-2">
-              <User className="h-5 w-5 text-blue-600" />
-              <span className="text-sm text-gray-600">Assigned Engineer:</span>
-              <span className="text-sm font-semibold text-blue-900">{ticket.assigned_engineer}</span>
+            <div className="mt-3 flex items-center gap-2 text-sm">
+              <User className="h-4 w-4 text-blue-600" />
+              <span className="text-gray-600">Engineer:</span>
+              <span className="font-semibold text-blue-900">{ticket.assigned_engineer}</span>
             </div>
           )}
         </div>
 
         {/* Issue Description */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <MessageSquare className="h-5 w-5 text-gray-600" />
+        <div className="bg-white rounded-xl shadow-md p-4 mb-4">
+          <h2 className="text-base font-semibold text-gray-900 mb-2 flex items-center gap-2">
+            <MessageSquare className="h-4 w-4 text-gray-600" />
             Issue Description
           </h2>
-          <p className="text-gray-700 whitespace-pre-line">{ticket.issue_description}</p>
+          <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{ticket.issue_description}</p>
         </div>
+
+        {/* SERVICE STATUS & TIMELINE */}
+        {timeline && !timelineLoading ? (
+          <div className="bg-white rounded-xl shadow-md mb-4 overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3">
+              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                Service Timeline
+              </h2>
+            </div>
+            <TicketTimeline timeline={timeline} isPublic={true} />
+          </div>
+        ) : timelineLoading ? (
+          <div className="bg-white rounded-xl shadow-md p-6 mb-4 text-center">
+            <Loader2 className="h-6 w-6 animate-spin text-blue-600 mx-auto mb-2" />
+            <p className="text-gray-600 text-sm">Loading timeline...</p>
+          </div>
+        ) : null}
+
+        {/* Comments */}
+        {ticket.comments && ticket.comments.length > 0 && (
+          <div className="bg-white rounded-xl shadow-md p-4 mb-4">
+            <h2 className="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <MessageSquare className="h-4 w-4 text-gray-600" />
+              Updates ({ticket.comments.length})
+            </h2>
+            <div className="space-y-3">
+              {ticket.comments.map((comment, index) => (
+                <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+                      {comment.author_name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-baseline justify-between gap-2 mb-1">
+                        <p className="text-sm font-semibold text-gray-900">{comment.author_name}</p>
+                        <span className="text-xs text-gray-500 whitespace-nowrap">{formatDate(comment.created_at)}</span>
+                      </div>
+                      <p className="text-sm text-gray-700 whitespace-pre-line">{comment.comment}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Status History */}
         {ticket.status_history && ticket.status_history.length > 0 && (
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <History className="h-5 w-5 text-gray-600" />
-              Status History
-            </h2>
-            <div className="space-y-4">
+          <details className="bg-white rounded-xl shadow-md mb-4 overflow-hidden">
+            <summary className="px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors">
+              <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+                <History className="h-4 w-4 text-gray-600" />
+                Status History ({ticket.status_history.length})
+              </h2>
+            </summary>
+            <div className="px-4 pb-4 space-y-2 border-t border-gray-100 pt-3">
               {ticket.status_history.map((event, index) => (
-                <div key={index} className="flex items-start gap-4 pb-4 border-b last:border-b-0">
-                  <div className="flex-shrink-0 mt-1">
-                    <div className={`w-3 h-3 rounded-full ${getStatusColor(event.to_status).split(' ')[0]}`} />
-                  </div>
-                  <div className="flex-1">
+                <div key={index} className="flex items-start gap-3 text-sm">
+                  <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${getStatusColor(event.to_status).split(' ')[0]}`} />
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       {event.from_status && (
                         <span className="text-sm text-gray-500 line-through">{event.from_status}</span>
@@ -227,55 +293,21 @@ export default function TrackTicketPage() {
                 </div>
               ))}
             </div>
-          </div>
-        )}
-
-        {/* Comments */}
-        {ticket.comments && ticket.comments.length > 0 && (
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <MessageSquare className="h-5 w-5 text-gray-600" />
-              Updates & Comments
-            </h2>
-            <div className="space-y-4">
-              {ticket.comments.map((comment, index) => (
-                <div key={index} className="p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                        {comment.author_name.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-gray-900">{comment.author_name}</p>
-                        <p className="text-xs text-gray-500 capitalize">{comment.author_role}</p>
-                      </div>
-                    </div>
-                    <span className="text-xs text-gray-500">{formatDate(comment.created_at)}</span>
-                  </div>
-                  <p className="text-gray-700 whitespace-pre-line">{comment.comment}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+          </details>
         )}
 
         {/* No Activity Message */}
         {(!ticket.comments || ticket.comments.length === 0) && 
          (!ticket.status_history || ticket.status_history.length === 0) && (
-          <div className="bg-white rounded-lg shadow-lg p-8 text-center">
-            <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">No updates yet. We'll notify you once work begins!</p>
+          <div className="bg-white rounded-xl shadow-md p-6 text-center">
+            <Clock className="h-10 w-10 text-gray-400 mx-auto mb-3" />
+            <p className="text-sm text-gray-600">No updates yet. We'll notify you once work begins!</p>
           </div>
         )}
 
-        {/* Footer */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mt-6 text-center">
-          <p className="text-sm text-gray-600">
-            Thank you for your service request. We're working on resolving your issue as quickly as possible.
-          </p>
-          <p className="text-xs text-gray-500 mt-2">
-            Last updated: {formatDate(ticket.updated_at)}
-          </p>
+        {/* Compact Footer */}
+        <div className="text-center mt-6 text-xs text-gray-500">
+          <p>Last updated: {formatDate(ticket.updated_at)}</p>
         </div>
       </div>
     </div>

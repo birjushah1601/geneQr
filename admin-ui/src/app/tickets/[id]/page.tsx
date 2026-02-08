@@ -6,17 +6,21 @@ import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ticketsApi } from "@/lib/api/tickets";
 import { apiClient } from "@/lib/api/client";
-import type { ServiceTicket, TicketPriority, TicketStatus } from "@/types";
-import { ArrowLeft, Loader2, Package, User, Calendar, Wrench, Pause, Play, CheckCircle, XCircle, AlertTriangle, FileText, MessageSquare, Paperclip, Upload, Brain, Sparkles, TrendingUp, Lightbulb, Shield, Trash, X, Mail } from "lucide-react";
+import type { ServiceTicket, TicketPriority, TicketStatus, PublicTimeline } from "@/types";
+import { ArrowLeft, Loader2, Package, User, Calendar, Wrench, Pause, Play, CheckCircle, XCircle, AlertTriangle, FileText, MessageSquare, Paperclip, Upload, Brain, Sparkles, TrendingUp, Lightbulb, Shield, Trash, X, Mail, Clock, Edit2 } from "lucide-react";
 import { AIDiagnosisModal } from "@/components/AIDiagnosisModal";
 import { attachmentsApi } from "@/lib/api/attachments";
 import { PartsAssignmentModal } from "@/components/PartsAssignmentModal";
 import { diagnosisApi, extractSymptoms } from "@/lib/api/diagnosis";
 import MultiModelAssignment from "@/components/MultiModelAssignment";
 import EngineerSelectionModal from "@/components/EngineerSelectionModal";
-import AssignmentHistory from "@/components/AssignmentHistory";
+// import AssignmentHistory from "@/components/AssignmentHistory"; // Removed - not used
 import DashboardLayout from "@/components/DashboardLayout";
 import { SendNotificationModal } from "@/components/SendNotificationModal";
+import { TicketTimeline } from "@/components/TicketTimeline";
+import { TimelineEditModal } from "@/components/TimelineEditModal";
+import { TicketStatusWorkflow } from "@/components/TicketStatusWorkflow";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 
 function StatusBadge({ status }: { status: TicketStatus }) {
@@ -39,6 +43,7 @@ export default function TicketDetailPage() {
   const [showReassignMultiModel, setShowReassignMultiModel] = useState(false);
   const [showEngineerSelection, setShowEngineerSelection] = useState(false);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [showTimelineEditModal, setShowTimelineEditModal] = useState(false);
   const router = useRouter();
   const qc = useQueryClient();
 
@@ -67,6 +72,16 @@ export default function TicketDetailPage() {
       console.log(`Parts loaded: ${parts.count} part(s)`, parts.parts);
     }
   }, [parts, partsError]);
+
+  // Fetch timeline for SLA/ETA tracking
+  const { data: timeline, isLoading: timelineLoading } = useQuery<PublicTimeline>({
+    queryKey: ["ticket", id, "timeline"],
+    queryFn: async () => {
+      const response = await apiClient.get(`/v1/tickets/${id}/timeline`);
+      return response.data;
+    },
+    enabled: !!id,
+  });
 
   const { data: attachmentList, refetch: refetchAttachments, isLoading: loadingAttachments } = useQuery({
     queryKey: ["ticket", id, "attachments"],
@@ -278,6 +293,17 @@ export default function TicketDetailPage() {
   const resolve = useMutation({ mutationFn: () => post(`/v1/tickets/${id}/resolve`, { resolution_notes: "Resolved by admin" }), onSuccess: () => refetch() });
   const close = useMutation({ mutationFn: () => post(`/v1/tickets/${id}/close`, { closed_by: "admin" }), onSuccess: () => refetch() });
   const cancel = useMutation({ mutationFn: () => post(`/v1/tickets/${id}/cancel`, { reason: "Cancelled by admin", cancelled_by: "admin" }), onSuccess: () => refetch() });
+
+  const handleStatusChange = (newStatus: TicketStatus) => {
+    if (ticket.status === "new" && newStatus === "assigned") ack.mutate();
+    else if (ticket.status === "assigned" && newStatus === "in_progress") start.mutate();
+    else if (ticket.status === "in_progress" && newStatus === "on_hold") hold.mutate();
+    else if (ticket.status === "on_hold" && newStatus === "in_progress") resume.mutate();
+    else if (ticket.status === "in_progress" && newStatus === "resolved") resolve.mutate();
+    else if (ticket.status === "resolved" && newStatus === "closed") close.mutate();
+    else if (newStatus === "cancelled") cancel.mutate();
+    else if (ticket.status === "resolved" && newStatus === "in_progress") start.mutate(); // Reopen
+  };
 
   if (isLoading || !ticket) {
     return (
@@ -648,10 +674,10 @@ export default function TicketDetailPage() {
             </div>
           )}
           
-          {/* Assignment History - Show for all tickets */}
-          {ticket.assigned_engineer_name && (
+          {/* Assignment History - Removed: Not populated in current system */}
+          {/* {ticket.assigned_engineer_name && (
             <AssignmentHistory ticketId={id} />
-          )}
+          )} */}
         </div>
 
         {/* Right: actions */}
@@ -679,18 +705,11 @@ export default function TicketDetailPage() {
             </div>
           )}
 
-          <div className="bg-white border rounded p-4">
-            <h3 className="text-sm font-semibold mb-3">Actions</h3>
-            <div className="grid grid-cols-2 gap-2">
-              <button onClick={() => ack.mutate()} className="px-3 py-2 border rounded text-sm flex items-center justify-center gap-2"><CheckCircle className="h-4 w-4" /> Acknowledge</button>
-              <button onClick={() => start.mutate()} className="px-3 py-2 border rounded text-sm flex items-center justify-center gap-2"><Wrench className="h-4 w-4" /> Start</button>
-              <button onClick={() => hold.mutate()} className="px-3 py-2 border rounded text-sm flex items-center justify-center gap-2"><Pause className="h-4 w-4" /> Hold</button>
-              <button onClick={() => resume.mutate()} className="px-3 py-2 border rounded text-sm flex items-center justify-center gap-2"><Play className="h-4 w-4" /> Resume</button>
-              <button onClick={() => resolve.mutate()} className="px-3 py-2 border rounded text-sm flex items-center justify-center gap-2"><CheckCircle className="h-4 w-4" /> Resolve</button>
-              <button onClick={() => close.mutate()} className="px-3 py-2 border rounded text-sm flex items-center justify-center gap-2"><FileText className="h-4 w-4" /> Close</button>
-              <button onClick={() => cancel.mutate()} className="px-3 py-2 border rounded text-sm flex items-center justify-center gap-2 col-span-2 text-red-600 border-red-300"><XCircle className="h-4 w-4" /> Cancel</button>
-            </div>
-          </div>
+          {/* Status Workflow - Visual guide with color coding */}
+          <TicketStatusWorkflow 
+            currentStatus={ticket.status}
+            onStatusChange={handleStatusChange}
+          />
 
           {/* Attachments Section */}
           <div className="bg-white border rounded p-4">
@@ -741,7 +760,7 @@ export default function TicketDetailPage() {
                             </div>
                             {(isImage || isVideo) && (
                               <div className="mt-2 text-xs text-purple-600">
-                                ðŸ’¡ This file can be analyzed by AI for automatic diagnosis
+                                This file can be analyzed by AI for automatic diagnosis
                               </div>
                             )}
                           </div>
@@ -847,6 +866,36 @@ export default function TicketDetailPage() {
         </div>
       </div>
 
+      {/* SLA/ETA Timeline Section */}
+      <div className="mt-6">
+        {timelineLoading && (
+          <div className="flex items-center gap-2 text-gray-500">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            Loading service timeline...
+          </div>
+        )}
+        
+        {timeline && !timelineLoading && (
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                <Clock className="h-6 w-6 text-blue-600" />
+                Service Timeline & ETA
+              </h2>
+              <Button
+                onClick={() => setShowTimelineEditModal(true)}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Edit2 className="h-4 w-4" />
+                Edit Timeline
+              </Button>
+            </div>
+            <TicketTimeline timeline={timeline} />
+          </div>
+        )}
+      </div>
+
       {/* AI Diagnosis Modal */}
       <AIDiagnosisModal
         isOpen={showDiagnosisModal}
@@ -868,6 +917,52 @@ export default function TicketDetailPage() {
           onSuccess={() => {
             setShowNotificationModal(false);
             refetch();
+          }}
+        />
+      )}
+
+      {/* Timeline Edit Modal */}
+      {showTimelineEditModal && timeline && (
+        <TimelineEditModal
+          timeline={timeline}
+          ticketId={id as string}
+          onClose={() => setShowTimelineEditModal(false)}
+          onSave={async (updatedTimeline) => {
+            try {
+              // Convert datetime-local format to ISO8601 with timezone
+              const formatDateTime = (dateStr: string | undefined) => {
+                if (!dateStr) return null;
+                // If it's already ISO format, return as is
+                if (dateStr.includes('Z') || dateStr.match(/[+-]\d{2}:\d{2}$/)) {
+                  return dateStr;
+                }
+                // If it's datetime-local format (YYYY-MM-DDTHH:mm), add seconds and timezone
+                const date = new Date(dateStr);
+                return date.toISOString(); // This adds :00.000Z
+              };
+
+              // Extract only the fields the backend expects
+              const payload = {
+                estimated_resolution: formatDateTime(updatedTimeline.estimated_resolution),
+                parts_status: updatedTimeline.parts_status,
+                parts_eta: formatDateTime(updatedTimeline.parts_eta),
+                milestones: updatedTimeline.milestones.map((m: any) => ({
+                  ...m,
+                  eta: formatDateTime(m.eta),
+                  completed_at: m.completed_at ? formatDateTime(m.completed_at) : null
+                })),
+                admin_notes: "Timeline manually adjusted by admin",
+                blocker_comments: updatedTimeline.blocker_comments || {}
+              };
+              
+              await apiClient.put(`/v1/tickets/${id}/timeline`, payload);
+              qc.invalidateQueries({ queryKey: ["ticket", id, "timeline"] });
+              alert("Timeline updated successfully!");
+            } catch (err: any) {
+              console.error("Timeline update error:", err);
+              alert(`Failed to update timeline: ${err.response?.data?.error || err.message}`);
+              throw err;
+            }
           }}
         />
       )}

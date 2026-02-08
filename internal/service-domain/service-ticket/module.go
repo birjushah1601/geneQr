@@ -112,6 +112,10 @@ func (m *Module) Initialize(ctx context.Context) error {
 		},
 	)
 
+	// Create timeline service for SLA/ETA tracking
+	timelineService := app.NewTimelineService(ticketRepo, m.logger)
+	m.logger.Info("Timeline service initialized")
+
 	// Create assignment service
 	assignmentService := app.NewAssignmentService(assignmentRepo, ticketRepo, pool, m.logger)
 	
@@ -131,6 +135,8 @@ func (m *Module) Initialize(ctx context.Context) error {
     m.ticketHandler = api.NewTicketHandler(ticketService, m.logger, pool, m.auditLogger)
 	m.ticketHandler.SetNotificationService(notificationService)
 	m.logger.Info("Notification service wired to ticket handler")
+	m.ticketHandler.SetTimelineService(timelineService)
+	m.logger.Info("Timeline service wired to ticket handler")
 	
 	m.assignmentHandler = api.NewAssignmentHandler(assignmentService, m.logger)
 	m.multiModelAssignmentHandler = api.NewMultiModelAssignmentHandler(multiModelService, m.logger)
@@ -242,6 +248,8 @@ func (m *Module) MountRoutes(r chi.Router) {
 		r.Get("/{id}/comments", m.ticketHandler.GetComments)       // Get comments
 		r.Delete("/{id}/comments/{commentId}", m.ticketHandler.DeleteComment) // Delete comment
 		r.Get("/{id}/history", m.ticketHandler.GetStatusHistory)   // Get status history
+		r.Get("/{id}/timeline", m.ticketHandler.GetTimeline)       // Get SLA/ETA timeline
+		r.Put("/{id}/timeline", m.ticketHandler.UpdateTimeline)    // Update SLA/ETA timeline (admin)
 		
 		// Notification routes
 		r.Post("/{id}/send-notification", m.ticketHandler.SendEmailNotification) // Send manual email (auto)

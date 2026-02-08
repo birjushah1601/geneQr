@@ -43,6 +43,7 @@ type NotificationLog struct {
 
 // PublicTicketView represents the public-facing view of a ticket
 type PublicTicketView struct {
+	TicketID          string              `json:"ticket_id"`
 	TicketNumber      string              `json:"ticket_number"`
 	Status            string              `json:"status"`
 	Priority          string              `json:"priority"`

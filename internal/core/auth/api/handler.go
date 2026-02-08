@@ -647,6 +647,18 @@ func (h *AuthHandler) AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 		
+		// Allow public tracking pages (customer ticket status)
+		if strings.HasPrefix(r.URL.Path, "/api/v1/track/") {
+			next.ServeHTTP(w, r)
+			return
+		}
+		
+		// Allow public timeline for tracking pages (customer ticket status)
+		if strings.HasPrefix(r.URL.Path, "/api/v1/tickets/") && strings.Contains(r.URL.Path, "/timeline") {
+			next.ServeHTTP(w, r)
+			return
+		}
+		
 		// Allow public ticket creation (for QR-based service requests)
 		if r.URL.Path == "/api/v1/tickets" && r.Method == "POST" {
 			next.ServeHTTP(w, r)

@@ -191,6 +191,7 @@ func (s *NotificationService) GetPublicTicketView(ctx context.Context, token str
 
 	// Build public view
 	publicView := &domain.PublicTicketView{
+		TicketID:         ticket.ID,
 		TicketNumber:     ticket.TicketNumber,
 		Status:           string(ticket.Status),
 		Priority:         string(ticket.Priority),

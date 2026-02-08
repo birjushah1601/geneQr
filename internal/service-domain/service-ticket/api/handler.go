@@ -22,6 +22,7 @@ import (
 type TicketHandler struct {
 	service             *app.TicketService
 	notificationService *app.NotificationService
+	timelineService     *app.TimelineService
 	logger              *slog.Logger
     pool                *pgxpool.Pool
 	auditLogger         *audit.AuditLogger
@@ -40,6 +41,11 @@ func NewTicketHandler(service *app.TicketService, logger *slog.Logger, pool *pgx
 // SetNotificationService sets the notification service (called after initialization)
 func (h *TicketHandler) SetNotificationService(notificationService *app.NotificationService) {
 	h.notificationService = notificationService
+}
+
+// SetTimelineService sets the timeline service (called after initialization)
+func (h *TicketHandler) SetTimelineService(timelineService *app.TimelineService) {
+	h.timelineService = timelineService
 }
 
 // CreateTicket handles POST /tickets
@@ -639,6 +645,203 @@ func (h *TicketHandler) GetStatusHistory(w http.ResponseWriter, r *http.Request)
 	}
 
 	h.respondJSON(w, http.StatusOK, history)
+}
+
+// GetTimeline handles GET /tickets/{id}/timeline
+// Returns the multi-stage timeline with ETAs and parts workflow
+func (h *TicketHandler) GetTimeline(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := chi.URLParam(r, "id")
+
+	if id == "" {
+		h.respondError(w, http.StatusBadRequest, "Ticket ID is required")
+		return
+	}
+
+	// Check if timeline service is available
+	if h.timelineService == nil {
+		h.respondError(w, http.StatusServiceUnavailable, "Timeline service not available")
+		return
+	}
+
+	// Get ticket
+	ticket, err := h.service.GetTicket(ctx, id)
+	if err != nil {
+		if err == domain.ErrTicketNotFound {
+			h.respondError(w, http.StatusNotFound, "Ticket not found")
+			return
+		}
+		h.logger.Error("Failed to get ticket for timeline", slog.String("error", err.Error()))
+		h.respondError(w, http.StatusInternalServerError, "Failed to get ticket")
+		return
+	}
+
+	// Generate timeline
+	timeline, err := h.timelineService.GenerateTimeline(ctx, ticket)
+	if err != nil {
+		h.logger.Error("Failed to generate timeline", slog.String("error", err.Error()))
+		h.respondError(w, http.StatusInternalServerError, "Failed to generate timeline")
+		return
+	}
+
+	// Convert to public view first
+	publicTimeline := h.timelineService.ConvertToPublicTimeline(timeline, ticket)
+	
+	// Try to apply any admin overrides from database (if columns exist)
+	var timelineOverrides []byte
+	var partsOverride []byte
+	err = h.pool.QueryRow(ctx, 
+		`SELECT timeline_overrides, parts_override FROM service_tickets WHERE id = $1`, 
+		id).Scan(&timelineOverrides, &partsOverride)
+	
+	if err == nil {
+		// Apply milestone overrides if they exist
+		if len(timelineOverrides) > 0 {
+			var customMilestones []domain.PublicMilestone
+			if err := json.Unmarshal(timelineOverrides, &customMilestones); err == nil && len(customMilestones) > 0 {
+				publicTimeline.Milestones = customMilestones
+				h.logger.Info("Applied custom milestones to public timeline",
+					slog.String("ticket_id", id),
+					slog.Int("count", len(customMilestones)))
+			}
+		}
+		
+		// Apply parts overrides if they exist
+		if len(partsOverride) > 0 {
+			var partsData map[string]interface{}
+			if err := json.Unmarshal(partsOverride, &partsData); err == nil {
+				if etaStr, ok := partsData["eta"].(string); ok {
+					if eta, err := time.Parse(time.RFC3339, etaStr); err == nil {
+						publicTimeline.PartsETA = &eta
+					}
+				}
+				if status, ok := partsData["status"].(string); ok {
+					publicTimeline.PartsStatus = status
+				}
+			}
+		}
+	} else {
+		// Column might not exist yet - just log and continue
+		h.logger.Debug("Timeline overrides not available (migration may not be applied yet)",
+			slog.String("ticket_id", id))
+	}
+
+	h.respondJSON(w, http.StatusOK, publicTimeline)
+}
+
+// UpdateTimeline handles PUT /tickets/{id}/timeline
+// Allows admins to manually adjust milestones, ETAs, and parts status
+func (h *TicketHandler) UpdateTimeline(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := chi.URLParam(r, "id")
+
+	if id == "" {
+		h.respondError(w, http.StatusBadRequest, "Ticket ID is required")
+		return
+	}
+
+	var req struct {
+		EstimatedResolution *time.Time               `json:"estimated_resolution"`
+		PartsStatus         string                   `json:"parts_status"`
+		PartsETA            *time.Time               `json:"parts_eta"`
+		Milestones          []domain.PublicMilestone `json:"milestones"`
+		AdminNotes          string                   `json:"admin_notes"`
+		BlockerComments     map[string]string        `json:"blocker_comments"` // milestone index -> comment
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.respondError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	// Get ticket
+	ticket, err := h.service.GetTicket(ctx, id)
+	if err != nil {
+		h.respondError(w, http.StatusNotFound, "Ticket not found")
+		return
+	}
+
+	// Store manual timeline adjustments
+	// 1. Update ticket's SLA resolution date
+	if req.EstimatedResolution != nil {
+		ticket.SLAResolutionDue = req.EstimatedResolution
+		
+		// Update in database
+		updateQuery := `UPDATE service_tickets SET sla_resolution_due = $1, updated_at = NOW() WHERE id = $2`
+		_, err := h.pool.Exec(ctx, updateQuery, req.EstimatedResolution, id)
+		if err != nil {
+			h.logger.Error("Failed to update ticket resolution date",
+				slog.String("error", err.Error()),
+				slog.String("ticket_id", id))
+			h.respondError(w, http.StatusInternalServerError, "Failed to update timeline")
+			return
+		}
+	}
+
+	// 2. Store milestone adjustments as JSON in a timeline_overrides column
+	if len(req.Milestones) > 0 {
+		milestonesJSON, err := json.Marshal(req.Milestones)
+		if err != nil {
+			h.logger.Error("Failed to marshal milestones", slog.String("error", err.Error()))
+		} else {
+			// Store in database
+			updateQuery := `UPDATE service_tickets SET timeline_overrides = $1, updated_at = NOW() WHERE id = $2`
+			_, err := h.pool.Exec(ctx, updateQuery, milestonesJSON, id)
+			if err != nil {
+				h.logger.Warn("Failed to update timeline overrides (column may not exist yet)",
+					slog.String("error", err.Error()),
+					slog.String("ticket_id", id))
+				// Don't fail the request if column doesn't exist yet
+			}
+		}
+	}
+
+	// 3. Store parts adjustments
+	if req.PartsStatus != "" || req.PartsETA != nil {
+		partsData := map[string]interface{}{
+			"status": req.PartsStatus,
+			"eta":    req.PartsETA,
+		}
+		partsJSON, err := json.Marshal(partsData)
+		if err != nil {
+			h.logger.Error("Failed to marshal parts data", slog.String("error", err.Error()))
+		} else {
+			updateQuery := `UPDATE service_tickets SET parts_override = $1, updated_at = NOW() WHERE id = $2`
+			_, err := h.pool.Exec(ctx, updateQuery, partsJSON, id)
+			if err != nil {
+				h.logger.Warn("Failed to update parts override (column may not exist yet)",
+					slog.String("error", err.Error()))
+			}
+		}
+	}
+
+	// 4. Add blocker comments to ticket comments section
+	for idxStr, comment := range req.BlockerComments {
+		if comment != "" {
+			// Add as internal comment
+			commentQuery := `
+				INSERT INTO ticket_comments (id, ticket_id, comment_type, author_name, comment, created_at)
+				VALUES (gen_random_uuid(), $1, 'internal', 'Admin', $2, NOW())
+			`
+			_, err := h.pool.Exec(ctx, commentQuery, id, fmt.Sprintf("Milestone %s blocked: %s", idxStr, comment))
+			if err != nil {
+				h.logger.Error("Failed to add blocker comment",
+					slog.String("error", err.Error()),
+					slog.String("ticket_id", id))
+			}
+		}
+	}
+
+	// Log the adjustment
+	h.logger.Info("Timeline manually adjusted by admin",
+		slog.String("ticket_id", id),
+		slog.String("admin_notes", req.AdminNotes),
+		slog.Int("milestones_count", len(req.Milestones)))
+
+	h.respondJSON(w, http.StatusOK, map[string]interface{}{
+		"success": true,
+		"message": "Timeline updated successfully",
+	})
 }
 
 // GetTicketParts handles GET /tickets/{id}/parts
