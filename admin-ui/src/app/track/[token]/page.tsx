@@ -205,7 +205,16 @@ export default function TrackTicketPage() {
           )}
         </div>
 
-        {/* SERVICE STATUS & TIMELINE - PRIMARY FOCUS */}
+        {/* Issue Description */}
+        <div className="bg-white rounded-xl shadow-md p-4 mb-4">
+          <h2 className="text-base font-semibold text-gray-900 mb-2 flex items-center gap-2">
+            <MessageSquare className="h-4 w-4 text-gray-600" />
+            Issue Description
+          </h2>
+          <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{ticket.issue_description}</p>
+        </div>
+
+        {/* SERVICE STATUS & TIMELINE */}
         {timeline && !timelineLoading ? (
           <div className="bg-white rounded-xl shadow-md mb-4 overflow-hidden">
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3">
@@ -222,15 +231,6 @@ export default function TrackTicketPage() {
             <p className="text-gray-600 text-sm">Loading timeline...</p>
           </div>
         ) : null}
-
-        {/* Issue Description */}
-        <div className="bg-white rounded-xl shadow-md p-4 mb-4">
-          <h2 className="text-base font-semibold text-gray-900 mb-2 flex items-center gap-2">
-            <MessageSquare className="h-4 w-4 text-gray-600" />
-            Issue Description
-          </h2>
-          <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{ticket.issue_description}</p>
-        </div>
 
         {/* Comments */}
         {ticket.comments && ticket.comments.length > 0 && (
