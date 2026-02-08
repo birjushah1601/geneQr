@@ -286,6 +286,39 @@ export interface Part {
   cost?: number;
 }
 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// SLA/ETA TIMELINE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+export interface PublicMilestone {
+  stage: string;
+  title: string;
+  description: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'delayed' | 'blocked' | 'skipped';
+  eta?: string;
+  completed_at?: string;
+  is_active: boolean;
+}
+
+export interface PublicTimeline {
+  overall_status: 'on_track' | 'at_risk' | 'delayed' | 'blocked';
+  status_message: string;
+  current_stage: string;
+  current_stage_desc: string;
+  next_stage?: string;
+  next_stage_desc?: string;
+  estimated_resolution?: string;
+  time_remaining: string;
+  requires_parts: boolean;
+  parts_status?: 'ordering' | 'in_transit' | 'received';
+  parts_eta?: string;
+  assigned_engineer?: string;
+  priority: string;
+  is_urgent: boolean;
+  milestones: PublicMilestone[];
+  progress_percentage: number;
+}
+
 export interface CreateTicketRequest {
   equipment_id?: string;
   qr_code?: string;
