@@ -925,24 +925,12 @@ export default function TicketDetailPage() {
         {/* Right Sidebar: Compact Cards (Stacks on mobile) */}
         <div className="space-y-3 md:space-y-4">
           
-          {/* Status Workflow - MOVED FROM LEFT TO RIGHT */}
-          <div className="bg-white border rounded-lg shadow-sm p-3 md:p-4">
-            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-              <Wrench className="h-4 w-4 text-gray-600" />
-              Status Workflow
-            </h3>
-            <TicketStatusWorkflow 
-              currentStatus={ticket.status}
-              onStatusChange={handleStatusChange}
-            />
-          </div>
-
-          {/* Assigned Engineer - Compact */}
+          {/* Assigned Engineer - AT TOP */}
           {ticket.assigned_engineer_name && (
             <div className="bg-white border rounded-lg shadow-sm p-3 md:p-4">
               <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
                 <User className="h-4 w-4 text-blue-600" />
-                Assigned Engineer
+                Assigned Service Engineer
               </h3>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold text-sm">
@@ -960,6 +948,18 @@ export default function TicketDetailPage() {
               </div>
             </div>
           )}
+
+          {/* Status Workflow - BELOW ENGINEER */}
+          <div className="bg-white border rounded-lg shadow-sm p-3 md:p-4">
+            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+              <Wrench className="h-4 w-4 text-gray-600" />
+              Ticket State Management
+            </h3>
+            <TicketStatusWorkflow 
+              currentStatus={ticket.status}
+              onStatusChange={handleStatusChange}
+            />
+          </div>
 
           {/* OLD SECTIONS MOVED TO TABS - REMOVE */}
           {/* Attachments Section - NOW IN TABS */}
