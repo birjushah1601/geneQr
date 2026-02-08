@@ -368,6 +368,7 @@ export function TicketTimeline({ timeline, isPublic = false }: TicketTimelinePro
           </div>
         </CardContent>
       </Card>
+      )}
 
       {/* Assigned Engineer */}
       {timeline.assigned_engineer && (
