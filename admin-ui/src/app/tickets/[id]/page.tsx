@@ -315,42 +315,79 @@ export default function TicketDetailPage() {
 
   return (
     <DashboardLayout>
-      <div className="bg-white border-b -mx-6 -mt-6 px-6 mb-6">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button onClick={() => router.back()} className="p-2 rounded hover:bg-gray-100"><ArrowLeft className="h-5 w-5" /></button>
-            <h1 className="text-lg font-semibold">Ticket {ticket.ticket_number}</h1>
-            <StatusBadge status={ticket.status} />
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowDiagnosisModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
-            >
-              <Brain className="h-4 w-4" />
-              AI Diagnosis
-            </button>
-            <button
-              onClick={() => setShowNotificationModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-            >
-              <Mail className="h-4 w-4" />
-              Send Notification
-            </button>
-            <Link href="/tickets" className="text-sm text-blue-600 hover:underline">All tickets</Link>
+      {/* Modern Sticky Header */}
+      <div className="sticky top-0 z-20 bg-white border-b shadow-sm -mx-6 -mt-6 px-6">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            {/* Left: Ticket Info */}
+            <div className="flex items-center gap-3">
+              <button onClick={() => router.back()} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
+                <ArrowLeft className="h-4 w-4" />
+              </button>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-lg font-bold">{ticket.ticket_number}</h1>
+                  <StatusBadge status={ticket.status} />
+                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                    ticket.priority === 'critical' ? 'bg-red-100 text-red-700' :
+                    ticket.priority === 'high' ? 'bg-orange-100 text-orange-700' :
+                    ticket.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                    'bg-gray-100 text-gray-700'
+                  }`}>
+                    {ticket.priority}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-600 mt-0.5">
+                  {ticket.equipment_name} • {ticket.customer_name}
+                  {ticket.assigned_engineer_name && ` • Assigned to ${ticket.assigned_engineer_name}`}
+                </p>
+              </div>
+            </div>
+            
+            {/* Right: Quick Actions */}
+            <div className="flex gap-2">
+              {timeline && (
+                <Button size="sm" variant="outline" onClick={() => setShowTimelineEditModal(true)}>
+                  <Clock className="h-3 w-3 mr-1" />
+                  Edit Timeline
+                </Button>
+              )}
+              <Button size="sm" variant="outline" onClick={() => setShowNotificationModal(true)}>
+                <Mail className="h-3 w-3 mr-1" />
+                Notify
+              </Button>
+              {ticket.assigned_engineer_name && (
+                <Button size="sm" variant="outline" onClick={() => setShowReassignMultiModel(true)}>
+                  <User className="h-3 w-3 mr-1" />
+                  Reassign
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: details */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="bg-white border rounded p-4">
-            <h2 className="text-base font-semibold mb-3">Details</h2>
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="flex items-center gap-2"><Package className="h-4 w-4 text-gray-400" /><span className="text-gray-500">Equipment</span><span className="font-medium">{ticket.equipment_name}</span></div>
-              <div className="flex items-center gap-2"><User className="h-4 w-4 text-gray-400" /><span className="text-gray-500">Customer</span><span className="font-medium">{ticket.customer_name}</span></div>
-              <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-gray-400" /><span className="text-gray-500">Created</span><span className="font-medium">{new Date(ticket.created_at).toLocaleString()}</span></div>
+      {/* Modern Two-Column Layout */}
+      <div className="container mx-auto px-4 py-4 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4">
+        {/* Left Column: Main Content */}
+        <div className="space-y-3">
+          {/* Combined Ticket Details & Issue Card */}
+          <div className="bg-white border rounded-lg shadow-sm overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-3 border-b">
+              <h2 className="text-sm font-semibold text-gray-900">Ticket Information</h2>
+            </div>
+            <div className="p-4">
+              <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm mb-4">
+              <div className="flex items-center gap-2">
+                <Package className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                <span className="text-gray-500 min-w-[80px]">Equipment:</span>
+                <span className="font-medium">{ticket.equipment_name}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                <span className="text-gray-500 min-w-[80px]">Created:</span>
+                <span className="font-medium text-xs">{new Date(ticket.created_at).toLocaleString()}</span>
+              </div>
               <div>
                 <span className="text-gray-500">Priority</span>
                 <div className="mt-1">
@@ -398,18 +435,58 @@ export default function TicketDetailPage() {
                 </div>
               </div>
             </div>
-            <div className="mt-4">
-              <p className="text-xs text-gray-500 mb-1">Issue</p>
-              <p className="text-sm whitespace-pre-line">{ticket.issue_description}</p>
+              <div className="col-span-2 pt-3 border-t">
+                <p className="text-xs font-semibold text-gray-500 mb-2">Issue Description</p>
+                <p className="text-sm text-gray-700 leading-relaxed">{ticket.issue_description}</p>
+              </div>
             </div>
           </div>
 
-          {/* Customer Contact Information */}
-          <div className="bg-blue-50 border border-blue-200 rounded p-4">
-            <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
-              <User className="h-4 w-4 text-blue-600" />
-              Customer Contact
-            </h2>
+          {/* Status Workflow - Most Important, Now at Top */}
+          <TicketStatusWorkflow 
+            currentStatus={ticket.status}
+            onStatusChange={handleStatusChange}
+          />
+
+          {/* Service Timeline */}
+          {timeline && !timelineLoading && (
+            <div className="bg-white border rounded-lg shadow-sm overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-purple-50 to-pink-50">
+                <h2 className="text-sm font-semibold flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-purple-600" />
+                  Service Timeline & ETA
+                </h2>
+                <Button size="sm" variant="ghost" onClick={() => setShowTimelineEditModal(true)}>
+                  <Edit2 className="h-3 w-3 mr-1" />
+                  Edit
+                </Button>
+              </div>
+              <div className="p-4">
+                <TicketTimeline timeline={timeline} />
+              </div>
+            </div>
+          )}
+
+          {/* Tabs for Secondary Content */}
+          <div className="bg-white border rounded-lg shadow-sm overflow-hidden">
+            <div className="border-b">
+              <div className="flex items-center gap-1 px-4">
+                <button className="px-4 py-3 text-sm font-medium border-b-2 border-blue-600 text-blue-600">
+                  <MessageSquare className="h-4 w-4 inline mr-1" />
+                  Comments
+                </button>
+                <button className="px-4 py-3 text-sm font-medium text-gray-600 hover:text-gray-900">
+                  <Package className="h-4 w-4 inline mr-1" />
+                  Parts {parts?.count > 0 && `(${parts.count})`}
+                </button>
+                <button className="px-4 py-3 text-sm font-medium text-gray-600 hover:text-gray-900">
+                  <Paperclip className="h-4 w-4 inline mr-1" />
+                  Attachments {attachmentList?.data?.items?.length > 0 && `(${attachmentList.data.items.length})`}
+                </button>
+              </div>
+            </div>
+            <div className="p-4">
+              <h2 className="text-sm font-semibold mb-3">Comments</h2>
             <div className="space-y-2 text-sm">
               <div className="flex items-center gap-2">
                 <span className="text-gray-600 w-20">Name:</span>
@@ -680,42 +757,76 @@ export default function TicketDetailPage() {
           )} */}
         </div>
 
-        {/* Right: actions */}
-        <div className="space-y-4">
-          {/* Currently Assigned Engineer */}
-          {ticket.assigned_engineer_name && (
-            <div className="bg-white border rounded p-4">
-              <h3 className="text-sm font-semibold mb-3">Currently Assigned</h3>
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold">
-                  {ticket.assigned_engineer_name.split(' ').map(n => n[0]).join('').substring(0, 2)}
-                </div>
+        {/* Right Sidebar: Context & Quick Actions */}
+        <div className="space-y-3">
+          {/* Customer Contact Card */}
+          <div className="bg-white border rounded-lg shadow-sm overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 px-4 py-2.5 border-b">
+              <h3 className="text-sm font-semibold flex items-center gap-2">
+                <User className="h-4 w-4 text-blue-600" />
+                Customer Contact
+              </h3>
+            </div>
+            <div className="p-4 space-y-2.5 text-sm">
+              <div>
+                <p className="text-xs text-gray-500 mb-0.5">Name</p>
+                <p className="font-medium text-gray-900">{ticket.customer_name}</p>
+              </div>
+              {ticket.customer_email && (
                 <div>
-                  <p className="font-medium text-gray-900">{ticket.assigned_engineer_name}</p>
-                  <p className="text-xs text-gray-500">Assigned Engineer</p>
+                  <p className="text-xs text-gray-500 mb-0.5">Email</p>
+                  <a href={`mailto:${ticket.customer_email}`} className="font-medium text-blue-600 hover:underline text-xs">
+                    {ticket.customer_email}
+                  </a>
+                </div>
+              )}
+              <div>
+                <p className="text-xs text-gray-500 mb-0.5">Phone</p>
+                <a href={`tel:${ticket.customer_phone}`} className="font-medium text-blue-600 hover:underline">
+                  {ticket.customer_phone}
+                </a>
+              </div>
+            </div>
+          </div>
 
-                  <button
-                    onClick={() => setShowReassignMultiModel(true)}
-                    className="mt-2 text-sm text-blue-600 hover:text-blue-800 underline"
-                  >
-                    Reassign Engineer
-                  </button>
+          {/* Assigned Engineer Card */}
+          {ticket.assigned_engineer_name && (
+            <div className="bg-white border rounded-lg shadow-sm overflow-hidden">
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-4 py-2.5 border-b">
+                <h3 className="text-sm font-semibold flex items-center gap-2">
+                  <Wrench className="h-4 w-4 text-indigo-600" />
+                  Assigned Engineer
+                </h3>
+              </div>
+              <div className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold text-sm">
+                    {ticket.assigned_engineer_name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900 text-sm">{ticket.assigned_engineer_name}</p>
+                    <button
+                      onClick={() => setShowReassignMultiModel(true)}
+                      className="text-xs text-blue-600 hover:text-blue-800 hover:underline mt-0.5"
+                    >
+                      Reassign
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Status Workflow - Visual guide with color coding */}
-          <TicketStatusWorkflow 
-            currentStatus={ticket.status}
-            onStatusChange={handleStatusChange}
-          />
-
-          {/* Attachments Section */}
-          <div className="bg-white border rounded p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold flex items-center gap-2">
-                <Paperclip className="h-4 w-4" /> Attachments
+          {/* Attachments Card */}
+          <div className="bg-white border rounded-lg shadow-sm overflow-hidden">
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-2.5 border-b">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold flex items-center gap-2">
+                  <Paperclip className="h-4 w-4 text-green-600" /> 
+                  Attachments
+                  {attachmentList?.data?.items?.length > 0 && (
+                    <span className="text-xs font-normal text-gray-600">({attachmentList.data.items.length})</span>
+                  )}
                 {aiAnalyzing && (
                   <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs">
                     <Loader2 className="h-3 w-3 animate-spin" />
