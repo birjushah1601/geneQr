@@ -345,13 +345,62 @@ export default function TicketDetailPage() {
         {/* Left Column: Main Content (65% desktop, 100% mobile) */}
         <div className="lg:col-span-2 space-y-3 md:space-y-4">
           
-          {/* Status Workflow - MOVED TO TOP */}
-          <TicketStatusWorkflow 
-            currentStatus={ticket.status}
-            onStatusChange={handleStatusChange}
-          />
+          {/* Ticket Overview - Combined Issue, Equipment, Customer */}
+          <div className="bg-white border rounded-lg shadow-sm p-3 md:p-4">
+            <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
+              <FileText className="h-4 w-4 text-gray-600" />
+              Ticket Overview
+            </h2>
+            
+            {/* Issue Description */}
+            <div className="mb-4">
+              <p className="text-xs text-gray-500 mb-1 font-medium">Issue Description</p>
+              <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{ticket.issue_description}</p>
+            </div>
 
-          {/* Timeline & ETA - High Priority Section */}
+            {/* Equipment & Customer Info */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
+              {/* Equipment */}
+              <div>
+                <p className="text-xs text-gray-500 mb-2 font-medium flex items-center gap-1">
+                  <Package className="h-3.5 w-3.5" />
+                  Equipment
+                </p>
+                <div className="space-y-1 text-sm">
+                  <p className="font-medium text-gray-900">{ticket.equipment_name || 'N/A'}</p>
+                  {ticket.equipment_id && (
+                    <p className="text-xs text-gray-500 font-mono">{ticket.equipment_id}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Customer Contact */}
+              <div>
+                <p className="text-xs text-gray-500 mb-2 font-medium flex items-center gap-1">
+                  <User className="h-3.5 w-3.5" />
+                  Customer Contact
+                </p>
+                <div className="space-y-1 text-sm">
+                  <p className="font-medium text-gray-900">{ticket.customer_name}</p>
+                  {ticket.customer_email && (
+                    <a href={`mailto:${ticket.customer_email}`} className="text-xs text-blue-600 hover:underline block truncate">
+                      {ticket.customer_email}
+                    </a>
+                  )}
+                  <a href={`tel:${ticket.customer_phone}`} className="text-xs text-blue-600 hover:underline block">
+                    {ticket.customer_phone}
+                  </a>
+                  {ticket.customer_whatsapp && (
+                    <a href={`https://wa.me/${ticket.customer_whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-xs text-green-600 hover:underline block">
+                      WhatsApp: {ticket.customer_whatsapp}
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Timeline & ETA */}
           {timeline && !timelineLoading && (
             <div className="bg-white border rounded-lg shadow-sm p-3 md:p-4">
               <div className="flex items-center justify-between mb-3">
@@ -370,15 +419,6 @@ export default function TicketDetailPage() {
               <TicketTimeline timeline={timeline} />
             </div>
           )}
-
-          {/* Issue Description */}
-          <div className="bg-white border rounded-lg shadow-sm p-3 md:p-4">
-            <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
-              <FileText className="h-4 w-4 text-gray-600" />
-              Issue Description
-            </h2>
-            <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{ticket.issue_description}</p>
-          </div>
 
           {/* Tabbed Content - Comments, Parts, Attachments, History */}
           <TicketTabbedContent
@@ -545,61 +585,7 @@ export default function TicketDetailPage() {
             </div>
           </div> */}
 
-          {/* Equipment Summary */}
-          <div className="bg-white border rounded-lg shadow-sm p-3 md:p-4">
-            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-              <Package className="h-4 w-4 text-gray-600" />
-              Equipment
-            </h3>
-            <div className="space-y-2 text-xs">
-              <div>
-                <p className="text-gray-500 mb-0.5">Name</p>
-                <p className="font-medium text-gray-900">{ticket.equipment_name || 'N/A'}</p>
-              </div>
-              {ticket.equipment_id && (
-                <div>
-                  <p className="text-gray-500 mb-0.5">Equipment ID</p>
-                  <p className="font-mono text-gray-700">{ticket.equipment_id}</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Customer Contact - Compact */}
-          <div className="bg-white border rounded-lg shadow-sm p-3 md:p-4">
-            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-              <User className="h-4 w-4 text-gray-600" />
-              Customer Contact
-            </h3>
-            <div className="space-y-2 text-xs">
-              <div>
-                <p className="text-gray-500 mb-0.5">Name</p>
-                <p className="font-medium text-gray-900">{ticket.customer_name}</p>
-              </div>
-              {ticket.customer_email && (
-                <div>
-                  <p className="text-gray-500 mb-0.5">Email</p>
-                  <a href={`mailto:${ticket.customer_email}`} className="text-blue-600 hover:underline break-all">
-                    {ticket.customer_email}
-                  </a>
-                </div>
-              )}
-              <div>
-                <p className="text-gray-500 mb-0.5">Phone</p>
-                <a href={`tel:${ticket.customer_phone}`} className="text-blue-600 hover:underline">
-                  {ticket.customer_phone}
-                </a>
-              </div>
-              {ticket.customer_whatsapp && (
-                <div>
-                  <p className="text-gray-500 mb-0.5">WhatsApp</p>
-                  <a href={`https://wa.me/${ticket.customer_whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline">
-                    {ticket.customer_whatsapp}
-                  </a>
-                </div>
-              )}
-            </div>
-          </div>
+          {/* Equipment & Customer moved to Overview card on left */}
 
           {/* AI Diagnosis Section */}
           {diagnosisHistory && diagnosisHistory.length > 0 && (
@@ -835,6 +821,19 @@ export default function TicketDetailPage() {
 
         {/* Right Sidebar: Compact Cards (Stacks on mobile) */}
         <div className="space-y-3 md:space-y-4">
+          
+          {/* Status Workflow - MOVED FROM LEFT TO RIGHT */}
+          <div className="bg-white border rounded-lg shadow-sm p-3 md:p-4">
+            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+              <Wrench className="h-4 w-4 text-gray-600" />
+              Status Workflow
+            </h3>
+            <TicketStatusWorkflow 
+              currentStatus={ticket.status}
+              onStatusChange={handleStatusChange}
+            />
+          </div>
+
           {/* Assigned Engineer - Compact */}
           {ticket.assigned_engineer_name && (
             <div className="bg-white border rounded-lg shadow-sm p-3 md:p-4">
