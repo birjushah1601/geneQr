@@ -207,6 +207,27 @@ export default function TrackTicketPage() {
           )}
         </div>
 
+        {/* SERVICE STATUS & TIMELINE - PRIMARY FOCUS */}
+        {timeline && !timelineLoading ? (
+          <div className="mb-6">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-t-lg px-6 py-4 shadow-lg">
+              <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                <Clock className="h-7 w-7" />
+                Service Status & Timeline
+              </h2>
+              <p className="text-blue-100 text-sm mt-1">Track your service request progress in real-time</p>
+            </div>
+            <div className="bg-white rounded-b-lg shadow-lg">
+              <TicketTimeline timeline={timeline} isPublic={true} />
+            </div>
+          </div>
+        ) : timelineLoading ? (
+          <div className="bg-white rounded-lg shadow-lg p-8 mb-6 text-center">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-2" />
+            <p className="text-gray-600 text-sm">Loading service timeline...</p>
+          </div>
+        ) : null}
+
         {/* Issue Description */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
@@ -215,6 +236,35 @@ export default function TrackTicketPage() {
           </h2>
           <p className="text-gray-700 whitespace-pre-line">{ticket.issue_description}</p>
         </div>
+
+        {/* Comments */}
+        {ticket.comments && ticket.comments.length > 0 && (
+          <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 text-gray-600" />
+              Updates & Comments
+            </h2>
+            <div className="space-y-4">
+              {ticket.comments.map((comment, index) => (
+                <div key={index} className="p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+                        {comment.author_name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">{comment.author_name}</p>
+                        <p className="text-xs text-gray-500 capitalize">{comment.author_role}</p>
+                      </div>
+                    </div>
+                    <span className="text-xs text-gray-500">{formatDate(comment.created_at)}</span>
+                  </div>
+                  <p className="text-gray-700 whitespace-pre-line">{comment.comment}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Status History */}
         {ticket.status_history && ticket.status_history.length > 0 && (
@@ -246,42 +296,6 @@ export default function TrackTicketPage() {
                       <p className="text-sm text-gray-600 mt-1">{event.comment}</p>
                     )}
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Service Timeline & ETA */}
-        {timeline && !timelineLoading && (
-          <div className="mb-6">
-            <TicketTimeline timeline={timeline} />
-          </div>
-        )}
-
-        {/* Comments */}
-        {ticket.comments && ticket.comments.length > 0 && (
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <MessageSquare className="h-5 w-5 text-gray-600" />
-              Updates & Comments
-            </h2>
-            <div className="space-y-4">
-              {ticket.comments.map((comment, index) => (
-                <div key={index} className="p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                        {comment.author_name.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-gray-900">{comment.author_name}</p>
-                        <p className="text-xs text-gray-500 capitalize">{comment.author_role}</p>
-                      </div>
-                    </div>
-                    <span className="text-xs text-gray-500">{formatDate(comment.created_at)}</span>
-                  </div>
-                  <p className="text-gray-700 whitespace-pre-line">{comment.comment}</p>
                 </div>
               ))}
             </div>

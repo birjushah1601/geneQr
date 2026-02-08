@@ -34,9 +34,10 @@ interface PublicTimeline {
 
 interface TicketTimelineProps {
   timeline: PublicTimeline;
+  isPublic?: boolean;
 }
 
-export function TicketTimeline({ timeline }: TicketTimelineProps) {
+export function TicketTimeline({ timeline, isPublic = false }: TicketTimelineProps) {
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return "TBD";
     const date = new Date(dateStr);
