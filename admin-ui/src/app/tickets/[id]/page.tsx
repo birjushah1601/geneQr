@@ -14,7 +14,7 @@ import { PartsAssignmentModal } from "@/components/PartsAssignmentModal";
 import { diagnosisApi, extractSymptoms } from "@/lib/api/diagnosis";
 import MultiModelAssignment from "@/components/MultiModelAssignment";
 import EngineerSelectionModal from "@/components/EngineerSelectionModal";
-import AssignmentHistory from "@/components/AssignmentHistory";
+// import AssignmentHistory from "@/components/AssignmentHistory"; // Removed - not used
 import DashboardLayout from "@/components/DashboardLayout";
 import { SendNotificationModal } from "@/components/SendNotificationModal";
 import { TicketTimeline } from "@/components/TicketTimeline";
@@ -674,10 +674,10 @@ export default function TicketDetailPage() {
             </div>
           )}
           
-          {/* Assignment History - Show for all tickets */}
-          {ticket.assigned_engineer_name && (
+          {/* Assignment History - Removed: Not populated in current system */}
+          {/* {ticket.assigned_engineer_name && (
             <AssignmentHistory ticketId={id} />
-          )}
+          )} */}
         </div>
 
         {/* Right: actions */}
