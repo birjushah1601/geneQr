@@ -367,7 +367,112 @@ export default function TicketDetailPage() {
             <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{ticket.issue_description}</p>
           </div>
 
-          {/* REMOVE OLD DETAILS CARD - Info now in sticky header */}
+          {/* Tabbed Content - Comments, Parts, Attachments, History */}
+          <TicketTabbedContent
+            commentsCount={0}
+            partsCount={parts?.parts?.length || 0}
+            attachmentsCount={attachmentList?.attachments?.length || 0}
+            comments={
+              <div>
+                <CommentBox ticketId={id} onAdded={() => qc.invalidateQueries({ queryKey: ["ticket", id, "comments"] })} />
+                <CommentsList ticketId={id as string} onDeleteComment={onDeleteComment} />
+              </div>
+            }
+            parts={
+              <div>
+                <div className="flex justify-end mb-3">
+                  <button 
+                    onClick={() => setIsPartsModalOpen(true)}
+                    className="px-3 py-1.5 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition-colors flex items-center gap-2"
+                  >
+                    <Package className="h-4 w-4" />
+                    Assign Parts
+                  </button>
+                </div>
+                {parts?.parts?.length ? (
+                  <>
+                    <ul className="divide-y">
+                      {parts.parts.map((p) => (
+                        <li key={p.id || p.spare_part_id} className="py-2 flex items-center justify-between text-sm gap-3">
+                          <div className="flex-1">
+                            <div className="font-medium">{p.part_name}</div>
+                            <div className="text-gray-500 text-xs">{p.part_number}</div>
+                          </div>
+                          <div className="text-right text-gray-600 text-xs">
+                            {p.quantity_required ? <div>Qty: {p.quantity_required}</div> : null}
+                            {p.unit_price ? <div>₹{p.unit_price}</div> : null}
+                          </div>
+                          <button
+                            onClick={async () => {
+                              if (confirm(`Remove ${p.part_name}?`)) {
+                                try {
+                                  await apiClient.delete(`/v1/tickets/${id}/parts/${p.id}`);
+                                  qc.invalidateQueries({ queryKey: ["ticket", id, "parts"] });
+                                } catch (err) {
+                                  alert('Failed to remove part');
+                                }
+                              }
+                            }}
+                            className="p-1 text-red-600 hover:bg-red-50 rounded"
+                          >
+                            <Trash className="h-4 w-4" />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="mt-3 pt-3 border-t text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Total Parts:</span>
+                        <span className="font-medium">{parts.parts.length}</span>
+                      </div>
+                      <div className="flex justify-between mt-1">
+                        <span className="text-gray-600">Total Cost:</span>
+                        <span className="font-medium">₹{parts.parts.reduce((sum, p) => sum + ((p.unit_price || 0) * (p.quantity_required || 1)), 0).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-sm text-gray-500">No parts assigned yet.</p>
+                )}
+              </div>
+            }
+            attachments={
+              <div>
+                <div className="flex justify-end mb-3">
+                  <label className="inline-flex items-center gap-2 px-3 py-1.5 border rounded text-sm cursor-pointer hover:bg-gray-50">
+                    <Upload className="h-4 w-4" /> {uploading ? "Uploading..." : "Upload"}
+                    <input type="file" multiple accept="image/*,.pdf,.doc,.docx" className="hidden" onChange={handleFileUpload} disabled={uploading} />
+                  </label>
+                </div>
+                {loadingAttachments ? (
+                  <div className="text-center py-4"><Loader2 className="h-6 w-6 animate-spin mx-auto text-gray-400" /></div>
+                ) : attachmentList?.attachments?.length ? (
+                  <div className="space-y-2">
+                    {attachmentList.attachments.map((att) => (
+                      <div key={att.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <Paperclip className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                          <a 
+                            href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081'}/v1/attachments/${att.id}/download`}
+                            className="text-sm text-blue-600 hover:underline truncate"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {att.original_filename || att.filename}
+                          </a>
+                        </div>
+                        <span className="text-xs text-gray-500">{(att.file_size_bytes / 1024).toFixed(1)} KB</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500">No attachments yet.</p>
+                )}
+              </div>
+            }
+          />
+
+          {/* REMOVE OLD SECTIONS - Now in tabs above */}
           {/* <div className="bg-white border rounded p-4">
             <h2 className="text-base font-semibold mb-3">Details</h2>
             <div className="grid grid-cols-2 gap-3 text-sm">
@@ -656,12 +761,7 @@ export default function TicketDetailPage() {
             </div>
           )}
 
-          <div className="bg-white border rounded p-4">
-            <h2 className="text-base font-semibold mb-3 flex items-center gap-2"><MessageSquare className="h-4 w-4" /> Comments</h2>
-            {/* Simple add comment box */}
-            <CommentBox ticketId={id} onAdded={() => qc.invalidateQueries({ queryKey: ["ticket", id, "comments"] })} />
-            <CommentsList ticketId={id as string} onDeleteComment={onDeleteComment} />
-          </div>
+          {/* COMMENTS NOW IN TABBED INTERFACE ABOVE */}
 
           {/* Engineer Assignment Section */}
           {!ticket.assigned_engineer_name && (
@@ -728,10 +828,9 @@ export default function TicketDetailPage() {
             </div>
           )}
 
-          {/* STATUS WORKFLOW MOVED TO TOP OF LEFT COLUMN */}
-          
-          {/* Attachments Section */}
-          <div className="bg-white border rounded p-4">
+          {/* OLD SECTIONS MOVED TO TABS - REMOVE */}
+          {/* Attachments Section - NOW IN TABS */}
+          {/* <div className="bg-white border rounded p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold flex items-center gap-2">
                 <Paperclip className="h-4 w-4" /> Attachments
@@ -822,9 +921,10 @@ export default function TicketDetailPage() {
                 <p className="text-xs text-gray-400">Upload images or videos for AI-powered analysis</p>
               </div>
             )}
-          </div>
+          </div> */}
 
-          <div className="bg-white border rounded p-4">
+          {/* Parts Section - NOW IN TABS */}
+          {/* <div className="bg-white border rounded p-4">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-base font-semibold flex items-center gap-2"><Package className="h-4 w-4" /> Parts</h2>
               <button 
@@ -881,7 +981,7 @@ export default function TicketDetailPage() {
             ) : (
               <p className="text-sm text-gray-500">No parts assigned yet. Click "Assign Parts" to add parts.</p>
             )}
-          </div>
+          </div> */}
         </div>
       </div>
 
