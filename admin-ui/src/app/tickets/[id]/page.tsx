@@ -929,12 +929,28 @@ export default function TicketDetailPage() {
           onClose={() => setShowTimelineEditModal(false)}
           onSave={async (updatedTimeline) => {
             try {
+              // Convert datetime-local format to ISO8601 with timezone
+              const formatDateTime = (dateStr: string | undefined) => {
+                if (!dateStr) return null;
+                // If it's already ISO format, return as is
+                if (dateStr.includes('Z') || dateStr.match(/[+-]\d{2}:\d{2}$/)) {
+                  return dateStr;
+                }
+                // If it's datetime-local format (YYYY-MM-DDTHH:mm), add seconds and timezone
+                const date = new Date(dateStr);
+                return date.toISOString(); // This adds :00.000Z
+              };
+
               // Extract only the fields the backend expects
               const payload = {
-                estimated_resolution: updatedTimeline.estimated_resolution,
+                estimated_resolution: formatDateTime(updatedTimeline.estimated_resolution),
                 parts_status: updatedTimeline.parts_status,
-                parts_eta: updatedTimeline.parts_eta,
-                milestones: updatedTimeline.milestones,
+                parts_eta: formatDateTime(updatedTimeline.parts_eta),
+                milestones: updatedTimeline.milestones.map((m: any) => ({
+                  ...m,
+                  eta: formatDateTime(m.eta),
+                  completed_at: m.completed_at ? formatDateTime(m.completed_at) : null
+                })),
                 admin_notes: "Timeline manually adjusted by admin",
                 blocker_comments: updatedTimeline.blocker_comments || {}
               };
