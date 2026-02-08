@@ -293,26 +293,21 @@ export default function TrackTicketPage() {
                 </div>
               ))}
             </div>
-          </div>
+          </details>
         )}
 
         {/* No Activity Message */}
         {(!ticket.comments || ticket.comments.length === 0) && 
          (!ticket.status_history || ticket.status_history.length === 0) && (
-          <div className="bg-white rounded-lg shadow-lg p-8 text-center">
-            <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">No updates yet. We'll notify you once work begins!</p>
+          <div className="bg-white rounded-xl shadow-md p-6 text-center">
+            <Clock className="h-10 w-10 text-gray-400 mx-auto mb-3" />
+            <p className="text-sm text-gray-600">No updates yet. We'll notify you once work begins!</p>
           </div>
         )}
 
-        {/* Footer */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mt-6 text-center">
-          <p className="text-sm text-gray-600">
-            Thank you for your service request. We're working on resolving your issue as quickly as possible.
-          </p>
-          <p className="text-xs text-gray-500 mt-2">
-            Last updated: {formatDate(ticket.updated_at)}
-          </p>
+        {/* Compact Footer */}
+        <div className="text-center mt-6 text-xs text-gray-500">
+          <p>Last updated: {formatDate(ticket.updated_at)}</p>
         </div>
       </div>
     </div>
