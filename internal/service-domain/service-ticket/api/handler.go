@@ -687,6 +687,14 @@ func (h *TicketHandler) GetTimeline(w http.ResponseWriter, r *http.Request) {
 	// Convert to public view first
 	publicTimeline := h.timelineService.ConvertToPublicTimeline(timeline, ticket)
 	
+	// Override with manual admin-set resolution date if it exists
+	if ticket.SLAResolutionDue != nil {
+		publicTimeline.EstimatedResolution = ticket.SLAResolutionDue
+		h.logger.Info("Applied manual resolution date override",
+			slog.String("ticket_id", id),
+			slog.Time("manual_resolution", *ticket.SLAResolutionDue))
+	}
+	
 	// Try to apply any admin overrides from database (if columns exist)
 	var timelineOverrides []byte
 	var partsOverride []byte
