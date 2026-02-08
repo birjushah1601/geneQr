@@ -1267,8 +1267,17 @@ export default function TicketDetailPage() {
                 blocker_comments: updatedTimeline.blocker_comments || {}
               };
               
-              await apiClient.put(`/v1/tickets/${id}/timeline`, payload);
+              console.log('Saving timeline with payload:', payload);
+              console.log('estimated_resolution being sent:', payload.estimated_resolution);
+              
+              const response = await apiClient.put(`/v1/tickets/${id}/timeline`, payload);
+              console.log('Timeline save response:', response);
+              
               qc.invalidateQueries({ queryKey: ["ticket", id, "timeline"] });
+              
+              // Wait a bit for the query to refetch
+              await new Promise(resolve => setTimeout(resolve, 500));
+              
               alert("Timeline updated successfully!");
             } catch (err: any) {
               console.error("Timeline update error:", err);
