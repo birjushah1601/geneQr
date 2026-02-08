@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -230,24 +232,18 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
               <label className="text-sm font-medium text-gray-700 min-w-fit">
                 Target Completion:
               </label>
-              <div className="flex-1 relative" style={{
-                backgroundColor: '#F3F4F6',
-                border: '2px solid #9CA3AF',
-                borderRadius: '8px',
-                padding: '8px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-              }}>
-                <Input
-                  type="datetime-local"
-                  value={formatDateForInput(editedTimeline.estimated_resolution)}
-                  onChange={(e) => handleResolutionDateChange(e.target.value)}
-                  className="w-full border-0 outline-none"
-                  style={{ 
-                    colorScheme: 'light',
-                    backgroundColor: '#F3F4F6',
-                    fontSize: '14px',
-                    fontWeight: '500'
-                  }}
+              <div className="flex-1">
+                <DatePicker
+                  selected={editedTimeline.estimated_resolution ? new Date(editedTimeline.estimated_resolution) : null}
+                  onChange={(date) => handleResolutionDateChange(date ? date.toISOString() : '')}
+                  showTimeSelect
+                  timeFormat="HH:mm"
+                  timeIntervals={15}
+                  dateFormat="MMMM d, yyyy h:mm aa"
+                  className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
+                  calendarClassName="date-picker-calendar"
+                  popperClassName="date-picker-popper"
+                  placeholderText="Select date and time"
                 />
               </div>
             </div>
