@@ -328,9 +328,9 @@ export default function TicketDetailPage() {
         />
       </div>
 
-      <div className="container mx-auto px-4 py-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Left Column: Main Content (65%) */}
-        <div className="lg:col-span-2 space-y-4">
+      <div className="container mx-auto px-4 py-4 grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-4">
+        {/* Left Column: Main Content (65% desktop, 100% mobile) */}
+        <div className="lg:col-span-2 space-y-3 md:space-y-4">
           
           {/* Status Workflow - MOVED TO TOP */}
           <TicketStatusWorkflow 
@@ -340,7 +340,7 @@ export default function TicketDetailPage() {
 
           {/* Timeline & ETA - High Priority Section */}
           {timeline && !timelineLoading && (
-            <div className="bg-white border rounded-lg shadow-sm p-4">
+            <div className="bg-white border rounded-lg shadow-sm p-3 md:p-4">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-base font-semibold flex items-center gap-2">
                   <Clock className="h-4 w-4 text-blue-600" />
@@ -359,7 +359,7 @@ export default function TicketDetailPage() {
           )}
 
           {/* Issue Description */}
-          <div className="bg-white border rounded-lg shadow-sm p-4">
+          <div className="bg-white border rounded-lg shadow-sm p-3 md:p-4">
             <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
               <FileText className="h-4 w-4 text-gray-600" />
               Issue Description
@@ -533,7 +533,7 @@ export default function TicketDetailPage() {
           </div> */}
 
           {/* Equipment Summary */}
-          <div className="bg-white border rounded-lg shadow-sm p-4">
+          <div className="bg-white border rounded-lg shadow-sm p-3 md:p-4">
             <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
               <Package className="h-4 w-4 text-gray-600" />
               Equipment
@@ -553,7 +553,7 @@ export default function TicketDetailPage() {
           </div>
 
           {/* Customer Contact - Compact */}
-          <div className="bg-white border rounded-lg shadow-sm p-4">
+          <div className="bg-white border rounded-lg shadow-sm p-3 md:p-4">
             <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
               <User className="h-4 w-4 text-gray-600" />
               Customer Contact
@@ -820,11 +820,11 @@ export default function TicketDetailPage() {
           )} */}
         </div>
 
-        {/* Right Sidebar: Compact Cards */}
-        <div className="space-y-4">
+        {/* Right Sidebar: Compact Cards (Stacks on mobile) */}
+        <div className="space-y-3 md:space-y-4">
           {/* Assigned Engineer - Compact */}
           {ticket.assigned_engineer_name && (
-            <div className="bg-white border rounded-lg shadow-sm p-4">
+            <div className="bg-white border rounded-lg shadow-sm p-3 md:p-4">
               <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
                 <User className="h-4 w-4 text-blue-600" />
                 Assigned Engineer
