@@ -191,9 +191,10 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <CardHeader className="border-b sticky top-0 bg-white z-10">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto overflow-x-visible" style={{ isolation: 'isolate' }}>
+        <Card className="w-full">
+          <CardHeader className="border-b sticky top-0 bg-white z-10">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Edit2 className="h-5 w-5 text-blue-600" />
@@ -519,6 +520,7 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
