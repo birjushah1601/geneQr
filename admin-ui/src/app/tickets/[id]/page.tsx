@@ -7,7 +7,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ticketsApi } from "@/lib/api/tickets";
 import { apiClient } from "@/lib/api/client";
 import type { ServiceTicket, TicketPriority, TicketStatus, PublicTimeline } from "@/types";
-import { ArrowLeft, Loader2, Package, User, Calendar, Wrench, Pause, Play, CheckCircle, XCircle, AlertTriangle, FileText, MessageSquare, Paperclip, Upload, Brain, Sparkles, TrendingUp, Lightbulb, Shield, Trash, X, Mail, Clock, Edit2 } from "lucide-react";
+import { ArrowLeft, Loader2, Package, User, Calendar, Wrench, Pause, Play, CheckCircle, XCircle, AlertTriangle, FileText, MessageSquare, Paperclip, Upload, Brain, Sparkles, TrendingUp, Lightbulb, Shield, Trash, X, Mail, Clock, Edit2, ChevronDown, ChevronUp } from "lucide-react";
 import { AIDiagnosisModal } from "@/components/AIDiagnosisModal";
 import { attachmentsApi } from "@/lib/api/attachments";
 import { PartsAssignmentModal } from "@/components/PartsAssignmentModal";
@@ -99,6 +99,7 @@ export default function TicketDetailPage() {
 
   const [uploading, setUploading] = useState(false);
   const [aiAnalyzing, setAiAnalyzing] = useState(false);
+  const [timelineExpanded, setTimelineExpanded] = useState(false);
   
   // Handle file upload from input
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -107,10 +108,17 @@ export default function TicketDetailPage() {
     
     // Upload first file (can be enhanced to handle multiple)
     const file = files[0];
-    await onUpload(file);
     
-    // Reset input
-    e.currentTarget.value = "";
+    try {
+      await onUpload(file);
+    } catch (error) {
+      console.error('Upload failed:', error);
+    } finally {
+      // Reset input - check if element still exists
+      if (e.target) {
+        e.target.value = "";
+      }
+    }
   };
   
   const onDelete = async (attachmentId: string) => {
@@ -400,23 +408,73 @@ export default function TicketDetailPage() {
             </div>
           </div>
 
-          {/* Timeline & ETA */}
+          {/* Timeline & ETA - Expandable */}
           {timeline && !timelineLoading && (
-            <div className="bg-white border rounded-lg shadow-sm p-3 md:p-4">
-              <div className="flex items-center justify-between mb-3">
+            <div className="bg-white border rounded-lg shadow-sm">
+              {/* Header - Always Visible */}
+              <div 
+                className="flex items-center justify-between p-3 md:p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                onClick={() => setTimelineExpanded(!timelineExpanded)}
+              >
                 <h2 className="text-base font-semibold flex items-center gap-2">
                   <Clock className="h-4 w-4 text-blue-600" />
                   Service Timeline & ETA
+                  {!timelineExpanded && timeline.milestones && (
+                    <span className="text-xs font-normal text-gray-500">
+                      ({timeline.milestones.length} milestones)
+                    </span>
+                  )}
                 </h2>
-                <button
-                  onClick={() => setShowTimelineEditModal(true)}
-                  className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
-                >
-                  <Edit2 className="h-3.5 w-3.5" />
-                  Edit
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowTimelineEditModal(true);
+                    }}
+                    className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                  >
+                    <Edit2 className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Edit</span>
+                  </button>
+                  {timelineExpanded ? (
+                    <ChevronUp className="h-5 w-5 text-gray-400" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5 text-gray-400" />
+                  )}
+                </div>
               </div>
-              <TicketTimeline timeline={timeline} />
+
+              {/* Compact Summary - When Collapsed */}
+              {!timelineExpanded && timeline.milestones && (
+                <div className="px-3 md:px-4 pb-3 md:pb-4 border-t">
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-4">
+                      <div>
+                        <span className="text-gray-500">Status: </span>
+                        <span className="font-medium text-gray-900">
+                          {timeline.milestones.find(m => m.is_current)?.name || 'In Progress'}
+                        </span>
+                      </div>
+                      {timeline.estimated_completion && (
+                        <div>
+                          <span className="text-gray-500">ETA: </span>
+                          <span className="font-medium text-blue-600">
+                            {new Date(timeline.estimated_completion).toLocaleDateString()}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-xs text-gray-400">Click to expand</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Full Timeline - When Expanded */}
+              {timelineExpanded && (
+                <div className="px-3 md:px-4 pb-3 md:pb-4 border-t">
+                  <TicketTimeline timeline={timeline} />
+                </div>
+              )}
             </div>
           )}
 
