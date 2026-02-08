@@ -813,7 +813,16 @@ func (s *TicketService) UpdatePriority(ctx context.Context, ticketID string, pri
 		return fmt.Errorf("failed to update ticket priority: %w", err)
 	}
 	
-	// Event logging removed - using audit_logs table instead
+	// Add comment to log priority change
+	comment := &ticketDomain.TicketComment{
+		TicketID:    ticketID,
+		CommentType: "system",
+		AuthorName:  "System",
+		Comment:     fmt.Sprintf("Priority changed from %s to %s", oldPriority, priority),
+	}
+	if err := s.repo.AddComment(ctx, comment); err != nil {
+		s.logger.Warn("Failed to add priority change comment", slog.String("error", err.Error()))
+	}
 	
 	s.logger.Info("Ticket priority updated successfully",
 		slog.String("ticket_id", ticketID),

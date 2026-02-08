@@ -64,7 +64,9 @@ export function SendNotificationModal({
           summary += `No comments yet.\n\n`;
         }
         
-        summary += `\nYou can track this ticket anytime at: [Tracking URL will be added]\n`;
+        if (ticket?.tracking_url) {
+          summary += `\nYou can track this ticket anytime at: ${ticket.tracking_url}\n`;
+        }
         
         setComment(summary);
       } catch (err) {

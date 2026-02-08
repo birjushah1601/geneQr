@@ -270,6 +270,9 @@ export interface ServiceTicket {
   videos?: string[];
   documents?: string[];
   
+  // Tracking
+  tracking_url?: string;
+  
   // Metadata
   notes?: string;
   created_by?: string;
