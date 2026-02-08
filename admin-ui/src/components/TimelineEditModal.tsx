@@ -231,11 +231,11 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
                 Target Completion:
               </label>
               <div className="flex-1 relative" style={{
-                backgroundColor: 'white',
-                border: '3px solid #4B5563',
+                backgroundColor: '#F3F4F6',
+                border: '2px solid #9CA3AF',
                 borderRadius: '8px',
                 padding: '8px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
               }}>
                 <Input
                   type="datetime-local"
@@ -244,7 +244,7 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
                   className="w-full border-0 outline-none"
                   style={{ 
                     colorScheme: 'light',
-                    backgroundColor: 'white',
+                    backgroundColor: '#F3F4F6',
                     fontSize: '14px',
                     fontWeight: '500'
                   }}
@@ -277,11 +277,11 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
                     Expected Arrival:
                   </label>
                   <div className="flex-1 relative" style={{
-                    backgroundColor: 'white',
-                    border: '3px solid #4B5563',
+                    backgroundColor: '#F3F4F6',
+                    border: '2px solid #9CA3AF',
                     borderRadius: '8px',
                     padding: '8px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                   }}>
                     <Input
                       type="datetime-local"
@@ -290,7 +290,7 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
                       className="w-full border-0 outline-none"
                       style={{ 
                         colorScheme: 'light',
-                        backgroundColor: 'white',
+                        backgroundColor: '#F3F4F6',
                         fontSize: '14px',
                         fontWeight: '500'
                       }}
@@ -395,11 +395,11 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
                           <div>
                             <label className="text-xs text-gray-600 block mb-1">ETA</label>
                             <div className="relative" style={{
-                              backgroundColor: 'white',
-                              border: '3px solid #4B5563',
+                              backgroundColor: '#F3F4F6',
+                              border: '2px solid #9CA3AF',
                               borderRadius: '8px',
                               padding: '6px',
-                              boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                             }}>
                               <Input
                                 type="datetime-local"
@@ -408,7 +408,7 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
                                 className="w-full border-0 outline-none text-sm"
                                 style={{ 
                                   colorScheme: 'light',
-                                  backgroundColor: 'white',
+                                  backgroundColor: '#F3F4F6',
                                   fontSize: '13px',
                                   fontWeight: '500'
                                 }}

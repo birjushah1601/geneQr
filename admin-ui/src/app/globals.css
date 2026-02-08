@@ -60,10 +60,10 @@
 
 /* Fix datetime-local calendar picker appearance */
 @layer components {
-  /* Style the date input with clear boundaries */
+  /* Light grey background for datetime picker - makes calendar visible */
   input[type="datetime-local"] {
     position: relative;
-    background: white !important;
+    background: #F3F4F6 !important;
     color: #1f2937 !important;
     font-weight: 500;
   }
@@ -73,23 +73,23 @@
     cursor: pointer;
     padding: 4px;
     margin-left: 8px;
-    opacity: 0.7;
+    opacity: 0.8;
   }
   
   input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
     opacity: 1;
-    background-color: rgba(59, 130, 246, 0.1);
+    background-color: rgba(156, 163, 175, 0.3);
     border-radius: 4px;
   }
   
-  /* Date/time text fields with white background */
+  /* Light grey background for all date/time parts */
   input[type="datetime-local"]::-webkit-datetime-edit-fields-wrapper {
-    background: white !important;
+    background: #F3F4F6 !important;
     padding: 4px 8px;
   }
   
   input[type="datetime-local"]::-webkit-datetime-edit {
-    background: white !important;
+    background: #F3F4F6 !important;
   }
   
   input[type="datetime-local"]::-webkit-datetime-edit-text,
@@ -98,7 +98,8 @@
   input[type="datetime-local"]::-webkit-datetime-edit-year-field,
   input[type="datetime-local"]::-webkit-datetime-edit-hour-field,
   input[type="datetime-local"]::-webkit-datetime-edit-minute-field {
-    background: white !important;
+    background: #F3F4F6 !important;
     color: #1f2937 !important;
+    padding: 2px 4px;
   }
 }
