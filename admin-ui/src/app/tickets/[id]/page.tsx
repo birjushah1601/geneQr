@@ -331,7 +331,44 @@ export default function TicketDetailPage() {
       <div className="container mx-auto px-4 py-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Left Column: Main Content (65%) */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-white border rounded p-4">
+          
+          {/* Status Workflow - MOVED TO TOP */}
+          <TicketStatusWorkflow 
+            currentStatus={ticket.status}
+            onStatusChange={handleStatusChange}
+          />
+
+          {/* Timeline & ETA - High Priority Section */}
+          {timeline && !timelineLoading && (
+            <div className="bg-white border rounded-lg shadow-sm p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-base font-semibold flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-blue-600" />
+                  Service Timeline & ETA
+                </h2>
+                <button
+                  onClick={() => setShowTimelineEditModal(true)}
+                  className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                >
+                  <Edit2 className="h-3.5 w-3.5" />
+                  Edit
+                </button>
+              </div>
+              <TicketTimeline timeline={timeline} />
+            </div>
+          )}
+
+          {/* Issue Description */}
+          <div className="bg-white border rounded-lg shadow-sm p-4">
+            <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
+              <FileText className="h-4 w-4 text-gray-600" />
+              Issue Description
+            </h2>
+            <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{ticket.issue_description}</p>
+          </div>
+
+          {/* REMOVE OLD DETAILS CARD - Info now in sticky header */}
+          {/* <div className="bg-white border rounded p-4">
             <h2 className="text-base font-semibold mb-3">Details</h2>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="flex items-center gap-2"><Package className="h-4 w-4 text-gray-400" /><span className="text-gray-500">Equipment</span><span className="font-medium">{ticket.equipment_name}</span></div>
@@ -388,7 +425,7 @@ export default function TicketDetailPage() {
               <p className="text-xs text-gray-500 mb-1">Issue</p>
               <p className="text-sm whitespace-pre-line">{ticket.issue_description}</p>
             </div>
-          </div>
+          </div> */}
 
           {/* Customer Contact Information */}
           <div className="bg-blue-50 border border-blue-200 rounded p-4">
@@ -691,12 +728,8 @@ export default function TicketDetailPage() {
             </div>
           )}
 
-          {/* Status Workflow - Visual guide with color coding */}
-          <TicketStatusWorkflow 
-            currentStatus={ticket.status}
-            onStatusChange={handleStatusChange}
-          />
-
+          {/* STATUS WORKFLOW MOVED TO TOP OF LEFT COLUMN */}
+          
           {/* Attachments Section */}
           <div className="bg-white border rounded p-4">
             <div className="flex items-center justify-between mb-3">
@@ -852,8 +885,8 @@ export default function TicketDetailPage() {
         </div>
       </div>
 
-      {/* SLA/ETA Timeline Section */}
-      <div className="mt-6">
+      {/* TIMELINE MOVED TO TOP OF LEFT COLUMN */}
+      {/* <div className="mt-6">
         {timelineLoading && (
           <div className="flex items-center gap-2 text-gray-500">
             <Loader2 className="h-5 w-5 animate-spin" />
@@ -880,7 +913,7 @@ export default function TicketDetailPage() {
             <TicketTimeline timeline={timeline} />
           </div>
         )}
-      </div>
+      </div> */}
 
       {/* AI Diagnosis Modal */}
       <AIDiagnosisModal
