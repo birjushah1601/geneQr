@@ -1,0 +1,7 @@
+﻿# Apply Timeline Overrides Migration
+
+Run this SQL to enable timeline persistence:
+
+ALTER TABLE service_tickets ADD COLUMN IF NOT EXISTS timeline_overrides JSONB;
+ALTER TABLE service_tickets ADD COLUMN IF NOT EXISTS parts_override JSONB;
+CREATE INDEX IF NOT EXISTS idx_service_tickets_timeline_overrides ON service_tickets USING GIN (timeline_overrides);
