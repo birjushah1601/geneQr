@@ -229,14 +229,23 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
               <label className="text-sm font-medium text-gray-700 min-w-fit">
                 Target Completion:
               </label>
-              <div className="flex-1 relative">
+              <div className="flex-1 relative" style={{
+                backgroundColor: 'white',
+                border: '3px solid #4B5563',
+                borderRadius: '8px',
+                padding: '8px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+              }}>
                 <Input
                   type="datetime-local"
                   value={formatDateForInput(editedTimeline.estimated_resolution)}
                   onChange={(e) => handleResolutionDateChange(e.target.value)}
-                  className="w-full bg-white shadow-sm border-2 border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                  className="w-full border-0 outline-none"
                   style={{ 
                     colorScheme: 'light',
+                    backgroundColor: 'white',
+                    fontSize: '14px',
+                    fontWeight: '500'
                   }}
                 />
               </div>
@@ -266,14 +275,23 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
                   <label className="text-sm font-medium text-gray-700 min-w-fit">
                     Expected Arrival:
                   </label>
-                  <div className="flex-1 relative">
+                  <div className="flex-1 relative" style={{
+                    backgroundColor: 'white',
+                    border: '3px solid #4B5563',
+                    borderRadius: '8px',
+                    padding: '8px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                  }}>
                     <Input
                       type="datetime-local"
                       value={formatDateForInput(editedTimeline.parts_eta)}
                       onChange={(e) => handlePartsEtaChange(e.target.value)}
-                      className="w-full bg-white shadow-sm border-2 border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                      className="w-full border-0 outline-none"
                       style={{ 
                         colorScheme: 'light',
+                        backgroundColor: 'white',
+                        fontSize: '14px',
+                        fontWeight: '500'
                       }}
                     />
                   </div>
@@ -375,14 +393,23 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
                         {milestone.status !== 'completed' && milestone.status !== 'skipped' && (
                           <div>
                             <label className="text-xs text-gray-600 block mb-1">ETA</label>
-                            <div className="relative">
+                            <div className="relative" style={{
+                              backgroundColor: 'white',
+                              border: '3px solid #4B5563',
+                              borderRadius: '8px',
+                              padding: '6px',
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                            }}>
                               <Input
                                 type="datetime-local"
                                 value={formatDateForInput(milestone.eta)}
                                 onChange={(e) => handleMilestoneEtaChange(index, e.target.value)}
-                                className="w-full bg-white shadow-sm border-2 border-gray-300 rounded-md px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                className="w-full border-0 outline-none text-sm"
                                 style={{ 
                                   colorScheme: 'light',
+                                  backgroundColor: 'white',
+                                  fontSize: '13px',
+                                  fontWeight: '500'
                                 }}
                               />
                             </div>
