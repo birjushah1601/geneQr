@@ -19,6 +19,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { SendNotificationModal } from "@/components/SendNotificationModal";
 import { TicketTimeline } from "@/components/TicketTimeline";
 import { TimelineEditModal } from "@/components/TimelineEditModal";
+import { TicketStatusWorkflow } from "@/components/TicketStatusWorkflow";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -292,6 +293,17 @@ export default function TicketDetailPage() {
   const resolve = useMutation({ mutationFn: () => post(`/v1/tickets/${id}/resolve`, { resolution_notes: "Resolved by admin" }), onSuccess: () => refetch() });
   const close = useMutation({ mutationFn: () => post(`/v1/tickets/${id}/close`, { closed_by: "admin" }), onSuccess: () => refetch() });
   const cancel = useMutation({ mutationFn: () => post(`/v1/tickets/${id}/cancel`, { reason: "Cancelled by admin", cancelled_by: "admin" }), onSuccess: () => refetch() });
+
+  const handleStatusChange = (newStatus: TicketStatus) => {
+    if (ticket.status === "new" && newStatus === "assigned") ack.mutate();
+    else if (ticket.status === "assigned" && newStatus === "in_progress") start.mutate();
+    else if (ticket.status === "in_progress" && newStatus === "on_hold") hold.mutate();
+    else if (ticket.status === "on_hold" && newStatus === "in_progress") resume.mutate();
+    else if (ticket.status === "in_progress" && newStatus === "resolved") resolve.mutate();
+    else if (ticket.status === "resolved" && newStatus === "closed") close.mutate();
+    else if (newStatus === "cancelled") cancel.mutate();
+    else if (ticket.status === "resolved" && newStatus === "in_progress") start.mutate(); // Reopen
+  };
 
   if (isLoading || !ticket) {
     return (
@@ -693,18 +705,11 @@ export default function TicketDetailPage() {
             </div>
           )}
 
-          <div className="bg-white border rounded p-4">
-            <h3 className="text-sm font-semibold mb-3">Actions</h3>
-            <div className="grid grid-cols-2 gap-2">
-              <button onClick={() => ack.mutate()} className="px-3 py-2 border rounded text-sm flex items-center justify-center gap-2"><CheckCircle className="h-4 w-4" /> Acknowledge</button>
-              <button onClick={() => start.mutate()} className="px-3 py-2 border rounded text-sm flex items-center justify-center gap-2"><Wrench className="h-4 w-4" /> Start</button>
-              <button onClick={() => hold.mutate()} className="px-3 py-2 border rounded text-sm flex items-center justify-center gap-2"><Pause className="h-4 w-4" /> Hold</button>
-              <button onClick={() => resume.mutate()} className="px-3 py-2 border rounded text-sm flex items-center justify-center gap-2"><Play className="h-4 w-4" /> Resume</button>
-              <button onClick={() => resolve.mutate()} className="px-3 py-2 border rounded text-sm flex items-center justify-center gap-2"><CheckCircle className="h-4 w-4" /> Resolve</button>
-              <button onClick={() => close.mutate()} className="px-3 py-2 border rounded text-sm flex items-center justify-center gap-2"><FileText className="h-4 w-4" /> Close</button>
-              <button onClick={() => cancel.mutate()} className="px-3 py-2 border rounded text-sm flex items-center justify-center gap-2 col-span-2 text-red-600 border-red-300"><XCircle className="h-4 w-4" /> Cancel</button>
-            </div>
-          </div>
+          {/* Status Workflow - Visual guide with color coding */}
+          <TicketStatusWorkflow 
+            currentStatus={ticket.status}
+            onStatusChange={handleStatusChange}
+          />
 
           {/* Attachments Section */}
           <div className="bg-white border rounded p-4">
