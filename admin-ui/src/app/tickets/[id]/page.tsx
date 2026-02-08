@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ticketsApi } from "@/lib/api/tickets";
 import { apiClient } from "@/lib/api/client";
-import type { ServiceTicket, TicketPriority, TicketStatus } from "@/types";
+import type { ServiceTicket, TicketPriority, TicketStatus, PublicTimeline } from "@/types";
 import { ArrowLeft, Loader2, Package, User, Calendar, Wrench, Pause, Play, CheckCircle, XCircle, AlertTriangle, FileText, MessageSquare, Paperclip, Upload, Brain, Sparkles, TrendingUp, Lightbulb, Shield, Trash, X, Mail } from "lucide-react";
 import { AIDiagnosisModal } from "@/components/AIDiagnosisModal";
 import { attachmentsApi } from "@/lib/api/attachments";
@@ -17,6 +17,7 @@ import EngineerSelectionModal from "@/components/EngineerSelectionModal";
 import AssignmentHistory from "@/components/AssignmentHistory";
 import DashboardLayout from "@/components/DashboardLayout";
 import { SendNotificationModal } from "@/components/SendNotificationModal";
+import { TicketTimeline } from "@/components/TicketTimeline";
 import { useAuth } from "@/contexts/AuthContext";
 
 function StatusBadge({ status }: { status: TicketStatus }) {
@@ -67,6 +68,16 @@ export default function TicketDetailPage() {
       console.log(`Parts loaded: ${parts.count} part(s)`, parts.parts);
     }
   }, [parts, partsError]);
+
+  // Fetch timeline for SLA/ETA tracking
+  const { data: timeline, isLoading: timelineLoading } = useQuery<PublicTimeline>({
+    queryKey: ["ticket", id, "timeline"],
+    queryFn: async () => {
+      const response = await apiClient.get(`/v1/tickets/${id}/timeline`);
+      return response.data;
+    },
+    enabled: !!id,
+  });
 
   const { data: attachmentList, refetch: refetchAttachments, isLoading: loadingAttachments } = useQuery({
     queryKey: ["ticket", id, "attachments"],
