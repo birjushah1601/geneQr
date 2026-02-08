@@ -808,7 +808,7 @@ export default function TicketDetailPage() {
                       </div>
                       <div className="text-right text-gray-600">
                         {p.quantity_required ? <div>Qty: {p.quantity_required}</div> : null}
-                        {p.unit_price ? <div>â‚¹{p.unit_price}</div> : null}
+                        {p.unit_price ? <div>₹{p.unit_price}</div> : null}
                       </div>
                       <button
                         onClick={async () => {
@@ -836,7 +836,7 @@ export default function TicketDetailPage() {
                   </div>
                   <div className="flex justify-between text-sm mt-1">
                     <span className="text-gray-600">Total Cost:</span>
-                    <span className="font-medium">â‚¹{parts.parts.reduce((sum, p) => sum + ((p.unit_price || 0) * (p.quantity_required || 1)), 0).toLocaleString()}</span>
+                    <span className="font-medium">₹{parts.parts.reduce((sum, p) => sum + ((p.unit_price || 0) * (p.quantity_required || 1)), 0).toLocaleString()}</span>
                   </div>
                 </div>
               </>
