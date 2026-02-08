@@ -448,8 +448,17 @@ export default function TicketDetailPage() {
               {!timelineExpanded && timeline.milestones && (() => {
                 const completedMilestones = timeline.milestones.filter(m => m.status === 'completed').length;
                 const totalMilestones = timeline.milestones.length;
-                const progressPercentage = totalMilestones > 0 ? Math.round((completedMilestones / totalMilestones) * 100) : 0;
+                
+                // Use progress_percentage from timeline if available, otherwise calculate
+                const progressPercentage = timeline.progress_percentage ?? 
+                  (totalMilestones > 0 ? Math.round((completedMilestones / totalMilestones) * 100) : 0);
+                
                 const currentMilestone = timeline.milestones.find(m => m.is_current);
+                
+                // Get target completion date - try all possible sources
+                const targetDate = timeline.estimated_resolution;
+                const lastMilestoneETA = timeline.milestones[timeline.milestones.length - 1]?.eta;
+                const displayDate = targetDate || lastMilestoneETA;
                 
                 return (
                   <div className="px-3 md:px-4 pb-3 border-t pt-3">
@@ -470,18 +479,18 @@ export default function TicketDetailPage() {
                     </div>
 
                     {/* Current Status & Target Date */}
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center justify-between text-sm flex-wrap gap-2">
                       <div className="flex items-center gap-2">
                         <span className="text-gray-500">Current:</span>
                         <span className="font-medium text-gray-900">
-                          {currentMilestone?.name || 'In Progress'}
+                          {currentMilestone?.name || timeline.current_stage || 'In Progress'}
                         </span>
                       </div>
-                      {timeline.estimated_completion && (
+                      {displayDate && (
                         <div className="flex items-center gap-2">
-                          <span className="text-gray-500">Target:</span>
+                          <span className="text-gray-500">Target Resolution:</span>
                           <span className="font-semibold text-blue-600">
-                            {new Date(timeline.estimated_completion).toLocaleDateString('en-US', { 
+                            {new Date(displayDate).toLocaleDateString('en-US', { 
                               month: 'short', 
                               day: 'numeric',
                               year: 'numeric'
@@ -490,6 +499,13 @@ export default function TicketDetailPage() {
                         </div>
                       )}
                     </div>
+                    
+                    {/* Show time remaining if available */}
+                    {timeline.time_remaining && (
+                      <div className="mt-2 text-xs text-gray-600">
+                        <span className="text-gray-500">Time Remaining:</span> {timeline.time_remaining}
+                      </div>
+                    )}
                     
                     <div className="text-center mt-2">
                       <span className="text-xs text-gray-400">Click to expand for details</span>
