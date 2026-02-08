@@ -235,12 +235,19 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
               <div className="flex-1">
                 <DatePicker
                   selected={editedTimeline.estimated_resolution ? new Date(editedTimeline.estimated_resolution) : null}
-                  onChange={(date) => handleResolutionDateChange(date ? date.toISOString() : '')}
+                  onChange={(date) => {
+                    if (date) {
+                      // Store as ISO string with timezone
+                      handleResolutionDateChange(date.toISOString());
+                    } else {
+                      handleResolutionDateChange('');
+                    }
+                  }}
                   showTimeSelect
                   timeFormat="HH:mm"
                   timeIntervals={15}
-                  dateFormat="MMMM d, yyyy h:mm aa"
-                  className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
+                  dateFormat="MMM d, yyyy h:mm aa"
+                  className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-sm"
                   calendarClassName="date-picker-calendar"
                   popperClassName="date-picker-popper"
                   placeholderText="Select date and time"
