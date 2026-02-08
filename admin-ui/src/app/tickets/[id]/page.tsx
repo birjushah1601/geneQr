@@ -928,9 +928,25 @@ export default function TicketDetailPage() {
           ticketId={id as string}
           onClose={() => setShowTimelineEditModal(false)}
           onSave={async (updatedTimeline) => {
-            await apiClient.put(`/v1/tickets/${id}/timeline`, updatedTimeline);
-            qc.invalidateQueries({ queryKey: ["ticket", id, "timeline"] });
-            alert("Timeline updated successfully!");
+            try {
+              // Extract only the fields the backend expects
+              const payload = {
+                estimated_resolution: updatedTimeline.estimated_resolution,
+                parts_status: updatedTimeline.parts_status,
+                parts_eta: updatedTimeline.parts_eta,
+                milestones: updatedTimeline.milestones,
+                admin_notes: "Timeline manually adjusted by admin",
+                blocker_comments: updatedTimeline.blocker_comments || {}
+              };
+              
+              await apiClient.put(`/v1/tickets/${id}/timeline`, payload);
+              qc.invalidateQueries({ queryKey: ["ticket", id, "timeline"] });
+              alert("Timeline updated successfully!");
+            } catch (err: any) {
+              console.error("Timeline update error:", err);
+              alert(`Failed to update timeline: ${err.response?.data?.error || err.message}`);
+              throw err;
+            }
           }}
         />
       )}
