@@ -760,7 +760,7 @@ export default function TicketDetailPage() {
                             </div>
                             {(isImage || isVideo) && (
                               <div className="mt-2 text-xs text-purple-600">
-                                ðŸ’¡ This file can be analyzed by AI for automatic diagnosis
+                                This file can be analyzed by AI for automatic diagnosis
                               </div>
                             )}
                           </div>
