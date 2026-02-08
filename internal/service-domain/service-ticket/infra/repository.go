@@ -112,7 +112,7 @@ func (r *TicketRepository) Create(ctx context.Context, ticket *domain.ServiceTic
 	query := `
 		INSERT INTO service_tickets (
 			id, ticket_number, equipment_id, qr_code, serial_number, equipment_name,
-			customer_id, customer_name, customer_phone, customer_whatsapp,
+			customer_id, customer_name, customer_phone, customer_email, customer_whatsapp,
 			issue_category, issue_description, priority, severity,
 			source, source_message_id,
 			assigned_engineer_id, assigned_engineer_name, assigned_at,
@@ -123,16 +123,16 @@ func (r *TicketRepository) Create(ctx context.Context, ticket *domain.ServiceTic
 			amc_contract_id, covered_under_amc,
 			updated_at, created_by
 		) VALUES (
-			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-			$11, $12, $13, $14, $15, $16, $17, $18, $19,
-			$20, $21, $22, $23, $24, $25, $26, $27, $28,
-			$29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39
+			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11,
+			$12, $13, $14, $15, $16, $17, $18, $19, $20,
+			$21, $22, $23, $24, $25, $26, $27, $28, $29,
+			$30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40
 		)
 	`
 
 	_, err := r.pool.Exec(ctx, query,
 		ticket.ID, ticket.TicketNumber, ticket.EquipmentID, ticket.QRCode, ticket.SerialNumber, ticket.EquipmentName,
-		ticket.CustomerID, ticket.CustomerName, ticket.CustomerPhone, ticket.CustomerWhatsApp,
+		ticket.CustomerID, ticket.CustomerName, ticket.CustomerPhone, ticket.CustomerEmail, ticket.CustomerWhatsApp,
 		ticket.IssueCategory, ticket.IssueDescription, ticket.Priority, ticket.Severity,
 		ticket.Source, ticket.SourceMessageID,
 		ticket.AssignedEngineerID, ticket.AssignedEngineerName, ticket.AssignedAt,
@@ -163,7 +163,7 @@ func (r *TicketRepository) GetByID(ctx context.Context, id string) (*domain.Serv
 	query := `
 		SELECT 
 			id, ticket_number, equipment_id, qr_code, serial_number, equipment_name,
-			customer_id, customer_name, customer_phone, customer_whatsapp,
+			customer_id, customer_name, customer_phone, customer_email, customer_whatsapp,
 			issue_category, issue_description, priority, severity,
 			source, source_message_id,
 			assigned_engineer_id, assigned_engineer_name, assigned_at,
@@ -202,7 +202,7 @@ func (r *TicketRepository) GetByID(ctx context.Context, id string) (*domain.Serv
 	if hasOrgID && !orgfilter.IsSystemAdmin(ctx) {
 		err = r.pool.QueryRow(ctx, query, id, orgID.String()).Scan(
 			&ticket.ID, &ticket.TicketNumber, &ticket.EquipmentID, &ticket.QRCode, &ticket.SerialNumber, &ticket.EquipmentName,
-			&ticket.CustomerID, &ticket.CustomerName, &ticket.CustomerPhone, &ticket.CustomerWhatsApp,
+			&ticket.CustomerID, &ticket.CustomerName, &ticket.CustomerPhone, &ticket.CustomerEmail, &ticket.CustomerWhatsApp,
 			&ticket.IssueCategory, &ticket.IssueDescription, &ticket.Priority, &ticket.Severity,
 			&ticket.Source, &ticket.SourceMessageID,
 			&ticket.AssignedEngineerID, &ticket.AssignedEngineerName, &ticket.AssignedAt,
@@ -216,7 +216,7 @@ func (r *TicketRepository) GetByID(ctx context.Context, id string) (*domain.Serv
 	} else {
 		err = r.pool.QueryRow(ctx, query, id).Scan(
 			&ticket.ID, &ticket.TicketNumber, &ticket.EquipmentID, &ticket.QRCode, &ticket.SerialNumber, &ticket.EquipmentName,
-			&ticket.CustomerID, &ticket.CustomerName, &ticket.CustomerPhone, &ticket.CustomerWhatsApp,
+			&ticket.CustomerID, &ticket.CustomerName, &ticket.CustomerPhone, &ticket.CustomerEmail, &ticket.CustomerWhatsApp,
 			&ticket.IssueCategory, &ticket.IssueDescription, &ticket.Priority, &ticket.Severity,
 			&ticket.Source, &ticket.SourceMessageID,
 			&ticket.AssignedEngineerID, &ticket.AssignedEngineerName, &ticket.AssignedAt,
@@ -250,7 +250,7 @@ func (r *TicketRepository) GetByTicketNumber(ctx context.Context, ticketNumber s
 	query := `
 		SELECT 
 			id, ticket_number, equipment_id, qr_code, serial_number, equipment_name,
-			customer_id, customer_name, customer_phone, customer_whatsapp,
+			customer_id, customer_name, customer_phone, customer_email, customer_whatsapp,
 			issue_category, issue_description, priority, severity,
 			source, source_message_id,
 			assigned_engineer_id, assigned_engineer_name, assigned_at,
@@ -269,7 +269,7 @@ func (r *TicketRepository) GetByTicketNumber(ctx context.Context, ticketNumber s
 
 	err := r.pool.QueryRow(ctx, query, ticketNumber).Scan(
 		&ticket.ID, &ticket.TicketNumber, &ticket.EquipmentID, &ticket.QRCode, &ticket.SerialNumber, &ticket.EquipmentName,
-		&ticket.CustomerID, &ticket.CustomerName, &ticket.CustomerPhone, &ticket.CustomerWhatsApp,
+		&ticket.CustomerID, &ticket.CustomerName, &ticket.CustomerPhone, &ticket.CustomerEmail, &ticket.CustomerWhatsApp,
 		&ticket.IssueCategory, &ticket.IssueDescription, &ticket.Priority, &ticket.Severity,
 		&ticket.Source, &ticket.SourceMessageID,
 		&ticket.AssignedEngineerID, &ticket.AssignedEngineerName, &ticket.AssignedAt,
@@ -485,7 +485,7 @@ func (r *TicketRepository) List(ctx context.Context, criteria domain.ListCriteri
 	query := fmt.Sprintf(`
 		SELECT 
 			id, ticket_number, equipment_id, qr_code, serial_number, equipment_name,
-			customer_id, customer_name, customer_phone, customer_whatsapp,
+			customer_id, customer_name, customer_phone, customer_email, customer_whatsapp,
 			issue_category, issue_description, priority, severity,
 			source, source_message_id,
 			assigned_engineer_id, assigned_engineer_name, assigned_at,
@@ -516,7 +516,7 @@ func (r *TicketRepository) List(ctx context.Context, criteria domain.ListCriteri
 
 		err := rows.Scan(
 			&ticket.ID, &ticket.TicketNumber, &ticket.EquipmentID, &ticket.QRCode, &ticket.SerialNumber, &ticket.EquipmentName,
-			&ticket.CustomerID, &ticket.CustomerName, &ticket.CustomerPhone, &ticket.CustomerWhatsApp,
+			&ticket.CustomerID, &ticket.CustomerName, &ticket.CustomerPhone, &ticket.CustomerEmail, &ticket.CustomerWhatsApp,
 			&ticket.IssueCategory, &ticket.IssueDescription, &ticket.Priority, &ticket.Severity,
 			&ticket.Source, &ticket.SourceMessageID,
 			&ticket.AssignedEngineerID, &ticket.AssignedEngineerName, &ticket.AssignedAt,

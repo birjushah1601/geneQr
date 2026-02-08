@@ -70,7 +70,9 @@ func NewTicketService(
 func (s *TicketService) CreateTicket(ctx context.Context, req CreateTicketRequest) (*ticketDomain.ServiceTicket, error) {
 	s.logger.Info("Creating service ticket",
 		slog.String("equipment_id", req.EquipmentID),
-		slog.String("customer_name", req.CustomerName))
+		slog.String("customer_name", req.CustomerName),
+		slog.String("customer_phone", req.CustomerPhone),
+		slog.String("customer_email", req.CustomerEmail))
 
 	// Create ticket
 	ticket := ticketDomain.NewServiceTicket(
@@ -86,6 +88,15 @@ func (s *TicketService) CreateTicket(ctx context.Context, req CreateTicketReques
 	ticket.TicketNumber = ticketDomain.GenerateTicketNumber()
 	ticket.CustomerID = req.CustomerID
 	ticket.CustomerPhone = req.CustomerPhone
+	if req.CustomerEmail != "" {
+		ticket.CustomerEmail = &req.CustomerEmail
+		s.logger.Info("✅ Setting CustomerEmail on ticket",
+			slog.String("email", req.CustomerEmail),
+			slog.String("ticket_id", ticket.ID))
+	} else {
+		s.logger.Warn("⚠️ CustomerEmail is empty in request",
+			slog.String("ticket_id", ticket.ID))
+	}
 	ticket.CustomerWhatsApp = req.CustomerWhatsApp
 	ticket.IssueCategory = req.IssueCategory
 	ticket.Priority = req.Priority
@@ -707,6 +718,7 @@ type CreateTicketRequest struct {
 	CustomerID       string                      `json:"customer_id"`
 	CustomerName     string                      `json:"customer_name"`
 	CustomerPhone    string                      `json:"customer_phone"`
+	CustomerEmail    string                      `json:"customer_email"`
 	CustomerWhatsApp string                      `json:"customer_whatsapp"`
 	IssueCategory    string                      `json:"issue_category"`
 	IssueDescription string                      `json:"issue_description"`
@@ -801,7 +813,16 @@ func (s *TicketService) UpdatePriority(ctx context.Context, ticketID string, pri
 		return fmt.Errorf("failed to update ticket priority: %w", err)
 	}
 	
-	// Event logging removed - using audit_logs table instead
+	// Add comment to log priority change
+	comment := &ticketDomain.TicketComment{
+		TicketID:    ticketID,
+		CommentType: "system",
+		AuthorName:  "System",
+		Comment:     fmt.Sprintf("Priority changed from %s to %s", oldPriority, priority),
+	}
+	if err := s.repo.AddComment(ctx, comment); err != nil {
+		s.logger.Warn("Failed to add priority change comment", slog.String("error", err.Error()))
+	}
 	
 	s.logger.Info("Ticket priority updated successfully",
 		slog.String("ticket_id", ticketID),

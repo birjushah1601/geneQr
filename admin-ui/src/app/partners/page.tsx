@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/DashboardLayout';
 import { partnersApi, Partner, Organization } from '@/lib/api/partners';
+import { organizationsApi } from '@/lib/api/organizations';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -16,6 +17,7 @@ import {
   Loader2,
   Building2,
   AlertCircle,
+  ChevronDown,
 } from 'lucide-react';
 
 export default function PartnersPage() {
@@ -27,14 +29,48 @@ export default function PartnersPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState('');
+  
+  // For system admin: manufacturer selection
+  const [manufacturers, setManufacturers] = useState<any[]>([]);
+  const [selectedManufacturerId, setSelectedManufacturerId] = useState('');
+  const [loadingManufacturers, setLoadingManufacturers] = useState(false);
 
-  const manufacturerId = organizationContext?.organization_id || '';
+  const isSystemAdmin = organizationContext?.organization_type === 'system';
+  const manufacturerId = isSystemAdmin ? selectedManufacturerId : (organizationContext?.organization_id || '');
+
+  // Load manufacturers for system admin
+  useEffect(() => {
+    if (isSystemAdmin) {
+      loadManufacturers();
+    }
+  }, [isSystemAdmin]);
 
   useEffect(() => {
     if (manufacturerId) {
       loadPartners();
     }
   }, [manufacturerId, activeTab]);
+
+  const loadManufacturers = async () => {
+    try {
+      setLoadingManufacturers(true);
+      // Filter to only show manufacturer organizations
+      const data = await organizationsApi.list({ 
+        type: 'manufacturer',
+        limit: 100,
+        status: 'active'
+      });
+      setManufacturers(data || []);
+      // Auto-select first manufacturer if available
+      if (data && data.length > 0 && !selectedManufacturerId) {
+        setSelectedManufacturerId(data[0].id);
+      }
+    } catch (err: any) {
+      console.error('Failed to load manufacturers:', err);
+    } finally {
+      setLoadingManufacturers(false);
+    }
+  };
 
   const loadPartners = async () => {
     try {
@@ -114,16 +150,21 @@ export default function PartnersPage() {
           <div>
             <h1 className="text-3xl font-bold">Service Partners</h1>
             <p className="text-gray-600 mt-1">
-              Manage channel partners and sub-dealers for service coverage
+              {isSystemAdmin 
+                ? 'Manage channel partners and sub-dealers for manufacturers'
+                : 'Manage your channel partners and sub-dealers for service coverage'}
             </p>
           </div>
-          <Button onClick={() => {
-            setShowAddModal(true);
-            loadAvailablePartners('');
-          }}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Partner
-          </Button>
+          {/* Show Add Partner button only for manufacturer admins (system admins see it after manufacturer selector) */}
+          {!isSystemAdmin && (
+            <Button onClick={() => {
+              setShowAddModal(true);
+              loadAvailablePartners('');
+            }}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Partner
+            </Button>
+          )}
         </div>
 
         {error && (
@@ -132,15 +173,80 @@ export default function PartnersPage() {
           </div>
         )}
 
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList>
-            <TabsTrigger value="general">General Partners</TabsTrigger>
-            <TabsTrigger value="equipment-specific">Equipment-Specific</TabsTrigger>
-          </TabsList>
+        {/* Manufacturer Selector for System Admin */}
+        {isSystemAdmin && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="w-5 h-5" />
+                Select Manufacturer
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingManufacturers ? (
+                <div className="flex items-center gap-2 text-gray-500">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Loading manufacturers...
+                </div>
+              ) : manufacturers.length === 0 ? (
+                <div className="text-gray-500">No manufacturers found</div>
+              ) : (
+                <div className="flex items-center gap-4">
+                  <label className="text-sm font-medium text-gray-700 min-w-fit">
+                    Manufacturer:
+                  </label>
+                  <select
+                    value={selectedManufacturerId}
+                    onChange={(e) => setSelectedManufacturerId(e.target.value)}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    {manufacturers.map((mfr) => (
+                      <option key={mfr.id} value={mfr.id}>
+                        {mfr.name}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="text-sm text-gray-500">
+                    {partners.length} partner{partners.length !== 1 ? 's' : ''} associated
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
-          <TabsContent value="general" className="mt-6">
-            {loading ? (
+        {/* Add Partner button for system admin (shown after manufacturer selection) */}
+        {isSystemAdmin && manufacturerId && (
+          <div className="flex justify-end">
+            <Button onClick={() => {
+              setShowAddModal(true);
+              loadAvailablePartners('');
+            }}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Partner to {manufacturers.find(m => m.id === selectedManufacturerId)?.name || 'Selected Manufacturer'}
+            </Button>
+          </div>
+        )}
+
+        {/* Show message if system admin hasn't selected manufacturer */}
+        {isSystemAdmin && !manufacturerId ? (
+          <Card>
+            <CardContent className="py-12 text-center text-gray-500">
+              <Building2 className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+              <p>Please select a manufacturer above to manage their service partners</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            {/* Tabs */}
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList>
+                <TabsTrigger value="general">General Partners</TabsTrigger>
+                <TabsTrigger value="equipment-specific">Equipment-Specific</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="general" className="mt-6">
+                {loading ? (
               <div className="flex justify-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
               </div>
@@ -227,6 +333,8 @@ export default function PartnersPage() {
             )}
           </TabsContent>
         </Tabs>
+          </>
+        )}
 
         {/* Add Partner Modal */}
         {showAddModal && (

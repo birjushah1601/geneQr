@@ -228,6 +228,7 @@ export interface ServiceTicket {
   customer_id: string;
   customer_name: string;
   customer_phone: string;
+  customer_email?: string;
   customer_whatsapp?: string;
   
   // Issue
@@ -268,6 +269,9 @@ export interface ServiceTicket {
   photos?: string[];
   videos?: string[];
   documents?: string[];
+  
+  // Tracking
+  tracking_url?: string;
   
   // Metadata
   notes?: string;

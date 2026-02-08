@@ -160,6 +160,12 @@ function ServiceRequestPageInner() {
         throw new Error('Equipment ID is missing. Cannot create ticket.');
       }
       
+      console.log('=== FORM DATA BEFORE PAYLOAD ===', {
+        contactEmail: formData.contactEmail,
+        contactPhone: formData.contactPhone,
+        contactName: formData.contactName
+      });
+
       const payload = {
         equipment_id: equipmentId,
         qr_code: (equipment as any).qr_code || (equipment as any).qrCode,
@@ -168,7 +174,7 @@ function ServiceRequestPageInner() {
         customer_id: (equipment as any).customer_id,
         customer_name: (equipment as any).customer_name || (equipment as any).customerName,
         customer_phone: formData.contactPhone || '9999999999',
-        customer_email: formData.contactEmail || undefined,
+        customer_email: formData.contactEmail || '',
         issue_category: 'breakdown',
         issue_description: formData.description,
         priority: 'medium', // Default priority for public requests (admin can change later)
@@ -183,8 +189,11 @@ function ServiceRequestPageInner() {
           total_price: part.unit_price * part.quantity
         })),
       };
+      
+      console.log('=== PAYLOAD BEING SENT ===', payload);
+      
       const created = await (await import('@/lib/api/tickets')).ticketsApi.create(payload as any);
-      console.log('Ticket created', created);
+      console.log('=== TICKET CREATED RESPONSE ===', created);
       
       // Extract tracking URL from response
       const ticketData = (created as any).ticket || created;

@@ -13,6 +13,7 @@ import (
 	"github.com/aby-med/medical-platform/internal/service-domain/service-ticket/app"
 	"github.com/aby-med/medical-platform/internal/service-domain/service-ticket/domain"
 	"github.com/aby-med/medical-platform/internal/shared/audit"
+	emailInfra "github.com/aby-med/medical-platform/internal/infrastructure/email"
 	"github.com/go-chi/chi/v5"
     "github.com/jackc/pgx/v5/pgxpool"
 )
@@ -61,7 +62,10 @@ func (h *TicketHandler) CreateTicket(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Info("✅ Request decoded successfully",
 		slog.String("equipment_id", req.EquipmentID),
-		slog.String("qr_code", req.QRCode))
+		slog.String("qr_code", req.QRCode),
+		slog.String("customer_phone", req.CustomerPhone),
+		slog.String("customer_email", req.CustomerEmail),
+		slog.String("customer_name", req.CustomerName))
 
 	ticket, err := h.service.CreateTicket(ctx, req)
 	if err != nil {
@@ -239,7 +243,24 @@ func (h *TicketHandler) GetTicket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.respondJSON(w, http.StatusOK, ticket)
+	// Convert ticket to map and add tracking URL
+	ticketMap := make(map[string]interface{})
+	ticketBytes, _ := json.Marshal(ticket)
+	json.Unmarshal(ticketBytes, &ticketMap)
+	
+	// Add tracking URL if notification service is available
+	if h.notificationService != nil {
+		token, err := h.notificationService.GetOrCreateTrackingToken(ticket.ID)
+		if err == nil {
+			baseURL := os.Getenv("TICKET_TRACKING_BASE_URL")
+			if baseURL == "" {
+				baseURL = "https://servqr.com/track"
+			}
+			ticketMap["tracking_url"] = fmt.Sprintf("%s/%s", baseURL, token)
+		}
+	}
+
+	h.respondJSON(w, http.StatusOK, ticketMap)
 }
 
 // GetTicketByNumber handles GET /tickets/number/{number}
@@ -1127,6 +1148,81 @@ func (h *TicketHandler) SendEmailNotification(w http.ResponseWriter, r *http.Req
 		"sent":      true,
 		"recipient": recipientEmail,
 		"message":   "Email notification sent successfully",
+	})
+}
+
+// NotifyCustomer handles POST /tickets/:id/notify - Manual notification by admin
+func (h *TicketHandler) NotifyCustomer(w http.ResponseWriter, r *http.Request) {
+	ticketID := chi.URLParam(r, "id")
+
+	// Check feature flag
+	if os.Getenv("FEATURE_MANUAL_NOTIFICATIONS") == "false" {
+		h.respondError(w, http.StatusForbidden, "Manual notifications are disabled")
+		return
+	}
+
+	var req struct {
+		Email   string `json:"email"`
+		Comment string `json:"comment"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.respondError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	if req.Email == "" || req.Comment == "" {
+		h.respondError(w, http.StatusBadRequest, "Email and comment are required")
+		return
+	}
+
+	h.logger.Info("Manual notification requested",
+		slog.String("ticket_id", ticketID),
+		slog.String("email", req.Email),
+		slog.String("comment_preview", req.Comment[:min(50, len(req.Comment))]))
+
+	// Get ticket details for the email
+	ticket, err := h.service.GetTicket(r.Context(), ticketID)
+	if err != nil {
+		h.respondError(w, http.StatusNotFound, "Ticket not found")
+		return
+	}
+
+	// Send email using SendGrid
+	sendgridAPIKey := os.Getenv("SENDGRID_API_KEY")
+	if sendgridAPIKey == "" {
+		h.logger.Warn("SENDGRID_API_KEY not configured, email not sent")
+		h.respondJSON(w, http.StatusOK, map[string]interface{}{
+			"success": true,
+			"message": "Notification logged (email service not configured)",
+			"email":   req.Email,
+		})
+		return
+	}
+
+	// Send email via SendGrid
+	emailService := emailInfra.NewNotificationService(
+		sendgridAPIKey,
+		os.Getenv("SENDGRID_FROM_EMAIL"),
+		os.Getenv("SENDGRID_FROM_NAME"),
+	)
+
+	err = emailService.SendManualNotification(r.Context(), req.Email, ticket.CustomerName, ticket.TicketNumber, req.Comment)
+	if err != nil {
+		h.logger.Error("Failed to send notification email",
+			slog.String("error", err.Error()),
+			slog.String("email", req.Email))
+		h.respondError(w, http.StatusInternalServerError, "Failed to send email: "+err.Error())
+		return
+	}
+
+	h.logger.Info("Manual notification email sent successfully",
+		slog.String("ticket_id", ticketID),
+		slog.String("email", req.Email))
+
+	h.respondJSON(w, http.StatusOK, map[string]interface{}{
+		"success": true,
+		"message": "Notification sent successfully",
+		"email":   req.Email,
 	})
 }
 

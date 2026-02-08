@@ -197,6 +197,7 @@ export const ticketsApi = {
         customer_id: data.customer_id,
         customer_name: data.customer_name,
         customer_phone: data.customer_phone,
+        customer_email: data.customer_email,
         customer_whatsapp: data.customer_whatsapp,
         issue_category: data.issue_category,
         issue_description: data.issue_description,
@@ -373,6 +374,17 @@ export const ticketsApi = {
   // Delete comment from a ticket
   async deleteComment(ticketId: string, commentId: string): Promise<void> {
     await apiClient.delete(`/v1/tickets/${ticketId}/comments/${commentId}`);
+  },
+
+  // Get comments for a ticket
+  async getComments(ticketId: string): Promise<{ comments: TicketComment[] }> {
+    try {
+      const response = await apiClient.get<{ comments: TicketComment[] }>(`/v1/tickets/${ticketId}/comments`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch comments:', error);
+      return { comments: [] };
+    }
   },
 };
 

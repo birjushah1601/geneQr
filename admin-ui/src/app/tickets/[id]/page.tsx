@@ -304,6 +304,13 @@ export default function TicketDetailPage() {
               <Brain className="h-4 w-4" />
               AI Diagnosis
             </button>
+            <button
+              onClick={() => setShowNotificationModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+            >
+              <Mail className="h-4 w-4" />
+              Send Notification
+            </button>
             <Link href="/tickets" className="text-sm text-blue-600 hover:underline">All tickets</Link>
           </div>
         </div>
@@ -368,6 +375,45 @@ export default function TicketDetailPage() {
             <div className="mt-4">
               <p className="text-xs text-gray-500 mb-1">Issue</p>
               <p className="text-sm whitespace-pre-line">{ticket.issue_description}</p>
+            </div>
+          </div>
+
+          {/* Customer Contact Information */}
+          <div className="bg-blue-50 border border-blue-200 rounded p-4">
+            <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
+              <User className="h-4 w-4 text-blue-600" />
+              Customer Contact
+            </h2>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center gap-2">
+                <span className="text-gray-600 w-20">Name:</span>
+                <span className="font-medium">{ticket.customer_name}</span>
+              </div>
+              {ticket.customer_email && (
+                <div className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 text-gray-400" />
+                  <span className="text-gray-600 w-20">Email:</span>
+                  <a href={`mailto:${ticket.customer_email}`} className="font-medium text-blue-600 hover:underline">
+                    {ticket.customer_email}
+                  </a>
+                </div>
+              )}
+              <div className="flex items-center gap-2">
+                <span className="text-gray-400">📱</span>
+                <span className="text-gray-600 w-20">Phone:</span>
+                <a href={`tel:${ticket.customer_phone}`} className="font-medium text-blue-600 hover:underline">
+                  {ticket.customer_phone}
+                </a>
+              </div>
+              {ticket.customer_whatsapp && (
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-400">💬</span>
+                  <span className="text-gray-600 w-20">WhatsApp:</span>
+                  <a href={`https://wa.me/${ticket.customer_whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="font-medium text-green-600 hover:underline">
+                    {ticket.customer_whatsapp}
+                  </a>
+                </div>
+              )}
             </div>
           </div>
 
@@ -762,7 +808,7 @@ export default function TicketDetailPage() {
                       </div>
                       <div className="text-right text-gray-600">
                         {p.quantity_required ? <div>Qty: {p.quantity_required}</div> : null}
-                        {p.unit_price ? <div>â‚¹{p.unit_price}</div> : null}
+                        {p.unit_price ? <div>₹{p.unit_price}</div> : null}
                       </div>
                       <button
                         onClick={async () => {
@@ -790,7 +836,7 @@ export default function TicketDetailPage() {
                   </div>
                   <div className="flex justify-between text-sm mt-1">
                     <span className="text-gray-600">Total Cost:</span>
-                    <span className="font-medium">â‚¹{parts.parts.reduce((sum, p) => sum + ((p.unit_price || 0) * (p.quantity_required || 1)), 0).toLocaleString()}</span>
+                    <span className="font-medium">₹{parts.parts.reduce((sum, p) => sum + ((p.unit_price || 0) * (p.quantity_required || 1)), 0).toLocaleString()}</span>
                   </div>
                 </div>
               </>
@@ -809,6 +855,23 @@ export default function TicketDetailPage() {
         isLoading={aiAnalyzing}
         onTriggerAnalysis={triggerAIAnalysis}
       />
+
+      {/* Send Notification Modal */}
+      {showNotificationModal && (
+        <SendNotificationModal
+          ticketId={ticket.id}
+          ticketNumber={ticket.ticket_number}
+          customerEmail={ticket.customer_email || ''}
+          customerPhone={ticket.customer_phone}
+          ticket={ticket}
+          onClose={() => setShowNotificationModal(false)}
+          onSuccess={() => {
+            setShowNotificationModal(false);
+            refetch();
+          }}
+        />
+      )}
+
       {/* Engineer Reassignment - Multi-Model Assignment */}
       {showReassignMultiModel && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">

@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"encoding/json"
+	"fmt"
 	"html"
 	"io"
 	"log/slog"
@@ -103,10 +104,15 @@ func (s *InputSanitizer) Middleware(config *SanitizeConfig) func(http.Handler) h
 				return
 			}
 
-			s.logger.Info("✅ JSON parsed successfully", slog.Int("fields", len(data)))
+			s.logger.Info("✅ JSON parsed successfully", 
+				slog.Int("fields", len(data)),
+				slog.String("customer_email_before_sanitize", fmt.Sprintf("%v", data["customer_email"])))
 
 			// Sanitize the data
 			sanitized := s.sanitizeMap(data, config)
+			
+			s.logger.Info("✅ After sanitization",
+				slog.String("customer_email_after_sanitize", fmt.Sprintf("%v", sanitized["customer_email"])))
 
 			// Marshal back to JSON
 			sanitizedBody, err := json.Marshal(sanitized)

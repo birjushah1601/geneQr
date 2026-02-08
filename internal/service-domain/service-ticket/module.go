@@ -244,7 +244,8 @@ func (m *Module) MountRoutes(r chi.Router) {
 		r.Get("/{id}/history", m.ticketHandler.GetStatusHistory)   // Get status history
 		
 		// Notification routes
-		r.Post("/{id}/send-notification", m.ticketHandler.SendEmailNotification) // Send manual email
+		r.Post("/{id}/send-notification", m.ticketHandler.SendEmailNotification) // Send manual email (auto)
+		r.Post("/{id}/notify", m.ticketHandler.NotifyCustomer)                   // Manual notification by admin
 	})
 	
 	// Public tracking route (no auth required)
@@ -311,4 +312,9 @@ func (m *Module) Health(ctx context.Context) error {
 // Name returns the module name
 func (m *Module) Name() string {
 	return "service-ticket"
+}
+
+// GetTicketHandler returns the ticket handler (for public routes)
+func (m *Module) GetTicketHandler() *api.TicketHandler {
+	return m.ticketHandler
 }

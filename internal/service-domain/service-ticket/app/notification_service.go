@@ -132,9 +132,62 @@ func (s *NotificationService) GetPublicTicketView(ctx context.Context, token str
 		return nil, fmt.Errorf("failed to get ticket: %w", err)
 	}
 
-	// TODO: Get comments (requires comment repository method)
-	// For now, return empty comments array
-	publicComments := []domain.PublicComment{}
+	// Get comments
+	comments, err := s.ticketRepo.GetComments(ctx, trackingToken.TicketID)
+	if err != nil {
+		s.logger.Warn("Failed to fetch comments for public view", slog.String("error", err.Error()))
+		comments = []*domain.TicketComment{} // Continue with empty comments
+	}
+
+	// Convert to public comments
+	publicComments := make([]domain.PublicComment, 0, len(comments))
+	for _, c := range comments {
+		// Parse created_at string to time.Time
+		createdAt, parseErr := time.Parse(time.RFC3339, c.CreatedAt)
+		if parseErr != nil {
+			// Try alternative format
+			createdAt, parseErr = time.Parse("2006-01-02 15:04:05", c.CreatedAt)
+			if parseErr != nil {
+				createdAt = time.Now() // Fallback
+			}
+		}
+		
+		publicComments = append(publicComments, domain.PublicComment{
+			Comment:    c.Comment,
+			AuthorName: c.AuthorName,
+			CreatedAt:  createdAt,
+			AuthorRole: c.CommentType, // Use comment type as role
+		})
+	}
+
+	// Get status history
+	statusHistory, err := s.ticketRepo.GetStatusHistory(ctx, trackingToken.TicketID)
+	if err != nil {
+		s.logger.Warn("Failed to fetch status history for public view", slog.String("error", err.Error()))
+		statusHistory = []*domain.StatusHistory{} // Continue with empty history
+	}
+
+	// Convert to public status events
+	publicStatusHistory := make([]domain.PublicStatusEvent, 0, len(statusHistory))
+	for _, sh := range statusHistory {
+		// Parse changed_at string to time.Time
+		changedAt, parseErr := time.Parse(time.RFC3339, sh.ChangedAt)
+		if parseErr != nil {
+			// Try alternative format
+			changedAt, parseErr = time.Parse("2006-01-02 15:04:05", sh.ChangedAt)
+			if parseErr != nil {
+				changedAt = time.Now() // Fallback
+			}
+		}
+		
+		publicStatusHistory = append(publicStatusHistory, domain.PublicStatusEvent{
+			FromStatus: sh.FromStatus,
+			ToStatus:   sh.ToStatus,
+			ChangedBy:  sh.ChangedBy,
+			ChangedAt:  changedAt,
+			Comment:    sh.Reason, // Use reason as comment
+		})
+	}
 
 	// Build public view
 	publicView := &domain.PublicTicketView{
@@ -146,6 +199,7 @@ func (s *NotificationService) GetPublicTicketView(ctx context.Context, token str
 		CreatedAt:        ticket.CreatedAt,
 		UpdatedAt:        ticket.UpdatedAt,
 		PublicComments:   publicComments,
+		StatusHistory:    publicStatusHistory,
 		AssignedEngineer: ticket.AssignedEngineerName,
 	}
 
