@@ -237,7 +237,9 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
                   selected={editedTimeline.estimated_resolution ? new Date(editedTimeline.estimated_resolution) : null}
                   onChange={(date) => {
                     if (date) {
-                      // Store as ISO string with timezone
+                      console.log('Selected date:', date);
+                      console.log('ISO string:', date.toISOString());
+                      // Store as ISO string - toISOString() converts to UTC
                       handleResolutionDateChange(date.toISOString());
                     } else {
                       handleResolutionDateChange('');
@@ -245,7 +247,7 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
                   }}
                   showTimeSelect
                   timeFormat="HH:mm"
-                  timeIntervals={15}
+                  timeIntervals={1}
                   dateFormat="MMM d, yyyy h:mm aa"
                   className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-sm"
                   calendarClassName="date-picker-calendar"
