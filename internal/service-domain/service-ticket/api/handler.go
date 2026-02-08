@@ -22,6 +22,7 @@ import (
 type TicketHandler struct {
 	service             *app.TicketService
 	notificationService *app.NotificationService
+	timelineService     *app.TimelineService
 	logger              *slog.Logger
     pool                *pgxpool.Pool
 	auditLogger         *audit.AuditLogger
@@ -40,6 +41,11 @@ func NewTicketHandler(service *app.TicketService, logger *slog.Logger, pool *pgx
 // SetNotificationService sets the notification service (called after initialization)
 func (h *TicketHandler) SetNotificationService(notificationService *app.NotificationService) {
 	h.notificationService = notificationService
+}
+
+// SetTimelineService sets the timeline service (called after initialization)
+func (h *TicketHandler) SetTimelineService(timelineService *app.TimelineService) {
+	h.timelineService = timelineService
 }
 
 // CreateTicket handles POST /tickets
@@ -639,6 +645,49 @@ func (h *TicketHandler) GetStatusHistory(w http.ResponseWriter, r *http.Request)
 	}
 
 	h.respondJSON(w, http.StatusOK, history)
+}
+
+// GetTimeline handles GET /tickets/{id}/timeline
+// Returns the multi-stage timeline with ETAs and parts workflow
+func (h *TicketHandler) GetTimeline(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := chi.URLParam(r, "id")
+
+	if id == "" {
+		h.respondError(w, http.StatusBadRequest, "Ticket ID is required")
+		return
+	}
+
+	// Check if timeline service is available
+	if h.timelineService == nil {
+		h.respondError(w, http.StatusServiceUnavailable, "Timeline service not available")
+		return
+	}
+
+	// Get ticket
+	ticket, err := h.service.GetTicket(ctx, id)
+	if err != nil {
+		if err == domain.ErrTicketNotFound {
+			h.respondError(w, http.StatusNotFound, "Ticket not found")
+			return
+		}
+		h.logger.Error("Failed to get ticket for timeline", slog.String("error", err.Error()))
+		h.respondError(w, http.StatusInternalServerError, "Failed to get ticket")
+		return
+	}
+
+	// Generate timeline
+	timeline, err := h.timelineService.GenerateTimeline(ctx, ticket)
+	if err != nil {
+		h.logger.Error("Failed to generate timeline", slog.String("error", err.Error()))
+		h.respondError(w, http.StatusInternalServerError, "Failed to generate timeline")
+		return
+	}
+
+	// Convert to public view
+	publicTimeline := h.timelineService.ConvertToPublicTimeline(timeline, ticket)
+
+	h.respondJSON(w, http.StatusOK, publicTimeline)
 }
 
 // GetTicketParts handles GET /tickets/{id}/parts
