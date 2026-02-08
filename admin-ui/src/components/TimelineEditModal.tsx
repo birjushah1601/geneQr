@@ -229,15 +229,17 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
               <label className="text-sm font-medium text-gray-700 min-w-fit">
                 Target Completion:
               </label>
-              <Input
-                type="datetime-local"
-                value={formatDateForInput(editedTimeline.estimated_resolution)}
-                onChange={(e) => handleResolutionDateChange(e.target.value)}
-                className="flex-1 relative z-10"
-                style={{ 
-                  colorScheme: 'light',
-                }}
-              />
+              <div className="flex-1 relative">
+                <Input
+                  type="datetime-local"
+                  value={formatDateForInput(editedTimeline.estimated_resolution)}
+                  onChange={(e) => handleResolutionDateChange(e.target.value)}
+                  className="w-full bg-white shadow-sm border-2 border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                  style={{ 
+                    colorScheme: 'light',
+                  }}
+                />
+              </div>
             </div>
           </div>
 
@@ -264,15 +266,17 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
                   <label className="text-sm font-medium text-gray-700 min-w-fit">
                     Expected Arrival:
                   </label>
-                  <Input
-                    type="datetime-local"
-                    value={formatDateForInput(editedTimeline.parts_eta)}
-                    onChange={(e) => handlePartsEtaChange(e.target.value)}
-                    className="flex-1 relative z-10"
-                    style={{ 
-                      colorScheme: 'light',
-                    }}
-                  />
+                  <div className="flex-1 relative">
+                    <Input
+                      type="datetime-local"
+                      value={formatDateForInput(editedTimeline.parts_eta)}
+                      onChange={(e) => handlePartsEtaChange(e.target.value)}
+                      className="w-full bg-white shadow-sm border-2 border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                      style={{ 
+                        colorScheme: 'light',
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -371,15 +375,17 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
                         {milestone.status !== 'completed' && milestone.status !== 'skipped' && (
                           <div>
                             <label className="text-xs text-gray-600 block mb-1">ETA</label>
-                            <Input
-                              type="datetime-local"
-                              value={formatDateForInput(milestone.eta)}
-                              onChange={(e) => handleMilestoneEtaChange(index, e.target.value)}
-                              className="text-sm relative z-10"
-                              style={{ 
-                                colorScheme: 'light',
-                              }}
-                            />
+                            <div className="relative">
+                              <Input
+                                type="datetime-local"
+                                value={formatDateForInput(milestone.eta)}
+                                onChange={(e) => handleMilestoneEtaChange(index, e.target.value)}
+                                className="w-full bg-white shadow-sm border-2 border-gray-300 rounded-md px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                style={{ 
+                                  colorScheme: 'light',
+                                }}
+                              />
+                            </div>
                           </div>
                         )}
                       </div>
