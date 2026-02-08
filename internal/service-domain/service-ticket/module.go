@@ -249,6 +249,7 @@ func (m *Module) MountRoutes(r chi.Router) {
 		r.Delete("/{id}/comments/{commentId}", m.ticketHandler.DeleteComment) // Delete comment
 		r.Get("/{id}/history", m.ticketHandler.GetStatusHistory)   // Get status history
 		r.Get("/{id}/timeline", m.ticketHandler.GetTimeline)       // Get SLA/ETA timeline
+		r.Put("/{id}/timeline", m.ticketHandler.UpdateTimeline)    // Update SLA/ETA timeline (admin)
 		
 		// Notification routes
 		r.Post("/{id}/send-notification", m.ticketHandler.SendEmailNotification) // Send manual email (auto)

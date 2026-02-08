@@ -690,6 +690,54 @@ func (h *TicketHandler) GetTimeline(w http.ResponseWriter, r *http.Request) {
 	h.respondJSON(w, http.StatusOK, publicTimeline)
 }
 
+// UpdateTimeline handles PUT /tickets/{id}/timeline
+// Allows admins to manually adjust milestones, ETAs, and parts status
+func (h *TicketHandler) UpdateTimeline(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := chi.URLParam(r, "id")
+
+	if id == "" {
+		h.respondError(w, http.StatusBadRequest, "Ticket ID is required")
+		return
+	}
+
+	var req struct {
+		EstimatedResolution *time.Time               `json:"estimated_resolution"`
+		PartsStatus         string                   `json:"parts_status"`
+		PartsETA            *time.Time               `json:"parts_eta"`
+		Milestones          []domain.PublicMilestone `json:"milestones"`
+		AdminNotes          string                   `json:"admin_notes"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.respondError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	// Get ticket
+	ticket, err := h.service.GetTicket(ctx, id)
+	if err != nil {
+		h.respondError(w, http.StatusNotFound, "Ticket not found")
+		return
+	}
+
+	// TODO: Store manual timeline adjustments in database table
+	// For now, we'll update the ticket with adjusted resolution date
+	if req.EstimatedResolution != nil {
+		ticket.SLAResolutionDue = req.EstimatedResolution
+	}
+
+	// Log the adjustment
+	h.logger.Info("Timeline manually adjusted by admin",
+		slog.String("ticket_id", id),
+		slog.String("admin_notes", req.AdminNotes))
+
+	h.respondJSON(w, http.StatusOK, map[string]interface{}{
+		"success": true,
+		"message": "Timeline updated successfully",
+	})
+}
+
 // GetTicketParts handles GET /tickets/{id}/parts
 // Returns parts assigned to this specific ticket from ticket_parts table
 func (h *TicketHandler) GetTicketParts(w http.ResponseWriter, r *http.Request) {

@@ -7,7 +7,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ticketsApi } from "@/lib/api/tickets";
 import { apiClient } from "@/lib/api/client";
 import type { ServiceTicket, TicketPriority, TicketStatus, PublicTimeline } from "@/types";
-import { ArrowLeft, Loader2, Package, User, Calendar, Wrench, Pause, Play, CheckCircle, XCircle, AlertTriangle, FileText, MessageSquare, Paperclip, Upload, Brain, Sparkles, TrendingUp, Lightbulb, Shield, Trash, X, Mail, Clock } from "lucide-react";
+import { ArrowLeft, Loader2, Package, User, Calendar, Wrench, Pause, Play, CheckCircle, XCircle, AlertTriangle, FileText, MessageSquare, Paperclip, Upload, Brain, Sparkles, TrendingUp, Lightbulb, Shield, Trash, X, Mail, Clock, Edit2 } from "lucide-react";
 import { AIDiagnosisModal } from "@/components/AIDiagnosisModal";
 import { attachmentsApi } from "@/lib/api/attachments";
 import { PartsAssignmentModal } from "@/components/PartsAssignmentModal";
@@ -18,6 +18,8 @@ import AssignmentHistory from "@/components/AssignmentHistory";
 import DashboardLayout from "@/components/DashboardLayout";
 import { SendNotificationModal } from "@/components/SendNotificationModal";
 import { TicketTimeline } from "@/components/TicketTimeline";
+import { TimelineEditModal } from "@/components/TimelineEditModal";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 
 function StatusBadge({ status }: { status: TicketStatus }) {
@@ -40,6 +42,7 @@ export default function TicketDetailPage() {
   const [showReassignMultiModel, setShowReassignMultiModel] = useState(false);
   const [showEngineerSelection, setShowEngineerSelection] = useState(false);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [showTimelineEditModal, setShowTimelineEditModal] = useState(false);
   const router = useRouter();
   const qc = useQueryClient();
 
@@ -869,10 +872,20 @@ export default function TicketDetailPage() {
         
         {timeline && !timelineLoading && (
           <div>
-            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-              <Clock className="h-6 w-6 text-blue-600" />
-              Service Timeline & ETA
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                <Clock className="h-6 w-6 text-blue-600" />
+                Service Timeline & ETA
+              </h2>
+              <Button
+                onClick={() => setShowTimelineEditModal(true)}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Edit2 className="h-4 w-4" />
+                Edit Timeline
+              </Button>
+            </div>
             <TicketTimeline timeline={timeline} />
           </div>
         )}
@@ -899,6 +912,20 @@ export default function TicketDetailPage() {
           onSuccess={() => {
             setShowNotificationModal(false);
             refetch();
+          }}
+        />
+      )}
+
+      {/* Timeline Edit Modal */}
+      {showTimelineEditModal && timeline && (
+        <TimelineEditModal
+          timeline={timeline}
+          ticketId={id as string}
+          onClose={() => setShowTimelineEditModal(false)}
+          onSave={async (updatedTimeline) => {
+            await apiClient.put(`/v1/tickets/${id}/timeline`, updatedTimeline);
+            qc.invalidateQueries({ queryKey: ["ticket", id, "timeline"] });
+            alert("Timeline updated successfully!");
           }}
         />
       )}
