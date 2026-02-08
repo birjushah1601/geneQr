@@ -233,7 +233,10 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
                 type="datetime-local"
                 value={formatDateForInput(editedTimeline.estimated_resolution)}
                 onChange={(e) => handleResolutionDateChange(e.target.value)}
-                className="flex-1"
+                className="flex-1 relative z-10"
+                style={{ 
+                  colorScheme: 'light',
+                }}
               />
             </div>
           </div>
@@ -265,7 +268,10 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
                     type="datetime-local"
                     value={formatDateForInput(editedTimeline.parts_eta)}
                     onChange={(e) => handlePartsEtaChange(e.target.value)}
-                    className="flex-1"
+                    className="flex-1 relative z-10"
+                    style={{ 
+                      colorScheme: 'light',
+                    }}
                   />
                 </div>
               </div>
@@ -369,7 +375,10 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
                               type="datetime-local"
                               value={formatDateForInput(milestone.eta)}
                               onChange={(e) => handleMilestoneEtaChange(index, e.target.value)}
-                              className="text-sm"
+                              className="text-sm relative z-10"
+                              style={{ 
+                                colorScheme: 'light',
+                              }}
                             />
                           </div>
                         )}
