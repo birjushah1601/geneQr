@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { apiClient } from "@/lib/api/client";
 import { Loader2, CheckCircle, Clock, AlertCircle, Package, User, Calendar, MessageSquare, History } from "lucide-react";
+import { TicketTimeline } from "@/components/TicketTimeline";
+import type { PublicTimeline } from "@/types";
 
 interface PublicComment {
   comment: string;
@@ -38,7 +40,9 @@ export default function TrackTicketPage() {
   const token = params.token as string;
   
   const [ticket, setTicket] = useState<PublicTicketView | null>(null);
+  const [timeline, setTimeline] = useState<PublicTimeline | null>(null);
   const [loading, setLoading] = useState(true);
+  const [timelineLoading, setTimelineLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -54,8 +58,26 @@ export default function TrackTicketPage() {
       }
     };
 
+    const fetchTimeline = async () => {
+      try {
+        setTimelineLoading(true);
+        // Get ticket ID first from the token
+        const ticketResponse = await apiClient.get(`/v1/track/${token}`);
+        if (ticketResponse.data?.ticket_id) {
+          const timelineResponse = await apiClient.get(`/v1/tickets/${ticketResponse.data.ticket_id}/timeline`);
+          setTimeline(timelineResponse.data);
+        }
+      } catch (err: any) {
+        console.error("Failed to fetch timeline:", err);
+        // Don't show error - timeline is optional enhancement
+      } finally {
+        setTimelineLoading(false);
+      }
+    };
+
     if (token) {
       fetchTicket();
+      fetchTimeline();
     }
   }, [token]);
 
@@ -227,6 +249,13 @@ export default function TrackTicketPage() {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Service Timeline & ETA */}
+        {timeline && !timelineLoading && (
+          <div className="mb-6">
+            <TicketTimeline timeline={timeline} />
           </div>
         )}
 

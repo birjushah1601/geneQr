@@ -858,6 +858,26 @@ export default function TicketDetailPage() {
         </div>
       </div>
 
+      {/* SLA/ETA Timeline Section */}
+      <div className="mt-6">
+        {timelineLoading && (
+          <div className="flex items-center gap-2 text-gray-500">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            Loading service timeline...
+          </div>
+        )}
+        
+        {timeline && !timelineLoading && (
+          <div>
+            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+              <Clock className="h-6 w-6 text-blue-600" />
+              Service Timeline & ETA
+            </h2>
+            <TicketTimeline timeline={timeline} />
+          </div>
+        )}
+      </div>
+
       {/* AI Diagnosis Modal */}
       <AIDiagnosisModal
         isOpen={showDiagnosisModal}
