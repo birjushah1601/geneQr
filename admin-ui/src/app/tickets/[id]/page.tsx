@@ -100,6 +100,19 @@ export default function TicketDetailPage() {
   const [uploading, setUploading] = useState(false);
   const [aiAnalyzing, setAiAnalyzing] = useState(false);
   
+  // Handle file upload from input
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    // Upload first file (can be enhanced to handle multiple)
+    const file = files[0];
+    await onUpload(file);
+    
+    // Reset input
+    e.currentTarget.value = "";
+  };
+  
   const onDelete = async (attachmentId: string) => {
     if (!confirm('Are you sure you want to delete this attachment?')) return;
     
