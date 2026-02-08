@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { X, Check, Clock, AlertTriangle, Edit2, Save } from "lucide-react";
+import { X, Check, Clock, AlertTriangle, Edit2, Save, ChevronUp, ChevronDown, GripVertical } from "lucide-react";
 import type { PublicMilestone, PublicTimeline } from "@/types";
 
 interface TimelineEditModalProps {
@@ -104,6 +104,58 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
       ...blockerComments,
       [index]: comment,
     });
+  };
+
+  const handleMoveMilestoneUp = (index: number) => {
+    if (index === 0) return; // Can't move first item up
+    
+    const updated = { ...editedTimeline };
+    const milestones = [...updated.milestones];
+    // Swap with previous
+    [milestones[index - 1], milestones[index]] = [milestones[index], milestones[index - 1]];
+    updated.milestones = milestones;
+    setEditedTimeline(updated);
+  };
+
+  const handleMoveMilestoneDown = (index: number) => {
+    if (index >= editedTimeline.milestones.length - 1) return; // Can't move last item down
+    
+    const updated = { ...editedTimeline };
+    const milestones = [...updated.milestones];
+    // Swap with next
+    [milestones[index], milestones[index + 1]] = [milestones[index + 1], milestones[index]];
+    updated.milestones = milestones;
+    setEditedTimeline(updated);
+  };
+
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    
+    if (draggedIndex === null || draggedIndex === targetIndex) return;
+    
+    const updated = { ...editedTimeline };
+    const milestones = [...updated.milestones];
+    const [removed] = milestones.splice(draggedIndex, 1);
+    milestones.splice(targetIndex, 0, removed);
+    updated.milestones = milestones;
+    setEditedTimeline(updated);
+    setDraggedIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
   };
 
   const handleSave = async () => {
@@ -228,9 +280,43 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
             </div>
             <div className="space-y-4">
               {editedTimeline.milestones.map((milestone, index) => (
-                <Card key={index} className="border-l-4 border-l-blue-500">
+                <Card 
+                  key={index} 
+                  className={`border-l-4 border-l-blue-500 transition-all ${
+                    draggedIndex === index ? 'opacity-50 scale-95' : ''
+                  }`}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, index)}
+                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDrop={(e) => handleDrop(e, index)}
+                  onDragEnd={handleDragEnd}
+                >
                   <CardContent className="p-4">
-                    <div className="flex items-start gap-4">
+                    <div className="flex items-start gap-2">
+                      {/* Drag Handle & Move Buttons */}
+                      <div className="flex flex-col items-center gap-1 pt-1">
+                        <GripVertical className="h-5 w-5 text-gray-400 cursor-move" title="Drag to reorder" />
+                        <div className="flex flex-col gap-0.5">
+                          <button
+                            onClick={() => handleMoveMilestoneUp(index)}
+                            disabled={index === 0}
+                            className="p-1 hover:bg-gray-100 rounded disabled:opacity-30 disabled:cursor-not-allowed"
+                            title="Move up"
+                          >
+                            <ChevronUp className="h-4 w-4 text-gray-600" />
+                          </button>
+                          <button
+                            onClick={() => handleMoveMilestoneDown(index)}
+                            disabled={index === editedTimeline.milestones.length - 1}
+                            className="p-1 hover:bg-gray-100 rounded disabled:opacity-30 disabled:cursor-not-allowed"
+                            title="Move down"
+                          >
+                            <ChevronDown className="h-4 w-4 text-gray-600" />
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start gap-4 flex-1">
                       <div className="flex-1">
                         {milestone.stage.startsWith('custom_') ? (
                           <Input
