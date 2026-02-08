@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,7 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
   const [error, setError] = useState("");
   const [blockerComments, setBlockerComments] = useState<{[key: number]: string}>({});
   const [customMilestones, setCustomMilestones] = useState<PublicMilestone[]>([]);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   const handleMilestoneStatusChange = (index: number, newStatus: string) => {
     const updated = { ...editedTimeline };
@@ -128,19 +129,17 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
     setEditedTimeline(updated);
   };
 
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
-
-  const handleDragStart = (e: React.DragEvent, index: number) => {
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, index: number) => {
     setDraggedIndex(index);
     e.dataTransfer.effectAllowed = 'move';
   };
 
-  const handleDragOver = (e: React.DragEvent, index: number) => {
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>, index: number) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
   };
 
-  const handleDrop = (e: React.DragEvent, targetIndex: number) => {
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>, targetIndex: number) => {
     e.preventDefault();
     
     if (draggedIndex === null || draggedIndex === targetIndex) return;
@@ -366,6 +365,7 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
                             />
                           </div>
                         )}
+                      </div>
                       </div>
                     </div>
 
