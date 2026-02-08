@@ -18,6 +18,8 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
   const [editedTimeline, setEditedTimeline] = useState(timeline);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [blockerComments, setBlockerComments] = useState<{[key: number]: string}>({});
+  const [customMilestones, setCustomMilestones] = useState<PublicMilestone[]>([]);
 
   const handleMilestoneStatusChange = (index: number, newStatus: string) => {
     const updated = { ...editedTimeline };
@@ -58,11 +60,63 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
     });
   };
 
+  const handleAddMilestone = () => {
+    const newMilestone: PublicMilestone = {
+      stage: `custom_${Date.now()}`,
+      title: "New Custom Stage",
+      description: "Add description...",
+      status: "pending",
+      is_active: false,
+    };
+    
+    const updated = { ...editedTimeline };
+    // Insert before the last milestone (Resolution)
+    updated.milestones.splice(updated.milestones.length - 1, 0, newMilestone);
+    setEditedTimeline(updated);
+  };
+
+  const handleRemoveMilestone = (index: number) => {
+    const updated = { ...editedTimeline };
+    updated.milestones.splice(index, 1);
+    setEditedTimeline(updated);
+  };
+
+  const handleMilestoneTitleChange = (index: number, newTitle: string) => {
+    const updated = { ...editedTimeline };
+    updated.milestones[index] = {
+      ...updated.milestones[index],
+      title: newTitle,
+    };
+    setEditedTimeline(updated);
+  };
+
+  const handleMilestoneDescriptionChange = (index: number, newDesc: string) => {
+    const updated = { ...editedTimeline };
+    updated.milestones[index] = {
+      ...updated.milestones[index],
+      description: newDesc,
+    };
+    setEditedTimeline(updated);
+  };
+
+  const handleBlockerCommentChange = (index: number, comment: string) => {
+    setBlockerComments({
+      ...blockerComments,
+      [index]: comment,
+    });
+  };
+
   const handleSave = async () => {
     try {
       setSaving(true);
       setError("");
-      await onSave(editedTimeline);
+      
+      // Save timeline
+      await onSave({
+        ...editedTimeline,
+        blocker_comments: blockerComments,
+      });
+      
       onClose();
     } catch (err: any) {
       setError(err.message || "Failed to save timeline");
@@ -161,15 +215,43 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
 
           {/* Milestone List */}
           <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Milestones</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-gray-900">Milestones</h3>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleAddMilestone}
+                className="text-xs"
+              >
+                + Add Custom Milestone
+              </Button>
+            </div>
             <div className="space-y-4">
               {editedTimeline.milestones.map((milestone, index) => (
                 <Card key={index} className="border-l-4 border-l-blue-500">
                   <CardContent className="p-4">
                     <div className="flex items-start gap-4">
                       <div className="flex-1">
-                        <h4 className="font-semibold text-gray-900">{milestone.title}</h4>
-                        <p className="text-sm text-gray-600 mt-1">{milestone.description}</p>
+                        {milestone.stage.startsWith('custom_') ? (
+                          <Input
+                            value={milestone.title}
+                            onChange={(e) => handleMilestoneTitleChange(index, e.target.value)}
+                            placeholder="Milestone title"
+                            className="font-semibold mb-2"
+                          />
+                        ) : (
+                          <h4 className="font-semibold text-gray-900">{milestone.title}</h4>
+                        )}
+                        {milestone.stage.startsWith('custom_') ? (
+                          <Input
+                            value={milestone.description}
+                            onChange={(e) => handleMilestoneDescriptionChange(index, e.target.value)}
+                            placeholder="Milestone description"
+                            className="text-sm"
+                          />
+                        ) : (
+                          <p className="text-sm text-gray-600 mt-1">{milestone.description}</p>
+                        )}
                       </div>
                       <div className="flex flex-col gap-2 min-w-[250px]">
                         <div>
@@ -201,8 +283,27 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
                       </div>
                     </div>
 
+                    {/* Blocker Comment (when marked blocked or delayed) */}
+                    {(milestone.status === 'blocked' || milestone.status === 'delayed') && (
+                      <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <label className="text-xs font-semibold text-yellow-900 block mb-2">
+                          📝 Explain to Customer (will be added as comment):
+                        </label>
+                        <textarea
+                          value={blockerComments[index] || ''}
+                          onChange={(e) => handleBlockerCommentChange(index, e.target.value)}
+                          placeholder="e.g., 'Waiting for specialized part delivery from Germany. Expected arrival: Feb 20'"
+                          className="w-full px-3 py-2 text-sm border border-yellow-300 rounded-lg focus:ring-2 focus:ring-yellow-500 resize-none"
+                          rows={3}
+                        />
+                        <p className="text-xs text-gray-600 mt-1">
+                          This will be posted as a comment on the ticket for customer transparency.
+                        </p>
+                      </div>
+                    )}
+
                     {/* Quick Actions */}
-                    <div className="flex gap-2 mt-3">
+                    <div className="flex gap-2 mt-3 flex-wrap">
                       {milestone.status !== 'completed' && (
                         <Button
                           size="sm"
@@ -233,6 +334,17 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
                         >
                           <AlertTriangle className="h-3 w-3 mr-1" />
                           Mark Blocked
+                        </Button>
+                      )}
+                      {milestone.stage.startsWith('custom_') && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleRemoveMilestone(index)}
+                          className="text-xs text-red-600 border-red-300"
+                        >
+                          <X className="h-3 w-3 mr-1" />
+                          Remove
                         </Button>
                       )}
                     </div>

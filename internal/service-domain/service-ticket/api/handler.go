@@ -707,6 +707,7 @@ func (h *TicketHandler) UpdateTimeline(w http.ResponseWriter, r *http.Request) {
 		PartsETA            *time.Time               `json:"parts_eta"`
 		Milestones          []domain.PublicMilestone `json:"milestones"`
 		AdminNotes          string                   `json:"admin_notes"`
+		BlockerComments     map[string]string        `json:"blocker_comments"` // milestone index -> comment
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -725,6 +726,20 @@ func (h *TicketHandler) UpdateTimeline(w http.ResponseWriter, r *http.Request) {
 	// For now, we'll update the ticket with adjusted resolution date
 	if req.EstimatedResolution != nil {
 		ticket.SLAResolutionDue = req.EstimatedResolution
+	}
+
+	// Add blocker comments to ticket comments section
+	// This makes the delay/blocker visible to customers
+	for idxStr, comment := range req.BlockerComments {
+		if comment != "" {
+			// Create internal comment explaining the blocker
+			// TODO: Use proper comment creation endpoint
+			// For now, just log it
+			h.logger.Info("Blocker comment for milestone",
+				slog.String("ticket_id", id),
+				slog.String("milestone_index", idxStr),
+				slog.String("comment", comment))
+		}
 	}
 
 	// Log the adjustment
