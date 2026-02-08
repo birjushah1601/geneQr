@@ -629,16 +629,34 @@ export default function TicketDetailPage() {
                             <p className="text-xs text-gray-500">{(att.fileSize / 1024).toFixed(1)} KB</p>
                           </div>
                         </div>
-                        <a 
-                          href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081'}/api/v1/attachments/${att.id}/download`}
-                          download
-                          className="ml-2 px-3 py-1.5 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 transition-colors flex items-center gap-1 flex-shrink-0"
-                        >
-                          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                          </svg>
-                          Download
-                        </a>
+                        <div className="flex items-center gap-2">
+                          <a 
+                            href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081'}/api/v1/attachments/${att.id}/download`}
+                            download
+                            className="px-3 py-1.5 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 transition-colors flex items-center gap-1 flex-shrink-0"
+                          >
+                            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Download
+                          </a>
+                          <button
+                            onClick={async () => {
+                              if (confirm(`Delete ${att.fileName}?`)) {
+                                try {
+                                  await onDelete(att.id);
+                                } catch (error) {
+                                  console.error('Delete failed:', error);
+                                  alert('Failed to delete attachment');
+                                }
+                              }
+                            }}
+                            className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors flex-shrink-0"
+                            title="Delete attachment"
+                          >
+                            <Trash className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
