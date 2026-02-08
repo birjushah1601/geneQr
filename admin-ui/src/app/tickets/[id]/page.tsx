@@ -198,17 +198,14 @@ export default function TicketDetailPage() {
       // Refresh attachments list
       await refetchAttachments();
       
-      // Optional: Trigger AI analysis for image files (don't block on failure)
+      // AI analysis disabled - endpoint not implemented
+      // TODO: Enable when /api/v1/diagnosis/analyze endpoint is ready
+      /*
       if (file.type.startsWith('image/')) {
         setAiAnalyzing(true);
-        
-        // Run AI analysis in background without blocking upload success
         setTimeout(async () => {
           try {
-            // Convert file to base64 for AI analysis
             const base64 = await fileToBase64(file);
-            
-            // Call AI diagnosis API with vision analysis
             await diagnosisApi.analyze({
               ticket_id: Number(id),
               equipment_id: ticket.equipment_id || "",
@@ -221,21 +218,18 @@ export default function TicketDetailPage() {
                 include_similar_tickets: true,
               }
             });
-            
-            // Refresh ticket data and diagnosis to show AI results
             await refetch();
             await refetchDiagnosis();
             console.log('AI analysis completed');
           } catch (error) {
-            console.error("AI analysis failed (non-blocking):", error);
-            // Don't show error to user - AI is optional
+            console.error("AI analysis failed:", error);
           } finally {
             setAiAnalyzing(false);
           }
         }, 100);
       }
+      */
       
-      // Show success message
       console.log('File uploaded successfully');
       
     } catch (error) {
