@@ -445,29 +445,58 @@ export default function TicketDetailPage() {
               </div>
 
               {/* Compact Summary - When Collapsed */}
-              {!timelineExpanded && timeline.milestones && (
-                <div className="px-3 md:px-4 pb-3 md:pb-4 border-t">
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-4">
-                      <div>
-                        <span className="text-gray-500">Status: </span>
+              {!timelineExpanded && timeline.milestones && (() => {
+                const completedMilestones = timeline.milestones.filter(m => m.status === 'completed').length;
+                const totalMilestones = timeline.milestones.length;
+                const progressPercentage = totalMilestones > 0 ? Math.round((completedMilestones / totalMilestones) * 100) : 0;
+                const currentMilestone = timeline.milestones.find(m => m.is_current);
+                
+                return (
+                  <div className="px-3 md:px-4 pb-3 border-t pt-3">
+                    {/* Progress Bar */}
+                    <div className="mb-3">
+                      <div className="flex items-center justify-between text-xs mb-1">
+                        <span className="font-medium text-gray-700">
+                          {completedMilestones}/{totalMilestones} milestones completed
+                        </span>
+                        <span className="font-semibold text-blue-600">{progressPercentage}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                        <div 
+                          className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${progressPercentage}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Current Status & Target Date */}
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-500">Current:</span>
                         <span className="font-medium text-gray-900">
-                          {timeline.milestones.find(m => m.is_current)?.name || 'In Progress'}
+                          {currentMilestone?.name || 'In Progress'}
                         </span>
                       </div>
                       {timeline.estimated_completion && (
-                        <div>
-                          <span className="text-gray-500">ETA: </span>
-                          <span className="font-medium text-blue-600">
-                            {new Date(timeline.estimated_completion).toLocaleDateString()}
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-500">Target:</span>
+                          <span className="font-semibold text-blue-600">
+                            {new Date(timeline.estimated_completion).toLocaleDateString('en-US', { 
+                              month: 'short', 
+                              day: 'numeric',
+                              year: 'numeric'
+                            })}
                           </span>
                         </div>
                       )}
                     </div>
-                    <span className="text-xs text-gray-400">Click to expand</span>
+                    
+                    <div className="text-center mt-2">
+                      <span className="text-xs text-gray-400">Click to expand for details</span>
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Full Timeline - When Expanded */}
               {timelineExpanded && (
