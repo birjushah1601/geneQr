@@ -230,62 +230,105 @@ export function TicketTimeline({ timeline, isPublic = false }: TicketTimelinePro
         </Card>
       )}
 
-      {/* Milestone Timeline - Compact for Public */}
+      {/* Visual Progress Tracker - Public View */}
       {isPublic ? (
-        <div className="space-y-3">
-          <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Service Steps</p>
-          <div className="relative">
-            {timeline.milestones.map((milestone, index) => (
-              <div 
-                key={milestone.stage}
-                className="flex gap-3 pb-3 last:pb-0"
-              >
-                {/* Timeline line */}
-                {index < timeline.milestones.length - 1 && (
-                  <div 
-                    className={`absolute left-3 top-6 w-0.5 ${
-                      milestone.status === 'completed' ? 'bg-green-300' : 'bg-gray-200'
-                    }`}
-                    style={{ height: 'calc(100% - 1.5rem)' }}
-                  />
-                )}
-                
-                {/* Milestone icon */}
-                <div className={`
-                  relative z-10 flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-all
-                  ${milestone.status === 'completed' ? 'bg-green-500 text-white' : ''}
-                  ${milestone.is_active ? 'bg-blue-500 text-white' : ''}
-                  ${milestone.status === 'pending' ? 'bg-gray-200 text-gray-400' : ''}
-                  ${milestone.status === 'blocked' ? 'bg-yellow-500 text-white' : ''}
-                  ${milestone.status === 'delayed' ? 'bg-red-500 text-white' : ''}
-                `}>
-                  {milestone.status === 'completed' && <CheckCircle className="h-4 w-4" />}
-                  {milestone.is_active && <Loader2 className="h-4 w-4" />}
-                  {milestone.status === 'pending' && <Clock className="h-3 w-3" />}
-                  {milestone.status === 'blocked' && <AlertTriangle className="h-4 w-4" />}
-                  {milestone.status === 'delayed' && <AlertCircle className="h-4 w-4" />}
-                </div>
-
-                {/* Milestone content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <h3 className={`text-sm font-medium ${
-                      milestone.is_active ? 'text-blue-600' : 'text-gray-900'
-                    }`}>
-                      {milestone.title}
-                    </h3>
-                    {milestone.eta && (
-                      <span className="text-xs text-gray-500 whitespace-nowrap">
-                        {milestone.status === 'completed' ? '✓' : formatDate(milestone.eta)}
-                      </span>
-                    )}
-                  </div>
-                  {milestone.is_active && (
-                    <p className="text-xs text-gray-600 mt-0.5">{milestone.description}</p>
+        <div className="space-y-4">
+          <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Service Progress</p>
+          
+          {/* Progress Tracker */}
+          <div className="relative py-2">
+            {timeline.milestones.map((milestone, index) => {
+              const isCompleted = milestone.status === 'completed';
+              const isActive = milestone.is_active;
+              const isBlocked = milestone.status === 'blocked' || milestone.status === 'delayed';
+              const nextIsCompleted = index < timeline.milestones.length - 1 && 
+                timeline.milestones[index + 1].status === 'completed';
+              
+              return (
+                <div key={milestone.stage} className="relative">
+                  {/* Connecting Line */}
+                  {index < timeline.milestones.length - 1 && (
+                    <div className="absolute left-4 top-8 w-0.5 h-full -mb-2">
+                      <div 
+                        className={`h-full transition-all duration-500 ${
+                          isCompleted ? 'bg-green-500' : 'bg-gray-200'
+                        }`}
+                      />
+                    </div>
                   )}
+                  
+                  {/* Milestone Row */}
+                  <div className="relative flex items-start gap-3 pb-4">
+                    {/* Status Icon with Pulse */}
+                    <div className="relative flex-shrink-0">
+                      <div className={`
+                        w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 border-2
+                        ${isCompleted ? 'bg-green-500 border-green-500 text-white shadow-lg' : ''}
+                        ${isActive ? 'bg-blue-500 border-blue-500 text-white shadow-lg' : ''}
+                        ${isBlocked ? 'bg-yellow-500 border-yellow-500 text-white shadow-md' : ''}
+                        ${!isCompleted && !isActive && !isBlocked ? 'bg-white border-gray-300 text-gray-400' : ''}
+                      `}>
+                        {isCompleted && <CheckCircle className="h-5 w-5" />}
+                        {isActive && <Loader2 className="h-5 w-5 animate-spin" />}
+                        {isBlocked && <AlertTriangle className="h-5 w-5" />}
+                        {!isCompleted && !isActive && !isBlocked && <Clock className="h-4 w-4" />}
+                      </div>
+                      {/* Pulse animation for active */}
+                      {isActive && (
+                        <div className="absolute inset-0 w-8 h-8 rounded-full bg-blue-400 animate-ping opacity-75" />
+                      )}
+                    </div>
+                    
+                    {/* Content */}
+                    <div className="flex-1 min-w-0 pt-0.5">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1">
+                          <h3 className={`text-sm font-semibold leading-tight ${
+                            isActive ? 'text-blue-600' : 
+                            isCompleted ? 'text-green-700' :
+                            isBlocked ? 'text-yellow-700' :
+                            'text-gray-900'
+                          }`}>
+                            {milestone.title}
+                          </h3>
+                          {(isActive || isBlocked) && (
+                            <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+                              {milestone.description}
+                            </p>
+                          )}
+                        </div>
+                        
+                        {/* Date/Status Badge */}
+                        <div className="flex flex-col items-end gap-1">
+                          {milestone.completed_at ? (
+                            <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                              ✓ Done
+                            </span>
+                          ) : milestone.eta ? (
+                            <span className={`text-xs whitespace-nowrap ${
+                              isActive ? 'font-medium text-blue-600' : 'text-gray-500'
+                            }`}>
+                              {new Date(milestone.eta).toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: 'numeric'
+                              })}
+                            </span>
+                          ) : null}
+                        </div>
+                      </div>
+                      
+                      {/* Active indicator */}
+                      {isActive && (
+                        <div className="flex items-center gap-1.5 mt-2">
+                          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
+                          <span className="text-xs font-medium text-blue-600">In Progress</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       ) : (
