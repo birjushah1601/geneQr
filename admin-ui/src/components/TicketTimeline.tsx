@@ -84,66 +84,119 @@ export function TicketTimeline({ timeline, isPublic = false }: TicketTimelinePro
   };
 
   return (
-    <div className="space-y-6">
-      {/* Overall Status Card */}
-      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-        <CardHeader>
+    <div className={isPublic ? "p-4" : "space-y-6"}>
+      {/* Compact Overall Status - Public View */}
+      {isPublic ? (
+        <div className="space-y-4">
+          {/* Status Summary */}
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-blue-600" />
-              Expected Timeline
-            </CardTitle>
-            {getStatusBadge(timeline.overall_status)}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-gray-700 mb-4">
-            {timeline.status_message}
-          </p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-gray-600">Target Resolution</p>
-              <p className="text-xl font-semibold text-gray-900">
-                {formatDate(timeline.estimated_resolution)}
-              </p>
-              <p className="text-sm text-blue-600 mt-1 font-medium">
-                {timeline.time_remaining}
-              </p>
-            </div>
-            
-            {timeline.is_urgent && (
-              <div className="flex items-center gap-2 text-orange-600">
-                <AlertCircle className="h-5 w-5" />
-                <div>
-                  <p className="font-semibold">High Priority</p>
-                  <p className="text-sm text-gray-600">Fast-tracked service</p>
-                </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                {getStatusBadge(timeline.overall_status)}
+                {timeline.is_urgent && (
+                  <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-semibold rounded-full">
+                    High Priority
+                  </span>
+                )}
               </div>
-            )}
+              <p className="text-sm text-gray-600">{timeline.status_message}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-gray-500">Target Completion</p>
+              <p className="text-sm font-semibold text-gray-900">{formatDate(timeline.estimated_resolution)}</p>
+              <p className="text-xs text-blue-600 font-medium">{timeline.time_remaining}</p>
+            </div>
           </div>
 
-          {/* Progress Bar */}
-          <div className="mt-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">Overall Progress</span>
-              <span className="text-sm font-semibold text-blue-600">{timeline.progress_percentage}%</span>
+          {/* Compact Progress Bar */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs text-gray-600">Progress</span>
+              <span className="text-xs font-semibold text-blue-600">{timeline.progress_percentage}%</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2.5">
+            <div className="w-full bg-gray-200 rounded-full h-2">
               <div 
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2.5 rounded-full transition-all duration-500"
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full transition-all"
                 style={{ width: `${timeline.progress_percentage}%` }}
               />
             </div>
-            <p className="text-xs text-gray-500 mt-2">
-              Currently: {timeline.current_stage_desc}
+          </div>
+        </div>
+      ) : (
+        /* Full Status Card - Admin View */
+        <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5 text-blue-600" />
+                Expected Timeline
+              </CardTitle>
+              {getStatusBadge(timeline.overall_status)}
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-gray-700 mb-4">
+              {timeline.status_message}
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-600">Target Resolution</p>
+                <p className="text-xl font-semibold text-gray-900">
+                  {formatDate(timeline.estimated_resolution)}
+                </p>
+                <p className="text-sm text-blue-600 mt-1 font-medium">
+                  {timeline.time_remaining}
+                </p>
+              </div>
+              
+              {timeline.is_urgent && (
+                <div className="flex items-center gap-2 text-orange-600">
+                  <AlertCircle className="h-5 w-5" />
+                  <div>
+                    <p className="font-semibold">High Priority</p>
+                    <p className="text-sm text-gray-600">Fast-tracked service</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Progress Bar */}
+            <div className="mt-6">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-600">Overall Progress</span>
+                <span className="text-sm font-semibold text-blue-600">{timeline.progress_percentage}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div 
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2.5 rounded-full transition-all duration-500"
+                  style={{ width: `${timeline.progress_percentage}%` }}
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                Currently: {timeline.current_stage_desc}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Parts Status - Compact for Public */}
+      {timeline.requires_parts && isPublic && (
+        <div className="flex items-center gap-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+          <Package className="h-5 w-5 text-purple-600 flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-purple-900">Parts Required</p>
+            <p className="text-xs text-purple-700">
+              {timeline.parts_status?.replace('_', ' ') || 'Pending'}
+              {timeline.parts_eta && ` • ETA: ${formatDate(timeline.parts_eta)}`}
             </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      )}
 
-      {/* Parts Status (if applicable) */}
-      {timeline.requires_parts && (
+      {/* Parts Status - Full for Admin */}
+      {timeline.requires_parts && !isPublic && (
         <Card className="border-purple-200">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-purple-700">
@@ -177,13 +230,72 @@ export function TicketTimeline({ timeline, isPublic = false }: TicketTimelinePro
         </Card>
       )}
 
-      {/* Milestone Timeline */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Service Journey</CardTitle>
-          <p className="text-sm text-gray-500 mt-1">Step-by-step progress of your service request</p>
-        </CardHeader>
-        <CardContent>
+      {/* Milestone Timeline - Compact for Public */}
+      {isPublic ? (
+        <div className="space-y-3">
+          <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Service Steps</p>
+          <div className="relative">
+            {timeline.milestones.map((milestone, index) => (
+              <div 
+                key={milestone.stage}
+                className="flex gap-3 pb-3 last:pb-0"
+              >
+                {/* Timeline line */}
+                {index < timeline.milestones.length - 1 && (
+                  <div 
+                    className={`absolute left-3 top-6 w-0.5 ${
+                      milestone.status === 'completed' ? 'bg-green-300' : 'bg-gray-200'
+                    }`}
+                    style={{ height: 'calc(100% - 1.5rem)' }}
+                  />
+                )}
+                
+                {/* Milestone icon */}
+                <div className={`
+                  relative z-10 flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-all
+                  ${milestone.status === 'completed' ? 'bg-green-500 text-white' : ''}
+                  ${milestone.is_active ? 'bg-blue-500 text-white' : ''}
+                  ${milestone.status === 'pending' ? 'bg-gray-200 text-gray-400' : ''}
+                  ${milestone.status === 'blocked' ? 'bg-yellow-500 text-white' : ''}
+                  ${milestone.status === 'delayed' ? 'bg-red-500 text-white' : ''}
+                `}>
+                  {milestone.status === 'completed' && <CheckCircle className="h-4 w-4" />}
+                  {milestone.is_active && <Loader2 className="h-4 w-4" />}
+                  {milestone.status === 'pending' && <Clock className="h-3 w-3" />}
+                  {milestone.status === 'blocked' && <AlertTriangle className="h-4 w-4" />}
+                  {milestone.status === 'delayed' && <AlertCircle className="h-4 w-4" />}
+                </div>
+
+                {/* Milestone content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <h3 className={`text-sm font-medium ${
+                      milestone.is_active ? 'text-blue-600' : 'text-gray-900'
+                    }`}>
+                      {milestone.title}
+                    </h3>
+                    {milestone.eta && (
+                      <span className="text-xs text-gray-500 whitespace-nowrap">
+                        {milestone.status === 'completed' ? '✓' : formatDate(milestone.eta)}
+                      </span>
+                    )}
+                  </div>
+                  {milestone.is_active && (
+                    <p className="text-xs text-gray-600 mt-0.5">{milestone.description}</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        /* Full Milestone Timeline - Admin View */
+        <Card>
+          <CardHeader>
+            <CardTitle>Service Journey</CardTitle>
+            <p className="text-sm text-gray-500 mt-1">Step-by-step progress of your service request</p>
+          </CardHeader>
+          <CardContent>
           <div className="relative">
             {timeline.milestones.map((milestone, index) => (
               <div 
