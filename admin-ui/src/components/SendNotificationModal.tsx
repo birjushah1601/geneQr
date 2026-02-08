@@ -35,9 +35,18 @@ export function SendNotificationModal({
   useEffect(() => {
     const generateSummary = async () => {
       try {
-        // Fetch comments for the ticket
+        // Fetch comments and timeline for the ticket
         const response = await ticketsApi.getComments(ticketId);
         const comments = response.comments || [];
+        
+        // Fetch timeline
+        let timeline = null;
+        try {
+          const timelineResponse = await apiClient.get(`/v1/tickets/${ticketId}/timeline`);
+          timeline = timelineResponse.data;
+        } catch (err) {
+          console.error('Failed to fetch timeline:', err);
+        }
         
         // Generate ticket summary with history
         let summary = `Ticket Update: ${ticketNumber}\n\n`;
@@ -51,6 +60,39 @@ export function SendNotificationModal({
         }
         
         summary += `Issue: ${ticket?.issue_description || 'N/A'}\n\n`;
+        
+        // Add timeline information
+        if (timeline) {
+          summary += `📅 Service Timeline:\n`;
+          summary += `${'='.repeat(50)}\n\n`;
+          
+          summary += `Expected Resolution: ${timeline.estimated_resolution ? new Date(timeline.estimated_resolution).toLocaleString() : 'TBD'}\n`;
+          summary += `Time Remaining: ${timeline.time_remaining}\n`;
+          summary += `Progress: ${timeline.progress_percentage}%\n`;
+          summary += `Status: ${timeline.status_message}\n\n`;
+          
+          if (timeline.requires_parts) {
+            summary += `📦 Parts Required: ${timeline.parts_status || 'Pending'}\n`;
+            if (timeline.parts_eta) {
+              summary += `Parts Expected: ${new Date(timeline.parts_eta).toLocaleString()}\n`;
+            }
+            summary += `\n`;
+          }
+          
+          summary += `Service Journey:\n`;
+          timeline.milestones.forEach((m: any) => {
+            const icon = m.status === 'completed' ? '✓' : 
+                         m.is_active ? '→' : '○';
+            summary += `${icon} ${m.title}`;
+            if (m.completed_at) {
+              summary += ` - Completed: ${new Date(m.completed_at).toLocaleDateString()}`;
+            } else if (m.eta && !m.completed_at) {
+              summary += ` - ETA: ${new Date(m.eta).toLocaleDateString()}`;
+            }
+            summary += `\n`;
+          });
+          summary += `\n`;
+        }
         
         if (comments && comments.length > 0) {
           summary += `Activity History:\n`;
