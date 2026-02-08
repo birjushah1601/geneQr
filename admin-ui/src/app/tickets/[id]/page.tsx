@@ -184,44 +184,64 @@ export default function TicketDetailPage() {
   const onUpload = async (file: File) => {
     try {
       setUploading(true);
+      
+      // Upload the file
       const uploadResult = await attachmentsApi.upload({ 
         file, 
         ticketId: String(id), 
         category: "issue_photo", 
         source: "admin_ui" 
       });
+      
+      console.log('Upload successful:', uploadResult);
+      
+      // Refresh attachments list
       await refetchAttachments();
       
-      // Trigger AI analysis for image files
+      // Optional: Trigger AI analysis for image files (don't block on failure)
       if (file.type.startsWith('image/')) {
         setAiAnalyzing(true);
-        try {
-          // Convert file to base64 for AI analysis
-          const base64 = await fileToBase64(file);
-          
-          // Call real AI diagnosis API with vision analysis
-          await diagnosisApi.analyze({
-            ticket_id: Number(id),
-            equipment_id: ticket.equipment_id || "",
-            symptoms: extractSymptoms(ticket.issue_description || ""),
-            description: ticket.issue_description || "",
-            images: [base64],
-            options: {
-              include_vision_analysis: true,
-              include_historical_context: true,
-              include_similar_tickets: true,
-            }
-          });
-          
-          // Refresh ticket data and diagnosis to show AI results
-          await refetch();
-          await refetchDiagnosis();
-        } catch (error) {
-          console.error("AI analysis failed:", error);
-        } finally {
-          setAiAnalyzing(false);
-        }
+        
+        // Run AI analysis in background without blocking upload success
+        setTimeout(async () => {
+          try {
+            // Convert file to base64 for AI analysis
+            const base64 = await fileToBase64(file);
+            
+            // Call AI diagnosis API with vision analysis
+            await diagnosisApi.analyze({
+              ticket_id: Number(id),
+              equipment_id: ticket.equipment_id || "",
+              symptoms: extractSymptoms(ticket.issue_description || ""),
+              description: ticket.issue_description || "",
+              images: [base64],
+              options: {
+                include_vision_analysis: true,
+                include_historical_context: true,
+                include_similar_tickets: true,
+              }
+            });
+            
+            // Refresh ticket data and diagnosis to show AI results
+            await refetch();
+            await refetchDiagnosis();
+            console.log('AI analysis completed');
+          } catch (error) {
+            console.error("AI analysis failed (non-blocking):", error);
+            // Don't show error to user - AI is optional
+          } finally {
+            setAiAnalyzing(false);
+          }
+        }, 100);
       }
+      
+      // Show success message
+      console.log('File uploaded successfully');
+      
+    } catch (error) {
+      console.error('Upload failed:', error);
+      alert('Failed to upload file. Please try again.');
+      throw error;
     } finally {
       setUploading(false);
     }
@@ -605,19 +625,26 @@ export default function TicketDetailPage() {
                 ) : attachmentList?.attachments?.length ? (
                   <div className="space-y-2">
                     {attachmentList.attachments.map((att) => (
-                      <div key={att.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                      <div key={att.id} className="flex items-center justify-between p-3 bg-gray-50 rounded border border-gray-200 hover:bg-gray-100 transition-colors">
                         <div className="flex items-center gap-2 flex-1 min-w-0">
                           <Paperclip className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                          <a 
-                            href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081'}/v1/attachments/${att.id}/download`}
-                            className="text-sm text-blue-600 hover:underline truncate"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {att.original_filename || att.filename}
-                          </a>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {att.original_filename || att.filename}
+                            </p>
+                            <p className="text-xs text-gray-500">{(att.file_size_bytes / 1024).toFixed(1)} KB</p>
+                          </div>
                         </div>
-                        <span className="text-xs text-gray-500">{(att.file_size_bytes / 1024).toFixed(1)} KB</span>
+                        <a 
+                          href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081'}/v1/attachments/${att.id}/download`}
+                          download
+                          className="ml-2 px-3 py-1.5 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 transition-colors flex items-center gap-1 flex-shrink-0"
+                        >
+                          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                          </svg>
+                          Download
+                        </a>
                       </div>
                     ))}
                   </div>
