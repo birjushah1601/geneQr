@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Search, Plus, Upload, Download, UserCheck, UserX, Users, Loader2, Filter } from 'lucide-react';
 import apiClient from '@/lib/api/client';
 import DashboardLayout from '@/components/DashboardLayout';
+import { isFeatureEnabled } from '@/lib/featureFlags';
 
 interface Engineer {
   id: string;
@@ -248,21 +249,23 @@ export default function EngineersListPage() {
               }
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => router.push('/engineers/import')}
-            >
-              <Upload className="h-4 w-4 mr-2" />
-              Import CSV
-            </Button>
-            <Button
-              onClick={() => router.push('/engineers/add')}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Engineer
-            </Button>
-          </div>
+          {isFeatureEnabled('AddNew') && (
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => router.push('/engineers/import')}
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                Import CSV
+              </Button>
+              <Button
+                onClick={() => router.push('/engineers/add')}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Engineer
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Statistics Cards */}

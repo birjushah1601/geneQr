@@ -15,6 +15,7 @@ import {
   Sparkles,
   Upload
 } from 'lucide-react';
+import { isFeatureEnabled } from '@/lib/featureFlags';
 
 export default function ManufacturerDashboard() {
   const router = useRouter();
@@ -142,8 +143,8 @@ export default function ManufacturerDashboard() {
         </Card>
       </div>
 
-      {/* AI Onboarding CTA */}
-      {(!equipmentData?.total || equipmentData.total === 0) && (
+      {/* AI Onboarding CTA - Hidden by default for demo */}
+      {isFeatureEnabled('AIOnboarding') && (!equipmentData?.total || equipmentData.total === 0) && (
         <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50">
           <CardContent className="pt-6">
             <div className="flex items-start gap-4">
@@ -152,7 +153,7 @@ export default function ManufacturerDashboard() {
               </div>
               <div className="flex-1">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Ã°Å¸Å¡â‚¬ Get Started with AI Onboarding
+                  🚀 Get Started with AI Onboarding
                 </h3>
                 <p className="text-gray-700 mb-4">
                   Import your equipment, parts catalog, hospitals, and engineers in minutes using our AI-powered assistant. 

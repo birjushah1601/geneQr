@@ -160,14 +160,16 @@ func (t *ServiceTicket) AssignEngineer(engineerID, engineerName string) error {
 	return nil
 }
 
-// Acknowledge acknowledges the ticket (engineer has seen it)
+// Acknowledge acknowledges the ticket (admin has seen it)
+// Status stays as 'new' - doesn't change until engineer is assigned
 func (t *ServiceTicket) Acknowledge() error {
-	if t.Status != StatusAssigned {
+	if t.Status != StatusNew {
 		return ErrInvalidStatus
 	}
 	
 	now := time.Now()
 	t.AcknowledgedAt = &now
+	// Status stays 'new' - only changes to 'assigned' when engineer is assigned
 	t.UpdatedAt = now
 	
 	return nil
@@ -230,6 +232,10 @@ func (t *ServiceTicket) Resolve(resolutionNotes string, partsUsed []Part, laborH
 	t.Status = StatusResolved
 	t.UpdatedAt = now
 	
+	// Clear engineer assignment when resolved
+	t.AssignedEngineerID = ""
+	t.AssignedEngineerName = ""
+	
 	return nil
 }
 
@@ -256,6 +262,10 @@ func (t *ServiceTicket) Cancel(reason string) error {
 	t.ResolutionNotes = "Cancelled: " + reason
 	t.Status = StatusCancelled
 	t.UpdatedAt = time.Now()
+	
+	// Clear engineer assignment when cancelled
+	t.AssignedEngineerID = ""
+	t.AssignedEngineerName = ""
 	
 	return nil
 }

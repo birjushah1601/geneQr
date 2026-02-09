@@ -29,7 +29,8 @@ type InvitationHandler struct {
 func NewInvitationHandler(db *sqlx.DB, emailService *email.NotificationService, logger *slog.Logger) *InvitationHandler {
 	appURL := os.Getenv("APP_URL")
 	if appURL == "" {
-		appURL = "http://localhost:3000"
+		// Default to production HTTPS URL
+		appURL = "https://servqr.com"
 	}
 
 	return &InvitationHandler{

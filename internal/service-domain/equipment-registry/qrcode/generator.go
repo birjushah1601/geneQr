@@ -132,11 +132,11 @@ func (g *Generator) GenerateQRLabel(equipmentID, equipmentName, serialNumber, ma
 
 	// Add instructions
 	pdf.SetFont("Arial", "I", 10)
-	pdf.MultiCell(0, 5, "Scan this QR code with your mobile device to view equipment details and request service.", "", "", false)
+	pdf.MultiCell(0, 5, "Scan this QR code to create a service request. If the QR code is not functioning, use the URL below.", "", "", false)
 	pdf.Ln(5)
 	
-	// Add URL for reference
-	url := fmt.Sprintf("%s/equipment/%s", g.baseURL, equipmentID)
+	// Add service request URL for reference (not equipment details URL)
+	url := fmt.Sprintf("%s/service-request?qr=%s", g.baseURL, qrCodeID)
 	pdf.SetFont("Arial", "", 8)
 	pdf.Cell(0, 5, fmt.Sprintf("URL: %s", url))
 
@@ -197,11 +197,11 @@ func (g *Generator) GenerateQRLabelFromBytes(equipmentID, equipmentName, serialN
 
 	// Add instructions
 	pdf.SetFont("Arial", "I", 10)
-	pdf.MultiCell(0, 5, "Scan this QR code with your mobile device to view equipment details and request service.", "", "", false)
+	pdf.MultiCell(0, 5, "Scan this QR code to create a service request. If the QR code is not functioning, use the URL below.", "", "", false)
 	pdf.Ln(5)
 	
-	// Add URL for reference
-	url := fmt.Sprintf("%s/equipment/%s", g.baseURL, equipmentID)
+	// Add service request URL for reference (not equipment details URL)
+	url := fmt.Sprintf("%s/service-request?qr=%s", g.baseURL, qrCodeID)
 	pdf.SetFont("Arial", "", 8)
 	pdf.Cell(0, 5, fmt.Sprintf("URL: %s", url))
 
@@ -262,11 +262,11 @@ func (g *Generator) GenerateBatchLabels(equipmentList []EquipmentInfo) (string, 
 
 		// Instructions
 		pdf.SetFont("Arial", "I", 9)
-		pdf.MultiCell(0, 5, "For service requests, scan QR code or WhatsApp the photo to our service number.", "", "", false)
+		pdf.MultiCell(0, 5, "Scan QR code to create a service request. If QR is not working, use the URL below.", "", "", false)
 		pdf.Ln(3)
 		
-		// URL
-		url := fmt.Sprintf("%s/equipment/%s", g.baseURL, eq.EquipmentID)
+		// Service request URL
+		url := fmt.Sprintf("%s/service-request?qr=%s", g.baseURL, eq.QRCode)
 		pdf.SetFont("Arial", "", 8)
 		pdf.Cell(0, 4, fmt.Sprintf("Web: %s", url))
 	}

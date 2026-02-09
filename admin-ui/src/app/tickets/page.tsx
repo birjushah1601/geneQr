@@ -8,6 +8,7 @@ import { ticketsApi } from "@/lib/api/tickets";
 import type { ServiceTicket, TicketPriority, TicketStatus } from "@/types";
 import { Loader2, Filter, Search, Ticket as TicketIcon, User, Package, Calendar } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
+import { isFeatureEnabled } from "@/lib/featureFlags";
 
 function StatusBadge({ status }: { status: TicketStatus }) {
   const color = {
@@ -84,7 +85,9 @@ export default function TicketsListPage() {
             <TicketIcon className="h-6 w-6 text-gray-700" />
             <h1 className="text-xl font-semibold">Service Tickets</h1>
           </div>
-          <Link href="/service-request" className="px-3 py-2 rounded bg-blue-600 text-white text-sm hover:bg-blue-700">Create Ticket</Link>
+          {isFeatureEnabled('AddNew') && (
+            <Link href="/service-request" className="px-3 py-2 rounded bg-blue-600 text-white text-sm hover:bg-blue-700">Create Ticket</Link>
+          )}
         </div>
       </div>
 

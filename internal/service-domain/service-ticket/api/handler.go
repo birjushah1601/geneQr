@@ -161,7 +161,8 @@ func (h *TicketHandler) CreateTicket(w http.ResponseWriter, r *http.Request) {
 				slog.String("error", err.Error()))
 		} else {
 			trackingToken = token
-			baseURL := "http://localhost:3000" // TODO: Get from config
+			// Use HTTPS production URL by default, fallback to localhost for dev
+			baseURL := "https://servqr.com"
 			if envURL := os.Getenv("FRONTEND_BASE_URL"); envURL != "" {
 				baseURL = envURL
 			}

@@ -19,6 +19,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { isFeatureEnabled } from '@/lib/featureFlags';
 
 interface NavItem {
   label: string;
@@ -86,17 +87,20 @@ export default function Navigation() {
 
   // Filter navigation items based on organization type
   const visibleNavItems = navigationConfig.filter(item => {
-    // If no restrictions, show to all
-    if (item.allowedOrgTypes.length === 0) {
-      return true;
-    }
-
-    // Special handling for AI Onboarding - only for admins
+    // Special handling for AI Onboarding - hide by default, show with feature flag
     if (item.href === '/onboarding/ai-wizard') {
+      if (!isFeatureEnabled('AIOnboarding')) {
+        return false; // Hidden for demo unless ?enable=AIOnboarding
+      }
       const orgType = organizationContext?.organization_type;
       const role = organizationContext?.role;
       // System admins or manufacturer admins only
       return orgType === 'system' || (orgType === 'manufacturer' && role === 'admin');
+    }
+    
+    // If no restrictions, show to all
+    if (item.allowedOrgTypes.length === 0) {
+      return true;
     }
 
     // Check if user's org type is in allowed list
