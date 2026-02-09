@@ -332,11 +332,8 @@ export default function TicketDetailPage() {
   const cancel = useMutation({ mutationFn: () => post(`/v1/tickets/${id}/cancel`, { reason: "Cancelled by admin", cancelled_by: "admin" }), onSuccess: () => refetch() });
 
   const handleStatusChange = (newStatus: TicketStatus) => {
-    // Note: new -> assigned transition requires engineer assignment first (use Reassign Engineer button)
-    if (ticket.status === "new" && newStatus === "assigned") {
-      alert("Please assign an engineer first using the 'Reassign Engineer' button");
-      return;
-    }
+    // Acknowledge ticket when moving from new to assigned
+    if (ticket.status === "new" && newStatus === "assigned") ack.mutate();
     else if (ticket.status === "assigned" && newStatus === "in_progress") start.mutate();
     else if (ticket.status === "in_progress" && newStatus === "on_hold") hold.mutate();
     else if (ticket.status === "on_hold" && newStatus === "in_progress") resume.mutate();
