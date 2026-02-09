@@ -160,15 +160,16 @@ func (t *ServiceTicket) AssignEngineer(engineerID, engineerName string) error {
 	return nil
 }
 
-// Acknowledge acknowledges the ticket and moves it to assigned status
+// Acknowledge acknowledges the ticket (admin has seen it)
+// Status stays as 'new' - doesn't change until engineer is assigned
 func (t *ServiceTicket) Acknowledge() error {
-	if t.Status != StatusNew && t.Status != StatusAssigned {
+	if t.Status != StatusNew {
 		return ErrInvalidStatus
 	}
 	
 	now := time.Now()
 	t.AcknowledgedAt = &now
-	t.Status = StatusAssigned
+	// Status stays 'new' - only changes to 'assigned' when engineer is assigned
 	t.UpdatedAt = now
 	
 	return nil
