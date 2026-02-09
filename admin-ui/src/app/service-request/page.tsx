@@ -10,6 +10,7 @@ import { Loader2, AlertCircle, CheckCircle, Package } from 'lucide-react';
 import { DiagnosisCard, DiagnosisButton } from '@/components/diagnosis';
 import { PartsAssignmentModal } from '@/components/PartsAssignmentModal';
 import { AIAnalysisButton } from '@/components/AIAnalysisButton';
+import { isFeatureEnabled } from '@/lib/featureFlags';
 
 function ServiceRequestPageInner() {
   const searchParams = useSearchParams();
@@ -522,8 +523,8 @@ function ServiceRequestPageInner() {
               )}
             </div>
 
-            {/* AI Analysis with Attachments - Optional */}
-            {formData.description && (
+            {/* AI Analysis with Attachments - Hidden for demo */}
+            {isFeatureEnabled('AIDiagnosis') && formData.description && (
               <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg p-5">
                 <div className="mb-4">
                   <h3 className="text-base font-semibold text-purple-900 flex items-center gap-2 mb-2">
@@ -632,8 +633,8 @@ function ServiceRequestPageInner() {
           </div>
         </div>
 
-        {/* AI Diagnosis Results */}
-        {diagnosis && (
+        {/* AI Diagnosis Results - Hidden for demo */}
+        {isFeatureEnabled('AIDiagnosis') && diagnosis && (
           <div className="mt-8">
             <DiagnosisCard 
               diagnosis={diagnosis}
