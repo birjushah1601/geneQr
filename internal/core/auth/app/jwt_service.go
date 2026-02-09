@@ -69,7 +69,7 @@ type Claims struct {
 // NewJWTService creates a new JWT service
 func NewJWTService(config *JWTConfig, refreshTokenRepo RefreshTokenRepository) *JWTService {
 	if config.AccessTokenExpiry == 0 {
-		config.AccessTokenExpiry = 15 * time.Minute
+		config.AccessTokenExpiry = 1 * time.Hour // Changed from 15 minutes to 1 hour
 	}
 	if config.RefreshTokenExpiry == 0 {
 		config.RefreshTokenExpiry = 7 * 24 * time.Hour

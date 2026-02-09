@@ -44,8 +44,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // Session timeout: 30 minutes of inactivity
-  const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
+  // Session timeout: 59 minutes of inactivity (just before 1 hour token expiry)
+  const SESSION_TIMEOUT = 59 * 60 * 1000; // 59 minutes in milliseconds
   const ACTIVITY_CHECK_INTERVAL = 60 * 1000; // Check every minute
 
   // Update last activity timestamp
@@ -73,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Handle session timeout
   const handleSessionTimeout = async () => {
-    console.log('[Auth] Session timed out after 30 minutes of inactivity');
+    console.log('[Auth] Session timed out after 59 minutes of inactivity');
     await logout();
     router.push('/login?timeout=true');
   };
