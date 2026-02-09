@@ -333,9 +333,9 @@ export default function TicketDetailPage() {
 
   const handleStatusChange = (newStatus: TicketStatus) => {
     // Block direct new→assigned transition via dropdown
-    // User must use "Reassign Engineer" button which will auto-change status
+    // User must use "Assign Engineer" button which will auto-change status
     if (ticket.status === "new" && newStatus === "assigned") {
-      alert("To move to 'Assigned' status, please use the 'Reassign Engineer' button to assign an engineer.");
+      alert("To move to 'Assigned' status, please use the 'Assign Engineer' button to assign an engineer.");
       return;
     }
     else if (ticket.status === "assigned" && newStatus === "in_progress") start.mutate();
@@ -1327,7 +1327,9 @@ export default function TicketDetailPage() {
           <div className="bg-white rounded-lg shadow-xl max-w-7xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between z-10">
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">Reassign Engineer</h2>
+                <h2 className="text-xl font-semibold text-gray-900">
+                  {ticket?.assigned_engineer_id ? 'Reassign' : 'Assign'} Engineer
+                </h2>
                 <p className="text-sm text-gray-600 mt-1">
                   Current: {ticket?.assigned_engineer_name || "None"}
                 </p>

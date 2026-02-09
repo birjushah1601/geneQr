@@ -122,7 +122,7 @@ export function TicketDetailsStickyHeader({
                 className="hidden sm:flex items-center gap-2"
               >
                 <User className="h-4 w-4" />
-                <span>Reassign</span>
+                <span>{ticket.assigned_engineer_id ? 'Reassign' : 'Assign'} Engineer</span>
               </Button>
             )}
             {onAIDiagnosis && (
