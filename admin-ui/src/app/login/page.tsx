@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import OTPInput from '@/components/auth/OTPInput';
+import { isFeatureEnabled } from '@/lib/featureFlags';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8081/api';
 
@@ -213,15 +214,18 @@ export default function LoginPage() {
                 {isLoading ? 'Loading...' : (usePassword ? 'Continue' : 'Send OTP')}
               </button>
 
-              <div className="mt-6 text-center">
-                <button
-                  type="button"
-                  onClick={() => setUsePassword(!usePassword)}
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                >
-                  {usePassword ? 'Use OTP instead' : 'Use password instead'}
-                </button>
-              </div>
+              {/* Show OTP option only if PhoneLogin feature is enabled */}
+              {isFeatureEnabled('PhoneLogin') && (
+                <div className="mt-6 text-center">
+                  <button
+                    type="button"
+                    onClick={() => setUsePassword(!usePassword)}
+                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    {usePassword ? 'Use OTP instead' : 'Use password instead'}
+                  </button>
+                </div>
+              )}
 
               <div className="mt-6 text-center">
                 <a href="/register" className="text-sm text-gray-600 hover:text-gray-900">
@@ -279,16 +283,18 @@ export default function LoginPage() {
                 </button>
               </div>
 
-              <div className="mt-6 text-center">
-                <button
-                  type="button"
-                  onClick={() => { setStep('password'); setUsePassword(true); }}
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                  disabled={isLoading}
-                >
-                  Use password instead
-                </button>
-              </div>
+              {isFeatureEnabled('PhoneLogin') && (
+                <div className="mt-6 text-center">
+                  <button
+                    type="button"
+                    onClick={() => { setStep('password'); setUsePassword(true); }}
+                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                    disabled={isLoading}
+                  >
+                    Use password instead
+                  </button>
+                </div>
+              )}
             </form>
           )}
 
@@ -333,16 +339,18 @@ export default function LoginPage() {
                 </a>
               </div>
 
-              <div className="mt-6 text-center">
-                <button
-                  type="button"
-                  onClick={() => { setStep('identifier'); setUsePassword(false); }}
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                  disabled={isLoading}
-                >
-                  Use OTP instead
-                </button>
-              </div>
+              {isFeatureEnabled('PhoneLogin') && (
+                <div className="mt-6 text-center">
+                  <button
+                    type="button"
+                    onClick={() => { setStep('identifier'); setUsePassword(false); }}
+                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                    disabled={isLoading}
+                  >
+                    Use OTP instead
+                  </button>
+                </div>
+              )}
             </form>
           )}
         </div>
