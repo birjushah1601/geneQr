@@ -127,6 +127,9 @@ export function PartsAssignmentModal({
   const fetchParts = async () => {
     setLoading(true);
     try {
+      // Use NEXT_PUBLIC_API_BASE_URL environment variable
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
+      
       // Get auth token from localStorage
       const token = localStorage.getItem('access_token');
       
@@ -135,7 +138,7 @@ export function PartsAssignmentModal({
         throw new Error('Not authenticated');
       }
       
-      const response = await fetch('http://localhost:8081/api/v1/catalog/parts', {
+      const response = await fetch(`${apiBaseUrl}/v1/catalog/parts`, {
         headers: {
           'X-Tenant-ID': 'default',
           'Authorization': `Bearer ${token}`,

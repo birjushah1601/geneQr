@@ -178,8 +178,8 @@ EOF
     # Create .env.local for frontend
     cat > "${FRONTEND_DIR}/.env.local" << EOF
 # ServQR Frontend Configuration
-NEXT_PUBLIC_API_URL=http://${SERVER_IP}:8081/api/v1
-NEXT_PUBLIC_BASE_URL=http://${SERVER_IP}:3000
+NEXT_PUBLIC_API_BASE_URL=http://servqr.com/api
+NEXT_PUBLIC_BASE_URL=http://servqr.com
 NODE_ENV=production
 NEXT_TELEMETRY_DISABLED=1
 EOF
