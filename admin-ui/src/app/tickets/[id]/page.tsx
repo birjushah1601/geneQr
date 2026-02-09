@@ -347,12 +347,7 @@ export default function TicketDetailPage() {
     else if (ticket.status === "resolved" && newStatus === "in_progress") start.mutate(); // Reopen
   };
   
-  // Handler for acknowledge button
-  const handleAcknowledge = () => {
-    if (confirm("Acknowledge this ticket?")) {
-      ack.mutate();
-    }
-  };
+
 
   const handlePriorityChange = async (newPriority: TicketPriority) => {
     if (confirm(`Change priority to ${newPriority.toUpperCase()}?`)) {
@@ -394,31 +389,10 @@ export default function TicketDetailPage() {
           
           {/* Ticket Overview - Combined Issue, Equipment, Customer */}
           <div className="bg-white border rounded-lg shadow-sm p-3 md:p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-semibold flex items-center gap-2">
-                <FileText className="h-4 w-4 text-gray-600" />
-                Ticket Overview
-              </h2>
-              
-              {/* Acknowledge Button - Only for new unacknowledged tickets */}
-              {ticket.status === 'new' && !ticket.acknowledged_at && (
-                <button
-                  onClick={handleAcknowledge}
-                  className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
-                >
-                  <span>✓</span>
-                  Acknowledge
-                </button>
-              )}
-              
-              {/* Show acknowledged status */}
-              {ticket.status === 'new' && ticket.acknowledged_at && (
-                <span className="px-3 py-1 bg-green-100 text-green-700 text-sm font-medium rounded-lg flex items-center gap-1">
-                  <span>✓</span>
-                  Acknowledged
-                </span>
-              )}
-            </div>
+            <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
+              <FileText className="h-4 w-4 text-gray-600" />
+              Ticket Overview
+            </h2>
             
             {/* Issue Description */}
             <div className="mb-4">
