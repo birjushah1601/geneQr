@@ -192,13 +192,13 @@ export default function LoginPage() {
             <form onSubmit={usePassword ? (e) => { e.preventDefault(); setStep('password'); } : handleSendOTP}>
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email or Phone Number
+                  {isFeatureEnabled('PhoneLogin') ? 'Email or Phone Number' : 'Email Address'}
                 </label>
                 <input
                   type="text"
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="user@example.com or +1234567890"
+                  placeholder={isFeatureEnabled('PhoneLogin') ? 'user@example.com or +1234567890' : 'user@example.com'}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                   disabled={isLoading}
