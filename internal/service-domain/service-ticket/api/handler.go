@@ -687,6 +687,14 @@ func (h *TicketHandler) GetTimeline(w http.ResponseWriter, r *http.Request) {
 	// Convert to public view first
 	publicTimeline := h.timelineService.ConvertToPublicTimeline(timeline, ticket)
 	
+	// Override with manual admin-set resolution date if it exists
+	if ticket.SLAResolutionDue != nil {
+		publicTimeline.EstimatedResolution = ticket.SLAResolutionDue
+		h.logger.Info("Applied manual resolution date override",
+			slog.String("ticket_id", id),
+			slog.Time("manual_resolution", *ticket.SLAResolutionDue))
+	}
+	
 	// Try to apply any admin overrides from database (if columns exist)
 	var timelineOverrides []byte
 	var partsOverride []byte
@@ -754,6 +762,14 @@ func (h *TicketHandler) UpdateTimeline(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// DEBUG: Log what we received
+	h.logger.Info("UpdateTimeline received request",
+		slog.String("ticket_id", id),
+		slog.Any("estimated_resolution", req.EstimatedResolution),
+		slog.String("parts_status", req.PartsStatus),
+		slog.Any("parts_eta", req.PartsETA),
+		slog.Int("milestones_count", len(req.Milestones)))
+
 	// Get ticket
 	ticket, err := h.service.GetTicket(ctx, id)
 	if err != nil {
@@ -766,9 +782,13 @@ func (h *TicketHandler) UpdateTimeline(w http.ResponseWriter, r *http.Request) {
 	if req.EstimatedResolution != nil {
 		ticket.SLAResolutionDue = req.EstimatedResolution
 		
+		h.logger.Info("Updating estimated resolution",
+			slog.String("ticket_id", id),
+			slog.Time("new_resolution", *req.EstimatedResolution))
+		
 		// Update in database
 		updateQuery := `UPDATE service_tickets SET sla_resolution_due = $1, updated_at = NOW() WHERE id = $2`
-		_, err := h.pool.Exec(ctx, updateQuery, req.EstimatedResolution, id)
+		result, err := h.pool.Exec(ctx, updateQuery, req.EstimatedResolution, id)
 		if err != nil {
 			h.logger.Error("Failed to update ticket resolution date",
 				slog.String("error", err.Error()),
@@ -776,6 +796,11 @@ func (h *TicketHandler) UpdateTimeline(w http.ResponseWriter, r *http.Request) {
 			h.respondError(w, http.StatusInternalServerError, "Failed to update timeline")
 			return
 		}
+		
+		rowsAffected := result.RowsAffected()
+		h.logger.Info("Database update result",
+			slog.String("ticket_id", id),
+			slog.Int64("rows_affected", rowsAffected))
 	}
 
 	// 2. Store milestone adjustments as JSON in a timeline_overrides column

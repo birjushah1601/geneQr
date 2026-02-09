@@ -191,9 +191,10 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <CardHeader className="border-b sticky top-0 bg-white z-10">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto overflow-x-visible" style={{ isolation: 'isolate' }}>
+        <Card className="w-full">
+          <CardHeader className="border-b sticky top-0 bg-white z-10">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Edit2 className="h-5 w-5 text-blue-600" />
@@ -229,12 +230,14 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
               <label className="text-sm font-medium text-gray-700 min-w-fit">
                 Target Completion:
               </label>
-              <Input
-                type="datetime-local"
-                value={formatDateForInput(editedTimeline.estimated_resolution)}
-                onChange={(e) => handleResolutionDateChange(e.target.value)}
-                className="flex-1"
-              />
+              <div className="flex-1">
+                <Input
+                  type="datetime-local"
+                  value={formatDateForInput(editedTimeline.estimated_resolution)}
+                  onChange={(e) => handleResolutionDateChange(e.target.value)}
+                  className="w-full"
+                />
+              </div>
             </div>
           </div>
 
@@ -261,12 +264,26 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
                   <label className="text-sm font-medium text-gray-700 min-w-fit">
                     Expected Arrival:
                   </label>
-                  <Input
-                    type="datetime-local"
-                    value={formatDateForInput(editedTimeline.parts_eta)}
-                    onChange={(e) => handlePartsEtaChange(e.target.value)}
-                    className="flex-1"
-                  />
+                  <div className="flex-1 relative" style={{
+                    backgroundColor: '#F3F4F6',
+                    border: '2px solid #9CA3AF',
+                    borderRadius: '8px',
+                    padding: '8px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                  }}>
+                    <Input
+                      type="datetime-local"
+                      value={formatDateForInput(editedTimeline.parts_eta)}
+                      onChange={(e) => handlePartsEtaChange(e.target.value)}
+                      className="w-full border-0 outline-none"
+                      style={{ 
+                        colorScheme: 'light',
+                        backgroundColor: '#F3F4F6',
+                        fontSize: '14px',
+                        fontWeight: '500'
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -365,12 +382,26 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
                         {milestone.status !== 'completed' && milestone.status !== 'skipped' && (
                           <div>
                             <label className="text-xs text-gray-600 block mb-1">ETA</label>
-                            <Input
-                              type="datetime-local"
-                              value={formatDateForInput(milestone.eta)}
-                              onChange={(e) => handleMilestoneEtaChange(index, e.target.value)}
-                              className="text-sm"
-                            />
+                            <div className="relative" style={{
+                              backgroundColor: '#F3F4F6',
+                              border: '2px solid #9CA3AF',
+                              borderRadius: '8px',
+                              padding: '6px',
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                            }}>
+                              <Input
+                                type="datetime-local"
+                                value={formatDateForInput(milestone.eta)}
+                                onChange={(e) => handleMilestoneEtaChange(index, e.target.value)}
+                                className="w-full border-0 outline-none text-sm"
+                                style={{ 
+                                  colorScheme: 'light',
+                                  backgroundColor: '#F3F4F6',
+                                  fontSize: '13px',
+                                  fontWeight: '500'
+                                }}
+                              />
+                            </div>
                           </div>
                         )}
                       </div>
@@ -477,6 +508,7 @@ export function TimelineEditModal({ timeline, ticketId, onClose, onSave }: Timel
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

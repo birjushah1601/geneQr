@@ -7,7 +7,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ticketsApi } from "@/lib/api/tickets";
 import { apiClient } from "@/lib/api/client";
 import type { ServiceTicket, TicketPriority, TicketStatus, PublicTimeline } from "@/types";
-import { ArrowLeft, Loader2, Package, User, Calendar, Wrench, Pause, Play, CheckCircle, XCircle, AlertTriangle, FileText, MessageSquare, Paperclip, Upload, Brain, Sparkles, TrendingUp, Lightbulb, Shield, Trash, X, Mail, Clock, Edit2 } from "lucide-react";
+import { ArrowLeft, Loader2, Package, User, Calendar, Wrench, Pause, Play, CheckCircle, XCircle, AlertTriangle, FileText, MessageSquare, Paperclip, Upload, Brain, Sparkles, TrendingUp, Lightbulb, Shield, Trash, X, Mail, Clock, Edit2, ChevronDown, ChevronUp } from "lucide-react";
 import { AIDiagnosisModal } from "@/components/AIDiagnosisModal";
 import { attachmentsApi } from "@/lib/api/attachments";
 import { PartsAssignmentModal } from "@/components/PartsAssignmentModal";
@@ -20,6 +20,8 @@ import { SendNotificationModal } from "@/components/SendNotificationModal";
 import { TicketTimeline } from "@/components/TicketTimeline";
 import { TimelineEditModal } from "@/components/TimelineEditModal";
 import { TicketStatusWorkflow } from "@/components/TicketStatusWorkflow";
+import { TicketDetailsStickyHeader } from "@/components/TicketDetailsStickyHeader";
+import { TicketTabbedContent } from "@/components/TicketTabbedContent";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -97,6 +99,27 @@ export default function TicketDetailPage() {
 
   const [uploading, setUploading] = useState(false);
   const [aiAnalyzing, setAiAnalyzing] = useState(false);
+  const [timelineExpanded, setTimelineExpanded] = useState(false);
+  
+  // Handle file upload from input
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    // Upload first file (can be enhanced to handle multiple)
+    const file = files[0];
+    
+    try {
+      await onUpload(file);
+    } catch (error) {
+      console.error('Upload failed:', error);
+    } finally {
+      // Reset input - check if element still exists
+      if (e.target) {
+        e.target.value = "";
+      }
+    }
+  };
   
   const onDelete = async (attachmentId: string) => {
     if (!confirm('Are you sure you want to delete this attachment?')) return;
@@ -161,44 +184,58 @@ export default function TicketDetailPage() {
   const onUpload = async (file: File) => {
     try {
       setUploading(true);
+      
+      // Upload the file
       const uploadResult = await attachmentsApi.upload({ 
         file, 
         ticketId: String(id), 
         category: "issue_photo", 
         source: "admin_ui" 
       });
+      
+      console.log('Upload successful:', uploadResult);
+      
+      // Refresh attachments list
       await refetchAttachments();
       
-      // Trigger AI analysis for image files
+      // AI analysis disabled - endpoint not implemented
+      // TODO: Enable when /api/v1/diagnosis/analyze endpoint is ready
+      /*
       if (file.type.startsWith('image/')) {
         setAiAnalyzing(true);
-        try {
-          // Convert file to base64 for AI analysis
-          const base64 = await fileToBase64(file);
-          
-          // Call real AI diagnosis API with vision analysis
-          await diagnosisApi.analyze({
-            ticket_id: Number(id),
-            equipment_id: ticket.equipment_id || "",
-            symptoms: extractSymptoms(ticket.issue_description || ""),
-            description: ticket.issue_description || "",
-            images: [base64],
-            options: {
-              include_vision_analysis: true,
-              include_historical_context: true,
-              include_similar_tickets: true,
-            }
-          });
-          
-          // Refresh ticket data and diagnosis to show AI results
-          await refetch();
-          await refetchDiagnosis();
-        } catch (error) {
-          console.error("AI analysis failed:", error);
-        } finally {
-          setAiAnalyzing(false);
-        }
+        setTimeout(async () => {
+          try {
+            const base64 = await fileToBase64(file);
+            await diagnosisApi.analyze({
+              ticket_id: Number(id),
+              equipment_id: ticket.equipment_id || "",
+              symptoms: extractSymptoms(ticket.issue_description || ""),
+              description: ticket.issue_description || "",
+              images: [base64],
+              options: {
+                include_vision_analysis: true,
+                include_historical_context: true,
+                include_similar_tickets: true,
+              }
+            });
+            await refetch();
+            await refetchDiagnosis();
+            console.log('AI analysis completed');
+          } catch (error) {
+            console.error("AI analysis failed:", error);
+          } finally {
+            setAiAnalyzing(false);
+          }
+        }, 100);
       }
+      */
+      
+      console.log('File uploaded successfully');
+      
+    } catch (error) {
+      console.error('Upload failed:', error);
+      alert('Failed to upload file. Please try again.');
+      throw error;
     } finally {
       setUploading(false);
     }
@@ -305,6 +342,18 @@ export default function TicketDetailPage() {
     else if (ticket.status === "resolved" && newStatus === "in_progress") start.mutate(); // Reopen
   };
 
+  const handlePriorityChange = async (newPriority: TicketPriority) => {
+    if (confirm(`Change priority to ${newPriority.toUpperCase()}?`)) {
+      try {
+        await apiClient.patch(`/v1/tickets/${id}/priority`, { priority: newPriority });
+        refetch();
+      } catch (err) {
+        alert('Failed to update priority.');
+        console.error('Priority update error:', err);
+      }
+    }
+  };
+
   if (isLoading || !ticket) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -315,37 +364,332 @@ export default function TicketDetailPage() {
 
   return (
     <DashboardLayout>
-      <div className="bg-white border-b -mx-6 -mt-6 px-6 mb-6">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button onClick={() => router.back()} className="p-2 rounded hover:bg-gray-100"><ArrowLeft className="h-5 w-5" /></button>
-            <h1 className="text-lg font-semibold">Ticket {ticket.ticket_number}</h1>
-            <StatusBadge status={ticket.status} />
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowDiagnosisModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
-            >
-              <Brain className="h-4 w-4" />
-              AI Diagnosis
-            </button>
-            <button
-              onClick={() => setShowNotificationModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-            >
-              <Mail className="h-4 w-4" />
-              Send Notification
-            </button>
-            <Link href="/tickets" className="text-sm text-blue-600 hover:underline">All tickets</Link>
-          </div>
-        </div>
+      {/* New Sticky Header */}
+      <div className="-mx-6 -mt-6 mb-6">
+        <TicketDetailsStickyHeader
+          ticket={ticket}
+          onEditTimeline={() => setShowTimelineEditModal(true)}
+          onSendNotification={() => setShowNotificationModal(true)}
+          onReassign={() => setShowReassignMultiModel(true)}
+          onAIDiagnosis={() => setShowDiagnosisModal(true)}
+          onPriorityChange={handlePriorityChange}
+        />
       </div>
 
-      <div className="container mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: details */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="bg-white border rounded p-4">
+      <div className="container mx-auto px-4 py-4 grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-4">
+        {/* Left Column: Main Content (65% desktop, 100% mobile) */}
+        <div className="lg:col-span-2 space-y-3 md:space-y-4">
+          
+          {/* Ticket Overview - Combined Issue, Equipment, Customer */}
+          <div className="bg-white border rounded-lg shadow-sm p-3 md:p-4">
+            <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
+              <FileText className="h-4 w-4 text-gray-600" />
+              Ticket Overview
+            </h2>
+            
+            {/* Issue Description */}
+            <div className="mb-4">
+              <p className="text-xs text-gray-500 mb-1 font-medium">Issue Description</p>
+              <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{ticket.issue_description}</p>
+            </div>
+
+            {/* Equipment & Customer Info */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
+              {/* Equipment */}
+              <div>
+                <p className="text-xs text-gray-500 mb-2 font-medium flex items-center gap-1">
+                  <Package className="h-3.5 w-3.5" />
+                  Equipment
+                </p>
+                <div className="space-y-1 text-sm">
+                  <p className="font-medium text-gray-900">{ticket.equipment_name || 'N/A'}</p>
+                  {ticket.equipment_id && (
+                    <p className="text-xs text-gray-500 font-mono">{ticket.equipment_id}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Customer Contact */}
+              <div>
+                <p className="text-xs text-gray-500 mb-2 font-medium flex items-center gap-1">
+                  <User className="h-3.5 w-3.5" />
+                  Customer Contact
+                </p>
+                <div className="space-y-1 text-sm">
+                  <p className="font-medium text-gray-900">{ticket.customer_name}</p>
+                  {ticket.customer_email && (
+                    <a href={`mailto:${ticket.customer_email}`} className="text-xs text-blue-600 hover:underline block truncate">
+                      {ticket.customer_email}
+                    </a>
+                  )}
+                  <a href={`tel:${ticket.customer_phone}`} className="text-xs text-blue-600 hover:underline block">
+                    {ticket.customer_phone}
+                  </a>
+                  {ticket.customer_whatsapp && (
+                    <a href={`https://wa.me/${ticket.customer_whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-xs text-green-600 hover:underline block">
+                      WhatsApp: {ticket.customer_whatsapp}
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Timeline & ETA - Expandable */}
+          {timeline && !timelineLoading && (
+            <div className="bg-white border rounded-lg shadow-sm">
+              {/* Header - Always Visible */}
+              <div 
+                className="flex items-center justify-between p-3 md:p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                onClick={() => setTimelineExpanded(!timelineExpanded)}
+              >
+                <h2 className="text-base font-semibold flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-blue-600" />
+                  Service Timeline & ETA
+                  {!timelineExpanded && timeline.milestones && (
+                    <span className="text-xs font-normal text-gray-500">
+                      ({timeline.milestones.length} milestones)
+                    </span>
+                  )}
+                </h2>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowTimelineEditModal(true);
+                    }}
+                    className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                  >
+                    <Edit2 className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Edit</span>
+                  </button>
+                  {timelineExpanded ? (
+                    <ChevronUp className="h-5 w-5 text-gray-400" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5 text-gray-400" />
+                  )}
+                </div>
+              </div>
+
+              {/* Compact Summary - When Collapsed */}
+              {!timelineExpanded && timeline.milestones && (() => {
+                const completedMilestones = timeline.milestones.filter(m => m.status === 'completed').length;
+                const totalMilestones = timeline.milestones.length;
+                
+                // Calculate progress from actual milestone completion (more accurate)
+                const progressPercentage = totalMilestones > 0 
+                  ? Math.round((completedMilestones / totalMilestones) * 100) 
+                  : 0;
+                
+                const currentMilestone = timeline.milestones.find(m => m.is_current);
+                
+                console.log('Progress calculation:', { 
+                  completedMilestones, 
+                  totalMilestones, 
+                  progressPercentage,
+                  backendProgress: timeline.progress_percentage 
+                });
+                
+                // Get target completion date - try all possible sources
+                const targetDate = timeline.estimated_resolution;
+                const lastMilestoneETA = timeline.milestones[timeline.milestones.length - 1]?.eta;
+                const displayDate = targetDate || lastMilestoneETA;
+                
+                return (
+                  <div className="px-3 md:px-4 pb-3 border-t pt-3">
+                    {/* Progress Bar */}
+                    <div className="mb-3">
+                      <div className="flex items-center justify-between text-xs mb-1">
+                        <span className="font-medium text-gray-700">
+                          {completedMilestones}/{totalMilestones} milestones completed
+                        </span>
+                        <span className="font-semibold text-blue-600">{progressPercentage}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                        <div 
+                          className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${progressPercentage}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Current Status & Target Date */}
+                    <div className="flex items-center justify-between text-sm flex-wrap gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-500">Current:</span>
+                        <span className="font-medium text-gray-900">
+                          {currentMilestone?.name || timeline.current_stage || 'In Progress'}
+                        </span>
+                      </div>
+                      {displayDate && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-500">Target Resolution:</span>
+                          <span className="font-semibold text-blue-600">
+                            {new Date(displayDate).toLocaleDateString('en-US', { 
+                              month: 'short', 
+                              day: 'numeric',
+                              year: 'numeric'
+                            })}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Show time remaining if available */}
+                    {timeline.time_remaining && (
+                      <div className="mt-2 text-xs text-gray-600">
+                        <span className="text-gray-500">Time Remaining:</span> {timeline.time_remaining}
+                      </div>
+                    )}
+                    
+                    <div className="text-center mt-2">
+                      <span className="text-xs text-gray-400">Click to expand for details</span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Full Timeline - When Expanded */}
+              {timelineExpanded && (
+                <div className="px-3 md:px-4 pb-3 md:pb-4 border-t">
+                  <TicketTimeline timeline={timeline} />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Tabbed Content - Comments, Parts, Attachments, History */}
+          <TicketTabbedContent
+            commentsCount={0}
+            partsCount={parts?.parts?.length || 0}
+            attachmentsCount={attachmentList?.data?.items?.length || 0}
+            comments={
+              <div>
+                <CommentBox ticketId={id} onAdded={() => qc.invalidateQueries({ queryKey: ["ticket", id, "comments"] })} />
+                <CommentsList ticketId={id as string} onDeleteComment={onDeleteComment} />
+              </div>
+            }
+            parts={
+              <div>
+                <div className="flex justify-end mb-3">
+                  <button 
+                    onClick={() => setIsPartsModalOpen(true)}
+                    className="px-3 py-1.5 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition-colors flex items-center gap-2"
+                  >
+                    <Package className="h-4 w-4" />
+                    Assign Parts
+                  </button>
+                </div>
+                {parts?.parts?.length ? (
+                  <>
+                    <ul className="divide-y">
+                      {parts.parts.map((p) => (
+                        <li key={p.id || p.spare_part_id} className="py-2 flex items-center justify-between text-sm gap-3">
+                          <div className="flex-1">
+                            <div className="font-medium">{p.part_name}</div>
+                            <div className="text-gray-500 text-xs">{p.part_number}</div>
+                          </div>
+                          <div className="text-right text-gray-600 text-xs">
+                            {p.quantity_required ? <div>Qty: {p.quantity_required}</div> : null}
+                            {p.unit_price ? <div>₹{p.unit_price}</div> : null}
+                          </div>
+                          <button
+                            onClick={async () => {
+                              if (confirm(`Remove ${p.part_name}?`)) {
+                                try {
+                                  await apiClient.delete(`/v1/tickets/${id}/parts/${p.id}`);
+                                  qc.invalidateQueries({ queryKey: ["ticket", id, "parts"] });
+                                } catch (err) {
+                                  alert('Failed to remove part');
+                                }
+                              }
+                            }}
+                            className="p-1 text-red-600 hover:bg-red-50 rounded"
+                          >
+                            <Trash className="h-4 w-4" />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="mt-3 pt-3 border-t text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Total Parts:</span>
+                        <span className="font-medium">{parts.parts.length}</span>
+                      </div>
+                      <div className="flex justify-between mt-1">
+                        <span className="text-gray-600">Total Cost:</span>
+                        <span className="font-medium">₹{parts.parts.reduce((sum, p) => sum + ((p.unit_price || 0) * (p.quantity_required || 1)), 0).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-sm text-gray-500">No parts assigned yet.</p>
+                )}
+              </div>
+            }
+            attachments={
+              <div>
+                <div className="flex justify-end mb-3">
+                  <label className="inline-flex items-center gap-2 px-3 py-1.5 border rounded text-sm cursor-pointer hover:bg-gray-50">
+                    <Upload className="h-4 w-4" /> {uploading ? "Uploading..." : "Upload"}
+                    <input type="file" multiple accept="image/*,.pdf,.doc,.docx" className="hidden" onChange={handleFileUpload} disabled={uploading} />
+                  </label>
+                </div>
+                {loadingAttachments ? (
+                  <div className="text-center py-4"><Loader2 className="h-6 w-6 animate-spin mx-auto text-gray-400" /></div>
+                ) : attachmentList?.data?.items?.length ? (
+                  <div className="space-y-2">
+                    {attachmentList.data.items.map((att: any) => (
+                      <div key={att.id} className="flex items-center justify-between p-3 bg-gray-50 rounded border border-gray-200 hover:bg-gray-100 transition-colors">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <Paperclip className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {att.fileName}
+                            </p>
+                            <p className="text-xs text-gray-500">{(att.fileSize / 1024).toFixed(1)} KB</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <a 
+                            href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081'}/api/v1/attachments/${att.id}/download`}
+                            download
+                            className="px-3 py-1.5 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 transition-colors flex items-center gap-1 flex-shrink-0"
+                          >
+                            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Download
+                          </a>
+                          <button
+                            onClick={async () => {
+                              if (confirm(`Delete ${att.fileName}?`)) {
+                                try {
+                                  await onDelete(att.id);
+                                } catch (error) {
+                                  console.error('Delete failed:', error);
+                                  alert('Failed to delete attachment');
+                                }
+                              }
+                            }}
+                            className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors flex-shrink-0"
+                            title="Delete attachment"
+                          >
+                            <Trash className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500">No attachments yet.</p>
+                )}
+              </div>
+            }
+          />
+
+          {/* REMOVE OLD SECTIONS - Now in tabs above */}
+          {/* <div className="bg-white border rounded p-4">
             <h2 className="text-base font-semibold mb-3">Details</h2>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="flex items-center gap-2"><Package className="h-4 w-4 text-gray-400" /><span className="text-gray-500">Equipment</span><span className="font-medium">{ticket.equipment_name}</span></div>
@@ -402,46 +746,9 @@ export default function TicketDetailPage() {
               <p className="text-xs text-gray-500 mb-1">Issue</p>
               <p className="text-sm whitespace-pre-line">{ticket.issue_description}</p>
             </div>
-          </div>
+          </div> */}
 
-          {/* Customer Contact Information */}
-          <div className="bg-blue-50 border border-blue-200 rounded p-4">
-            <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
-              <User className="h-4 w-4 text-blue-600" />
-              Customer Contact
-            </h2>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2">
-                <span className="text-gray-600 w-20">Name:</span>
-                <span className="font-medium">{ticket.customer_name}</span>
-              </div>
-              {ticket.customer_email && (
-                <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-gray-400" />
-                  <span className="text-gray-600 w-20">Email:</span>
-                  <a href={`mailto:${ticket.customer_email}`} className="font-medium text-blue-600 hover:underline">
-                    {ticket.customer_email}
-                  </a>
-                </div>
-              )}
-              <div className="flex items-center gap-2">
-                <span className="text-gray-400">📱</span>
-                <span className="text-gray-600 w-20">Phone:</span>
-                <a href={`tel:${ticket.customer_phone}`} className="font-medium text-blue-600 hover:underline">
-                  {ticket.customer_phone}
-                </a>
-              </div>
-              {ticket.customer_whatsapp && (
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-400">💬</span>
-                  <span className="text-gray-600 w-20">WhatsApp:</span>
-                  <a href={`https://wa.me/${ticket.customer_whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="font-medium text-green-600 hover:underline">
-                    {ticket.customer_whatsapp}
-                  </a>
-                </div>
-              )}
-            </div>
-          </div>
+          {/* Equipment & Customer moved to Overview card on left */}
 
           {/* AI Diagnosis Section */}
           {diagnosisHistory && diagnosisHistory.length > 0 && (
@@ -633,12 +940,7 @@ export default function TicketDetailPage() {
             </div>
           )}
 
-          <div className="bg-white border rounded p-4">
-            <h2 className="text-base font-semibold mb-3 flex items-center gap-2"><MessageSquare className="h-4 w-4" /> Comments</h2>
-            {/* Simple add comment box */}
-            <CommentBox ticketId={id} onAdded={() => qc.invalidateQueries({ queryKey: ["ticket", id, "comments"] })} />
-            <CommentsList ticketId={id as string} onDeleteComment={onDeleteComment} />
-          </div>
+          {/* COMMENTS NOW IN TABBED INTERFACE ABOVE */}
 
           {/* Engineer Assignment Section */}
           {!ticket.assigned_engineer_name && (
@@ -680,39 +982,48 @@ export default function TicketDetailPage() {
           )} */}
         </div>
 
-        {/* Right: actions */}
-        <div className="space-y-4">
-          {/* Currently Assigned Engineer */}
+        {/* Right Sidebar: Compact Cards (Stacks on mobile) */}
+        <div className="space-y-3 md:space-y-4">
+          
+          {/* Assigned Engineer - AT TOP */}
           {ticket.assigned_engineer_name && (
-            <div className="bg-white border rounded p-4">
-              <h3 className="text-sm font-semibold mb-3">Currently Assigned</h3>
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold">
+            <div className="bg-white border rounded-lg shadow-sm p-3 md:p-4">
+              <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                <User className="h-4 w-4 text-blue-600" />
+                Assigned Service Engineer
+              </h3>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold text-sm">
                   {ticket.assigned_engineer_name.split(' ').map(n => n[0]).join('').substring(0, 2)}
                 </div>
-                <div>
-                  <p className="font-medium text-gray-900">{ticket.assigned_engineer_name}</p>
-                  <p className="text-xs text-gray-500">Assigned Engineer</p>
-
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-gray-900 text-sm truncate">{ticket.assigned_engineer_name}</p>
                   <button
                     onClick={() => setShowReassignMultiModel(true)}
-                    className="mt-2 text-sm text-blue-600 hover:text-blue-800 underline"
+                    className="text-xs text-blue-600 hover:text-blue-800 underline"
                   >
-                    Reassign Engineer
+                    Reassign
                   </button>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Status Workflow - Visual guide with color coding */}
-          <TicketStatusWorkflow 
-            currentStatus={ticket.status}
-            onStatusChange={handleStatusChange}
-          />
+          {/* Status Workflow - BELOW ENGINEER */}
+          <div className="bg-white border rounded-lg shadow-sm p-3 md:p-4">
+            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+              <Wrench className="h-4 w-4 text-gray-600" />
+              Ticket State Management
+            </h3>
+            <TicketStatusWorkflow 
+              currentStatus={ticket.status}
+              onStatusChange={handleStatusChange}
+            />
+          </div>
 
-          {/* Attachments Section */}
-          <div className="bg-white border rounded p-4">
+          {/* OLD SECTIONS MOVED TO TABS - REMOVE */}
+          {/* Attachments Section - NOW IN TABS */}
+          {/* <div className="bg-white border rounded p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold flex items-center gap-2">
                 <Paperclip className="h-4 w-4" /> Attachments
@@ -803,9 +1114,10 @@ export default function TicketDetailPage() {
                 <p className="text-xs text-gray-400">Upload images or videos for AI-powered analysis</p>
               </div>
             )}
-          </div>
+          </div> */}
 
-          <div className="bg-white border rounded p-4">
+          {/* Parts Section - NOW IN TABS */}
+          {/* <div className="bg-white border rounded p-4">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-base font-semibold flex items-center gap-2"><Package className="h-4 w-4" /> Parts</h2>
               <button 
@@ -862,12 +1174,12 @@ export default function TicketDetailPage() {
             ) : (
               <p className="text-sm text-gray-500">No parts assigned yet. Click "Assign Parts" to add parts.</p>
             )}
-          </div>
+          </div> */}
         </div>
       </div>
 
-      {/* SLA/ETA Timeline Section */}
-      <div className="mt-6">
+      {/* TIMELINE MOVED TO TOP OF LEFT COLUMN */}
+      {/* <div className="mt-6">
         {timelineLoading && (
           <div className="flex items-center gap-2 text-gray-500">
             <Loader2 className="h-5 w-5 animate-spin" />
@@ -894,7 +1206,7 @@ export default function TicketDetailPage() {
             <TicketTimeline timeline={timeline} />
           </div>
         )}
-      </div>
+      </div> */}
 
       {/* AI Diagnosis Modal */}
       <AIDiagnosisModal
@@ -955,8 +1267,17 @@ export default function TicketDetailPage() {
                 blocker_comments: updatedTimeline.blocker_comments || {}
               };
               
-              await apiClient.put(`/v1/tickets/${id}/timeline`, payload);
+              console.log('Saving timeline with payload:', payload);
+              console.log('estimated_resolution being sent:', payload.estimated_resolution);
+              
+              const response = await apiClient.put(`/v1/tickets/${id}/timeline`, payload);
+              console.log('Timeline save response:', response);
+              
               qc.invalidateQueries({ queryKey: ["ticket", id, "timeline"] });
+              
+              // Wait a bit for the query to refetch
+              await new Promise(resolve => setTimeout(resolve, 500));
+              
               alert("Timeline updated successfully!");
             } catch (err: any) {
               console.error("Timeline update error:", err);
