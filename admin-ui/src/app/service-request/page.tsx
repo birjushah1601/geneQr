@@ -562,7 +562,7 @@ function ServiceRequestPageInner() {
                   </h3>
                   {assignedParts.length > 0 && (
                     <p className="text-xs text-green-700 mt-1">
-                      {assignedParts.length} part{assignedParts.length > 1 ? 's' : ''} assigned Ã¢â‚¬Â¢ Ã¢â€šÂ¹{assignedParts.reduce((sum, p) => sum + (p.unit_price * p.quantity), 0).toLocaleString()}
+                      {assignedParts.length} part{assignedParts.length > 1 ? 's' : ''} assigned • ₹{assignedParts.reduce((sum, p) => sum + (p.unit_price * p.quantity), 0).toLocaleString()}
                     </p>
                   )}
                 </div>
@@ -600,7 +600,7 @@ function ServiceRequestPageInner() {
                       </div>
                       <div className="text-right ml-2">
                         <p className="font-semibold text-green-700">{part.quantity}x</p>
-                        <p className="text-gray-600">Ã¢â€šÂ¹{((part.unit_price || 0) * (part.quantity || 1)).toLocaleString()}</p>
+                        <p className="text-gray-600">₹{((part.unit_price || 0) * (part.quantity || 1)).toLocaleString()}</p>
                       </div>
                     </div>
                   ))}

@@ -276,7 +276,7 @@ export default function LoginPage() {
                   className="text-gray-600 hover:text-gray-900"
                   disabled={isLoading}
                 >
-                  â† Back
+                  ← Back
                 </button>
                 <button
                   type="button"
@@ -338,7 +338,7 @@ export default function LoginPage() {
                   className="text-gray-600 hover:text-gray-900"
                   disabled={isLoading}
                 >
-                  â† Back
+                  ← Back
                 </button>
                 <a href="/forgot-password" className="text-blue-600 hover:text-blue-700 font-medium">
                   Forgot password?
