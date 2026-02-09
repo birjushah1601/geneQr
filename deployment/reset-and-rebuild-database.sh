@@ -87,12 +87,12 @@ docker exec servqr-postgres psql -U $DB_USER -d postgres -c "CREATE DATABASE $DB
 
 log "Database recreated successfully"
 
-# Step 4: Run base schema
-log "Running base schema (001_full_organizations_schema.sql)..."
-BASE_SCHEMA="${INSTALL_DIR}/database/migrations/001_full_organizations_schema.sql"
+# Step 4: Run init schema
+log "Running init schema (001_init_schema.sql)..."
+INIT_SCHEMA="${INSTALL_DIR}/database/migrations/001_init_schema.sql"
 
-if [[ ! -f "$BASE_SCHEMA" ]]; then
-    error "Base schema not found: $BASE_SCHEMA"
+if [[ ! -f "$INIT_SCHEMA" ]]; then
+    error "Init schema not found: $INIT_SCHEMA"
 fi
 
 info "Applying base schema..."

@@ -193,15 +193,15 @@ start_postgres() {
 initialize_database() {
     log "Initializing database schema..."
     
-    # STEP 1: Run base schema FIRST (creates all core tables)
-    BASE_SCHEMA="${INSTALL_DIR}/database/migrations/001_full_organizations_schema.sql"
+    # STEP 1: Run init schema (complete working state dump)
+    INIT_SCHEMA="${INSTALL_DIR}/database/migrations/001_init_schema.sql"
     
-    if [[ -f "$BASE_SCHEMA" ]]; then
-        log "Running base schema: 001_full_organizations_schema.sql"
-        docker exec -i servqr-postgres psql -U servqr -d servqr_production < "$BASE_SCHEMA" || error "Base schema failed - cannot continue"
-        log "Base schema applied successfully"
+    if [[ -f "$INIT_SCHEMA" ]]; then
+        log "Running init schema: 001_init_schema.sql (complete working state)"
+        docker exec -i servqr-postgres psql -U servqr -d servqr_production < "$INIT_SCHEMA" || error "Init schema failed - cannot continue"
+        log "Database initialized successfully from working state"
     else
-        error "Base schema not found: $BASE_SCHEMA - cannot initialize database"
+        error "Init schema not found: $INIT_SCHEMA - cannot initialize database"
     fi
     
     # STEP 2: Run additional migrations (SKIP the base schema file)
@@ -220,13 +220,13 @@ initialize_database() {
     # Copy migration files to container
     docker cp "$MIGRATIONS_DIR" servqr-postgres:/tmp/migrations
     
-    # Execute migrations in sorted order (SKIP 001_full_organizations_schema.sql)
+    # Execute additional migrations in sorted order (SKIP 001_init_schema.sql)
     for migration in $(ls -1 "$MIGRATIONS_DIR"/*.sql 2>/dev/null | sort); do
         migration_file=$(basename "$migration")
         
-        # Skip the base schema file (already applied)
-        if [[ "$migration_file" == "001_full_organizations_schema.sql" ]]; then
-            log "Skipping $migration_file (already applied as base schema)"
+        # Skip the init schema file (already applied) and README
+        if [[ "$migration_file" == "001_init_schema.sql" ]] || [[ "$migration_file" == "README.md" ]]; then
+            log "Skipping $migration_file"
             continue
         fi
         
