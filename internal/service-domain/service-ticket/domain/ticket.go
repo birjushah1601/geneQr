@@ -232,6 +232,10 @@ func (t *ServiceTicket) Resolve(resolutionNotes string, partsUsed []Part, laborH
 	t.Status = StatusResolved
 	t.UpdatedAt = now
 	
+	// Clear engineer assignment when resolved
+	t.AssignedEngineerID = ""
+	t.AssignedEngineerName = ""
+	
 	return nil
 }
 
@@ -258,6 +262,10 @@ func (t *ServiceTicket) Cancel(reason string) error {
 	t.ResolutionNotes = "Cancelled: " + reason
 	t.Status = StatusCancelled
 	t.UpdatedAt = time.Now()
+	
+	// Clear engineer assignment when cancelled
+	t.AssignedEngineerID = ""
+	t.AssignedEngineerName = ""
 	
 	return nil
 }
