@@ -27,9 +27,13 @@ export default function LoginPage() {
 
   // Timer for OTP expiry
   const [timeRemaining, setTimeRemaining] = useState(0);
+  
+  // Track if component is mounted (client-side only)
+  const [isMounted, setIsMounted] = useState(false);
 
   // Check for session timeout on mount
   React.useEffect(() => {
+    setIsMounted(true);
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('timeout') === 'true') {
       setShowTimeoutMessage(true);
@@ -192,13 +196,13 @@ export default function LoginPage() {
             <form onSubmit={usePassword ? (e) => { e.preventDefault(); setStep('password'); } : handleSendOTP}>
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {isFeatureEnabled('PhoneLogin') ? 'Email or Phone Number' : 'Email Address'}
+                  {isMounted && isFeatureEnabled('PhoneLogin') ? 'Email or Phone Number' : 'Email Address'}
                 </label>
                 <input
                   type="text"
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder={isFeatureEnabled('PhoneLogin') ? 'user@example.com or +1234567890' : 'user@example.com'}
+                  placeholder={isMounted && isFeatureEnabled('PhoneLogin') ? 'user@example.com or +1234567890' : 'user@example.com'}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                   disabled={isLoading}
