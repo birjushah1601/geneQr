@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"syscall"
@@ -595,6 +596,21 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 		}
 	}
 	*/
+
+	// Serve static files from storage directory
+	workDir, _ := os.Getwd()
+	storageDir := filepath.Join(workDir, "storage")
+	logger.Info("Setting up storage file server", slog.String("storage_dir", storageDir))
+	
+	// Create storage directory if it doesn't exist
+	if err := os.MkdirAll(storageDir, 0755); err != nil {
+		logger.Error("Failed to create storage directory", slog.String("error", err.Error()))
+	}
+	
+	// Serve files from /storage path (no auth required for downloads)
+	fileServer := http.StripPrefix("/storage/", http.FileServer(http.Dir(storageDir)))
+	router.Handle("/storage/*", fileServer)
+	logger.Info("✅ Storage file server configured at /storage/*")
 
 	return modules, ctx, nil
 }
