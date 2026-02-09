@@ -11,7 +11,6 @@ interface TicketDetailsStickyHeaderProps {
   onSendNotification?: () => void;
   onReassign?: () => void;
   onAIDiagnosis?: () => void;
-  onAcknowledge?: () => void;
   onPriorityChange?: (priority: TicketPriority) => void;
 }
 
@@ -71,7 +70,6 @@ export function TicketDetailsStickyHeader({
   onSendNotification,
   onReassign,
   onAIDiagnosis,
-  onAcknowledge,
   onPriorityChange,
 }: TicketDetailsStickyHeaderProps) {
   return (
@@ -103,17 +101,6 @@ export function TicketDetailsStickyHeader({
               >
                 <Clock className="h-4 w-4" />
                 <span>Timeline</span>
-              </Button>
-            )}
-            {onAcknowledge && ticket.status === 'new' && !ticket.acknowledged_at && (
-              <Button
-                onClick={onAcknowledge}
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2 bg-green-50 hover:bg-green-100 border-green-300"
-              >
-                <span>✓</span>
-                <span>Acknowledge</span>
               </Button>
             )}
             {onSendNotification && (

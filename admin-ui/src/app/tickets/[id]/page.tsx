@@ -332,12 +332,7 @@ export default function TicketDetailPage() {
   const cancel = useMutation({ mutationFn: () => post(`/v1/tickets/${id}/cancel`, { reason: "Cancelled by admin", cancelled_by: "admin" }), onSuccess: () => refetch() });
 
   const handleStatusChange = (newStatus: TicketStatus) => {
-    // Don't allow direct status change from new to assigned via dropdown
-    // Use "Reassign Engineer" button instead to assign engineer
-    if (ticket.status === "new" && newStatus === "assigned") {
-      alert("Please use 'Reassign Engineer' button to assign an engineer. The status will automatically change to 'assigned'.");
-      return;
-    }
+    if (ticket.status === "new" && newStatus === "assigned") ack.mutate();
     else if (ticket.status === "assigned" && newStatus === "in_progress") start.mutate();
     else if (ticket.status === "in_progress" && newStatus === "on_hold") hold.mutate();
     else if (ticket.status === "on_hold" && newStatus === "in_progress") resume.mutate();
@@ -377,7 +372,6 @@ export default function TicketDetailPage() {
           onSendNotification={() => setShowNotificationModal(true)}
           onReassign={() => setShowReassignMultiModel(true)}
           onAIDiagnosis={() => setShowDiagnosisModal(true)}
-          onAcknowledge={() => ack.mutate()}
           onPriorityChange={handlePriorityChange}
         />
       </div>
