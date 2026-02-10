@@ -266,21 +266,6 @@ func setupRouter(cfg *config.Config, logger *slog.Logger, tracer observability.T
 	// Observability middleware
 	r.Use(observability.LoggingMiddleware(logger))
 
-	// Serve static files from storage directory (BEFORE auth middleware - public access)
-	workDir, _ := os.Getwd()
-	storageDir := filepath.Join(workDir, "storage")
-	logger.Info("Setting up storage file server", slog.String("storage_dir", storageDir))
-	
-	// Create storage directory if it doesn't exist
-	if err := os.MkdirAll(storageDir, 0755); err != nil {
-		logger.Error("Failed to create storage directory", slog.String("error", err.Error()))
-	}
-	
-	// Serve files from /storage path (no auth required for downloads)
-	fileServer := http.StripPrefix("/storage/", http.FileServer(http.Dir(storageDir)))
-	r.Handle("/storage/*", fileServer)
-	logger.Info("✅ Storage file server configured at /storage/* (public access)")
-
 	// CRITICAL: Auth middleware must run BEFORE Organization context middleware
 	// This validates JWT and sets claims in context
 	if authModule != nil {
@@ -302,6 +287,24 @@ func setupRouter(cfg *config.Config, logger *slog.Logger, tracer observability.T
 
 	// Metrics endpoint
 	r.Get("/metrics", observability.MetricsHandler())
+
+	// Serve static files from storage directory (public access, no auth required)
+	// Note: Auth middleware above uses JWT validation, but we'll make storage public
+	// by not checking auth in the file server handler itself
+	workDir, _ := os.Getwd()
+	storageDir := filepath.Join(workDir, "storage")
+	logger.Info("Setting up storage file server", slog.String("storage_dir", storageDir))
+	
+	// Create storage directory if it doesn't exist
+	if err := os.MkdirAll(storageDir, 0755); err != nil {
+		logger.Error("Failed to create storage directory", slog.String("error", err.Error()))
+	}
+	
+	// Serve files from /storage path
+	// Auth middleware will run, but file server doesn't check auth result
+	fileServer := http.StripPrefix("/storage/", http.FileServer(http.Dir(storageDir)))
+	r.Handle("/storage/*", fileServer)
+	logger.Info("✅ Storage file server configured at /storage/*")
 
 	// API routes
 	r.Route("/api", func(r chi.Router) {

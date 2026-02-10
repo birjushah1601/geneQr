@@ -641,6 +641,12 @@ func (h *AuthHandler) AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 		
+		// Allow public access to storage files
+		if strings.HasPrefix(r.URL.Path, "/storage/") {
+			next.ServeHTTP(w, r)
+			return
+		}
+		
 		// Allow QR code lookups (for public service request creation)
 		if strings.HasPrefix(r.URL.Path, "/api/v1/equipment/qr/") {
 			next.ServeHTTP(w, r)
