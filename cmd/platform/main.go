@@ -266,6 +266,21 @@ func setupRouter(cfg *config.Config, logger *slog.Logger, tracer observability.T
 	// Observability middleware
 	r.Use(observability.LoggingMiddleware(logger))
 
+	// Serve static files from storage directory (BEFORE auth middleware - public access)
+	workDir, _ := os.Getwd()
+	storageDir := filepath.Join(workDir, "storage")
+	logger.Info("Setting up storage file server", slog.String("storage_dir", storageDir))
+	
+	// Create storage directory if it doesn't exist
+	if err := os.MkdirAll(storageDir, 0755); err != nil {
+		logger.Error("Failed to create storage directory", slog.String("error", err.Error()))
+	}
+	
+	// Serve files from /storage path (no auth required for downloads)
+	fileServer := http.StripPrefix("/storage/", http.FileServer(http.Dir(storageDir)))
+	r.Handle("/storage/*", fileServer)
+	logger.Info("✅ Storage file server configured at /storage/* (public access)")
+
 	// CRITICAL: Auth middleware must run BEFORE Organization context middleware
 	// This validates JWT and sets claims in context
 	if authModule != nil {
@@ -596,21 +611,6 @@ func initializeModules(ctx context.Context, router *chi.Mux, enabledModules []st
 		}
 	}
 	*/
-
-	// Serve static files from storage directory
-	workDir, _ := os.Getwd()
-	storageDir := filepath.Join(workDir, "storage")
-	logger.Info("Setting up storage file server", slog.String("storage_dir", storageDir))
-	
-	// Create storage directory if it doesn't exist
-	if err := os.MkdirAll(storageDir, 0755); err != nil {
-		logger.Error("Failed to create storage directory", slog.String("error", err.Error()))
-	}
-	
-	// Serve files from /storage path (no auth required for downloads)
-	fileServer := http.StripPrefix("/storage/", http.FileServer(http.Dir(storageDir)))
-	router.Handle("/storage/*", fileServer)
-	logger.Info("✅ Storage file server configured at /storage/*")
 
 	return modules, ctx, nil
 }
