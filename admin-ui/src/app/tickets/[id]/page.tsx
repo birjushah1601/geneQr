@@ -659,7 +659,7 @@ export default function TicketDetailPage() {
                         </div>
                         <div className="flex items-center gap-2">
                           <a 
-                            href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081'}/api/v1/attachments/${att.id}/download`}
+                            href={`${process.env.NEXT_PUBLIC_API_BASE_URL || '/api'}/v1/attachments/${att.id}/download`}
                             download
                             className="px-3 py-1.5 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 transition-colors flex items-center gap-1 flex-shrink-0"
                           >
