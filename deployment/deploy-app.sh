@@ -133,6 +133,10 @@ QR_OUTPUT_DIR=${INSTALL_DIR}/data/qrcodes
 WHATSAPP_MEDIA_DIR=${INSTALL_DIR}/data/whatsapp
 STORAGE_PATH=${INSTALL_DIR}/storage
 
+# Application URLs
+APP_URL=http://servqr.com
+API_BASE_URL=http://servqr.com/api
+
 # Feature Flags
 ENABLE_ORG=true
 ENABLE_EQUIPMENT=true
