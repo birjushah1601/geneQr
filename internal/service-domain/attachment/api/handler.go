@@ -160,6 +160,72 @@ func (h *AttachmentHandler) GetAttachment(w http.ResponseWriter, r *http.Request
 	})
 }
 
+// DownloadAttachment handles GET /api/v1/attachments/{id}/download
+func (h *AttachmentHandler) DownloadAttachment(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	idStr := chi.URLParam(r, "id")
+
+	if idStr == "" {
+		h.respondError(w, http.StatusBadRequest, "Attachment ID is required")
+		return
+	}
+
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		h.respondError(w, http.StatusBadRequest, "Invalid attachment ID format")
+		return
+	}
+
+	// Get attachment metadata
+	attachment, err := h.service.GetAttachment(ctx, id)
+	if err != nil {
+		if errors.Is(err, fmt.Errorf("attachment not found")) {
+			h.respondError(w, http.StatusNotFound, "Attachment not found")
+			return
+		}
+		h.logger.Error("Failed to get attachment", slog.String("error", err.Error()))
+		h.respondError(w, http.StatusInternalServerError, "Failed to get attachment: "+err.Error())
+		return
+	}
+
+	// Open the file
+	file, err := os.Open(attachment.StoragePath)
+	if err != nil {
+		h.logger.Error("Failed to open attachment file", 
+			slog.String("attachment_id", id.String()),
+			slog.String("storage_path", attachment.StoragePath),
+			slog.String("error", err.Error()))
+		h.respondError(w, http.StatusNotFound, "Attachment file not found on disk")
+		return
+	}
+	defer file.Close()
+
+	// Get file info for size
+	fileInfo, err := file.Stat()
+	if err != nil {
+		h.logger.Error("Failed to stat attachment file", slog.String("error", err.Error()))
+		h.respondError(w, http.StatusInternalServerError, "Failed to read file info")
+		return
+	}
+
+	// Set headers for download
+	w.Header().Set("Content-Type", attachment.FileType)
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", attachment.OriginalFilename))
+	w.Header().Set("Content-Length", strconv.FormatInt(fileInfo.Size(), 10))
+
+	// Stream the file to response
+	_, err = io.Copy(w, file)
+	if err != nil {
+		h.logger.Error("Failed to stream attachment file", slog.String("error", err.Error()))
+		return
+	}
+
+	h.logger.Info("Attachment downloaded successfully",
+		slog.String("attachment_id", id.String()),
+		slog.String("filename", attachment.OriginalFilename),
+		slog.Int64("size", fileInfo.Size()))
+}
+
 // GetAIAnalysis handles GET /api/v1/attachments/{id}/ai-analysis
 func (h *AttachmentHandler) GetAIAnalysis(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()

@@ -118,6 +118,7 @@ func (m *Module) MountRoutes(r chi.Router) {
         r.Get("/stats", m.httpHandler.GetStats)
         // AI analysis endpoint not yet backed by repository; keep route but handler returns 501
         r.Get("/{id}", m.httpHandler.GetAttachment)
+        r.Get("/{id}/download", m.httpHandler.DownloadAttachment)
         r.Get("/{id}/ai-analysis", m.httpHandler.GetAIAnalysis)
 
         // POST endpoints
